@@ -1,7 +1,40 @@
+body, html{
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+}
+
+#sidebar {
+  display: none;
+}
 #sidebar a {
   padding: 2px 10px;
   margin-left: -10px;
 }
 #sidebar a.is-active {
-  background-color: #eee;
+  background-color: #d62929;
+}
+
+#bottombar{
+  display: flex;
+  position: fixed;
+  bottom: 0px;
+  width: 100%;
+  height: 60px;
+  background: #3455;
+}
+
+.row{
+  display: flex;
+  flex-direction:row;
+  align-items:center;
+  justify-content:space-around;
+}
+@media (width>550px){
+  #bottombar{
+    display: none;
+  }
+  #sidebar {
+    display: flex;
+  }
 }

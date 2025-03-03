@@ -21,6 +21,11 @@ function Layout({ children, pageContext }: { children: React.ReactNode; pageCont
           </Sidebar>
           <Content>{children}</Content>
         </Frame>
+        <Row id='bottombar'>
+          <Link href="/">Welcome</Link>
+          <Link href="/about">About</Link>
+          <Link href="/star-wars">Data Fetching</Link>
+        </Row>
       </PageContextProvider>
     </React.StrictMode>
   )
@@ -40,6 +45,14 @@ function Frame({ children }: { children: React.ReactNode }) {
   )
 }
 
+function Row({ children, style , id, className}: {id?:string,className?:string,style?:React.CSSProperties | undefined, children: React.ReactNode }) {
+  return (
+    <div className={`row ${className}`} id={id} style={style}>
+      {children}
+    </div>
+  )
+}
+
 function Sidebar({ children }: { children: React.ReactNode }) {
   return (
     <div
@@ -47,12 +60,18 @@ function Sidebar({ children }: { children: React.ReactNode }) {
       style={{
         padding: 20,
         flexShrink: 0,
-        display: 'flex',
         flexDirection: 'column',
         lineHeight: '1.8em',
         borderRight: '2px solid #eee'
       }}
     >
+      {children}
+    </div>
+  )
+}
+function Bottombar({ children }: { children: React.ReactNode }) {
+  return (
+    <div id="bottombar">
       {children}
     </div>
   )
@@ -66,7 +85,8 @@ function Content({ children }: { children: React.ReactNode }) {
         style={{
           padding: 20,
           paddingBottom: 50,
-          minHeight: '100vh'
+          minHeight: '100vh',
+          height:'100%'
         }}
       >
         {children}
@@ -80,7 +100,8 @@ function Logo() {
     <div
       style={{
         marginTop: 20,
-        marginBottom: 10
+        marginBottom: 10,
+        display: 'inline-block'
       }}
     >
       <a href="/">

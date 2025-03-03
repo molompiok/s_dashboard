@@ -1,8 +1,14 @@
 import { usePageContext } from './usePageContext'
-
+type IconsName = 'A'|'B'|'C'
 export { Link }
 
-function Link(props: { href: string; className?: string; children: React.ReactNode }) {
+type Props = { 
+  href: string; 
+  className?: string; 
+  children: React.ReactNode
+  icon?:IconsName
+ }
+function Link(props:Props ) {
   const pageContext = usePageContext()
   const { urlPathname } = pageContext
   const { href } = props
