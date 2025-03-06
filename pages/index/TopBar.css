@@ -1,0 +1,82 @@
+.top-bar{
+    width: 100%;
+    height: 60px;
+    /* background: var(--background); */
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.top-bar .left *{
+    margin: 0;
+}
+.top-bar .left h3,
+.top-bar .left h2 {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 200px; /* Ajustez cette valeur selon vos besoins */
+}
+.top-bar .left h3{
+    all: unset;
+    font-size: 0.9em;
+    color: var(--discret-1);
+    scale: 1.1;
+}
+.top-bar .left{
+    
+}
+
+.top-bar .right{
+    align-items: center;
+    display: flex;
+    gap: 10px;
+}
+
+.top-bar .search{
+    align-items: center;
+    display: flex;
+}
+
+.search-icon:hover{
+    background: var(--discret-3);
+    scale: 1.1;
+    transition: 100ms;
+    cursor: pointer;
+}
+.search-icon{
+    width: 30px;
+    height: 30px;
+    max-width: 30px;
+    max-height: 30px;
+    color: var(--color);
+    background: var(--discret-2);
+    border-radius: 50px;
+    padding: 2.5px;
+    transition: 100ms;
+}
+.notify-icon-ctn{
+    position: relative;
+}
+.notify-icon-ctn .available{
+    position: absolute;
+    top: 0px;
+    right: 2px;
+    background: rgb(255, 78, 34);
+    border-radius: 50px;
+    width: 8px;
+    height: 8px;
+}
+.notify-icon:hover{
+    background: var(--discret-3);
+    scale: 1.1;
+    transition: 100ms;
+    cursor: pointer;
+}
+.top-bar .notify-icon{
+    width: 25px;
+    height: 25px;
+    max-width: 25px;
+    max-height: 25px;
+    color: var(--color);
+}

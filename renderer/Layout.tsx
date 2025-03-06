@@ -77,6 +77,16 @@ function Bottombar({ children }: { children: React.ReactNode }) {
   )
 }
 
+function Page({ children }: { children: React.ReactNode }) {
+  return (
+    <div id="page">
+      {children}
+    </div>
+  )
+}
+
+
+
 function Content({ children }: { children: React.ReactNode }) {
   return (
     <div id="page-container">

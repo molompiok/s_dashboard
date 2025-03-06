@@ -2,6 +2,7 @@ body, html{
   padding: 0;
   margin: 0;
   box-sizing: border-box;
+  background: var(--background);
 }
 
 #sidebar {
@@ -21,7 +22,6 @@ body, html{
   bottom: 0px;
   width: 100%;
   height: 60px;
-  background: #3455;
 }
 
 .row{
@@ -30,6 +30,180 @@ body, html{
   align-items:center;
   justify-content:space-around;
 }
+
+
+* {
+  padding: 0;
+  margin: 0;
+  box-sizing: border-box;
+  font-optical-sizing: auto;
+  font-style: normal;
+  font-size: 1em; 
+  color: var(--text-color)
+}
+
+
+a:hover{
+  color: #6ed1ff;
+}
+a {
+  all: unset;
+  text-decoration: underline;
+  position: inherit;
+  cursor: pointer;
+}
+h1,h2,h3,h4,h5,h6{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+body, html{
+  overflow: hidden;
+  padding: 0;
+  margin: 0;
+}
+body {
+  font-size: 1rem;
+  width: 100vw;
+  height: 100vh;
+  color: #fff;
+  font-family:  Cantarell, sans-serif;;
+}
+
+:root {
+  --primary-color: #ffffff;
+  --secondary-color: #e0e0e0;
+  --tertiary-color: #c0c0c0;
+  --background: #f5f5f5;
+  --background-item: #ffffff;
+  --contrast-1: #333333;
+  --contrast-2: #666666;
+  --contrast-3: #999999;
+  --discret-1: #555555;
+  --discret-2: #dddddd;
+  --discret-3: #eeeeee;
+  --text-color: #000000;
+  --contrast-text-color: #ff0000; /* Red color for contrast text */
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+      --primary-color: #121212;
+      --secondary-color: #1e1e1e;
+      --tertiary-color: #2e2e2e;
+      --background: linear-gradient(135deg, #15141d, #1e1b38, #12123a); 
+      --background-item: #242424;
+      --contrast-1: #e0e0e0;
+      --contrast-2: #c0c0c0;
+      --contrast-3: #a0a0a0;
+      --discret-1: #3a3a3a;
+      --discret-2: #4a4a4a;
+      --discret-3: #5a5a5a;
+      --text-color: #ffffff;
+      --contrast-text-color: #ff5722; /* Orange color for contrast text */
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+      --primary-color: #ffffff;
+      --secondary-color: #e0e0e0;
+      --tertiary-color: #c0c0c0;
+      --background: #f5f5f5;
+      --background-item: #ffffff;
+      --contrast-1: #333333;
+      --contrast-2: #666666;
+      --contrast-3: #999999;
+      --discret-1: #707070;
+      --discret-2: #dddddd;
+      --discret-3: #eeeeee;
+      --text-color: #334557;
+      --contrast-text-color: #ff0000; /* Red color for contrast text */
+  }
+}
+
+
+*::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+*::-webkit-scrollbar-track:hover {
+  background: #b6b6b630;
+  transition: 200ms;
+}
+
+*::-webkit-scrollbar-track {
+  background: #b6b6b630;
+  border-radius: 20px;
+  transition: 200ms;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: #b6b6b631;
+  border-radius: 20px;
+  transition: 200ms;
+}
+
+*::-webkit-scrollbar-thumb:hover {
+  background: #15132548;
+  transition: 200ms;
+}
+
+.no-selectable {
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  -khtml-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+}
+/* 
+.search .icon{
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  background: no-repeat center/70% url(/src/res/search.png);
+  filter: invert();
+}
+.search input {
+  all: unset;
+  height: 40px;
+  padding-left: 42px;
+  background: linear-gradient(rgba(99, 106, 150, 0.4) 0%, rgba(182, 186, 214, 0.25) 100%);
+  border: none;
+  border-radius: 30px;
+  box-shadow: rgba(0, 0, 0, 0.15) 0px 20px 40px, rgba(255, 255, 255, 0.3) 0px 0px 0px 0.5px inset;
+  box-sizing: border-box;
+  padding: 10px 42px;
+  font-style: normal;
+  font-weight: normal;
+  font-size: 16px;
+  line-height: 130%;
+  color: rgb(255, 255, 255);
+  transition: all 1s cubic-bezier(0.075, 0.82, 0.165, 1) 0s;
+}
+
+.search input:focus{
+  outline: none;
+  padding-left: 42px;
+  box-shadow: rgba(47, 184, 255, 0.3) 0px 10px 40px, rgb(47, 184, 255) 0px 0px 0px 1px inset;
+  background: linear-gradient(rgba(24, 32, 79, 0.4) 0%, rgba(24, 32, 79, 0.25) 100%);
+}
+.search {
+  position: relative;
+  display: flex;
+  height: 100%;
+  width: 100%;
+} */
+
+
+@media (width < 650px) {
+  body {
+      font-size: 0.9em !important;
+  }
+}
+
 @media (width>550px){
   #bottombar{
     display: none;

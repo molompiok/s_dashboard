@@ -1,0 +1,113 @@
+/* home-stat */
+
+.home-stat {
+    position: relative;
+    width: 100%;
+}
+
+.card-stat-fill {
+    height: 160px;
+    width: 100%;
+}
+
+.card-stat {
+    width: 100%;
+    position: absolute;
+    top: 0;
+    z-index: 2; 
+    height: auto;
+    padding: 20px 20px 0 20px;
+    display: flex;
+    flex-direction: column;
+    border-radius: 20px;
+    background: linear-gradient(170deg, rgb(255, 255, 255) 0%, rgb(145, 169, 187) 100%);
+}
+
+.card-stat .top {
+    display: flex;
+    justify-content: space-between;
+}
+
+.card-stat .option:hover {
+    scale: 1.1;
+    transition: 100ms;
+    cursor: pointer;
+}
+
+.card-stat .option {
+    font-size: 1.4em;
+}
+
+.card-stat h3 {
+    color: var(--discret-1);
+    font-size: 0.9em;
+}
+
+.card-stat h1.compte {
+    font-size: 1.5em;
+
+}
+
+.card-stat .bottom {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.card-stat .section {
+    display: flex;
+    align-items: center;
+    padding: 10px;
+}
+
+.card-stat .section .icon {
+    width: 20px;
+    height: 20px;
+}
+
+.card-stat .section.commades h2 {
+    font-size: 1.2em;
+    color: #007631;
+}
+
+.card-stat .section.visites h2 {
+    font-size: 1.2em;
+    color: #001faa;
+}
+
+@media (max-width: 518px), (min-width: 550px) and (max-width: 680px) {
+    .card-stat .min-line-chart {
+        transform: translateY(-20px);
+    }
+
+    .card-stat .section {
+        flex-direction: column;
+    }
+}
+
+@media (width <340px) {
+    .card-stat .bottom {
+        justify-content: center;
+    }
+
+    .card-stat {
+        height: auto
+    }
+}
+
+/* .home-stat .bottom-hid.b2{
+  bottom: -20px;
+  scale: 0.8;
+}
+.home-stat .bottom-hid{
+  position: absolute;
+  z-index:0;
+  width: 90%;
+  height: 50px;
+  bottom: -8px;
+  left: 5%;
+  box-shadow: 0px 2px 7px -3px var(--contrast-3);
+  background: linear-gradient(170deg,rgb(255, 255, 255) 0%, rgb(145, 169, 187) 100%);
+  border-radius: 20px;
+} */
