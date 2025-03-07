@@ -37,7 +37,14 @@ const options = {
 };
 
 function MyChart({color,height,width}:{color?: keyof typeof CHART_COLORS, width?: number, height?: number}) {
-  return <Line className='min-line-chart' style={{padding:'10px'}} width={width||110} height={height||60} data={{
+  return <Line  ref={(ref)=>{
+    ref?.canvas && setTimeout(() => {
+      ref.canvas && (ref.canvas.style.display = '');
+     console.log(ref);
+     
+    });
+
+  }} className='min-line-chart no-selectable' style={{ padding:'0px', display:''}} width={width||110} height={height||60} data={{
     labels: Array.from({ length: 12}, (_, i) => ''),
     datasets: [
       {

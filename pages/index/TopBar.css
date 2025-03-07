@@ -15,7 +15,7 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    max-width: 200px; /* Ajustez cette valeur selon vos besoins */
+    max-width: 200px; 
 }
 .top-bar .left h3{
     all: unset;

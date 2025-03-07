@@ -1,5 +1,74 @@
-const ListCommandes = {
-    list:[{
-        
+
+export {commandes};
+
+
+// const commandes = [{
+//     id: '',
+//     reference: '',
+//     store_id:'',
+//     user_id:'',
+//     delivery_status: 'encours',
+//     payment_status: '',
+//     payment_method: '',
+//     currency: '',
+//     total_price: '',
+//     price_delivery: '',
+//     price_return_delivery: '',
+//     with_delivery: '',
+//     phone_number_customer: '',
+//     format_number_customer: '',
+//     country_code_customer: '',
+//     pickup_address: '',
+//     pickup_date: '',
+//     delivery_date: '',
+//     delivery_address: '',
+//     longitude_delivery: '',
+//     latitude_delivery: '',
+//     latitude_pickup: '',
+//     longitude_pickup: '',
+//     pickup_address_name: '',
+//     delivery_address_name: '',
+
+// }]
+const commandes = [{
+    id: '1324389495',
+    store_id: '',
+    user_id: '',
+    reference: '6fa89c0',
+    delivery_status: 'encours',
+    payment_status: 'no',
+    payment_method: '',
+    currency: '',
+    total_price: '25699',
+    price_delivery: '',
+    price_return_delivery: '',
+    with_delivery: 'true',
+    phone_number_customer: '',
+    format_number_customer: '',
+    country_code_customer: '',
+    pickup_address: '',
+    pickup_date: '',
+    delivery_date: '',
+    delivery_address: '',
+    longitude_delivery: '',
+    latitude_delivery: '',
+    latitude_pickup: '',
+    longitude_pickup: '',
+    pickup_address_name: '',
+    delivery_address_name: '',
+    products: [{
+        id: '9823r5423t',
+        command_id: '1324389495',
+        product_id: '68yt834q',
+        user_id: '',
+        store_id: '',
+        status: '',
+        views: '',
+        quantity: '',
+        price_unit: '',
+        currency: '',
+        features: '',
     }]
-}
+}]
+
+const products = {}

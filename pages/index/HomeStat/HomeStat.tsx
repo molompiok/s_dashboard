@@ -1,7 +1,7 @@
 import { useRef, useState } from "react";
-import { IoBagHandle, IoEllipsisHorizontalSharp, IoEyeOff, IoEyeSharp, IoPeopleSharp } from "react-icons/io5";
-import { Nuage } from "../../index/Nuage";
-import MyChart from "../../index/MiniChart";
+import { IoBagHandle, IoCart, IoEllipsisHorizontalSharp, IoEyeOff, IoEyeSharp, IoPeopleSharp } from "react-icons/io5";
+import { Nuage } from "../Nuage";
+import MyChart from "../MiniChart";
 
 import './HomeStat.css'
 
@@ -20,7 +20,7 @@ function HomeStat() {
           <IoEllipsisHorizontalSharp className='option'/>
         </div>
         <h1 className='compte'>
-          { eye? 
+          { !eye? 
             <span ref={comptref}>{Number(295000).toLocaleString()} {'FCFA'}</span>:
             <Nuage color='#3455' density={1} height={20} width={nuageW} speed={1}/>}  <span onClick={()=>{
           const w = comptref.current?.getBoundingClientRect().width||100;
@@ -31,22 +31,22 @@ function HomeStat() {
           </span></h1>
           
         <div className="bottom">
-          <div className="section commades">
+          <a href="/stats" className="section commades">
             <div className="min-info">
-              <span className="icon"></span>
-              <h3><IoBagHandle className='icon'/> {'Commandes'}</h3>
+              <h3><IoCart  className='icon'/> {'Commandes'}</h3>
+              <span></span>
               <h2>{'38'}</h2>
             </div>
             <MyChart color='green' />
-          </div>
-          <div className="section visites">
+          </a>
+          <a href="/stats" className="section visites">
             <div className="min-info">
-              <span className="icon"></span>
               <h3><IoPeopleSharp className='icon'/> {'Visites'}</h3>
+              <span></span>
               <h2>{'38'}</h2>
             </div>
             <MyChart />
-          </div>
+          </a>
         </div>
       </div>
     </div>

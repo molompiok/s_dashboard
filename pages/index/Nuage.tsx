@@ -47,7 +47,7 @@ function Nuage({ color, density, height, speed, width }: { width: number, height
                         ref: null as HTMLDivElement|null,
                     }
                     d[i] = positions;
-                    return <div style={{ 
+                    return <div key={i} style={{ 
                         borderRadius:'50%',
                         background: color, 
                         width: `${s}px`, 

@@ -14,10 +14,10 @@ function Topbar() {
             </div>
             <div className='right'>
                 <IoSearch className='search-icon'></IoSearch>
-                <div className="notify-icon-ctn">
+                <a href="/notifications" className="notify-icon-ctn">
                 <IoNotifications className='notify-icon'></IoNotifications>
                 <span className="available"></span>  
-                </div>
+                </a>
 
             </div>
         </div>
@@ -35,7 +35,9 @@ function Search({ setSearchValue, ...values }: Props) {
             <input id="home-search" type="text" placeholder="Store name" onChange={(e) => {
                 setSearchValue(e.currentTarget.value)
             }} />
+            <a >
             <IoSearch className='search-icon'></IoSearch>
+            </a>
         </label>
     </div>
 }

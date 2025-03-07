@@ -5,6 +5,23 @@ body, html{
   background: var(--background);
 }
 
+#open-child{
+  position: absolute;
+  z-index: 9999;
+  top: 0;
+  left: 0;
+  width: 100%; 
+  height: 100%;
+}
+#open-child #viewer-ctn{
+  width: 100%;
+  height: 100%;
+  position: relative;
+  background: var(--background-child-viewer);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
 #sidebar {
   display: none;
 }
@@ -15,6 +32,7 @@ body, html{
 #sidebar a.is-active {
   background-color: #d62929;
 }
+
 
 #bottombar{
   display: flex;
@@ -43,14 +61,8 @@ body, html{
 }
 
 
-a:hover{
-  color: #6ed1ff;
-}
 a {
   all: unset;
-  text-decoration: underline;
-  position: inherit;
-  cursor: pointer;
 }
 h1,h2,h3,h4,h5,h6{
   display: flex;
@@ -84,6 +96,7 @@ body {
   --discret-3: #eeeeee;
   --text-color: #000000;
   --contrast-text-color: #ff0000; /* Red color for contrast text */
+  --background-child-viewer:#3454
 }
 
 @media (prefers-color-scheme: dark) {

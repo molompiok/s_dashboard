@@ -7,37 +7,62 @@ import { Link } from './Link'
 import type { PageContext } from 'vike/types'
 import './css/index.css'
 import './Layout.css'
+import { useApp } from './Stores/UseApp'
 
 function Layout({ children, pageContext }: { children: React.ReactNode; pageContext: PageContext }) {
+  const {currentChild,alignItems,background,blur,justifyContent} = useApp();
   return (
     <React.StrictMode>
       <PageContextProvider pageContext={pageContext}>
-        <Frame>
+        <Frame >
           <Sidebar>
             <Logo />
-            <Link href="/">Welcome</Link>
-            <Link href="/about">About</Link>
-            <Link href="/star-wars">Data Fetching</Link>
+            <Link href="/">Accueille</Link>
+            <Link href="/products">Produits</Link>
+            <Link href="/stores">Boutiques</Link>
+            <Link href="/teams">Equipes</Link>
+            <Link href="/stats">Statistique</Link>
+            <Link href="/commands">Commandes</Link>
           </Sidebar>
           <Content>{children}</Content>
         </Frame>
-        <Row id='bottombar'>
-          <Link href="/">Welcome</Link>
-          <Link href="/about">About</Link>
-          <Link href="/star-wars">Data Fetching</Link>
-        </Row>
+        <Bottombar>
+            <Link href="/">Accueille</Link>
+            <Link href="/products">Produits</Link>
+            <Link href="/stores">Boutiques</Link>
+            <Link href="/teams">Equipes</Link>
+        </Bottombar>
+        <OpenChild/> 
       </PageContextProvider>
     </React.StrictMode>
   )
 }
 
+function OpenChild(){
+  const {currentChild,alignItems,background,justifyContent, openChild} = useApp();
+   const child = currentChild||null
+   console.log({child});
+   
+  return (child) && <div id="open-child">
+    <div id='viewer-ctn' style={{
+      alignItems,background,justifyContent
+    }} onClick={(e)=>{
+      if(e.currentTarget == e.target){
+        openChild(null)
+      }
+    }}>{child}</div>
+  </div>
+}
+
 function Frame({ children }: { children: React.ReactNode }) {
+  const {blur} = useApp();
   return (
     <div
       style={{
         display: 'flex',
         maxWidth: 900,
-        margin: 'auto'
+        margin: 'auto',
+         filter: blur ? `blur(${blur}px)` : ''
       }}
     >
       {children}
@@ -70,8 +95,9 @@ function Sidebar({ children }: { children: React.ReactNode }) {
   )
 }
 function Bottombar({ children }: { children: React.ReactNode }) {
+  const {blur} = useApp();
   return (
-    <div id="bottombar">
+    <div id="bottombar" style={{ filter: blur ? `blur(10px)` : ''}} >
       {children}
     </div>
   )
@@ -120,3 +146,9 @@ function Logo() {
     </div>
   )
 }
+
+
+/*
+ interface BiSolidLayout
+ images 
+*/

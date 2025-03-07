@@ -1,19 +1,14 @@
 .home-page{
   width: 100%;
-  height: 100%;
-}
-
-section.add-stat{
-  background: #3852;
-  width: 100%;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
+  max-height: 100%;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 .content{
   width: 100%;
   display: flex;
+  gap:8px;
   flex-direction: column;
   align-items: center;
 }
@@ -40,12 +35,5 @@ section.add-stat{
 }
 
 @media (width< 400px){
-  section.add-stat{
-    justify-content:center;
-    gap:20px
-  }
-  .stat{
-    width: 100%;
-
-  }
+  
 }
