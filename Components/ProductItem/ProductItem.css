@@ -51,6 +51,7 @@
 }
 @media(width<320px){
     .product-item{
-        aspect-ratio: 0.5;
+        width: 80%;
+        aspect-ratio: 0.65;
     }
 }

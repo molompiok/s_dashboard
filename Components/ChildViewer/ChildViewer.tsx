@@ -3,7 +3,7 @@ import './ChildViewer.css'
 import { IoCloseSharp } from "react-icons/io5";
 export { ChildViewer }
 
-function ChildViewer({ children, title,style }: {title?:string,children?: React.ReactNode , style?:React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement>['style'] }) {
+function ChildViewer({ children, title,style,back }: {back?:boolean,title?:string,children?: React.ReactNode , style?:React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement>['style'] }) {
     
     const {openChild} = useApp()
 

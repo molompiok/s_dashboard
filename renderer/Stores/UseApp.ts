@@ -20,7 +20,8 @@ const useApp = create(combine({
             background: option?.background || '',
             blur: option?.blur || 0,
         }))
-        if (!child && option?.back!==false) history.back()
+        if (!child && option?.back!==false) history.back();
+        if(child) location.hash = 'openChild'
     },
 })));
 

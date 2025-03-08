@@ -68,7 +68,7 @@ function ListCategoriesPopup() {
         {
             Array.from({ length: 40 }).map((_, i) =>
                 <CategoryItem key={i} category={{} as any} onClick={() => {
-                    openChild(null, { back: false })
+                    openChild(null)
                 }} />
             )
         }

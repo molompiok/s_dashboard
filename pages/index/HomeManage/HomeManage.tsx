@@ -34,6 +34,7 @@ function HomeManage() {
             <IoStorefront className='icon' />
             <div className="bottom">
                 <h2>Stores</h2>
+                <span>{1}</span>
             </div>
         </a>
     </div>

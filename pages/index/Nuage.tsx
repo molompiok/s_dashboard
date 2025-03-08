@@ -1,12 +1,8 @@
 import { useEffect, useState } from "react";
+import { ClientCall } from "../../Components/Utils/functions";
 export {Nuage}
 
-function ClientCall(fn:Function,defaultValue:any,...params:any[]) {
-    if (typeof window !== 'undefined')
-       return fn(...params);
-    else
-        return defaultValue
-}
+
 const sizes = Array.from({ length: 100 }).map(() => ClientCall(Math.random,0) * 10 + 5);
 function Nuage({ color, density, height, speed, width }: { width: number, height: number, density: number, speed: number, color: string }) {
     const [d] = useState({} as any)

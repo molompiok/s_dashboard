@@ -1,4 +1,5 @@
 import { ProductInterface } from '../../renderer/Interfaces/Interfaces'
+import { ClientCall } from '../Utils/functions';
 import './ProductItem.css'
 export {ProductItem}
 
@@ -7,7 +8,7 @@ const url = 'data:image/jpeg;base64,/9j/4AAQSkZJRgABAQAAAQABAAD/2wCEAAkGBwgHBgkI
 function ProductItem({product}:{product:ProductInterface}) {
     
 
-    return <a href={`/product_detail?id=2384t563587`} className="product-item">
+    return <a href={`/products/${ClientCall(Math.random,0)}`} className="product-item">
         <div className="views" style={{background:`no-repeat center/cover url(${url2})`}}></div>
         <h1>{'243 879 FCFA'}</h1>
         <p>{'rwgt grthyt hty njtytrhmn thmtdntn etn mtm'}</p>
