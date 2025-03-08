@@ -3,7 +3,6 @@
     height: 60px;
     /* background: var(--background); */
     display: flex;
-    justify-content: space-between;
     align-items: center;
 }
 
@@ -23,14 +22,21 @@
     color: var(--discret-1);
     scale: 1.1;
 }
-.top-bar .left{
-    
+.top-bar .icon:hover{
+    scale: 1.1;
+}
+.top-bar .icon{
+    width: 25px;
+    height: 25px;
+    margin-right: 25px;
+    cursor: pointer;
 }
 
 .top-bar .right{
     align-items: center;
     display: flex;
     gap: 10px;
+    margin-left: auto;
 }
 
 .top-bar .search{

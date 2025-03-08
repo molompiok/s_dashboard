@@ -10,7 +10,7 @@ const CATEGORY_SIZE = 80;
 const GAP = 8
 export { CategoriesList }
 
-function CategoriesList() {
+function CategoriesList({title}:{title?:string}) {
 
     const { openChild } = useApp()
     const size = useWindowSize();
@@ -26,7 +26,7 @@ function CategoriesList() {
     const limit = Math.trunc(listWidth / (CATEGORY_SIZE + GAP)) * 2 - 1
     const seeMore = Array.from({ length: 20 }).length > limit
     return <div className="catefgories-list">
-        <h1>Liste des categories</h1>
+        <h1>{title ||'Liste des categories'}</h1>
         <div className="list" ref={listRef}>
             <AddCategory />
             {

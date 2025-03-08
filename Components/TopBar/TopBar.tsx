@@ -1,12 +1,15 @@
 import './TopBar.css'
-import { IoSearch, IoNotifications } from "react-icons/io5";
+import { IoSearch, IoNotifications, IoChevronBack } from "react-icons/io5";
 export { Topbar }
 
-function Topbar() {
+function Topbar({back}:{back?:boolean}) {
 
 
     return (
         <div className='top-bar'>
+            {back && <IoChevronBack className='icon' onClick={()=>{
+                history.back();
+            }}/> }
             <div className='left'>
 
                 <h3>Bienvenu !!</h3>

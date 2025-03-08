@@ -1,6 +1,13 @@
 import { useEffect, useState } from "react";
 export {Nuage}
-const sizes = Array.from({ length: 100 }).map(() => Math.random() * 10 + 5);
+
+function ClientCall(fn:Function,defaultValue:any,...params:any[]) {
+    if (typeof window !== 'undefined')
+       return fn(...params);
+    else
+        return defaultValue
+}
+const sizes = Array.from({ length: 100 }).map(() => ClientCall(Math.random,0) * 10 + 5);
 function Nuage({ color, density, height, speed, width }: { width: number, height: number, density: number, speed: number, color: string }) {
     const [d] = useState({} as any)
     useEffect(()=>{
@@ -8,10 +15,9 @@ function Nuage({ color, density, height, speed, width }: { width: number, height
         const id = setInterval(() => {
             Object.values(d).forEach((p: any) => {
                 if(i > p.l){
-                    p.a += ((Math.random()*2 - 1)*0.5)*Math.PI;
+                    p.a += ((ClientCall(Math.random,0)*2 - 1)*0.5)*Math.PI;
                     p.l = i+p.i
                     // console.log(p,i,p.l);
-                    
                 } 
                 p.x += p.v* Math.cos(p.a);
                 p.y += p.v* Math.sin(p.a);
@@ -38,12 +44,12 @@ function Nuage({ color, density, height, speed, width }: { width: number, height
                     const s = sizes[i];
                     const positions = {
                         l:0,
-                        i:Math.trunc(Math.random()*10000+5000),
-                        a:(Math.random()*2 - 1)*Math.PI,
+                        i:Math.trunc(ClientCall(Math.random,0)*10000+5000),
+                        a:(ClientCall(Math.random,0)*2 - 1)*Math.PI,
                         s,
-                        x: Math.random() * width,
-                        y: Math.random() * height,
-                        v: (Math.random() * Math.min(1,Math.max(0,speed))+1)*0.1,
+                        x: ClientCall(Math.random,0) * width,
+                        y: ClientCall(Math.random,0) * height,
+                        v: (ClientCall(Math.random,0) * Math.min(1,Math.max(0,speed))+1)*0.1,
                         ref: null as HTMLDivElement|null,
                     }
                     d[i] = positions;

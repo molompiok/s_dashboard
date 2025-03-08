@@ -1,0 +1,19 @@
+.category .top{
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.category .view{
+    min-width: 100px;
+    min-height: auto;
+    width: 100px;
+    height: auto;
+    aspect-ratio: 1;
+    border-radius: 12px;
+}
+
+.category > h3{
+    margin-top: 20px;
+}

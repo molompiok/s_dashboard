@@ -2,13 +2,13 @@ export { Layout }
 
 import React from 'react'
 import logoUrl from './logo.svg'
-import { PageContextProvider } from './usePageContext'
+import { PageContextProvider, usePageContext } from './usePageContext'
 import { Link } from './Link'
 import type { PageContext } from 'vike/types'
 import './css/index.css'
 import './Layout.css'
 import { useApp } from './Stores/UseApp'
-import { IoBagHandle, IoBagHandleOutline, IoCart, IoCartOutline, IoHome, IoHomeOutline, IoPeopleOutline, IoPeopleSharp, IoStatsChart, IoStatsChartOutline, IoStorefront, IoStorefrontOutline } from 'react-icons/io5'
+import { Icons } from '../Components/Utils/constants'
 
 function Layout({ children, pageContext }: { children: React.ReactNode; pageContext: PageContext }) {
   return (
@@ -17,19 +17,20 @@ function Layout({ children, pageContext }: { children: React.ReactNode; pageCont
         <Frame >
           <Sidebar>
             <Logo />
-            <Link href="/" activeIcon={<IoHome />} defaultIcon={<IoHomeOutline />}>Accueil</Link>
-            <Link href="/products" activeIcon={<IoBagHandle />} defaultIcon={<IoBagHandleOutline />}>Produits</Link>
-            <Link href="/stores" activeIcon={<IoStorefront />} defaultIcon={<IoStorefrontOutline />}>Boutiques</Link>
-            <Link href="/teams" activeIcon={<IoPeopleSharp />} defaultIcon={<IoPeopleOutline />}>Equipes</Link>
-            <Link href="/stats" activeIcon={<IoStatsChart />} defaultIcon={<IoStatsChartOutline />}>Statistique</Link>
-            <Link href="/commands" activeIcon={<IoCart />} defaultIcon={<IoCartOutline />}>Commandes</Link>
+            <Link href="/" activeIcon={Icons.home} defaultIcon={Icons.home_outline}>Accueil</Link>
+            <Link href="/products" activeIcon={Icons.products} defaultIcon={Icons.products_outline}>Produits</Link>
+            <Link href="/stores" activeIcon={Icons.stores} defaultIcon={Icons.stores_outline}>Boutiques</Link>
+            <Link href="/teams" activeIcon={Icons.teams} defaultIcon={Icons.teams_outline}>Equipes</Link>
+            <Link href="/stats" activeIcon={Icons.stats} defaultIcon={Icons.stats_outline}>Statistique</Link>
+            <Link href="/commands" activeIcon={Icons.commands} defaultIcon={Icons.commands_outline}>Commandes</Link>
           </Sidebar>
           <Content>{children}</Content>
         </Frame>
-        <Bottombar><Link href="/" activeIcon={<IoHome />} defaultIcon={<IoHomeOutline />} />
-          <Link href="/products" activeIcon={<IoBagHandle />} defaultIcon={<IoBagHandleOutline />} />
-          <Link href="/stores" activeIcon={<IoStorefront />} defaultIcon={<IoStorefrontOutline />} />
-          <Link href="/teams" activeIcon={<IoPeopleSharp />} defaultIcon={<IoPeopleOutline />} />
+        <Bottombar>
+          <Link href="/" activeIcon={Icons.home} defaultIcon={Icons.home_outline} />
+          <Link href="/products" activeIcon={Icons.products} defaultIcon={Icons.products_outline} />
+          <Link href="/stores" activeIcon={Icons.stores} defaultIcon={Icons.stores_outline} />
+          <Link href="/teams" activeIcon={Icons.teams} defaultIcon={Icons.teams_outline} />
         </Bottombar>
         <OpenChild />
       </PageContextProvider>
@@ -40,8 +41,9 @@ function Layout({ children, pageContext }: { children: React.ReactNode; pageCont
 function OpenChild() {
   const { currentChild, alignItems, background, justifyContent, openChild } = useApp();
   const child = currentChild || null
-  console.log({ child });
-
+  const {urlOriginal} = usePageContext()
+  console.log({urlOriginal});
+  
   return (child) && <div id="open-child">
     <div id='viewer-ctn' style={{
       alignItems, background, justifyContent

@@ -1,5 +1,5 @@
 import './index.css';
-import { Topbar } from './TopBar';
+import { Topbar } from '../../Components/TopBar/TopBar';
 import { HomeStat } from './HomeStat/HomeStat';
 import { HomeManage } from './HomeManage/HomeManage';
 import { CommandeList } from '../../Components/Commandes/CommandesList';

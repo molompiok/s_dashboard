@@ -1,0 +1,45 @@
+.indicator{
+    position: relative;
+    display: flex;
+    justify-content: center;
+}
+
+.indicator svg {
+    background: var(--discret-3);
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+    width: 25px;
+    height: 25px;
+}
+
+.indicator .info {
+    visibility: hidden;
+    opacity: 0;
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+    top:0 ;
+    width: 240px;
+    transform: translateY(25px);
+    padding: 12px;
+    background: var(--background);
+    box-shadow: var(--box-shadow);
+    border-radius: 12px;
+}
+
+.indicator:hover .info {
+    visibility: visible;
+    opacity: 1;
+    transition: 200ms;
+}
+
+.indicator p{
+    all: unset;
+    font-weight: 500;
+    color: var(--discret-1);
+    font-size: 0.9em;
+    
+}
