@@ -1,4 +1,4 @@
-import { ProductInterface } from '../../renderer/Interfaces/Interfaces'
+import { ProductInterface } from '../../Interfaces/Interfaces'
 import { ClientCall } from '../Utils/functions';
 import './ProductItem.css'
 export {ProductItem}

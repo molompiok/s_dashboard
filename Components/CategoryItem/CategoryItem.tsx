@@ -1,4 +1,4 @@
-import { CategoryInterface } from "../../renderer/Interfaces/Interfaces"
+import { CategoryInterface } from "../../Interfaces/Interfaces"
 import './CategoryItem.css'
 
 export {CategoryItem}

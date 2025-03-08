@@ -1,10 +1,10 @@
 .product{
- /* width: calc(100% - var(--side-bar)); */
+ width: calc(100% - var(--side-bar));
 }
 
 .product .views{
     width: 100%;
-    background: #3345;
+    /* background: #3345; */
     
 }
 
@@ -26,5 +26,9 @@
     width: 80%;
     height: auto;
     aspect-ratio: 2;
+}
+
+.unlimited{
+    width: 200vw;
 }
 

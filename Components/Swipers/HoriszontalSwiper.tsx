@@ -11,10 +11,12 @@ import './HoriszontalSwiper.css';
 
 // import required modules
 import { Pagination, Navigation } from 'swiper/modules';
+import { useWindowSize } from '../../Hooks/useWindowSize';
+import { FeatureValueInterface } from '../../Interfaces/Interfaces';
 
 export { HoriszontalSwiper }
 
-function HoriszontalSwiper() {
+function HoriszontalSwiper({ values ,onActiveIndexChange}: {onActiveIndexChange?:(index:number)=>void, values: FeatureValueInterface[] }) {
     const [swiperRef, setSwiperRef] = useState<any>(null);
 
     let appendNumber = 4;
@@ -46,13 +48,19 @@ function HoriszontalSwiper() {
         ]);
     };
 
+
+    const size = useWindowSize()
+    
     return (
         <div className='horizontal-swiper'>
             <Swiper
+                onActiveIndexChange={(_swiper)=>{
+                    onActiveIndexChange?.(_swiper.activeIndex);
+                }}
                 onSwiper={setSwiperRef}
-                slidesPerView={3}
+                slidesPerView={size.width < 340 ? 2 : size.width > 800 ? 4 : 3}
                 centeredSlides={true}
-                spaceBetween={30}
+                spaceBetween={20}
                 pagination={{
                     type: 'fraction',
                 }}
@@ -60,10 +68,20 @@ function HoriszontalSwiper() {
                 modules={[Pagination, Navigation]}
                 className="mySwiper"
             >
-                <SwiperSlide>Slide 1</SwiperSlide>
-                <SwiperSlide>Slide 2</SwiperSlide>
-                <SwiperSlide>Slide 3</SwiperSlide>
-                <SwiperSlide>Slide 4</SwiperSlide>
+                {
+                    values.map((v,index) => (
+                        <SwiperSlide onClick={()=>{
+                            swiperRef.slideTo(index)
+                        }}>
+                           {
+                            v.views.map(((img,i)=>(
+                                <div className={`img_${i}`} style={{background: `no-repeat center/cover url(${img})` }}></div>
+                            )))
+                           }
+                        </SwiperSlide>
+                    ))
+                }
+                <div className='unlimited'></div>
             </Swiper>
 
             {/* <p className="append-buttons">
