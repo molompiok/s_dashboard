@@ -8,46 +8,45 @@ import type { PageContext } from 'vike/types'
 import './css/index.css'
 import './Layout.css'
 import { useApp } from './Stores/UseApp'
+import { IoBagHandle, IoBagHandleOutline, IoCart, IoCartOutline, IoHome, IoHomeOutline, IoPeopleOutline, IoPeopleSharp, IoStatsChart, IoStatsChartOutline, IoStorefront, IoStorefrontOutline } from 'react-icons/io5'
 
 function Layout({ children, pageContext }: { children: React.ReactNode; pageContext: PageContext }) {
-  const {currentChild,alignItems,background,blur,justifyContent} = useApp();
   return (
     <React.StrictMode>
       <PageContextProvider pageContext={pageContext}>
         <Frame >
           <Sidebar>
             <Logo />
-            <Link href="/">Accueille</Link>
-            <Link href="/products">Produits</Link>
-            <Link href="/stores">Boutiques</Link>
-            <Link href="/teams">Equipes</Link>
-            <Link href="/stats">Statistique</Link>
-            <Link href="/commands">Commandes</Link>
+            <Link href="/" activeIcon={<IoHome />} defaultIcon={<IoHomeOutline />}>Accueil</Link>
+            <Link href="/products" activeIcon={<IoBagHandle />} defaultIcon={<IoBagHandleOutline />}>Produits</Link>
+            <Link href="/stores" activeIcon={<IoStorefront />} defaultIcon={<IoStorefrontOutline />}>Boutiques</Link>
+            <Link href="/teams" activeIcon={<IoPeopleSharp />} defaultIcon={<IoPeopleOutline />}>Equipes</Link>
+            <Link href="/stats" activeIcon={<IoStatsChart />} defaultIcon={<IoStatsChartOutline />}>Statistique</Link>
+            <Link href="/commands" activeIcon={<IoCart />} defaultIcon={<IoCartOutline />}>Commandes</Link>
           </Sidebar>
           <Content>{children}</Content>
         </Frame>
-        <Bottombar>
-            <Link href="/">Accueille</Link>
-            <Link href="/products">Produits</Link>
-            <Link href="/stores">Boutiques</Link>
-            <Link href="/teams">Equipes</Link>
+        <Bottombar><Link href="/" activeIcon={<IoHome />} defaultIcon={<IoHomeOutline />} />
+          <Link href="/products" activeIcon={<IoBagHandle />} defaultIcon={<IoBagHandleOutline />} />
+          <Link href="/stores" activeIcon={<IoStorefront />} defaultIcon={<IoStorefrontOutline />} />
+          <Link href="/teams" activeIcon={<IoPeopleSharp />} defaultIcon={<IoPeopleOutline />} />
         </Bottombar>
-        <OpenChild/> 
+        <OpenChild />
       </PageContextProvider>
     </React.StrictMode>
   )
 }
 
-function OpenChild(){
-  const {currentChild,alignItems,background,justifyContent, openChild} = useApp();
-   const child = currentChild||null
-   console.log({child});
-   
+function OpenChild() {
+  const { currentChild, alignItems, background, justifyContent, openChild } = useApp();
+  const child = currentChild || null
+  console.log({ child });
+
   return (child) && <div id="open-child">
     <div id='viewer-ctn' style={{
-      alignItems,background,justifyContent
-    }} onClick={(e)=>{
-      if(e.currentTarget == e.target){
+      alignItems, background, justifyContent
+    }} onClick={(e) => {
+      if (e.currentTarget == e.target) {
         openChild(null)
       }
     }}>{child}</div>
@@ -55,14 +54,14 @@ function OpenChild(){
 }
 
 function Frame({ children }: { children: React.ReactNode }) {
-  const {blur} = useApp();
+  const { blur } = useApp();
   return (
     <div
       style={{
         display: 'flex',
         maxWidth: 900,
         margin: 'auto',
-         filter: blur ? `blur(${blur}px)` : ''
+        filter: blur ? `blur(${blur}px)` : ''
       }}
     >
       {children}
@@ -70,7 +69,7 @@ function Frame({ children }: { children: React.ReactNode }) {
   )
 }
 
-function Row({ children, style , id, className}: {id?:string,className?:string,style?:React.CSSProperties | undefined, children: React.ReactNode }) {
+function Row({ children, style, id, className }: { id?: string, className?: string, style?: React.CSSProperties | undefined, children: React.ReactNode }) {
   return (
     <div className={`row ${className}`} id={id} style={style}>
       {children}
@@ -95,9 +94,9 @@ function Sidebar({ children }: { children: React.ReactNode }) {
   )
 }
 function Bottombar({ children }: { children: React.ReactNode }) {
-  const {blur} = useApp();
+  const { blur } = useApp();
   return (
-    <div id="bottombar" style={{ filter: blur ? `blur(10px)` : ''}} >
+    <div id="bottombar" style={{ filter: blur ? `blur(10px)` : '' }} >
       {children}
     </div>
   )
@@ -122,7 +121,9 @@ function Content({ children }: { children: React.ReactNode }) {
           padding: 20,
           paddingBottom: 50,
           minHeight: '100vh',
-          height:'100%'
+          height: '100%',
+          maxWidth: '100%',
+          overflowY: 'auto'
         }}
       >
         {children}

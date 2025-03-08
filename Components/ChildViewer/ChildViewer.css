@@ -1,7 +1,6 @@
 .child-viewer{
     width: 95%;
     max-width: 550px ;
-    height: 80%;
     max-height: 80%;
     background: var(--background);
     border-radius: 20px;
@@ -26,4 +25,11 @@
     height: 25px;
     cursor: pointer;
     transition: 100ms;
+}
+
+.child-viewer .ctn{
+    overflow-y: auto;
+}
+.child-viewer .ctn >*{
+    overflow-y: auto;
 }

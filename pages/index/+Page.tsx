@@ -2,7 +2,7 @@ import './index.css';
 import { Topbar } from './TopBar';
 import { HomeStat } from './HomeStat/HomeStat';
 import { HomeManage } from './HomeManage/HomeManage';
-import { CommandeList } from '../Components/Commandes/CommandesList';
+import { CommandeList } from '../../Components/Commandes/CommandesList';
 import { usePageContext } from '../../renderer/usePageContext';
 export { Page }
 function Page() {

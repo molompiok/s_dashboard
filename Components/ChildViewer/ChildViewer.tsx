@@ -1,9 +1,9 @@
-import { useApp } from '../../../renderer/Stores/UseApp';
+import { useApp } from '../../renderer/Stores/UseApp';
 import './ChildViewer.css'
 import { IoCloseSharp } from "react-icons/io5";
 export { ChildViewer }
 
-function ChildViewer({ children, title }: {title?:string,children?: React.ReactNode }) {
+function ChildViewer({ children, title,style }: {title?:string,children?: React.ReactNode , style?:React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement>['style'] }) {
     
     const {openChild} = useApp()
 
@@ -14,7 +14,7 @@ function ChildViewer({ children, title }: {title?:string,children?: React.ReactN
                 openChild(null)
             }}/>
         </div>
-        <div className="ctn">
+        <div className="ctn" style={style}>
             {children}
         </div>
     </div>

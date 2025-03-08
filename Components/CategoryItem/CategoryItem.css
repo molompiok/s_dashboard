@@ -1,0 +1,14 @@
+.category-item{
+    display: inline-block;
+    width: var(--category-size);
+    height: var(--category-size);
+    background: #345;
+    cursor: pointer;
+    border-radius: 12px;
+    transition: 200ms;
+} 
+
+.category-item:hover{
+    scale: 1.05;
+    transition: 200ms;
+}

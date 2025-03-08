@@ -1,6 +1,6 @@
 import { IoFilterSharp } from 'react-icons/io5'
-import { useApp } from '../../../renderer/Stores/UseApp'
-import { usePageContext } from '../../../renderer/usePageContext'
+import { useApp } from '../../renderer/Stores/UseApp'
+import { usePageContext } from '../../renderer/usePageContext'
 import { ChildViewer } from '../ChildViewer/ChildViewer'
 import { CommandeDetail } from './CommandDetail'
 import './CommandesList.css'

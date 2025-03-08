@@ -24,14 +24,37 @@ body, html{
 }
 #sidebar {
   display: none;
+  width: var(--side-bar);
+  cursor: pointer;
 }
-#sidebar a {
-  padding: 2px 10px;
+#bottombar a:hover,
+#sidebar a:hover{
+  opacity: 0.9;
+  transition: 200ms;
+  background-color: var(--discret-2);
+}
+
+#bottombar a.is-active,#sidebar a.is-active {
+  transition: 200ms;
+  background-color: var(--discret-2);
+}
+
+#bottombar a,#sidebar a {
   margin-left: -10px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-bottom: 8px;
+  padding: 4px 10px;
 }
-#sidebar a.is-active {
-  background-color: #d62929;
+
+
+#bottombar a > svg, #sidebar a > svg{
+  width: 25px;
+  height: 25px;
+  opacity: 0.9;
 }
+
 
 
 #bottombar{
@@ -40,6 +63,8 @@ body, html{
   bottom: 0px;
   width: 100%;
   height: 60px;
+  background: var(--background);
+  justify-content: space-around;
 }
 
 .row{
@@ -96,7 +121,11 @@ body {
   --discret-3: #eeeeee;
   --text-color: #000000;
   --contrast-text-color: #ff0000; /* Red color for contrast text */
-  --background-child-viewer:#3454
+  --background-child-viewer:#3454;
+  --side-bar-width-min:80px;
+  --side-bar-width-max:180px;
+  --side-bar: var(--side-bar-width-max);
+  --category-size: 80px;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -223,5 +252,26 @@ body {
   }
   #sidebar {
     display: flex;
+  }
+}
+@media (width>550px) and (width<650px){
+  :root {
+    --side-bar: var(--side-bar-width-min)
+  }
+  #sidebar a{
+    justify-content: center;
+  } 
+  #sidebar a span{
+    display: none;
+  }
+}
+@media (width>650px){
+  :root {
+    --side-bar: var(--side-bar-width-max)
+  }
+}
+@media (width<550px){
+  :root {
+    --side-bar: 0px
   }
 }

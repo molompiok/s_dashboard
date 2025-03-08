@@ -12,7 +12,7 @@ const useApp = create(combine({
     background: '' as string,
     blur: 0,
 }, (set, get) => ({
-    openChild(child: JSX.Element | null | undefined, option?: Partial<ReturnType<typeof get>>) {
+    openChild(child: JSX.Element | null | undefined, option?: Partial<ReturnType<typeof get>>&{back?:boolean}) {
         set(() => ({
             currentChild: child,
             alignItems: option?.alignItems || 'center',
@@ -20,7 +20,7 @@ const useApp = create(combine({
             background: option?.background || '',
             blur: option?.blur || 0,
         }))
-        if (!child) history.back()
-    }
+        if (!child && option?.back!==false) history.back()
+    },
 })));
 

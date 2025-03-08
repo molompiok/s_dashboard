@@ -1,0 +1,21 @@
+.product-list{
+    display: flex;
+    flex-direction: column;
+}
+.product-list h1{
+    margin: 24px 0;
+}
+
+.product-list .list{
+    width:100%;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+@media (width<480px) {
+
+    .product-list .list{
+        gap: 4px;
+    }
+}
