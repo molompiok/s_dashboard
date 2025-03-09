@@ -133,13 +133,14 @@ body {
   --discret-2: #dddddd;
   --discret-3: #eeeeee;
   --text-color: #000000;
-  --contrast-text-color: #ff0000; /* Red color for contrast text */
   --background-child-viewer:#3454;
   --side-bar-width-min:80px;
   --side-bar-width-max:180px;
   --side-bar: var(--side-bar-width-max);
   --category-size: 80px;
-  --box-shadow: 0px 2px 12px -7px #000
+  --box-shadow: 0px 2px 12px -7px #000;
+  --red-rgb:255, 51, 0;
+  --gray-rgb:51, 68, 85;
 }
 
 @media (prefers-color-scheme: dark) {

@@ -15,7 +15,7 @@
 import express from 'express'
 import compression from 'compression'
 import { renderPage, createDevMiddleware } from 'vike/server'
-import { root } from './root.js'
+import { localDir, root } from './root.js'
 const isProduction = process.env.NODE_ENV === 'production'
 
 startServer()
@@ -23,7 +23,6 @@ startServer()
 async function startServer() {
   const app = express()
 
-  // @ts-expect-error Express.js buggy types
   app.use(compression())
 
   // Vite integration
@@ -43,6 +42,12 @@ async function startServer() {
 
   // Vike middleware. It should always be our last middleware (because it's a
   // catch-all middleware superseding any middleware placed after it).
+  app.get("/res/*", async (req, res) => {
+    const url = localDir + "/public" + req.originalUrl;
+    console.log({url});
+    
+    return res.sendFile(url);
+  });
   app.get('*', async (req, res) => {
     const pageContextInit = {
       urlOriginal: req.originalUrl,

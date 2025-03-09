@@ -80,6 +80,8 @@ function HoriszontalSwiper({ values ,onActiveIndexChange}: {onActiveIndexChange?
                            }
                         </SwiperSlide>
                     ))
+                }{
+                    values.length
                 }
                 <div className='unlimited'></div>
             </Swiper>
