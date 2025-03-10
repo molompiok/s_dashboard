@@ -75,7 +75,7 @@ export interface FeatureValueInterface {
   id: string;
   featureId: string;
   currency: string;
-  views: string[]; 
+  views: (string|Blob)[]; 
   icon: string | null; 
   text: string | null; 
   additionalPrice: number;

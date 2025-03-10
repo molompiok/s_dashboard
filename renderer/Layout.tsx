@@ -116,21 +116,21 @@ function Page({ children }: { children: React.ReactNode }) {
 
 function Content({ children }: { children: React.ReactNode }) {
   return (
-    <div id="page-container">
-      <div
-        id="page-content"
-        style={{
-          padding: 20,
-          paddingBottom: 50,
-          minHeight: '100vh',
-          height: '100%',
-          maxWidth: '100%',
-          overflowY: 'auto'
-        }}
-      >
-        {children}
-      </div>
-    </div>
+    <div
+    id="page-content"
+    style={{
+      padding: 20,
+      maxHeight: '100vh',
+      maxWidth: '100%',
+      overflowX:'hidden',
+      overflowY:'auto',
+      paddingBottom:'200px',
+      width:'calc(100% - var(--side-bar))'
+    }}
+  >
+    <div className="corrige-le-bug-content-overflow-x" style={{width:'1200px'}}></div>
+    {children}
+  </div>
   )
 }
 
@@ -152,6 +152,6 @@ function Logo() {
 
 
 /*
- interface BiSolidLayout
+ interface BiSolidLayout BiLayout
  images 
 */

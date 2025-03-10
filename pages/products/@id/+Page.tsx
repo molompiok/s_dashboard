@@ -5,28 +5,67 @@ import { CommandeList } from '../../../Components/Commandes/CommandesList'
 import { useEffect, useState } from 'react'
 import { Topbar } from '../../../Components/TopBar/TopBar'
 import { SwiperProducts } from '../../../Components/Swipers/SwiperProducts'
-import { images } from "./images";
+import { images as imgs } from "./images";
 import { HoriszontalSwiper } from '../../../Components/Swipers/HoriszontalSwiper'
+import { FeatureValueInterface } from '../../../Interfaces/Interfaces'
+import { NEW_VIEW } from '../../../Components/Utils/constants'
 
 export function Page() {
-  const [currentImages, setCurrentImages] = useState<string[]>([]);
-  useEffect(()=>{
-    setCurrentImages(images[0].views)
-  },[])
-  console.log({currentImages});
-  
-  return <div className="product">
-    <Topbar back={true} /> 
-    <div className="views">
-      <SwiperProducts images={currentImages} />
-    </div>
-    <div className="image-manager">
-    <HoriszontalSwiper values={images as any} onActiveIndexChange={(index)=>{
-      console.log({index});
-      
-      setCurrentImages([...images[index].views]);
+  // const [currentValue, setCurrentValue] = useState<FeatureValueInterface>();
+  const [values, setValues] = useState<FeatureValueInterface[]>(imgs as any);
+  const [index, setindex] = useState(0);
 
-    }}/>
+  const clearValues = () => {
+    return [...values].map(val => ({ ...val, views: (val.views || []).filter(view => view != NEW_VIEW) })).filter(val => val.views && val.views.length > 0);
+  }
+
+  useEffect(() => {
+    const vs = clearValues();
+    // setCurrentValue(vs[index]);
+    setValues(vs)
+  }, [index])
+
+  // console.log({ values, index });
+
+
+  return <div className="product">
+    <Topbar back={true} />
+    <div className="views no-selectable">
+      <SwiperProducts views={values[index]?.views || []} setViews={(localViews) => {
+
+        if (values[index] == undefined) {
+          values[index] = {
+            views: localViews
+          } as any as FeatureValueInterface
+        } else {
+          values[index].views = localViews;
+        }
+        const vs = clearValues();
+        setValues(vs)
+      }} />
+    </div>
+    <div className="image-manager no-selectable">
+      <HoriszontalSwiper values={clearValues() as any} onActiveIndexChange={(_index) => {
+        setindex(_index)
+      }} onDeleteValue={()=>{
+        // setCurrentValue(vs[index]);
+        setValues([
+          ...values.slice(0,index),
+          ...values.slice(index+1)
+        ])
+      }} forward={()=>{
+        const nextValue = values[index+1];
+        if(!nextValue || (nextValue.views.length == 0) || (nextValue.views.length == 1 && nextValue.views[0] ==NEW_VIEW )) return false;
+        const currentvalue = values[index];
+        setValues(values.map((v,i)=>i==index?nextValue:i==index+1?currentvalue:v));
+        return true;
+      }}goBack={()=>{
+        const lastValue = values[index-1];
+        if(!lastValue || (lastValue.views.length == 0) || (lastValue.views.length == 1 && lastValue.views[0] ==NEW_VIEW )) return false;
+        const currentvalue = values[index];
+        setValues(values.map((v,i)=>i==index?lastValue:i==index-1?currentvalue:v));
+      return true;
+      }} />
     </div>
 
     <h3>Nom du Produit <IoPencil /></h3>

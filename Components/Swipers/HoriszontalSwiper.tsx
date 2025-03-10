@@ -13,48 +13,24 @@ import './HoriszontalSwiper.css';
 import { Pagination, Navigation } from 'swiper/modules';
 import { useWindowSize } from '../../Hooks/useWindowSize';
 import { FeatureValueInterface } from '../../Interfaces/Interfaces';
+import { IoArrowBackCircle, IoArrowBackCircleOutline, IoArrowForwardCircle, IoArrowForwardCircleOutline, IoTrash } from 'react-icons/io5';
+import { BiSolidImageAdd } from 'react-icons/bi';
+import { getFileType } from '../Utils/functions';
+import { useApp } from '../../renderer/Stores/UseApp';
+import { ChildViewer } from '../ChildViewer/ChildViewer';
+import { ConfirmDelete } from '../Confirm/ConfirmDelete';
 
 export { HoriszontalSwiper }
 
-function HoriszontalSwiper({ values ,onActiveIndexChange}: {onActiveIndexChange?:(index:number)=>void, values: FeatureValueInterface[] }) {
+function HoriszontalSwiper({ values, onActiveIndexChange, onDeleteValue, goBack, forward }: { goBack: () => boolean, forward: () => boolean, onDeleteValue?: (index: number) => void, onActiveIndexChange?: (index: number) => void, values: FeatureValueInterface[] }) {
     const [swiperRef, setSwiperRef] = useState<any>(null);
 
-    let appendNumber = 4;
-    let prependNumber = 1;
-
-    const prepend2 = () => {
-        swiperRef?.prependSlide([
-            '<div class="swiper-slide">Slide ' + --prependNumber + '</div>',
-            '<div class="swiper-slide">Slide ' + --prependNumber + '</div>',
-        ]);
-    };
-
-    const prepend = () => {
-        swiperRef.prependSlide(
-            '<div class="swiper-slide">Slide ' + --prependNumber + '</div>'
-        );
-    };
-
-    const append = () => {
-        swiperRef.appendSlide(
-            '<div class="swiper-slide">Slide ' + ++appendNumber + '</div>'
-        );
-    };
-
-    const append2 = () => {
-        swiperRef.appendSlide([
-            '<div class="swiper-slide">Slide ' + ++appendNumber + '</div>',
-            '<div class="swiper-slide">Slide ' + ++appendNumber + '</div>',
-        ]);
-    };
-
-
     const size = useWindowSize()
-    
-    return (
+    const { openChild } = useApp();
+    return values.length <= 0 ? <div style={{ width: '1200px' }}></div> : (
         <div className='horizontal-swiper'>
             <Swiper
-                onActiveIndexChange={(_swiper)=>{
+                onActiveIndexChange={(_swiper) => {
                     onActiveIndexChange?.(_swiper.activeIndex);
                 }}
                 onSwiper={setSwiperRef}
@@ -69,37 +45,52 @@ function HoriszontalSwiper({ values ,onActiveIndexChange}: {onActiveIndexChange?
                 className="mySwiper"
             >
                 {
-                    values.map((v,index) => (
-                        <SwiperSlide onClick={()=>{
+                    values.map((v, index) => (
+                        <SwiperSlide key={index} onClick={() => {
                             swiperRef.slideTo(index)
                         }}>
-                           {
-                            v.views.map(((img,i)=>(
-                                <div className={`img_${i}`} style={{background: `no-repeat center/cover url(${img})` }}></div>
-                            )))
-                           }
+                            {
+                                v.views.slice(0, 4).map(((i, _) => (
+                                    getFileType(i) == 'image' ?
+                                        <img className={`img_${_}`} key={_} src={typeof i == 'string' ? i : URL.createObjectURL(i)} />
+                                        : <video className={`img_${_}`} key={_} muted={true} src={typeof i == 'string' ? i : URL.createObjectURL(i)} />
+                                )))
+                            }
+                            <span className='trash' onClick={() => {
+                                openChild(<ChildViewer title='Voullez vous supprimer la variante ?' style={{ height: '140px' }}>
+                                    <ConfirmDelete title='' onCancel={() => openChild(null, { back: false })} onDelete={() => {
+                                        setTimeout(() => {
+                                            openChild(null, { back: false });
+                                            onDeleteValue?.(index)
+                                        }, 500);
+                                    }} />
+                                </ChildViewer>)
+                            }}><IoTrash /></span>
+                            <div className="move">
+                                <IoArrowBackCircleOutline style={{opacity:index == 0 ?'0.6':''}} onClick={() => {
+                                    if (index == 0) return
+                                    goBack() && setTimeout(() => {
+                                        swiperRef.slideTo(index - 1)
+                                    }, 100);
+                                }} />
+                                <IoArrowForwardCircleOutline style={{opacity:values.length - 1 == index?'0.6':'', marginLeft: 'auto' }} onClick={() => {
+                                    if (values.length - 1 == index) return
+                                    forward() && setTimeout(() => {
+                                        swiperRef.slideTo(index + 1)
+                                    }, 100);
+                                }} />
+                            </div>
                         </SwiperSlide>
                     ))
                 }{
-                    values.length
+                    <SwiperSlide className="add-variant" onClick={() => {
+                        swiperRef.slideTo(values.length)
+                    }}>
+                        <div className={'img'}><BiSolidImageAdd /></div>
+                    </SwiperSlide>
                 }
                 <div className='unlimited'></div>
             </Swiper>
-
-            {/* <p className="append-buttons">
-                <button onClick={() => prepend2()} className="prepend-2-slides">
-                    Prepend 2 Slides
-                </button>
-                <button onClick={() => prepend()} className="prepend-slide">
-                    Prepend Slide
-                </button>
-                <button onClick={() => append()} className="append-slide">
-                    Append Slide
-                </button>
-                <button onClick={() => append2()} className="append-2-slides">
-                    Append 2 Slides
-                </button>
-            </p> */}
         </div>
     );
 }

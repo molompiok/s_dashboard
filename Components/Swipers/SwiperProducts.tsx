@@ -8,58 +8,45 @@ import 'swiper/css/pagination';
 // import required modules
 import { EffectCoverflow, Pagination } from 'swiper/modules';
 import { useEffect, useRef, useState } from 'react';
-import { IoAddSharp, IoArrowBackCircle, IoArrowForwardCircle, IoChevronBack, IoChevronForwardCircle, IoCloudUploadOutline, IoTrash } from 'react-icons/io5';
+import { IoAddSharp, IoArrowBackCircleOutline, IoArrowForwardCircleOutline, IoChevronBack, IoCloudUploadOutline, IoTrash } from 'react-icons/io5';
 import { BiImageAdd } from 'react-icons/bi';
 import { getImg } from '../Utils/StringFormater';
-const NEW_IMAGE = 'newImage'
+import { getFileType } from '../Utils/functions';
+import { NEW_VIEW } from '../Utils/constants';
+import { ConfirmDelete } from '../Confirm/ConfirmDelete';
+
 export { SwiperProducts }
 //IoArrowBackCircle IoArrowForwardCircle IoChevronBackCircle IoChevronForwardCircle
 
-function getFileType(file:string|Blob) {
-  if(typeof file == 'string'){
-    const ext = file.substring(file.lastIndexOf('.')+1,file.length);
-    if(['webp','jpg','jpeg','png','avif','gif','tif', 'tiff','ico','svg'].includes(ext)){
-      return 'image';
-    }else if(['webm','mp4','mov','avi','wmv','avchd','mkv','flv','mxf','mts','m2ts','3gp','ogv'].includes(ext)){
-      return 'video';
-    }else if(file.startsWith('data:image')){
-      return 'image'
-    }else if(file.startsWith('data:video')){
-      return 'video'
-    }
-  }else{
-    if(file.type.split('/')[0] == 'image'){
-      return 'image'
-    }else if(file.type.split('/')[0] == 'video'){
-      return 'video'
-    }
-  }
-  return 
-}
 
-function SwiperProducts({ images }: { images: (string | Blob)[] }) {
+function SwiperProducts({ views, setViews }: { views: (string | Blob)[], setViews: (views: (string | Blob)[]) => void }) {
   const swiperRef = useRef<any>(null);
-  const [localImages, setLocalImages] = useState(images);
+  const [localViews, setLocalViews] = useState(views);
   const [isHover, setHover] = useState(false);
   const [requireDetele, setRequireDetele] = useState(-1);
   const [mouseMove, setMouseMove] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
+
   useEffect(() => {
-    setLocalImages(images.length > 0 ? images : [NEW_IMAGE])
-  }, [images]);
+    setLocalViews(views.length > 0 ? views : [NEW_VIEW])
+  }, [views]);
+
   useEffect(() => {
-    setRequireDetele(-1)
-  }, [localImages])
+    setRequireDetele(-1);
+  }, [localViews])
+
   function handleDrop(e: React.DragEvent<HTMLDivElement>) {
     e.preventDefault();
     e.stopPropagation();
     const files = e.dataTransfer.files;
     if (files.length > 0) {
-      setLocalImages([
-        ...localImages.slice(0, currentIndex),
+      const v = [
+        ...localViews.slice(0, currentIndex),
         ...files,
-        ...localImages.slice(currentIndex + 1)
-      ])
+        ...localViews.slice(currentIndex + 1)
+      ]
+      setLocalViews(v);
+      setViews(v);
     } else {
       //TODO log Error le type de fichier
     }
@@ -72,6 +59,9 @@ function SwiperProducts({ images }: { images: (string | Blob)[] }) {
     // console.log('DragOver');
     setHover(true)
   }
+
+  // console.log({ views });
+
 
   return (
     <div className='swiper-products'>
@@ -98,19 +88,50 @@ function SwiperProducts({ images }: { images: (string | Blob)[] }) {
         modules={[EffectCoverflow, Pagination]}
         className="mySwiper"
       >
-        {localImages.map((i, index) => (
+        {localViews.map((i, index) => (
           <SwiperSlide key={index} onClick={() => {
             //=> le slideTo foctionne tres bien  ici
             swiperRef.current.slideTo(index)
           }}>
             <OptionSlide index={index}
-              localImages={localImages}
-              setLocalImages={setLocalImages}
+              localViews={localViews}
+              setLocalViews={setLocalViews}
+              setViews={setViews}
               swiperRef={swiperRef}
-              onRequiredDelete={setRequireDetele}
+              onRequiredDelete={(index) => {
+                const c = localViews[index] === NEW_VIEW;
+                c ? (() => {
+                  let v = [
+                    ...localViews.slice(0, index),
+                    ...localViews.slice(index + 1),
+                  ]
+                  v = v.length > 0 ? v : [NEW_VIEW];
+                  setLocalViews(v)
+                })() : setRequireDetele(index)
+              }}
             />
+            <div className="move">
+              <IoArrowBackCircleOutline style={{ opacity: index == 0 ? '0.6' : '' }} onClick={() => {
+                if (index == 0) return
+                const lastView = localViews[index - 1];
+                const currentView = localViews[index];
+                setLocalViews(localViews.map((v, i) => i == index ? lastView : i == index - 1 ? currentView : v));
+                setTimeout(() => {
+                  swiperRef.current.slideTo(index-1)
+                }, 100);
+              }} />
+              <IoArrowForwardCircleOutline style={{ opacity: localViews.length - 1 == index ? '0.6' : '', marginLeft: 'auto' }} onClick={() => {
+                if (localViews.length - 1 == index) return
+                const lastView = localViews[index + 1];
+                const currentView = localViews[index];
+                setLocalViews(localViews.map((v, i) => i == index ? lastView : i == index + 1 ? currentView : v));
+                setTimeout(() => {
+                  swiperRef.current.slideTo(index+1)
+                }, 100);
+              }} />
+            </div>
             {
-              i == NEW_IMAGE ?
+              i == NEW_VIEW ?
                 <div className={`new-image ${isHover ? 'hover' : ''}`}
                   onDragOver={handleDragOver}
                   onDrop={handleDrop}
@@ -121,13 +142,14 @@ function SwiperProducts({ images }: { images: (string | Blob)[] }) {
                   <label htmlFor='chose-product-views' className="center"  >
                     <input id='chose-product-views' multiple type="file" accept={'image/*,video/*'} style={{ display: 'none' }} onChange={(e) => {
                       const files = e.currentTarget.files;
-                      if (files) {
-                        setLocalImages([
-                          ...localImages.slice(0, index),
-                          ...files,
-                          ...localImages.slice(index + 1)
-                        ])
-                      }
+                      if (!files) return
+                      const v = [
+                        ...localViews.slice(0, index),
+                        ...files,
+                        ...localViews.slice(index + 1)
+                      ]
+                      setLocalViews(v)
+                      setViews(v)
                     }} />
                     <IoCloudUploadOutline />
                     Glisser Déposer Image/Video
@@ -136,30 +158,23 @@ function SwiperProducts({ images }: { images: (string | Blob)[] }) {
                     </div>
                   </label>:
                 </div> :
-                getFileType(i) == 'image' ? 
-                <img style={{ filter: `blur(${requireDetele == index ? 5 : 0}px)` }} src={typeof i == 'string' ? i : URL.createObjectURL(i)} />
-                :<video  style={{ filter: `blur(${requireDetele == index ? 5 : 0}px)` }} loop autoPlay={index==currentIndex} controls={false} muted={index!=currentIndex} src={typeof i == 'string' ? i : URL.createObjectURL(i)}/>
+                getFileType(i) == 'image' ?
+                  <img style={{ filter: `blur(${requireDetele == index ? 5 : 0}px)` }} src={typeof i == 'string' ? i : URL.createObjectURL(i)} />
+                  : <video style={{ filter: `blur(${requireDetele == index ? 5 : 0}px)` }} loop autoPlay={index == currentIndex} controls={false} muted={index != currentIndex} src={typeof i == 'string' ? i : URL.createObjectURL(i)} />
             }
             {
-              requireDetele == index && <div className="required-delete">
-                <div className="ctn">
-                  <div className="cancel" onClick={() => setRequireDetele(-1)}>Anuller</div>
-                  <div className="delete" onClick={(e) => {
-                    const span = e.currentTarget.querySelector('span') as HTMLSpanElement
-                    span.style.display = 'inline-block'
-                    e.currentTarget.style.gap='6px';
-                    e.currentTarget.style.paddingLeft='6px';
-                    setTimeout(() => {
-                      const imgs = [
-                        ...localImages.slice(0, index),
-                        ...localImages.slice(index + 1),
-                      ]
-                      setLocalImages(imgs.length > 0 ? imgs : [NEW_IMAGE])
-  
-                    }, 500);
-                  }}><span style={{display:'none',background:getImg('/res/loading_white.gif',undefined,false)}}></span> Supprimer</div>
-                </div>
-              </div>
+              requireDetele == index && <ConfirmDelete style={{ position: 'absolute' }} title='' onCancel={() => setRequireDetele(-1)} onDelete={() => {
+                setTimeout(() => {
+                  let v = [
+                    ...localViews.slice(0, index),
+                    ...localViews.slice(index + 1),
+                  ]
+                  v = v.length > 0 ? v : [NEW_VIEW];
+                  setLocalViews(v)
+                  setViews(v);
+
+                }, 500);
+              }} />
             }
           </SwiperSlide>
         ))}
@@ -169,15 +184,18 @@ function SwiperProducts({ images }: { images: (string | Blob)[] }) {
 }
 
 
-function OptionSlide({ setLocalImages, localImages, index, swiperRef, onRequiredDelete }: { onRequiredDelete: (index: number) => void, setLocalImages: (imgs: (string | Blob)[]) => any, localImages: (string | Blob)[], index: number, swiperRef: any }) {
+function OptionSlide({ setLocalViews, setViews, localViews, index, swiperRef, onRequiredDelete }: { setViews: (imgs: (string | Blob)[]) => void, onRequiredDelete: (index: number) => void, setLocalViews: (imgs: (string | Blob)[]) => any, localViews: (string | Blob)[], index: number, swiperRef: any }) {
 
+  const canDelete = !(localViews.length == 1 && localViews[0] == NEW_VIEW);
   return <div className="options">
     <span onClick={() => {
-      setLocalImages([
-        ...localImages.slice(0, index),
-        NEW_IMAGE,
-        ...localImages.slice(index)
-      ])
+      const v = [
+        ...localViews.slice(0, index),
+        NEW_VIEW,
+        ...localViews.slice(index)
+      ]
+      setLocalViews(v)
+      // setViews(v)
     }}>
       <IoChevronBack title='Ajouter une image avant celle ci' />
       <IoAddSharp style={{ transform: 'translateX(-5px)' }} />
@@ -185,25 +203,29 @@ function OptionSlide({ setLocalImages, localImages, index, swiperRef, onRequired
     <label htmlFor={'change-product-views-' + index}>
       <input id={'change-product-views-' + index} multiple type="file" style={{ display: 'none' }} onChange={(e) => {
         const files = e.currentTarget.files;
-        if (files) {
-          setLocalImages([
-            ...localImages.slice(0, index),
-            ...files,
-            ...localImages.slice(index + 1)
-          ])
-        }
+        if (!files) return
+        const v = [
+          ...localViews.slice(0, index),
+          ...files,
+          ...localViews.slice(index + 1)
+        ]
+        setLocalViews(v)
+        setViews(v)
+
       }} />
       <BiImageAdd />
     </label>
-    <span onClick={() => {
-      onRequiredDelete(index)
+    <span style={{ opacity: canDelete ? 1 : 0.5 }} onClick={() => {
+      canDelete && onRequiredDelete(index)
     }}><IoTrash /></span>
     <span style={{ transform: 'scaleX(-1)' }} onClick={() => {
-      setLocalImages([
-        ...localImages.slice(0, index + 1),
-        NEW_IMAGE,
-        ...localImages.slice(index + 1)
-      ])
+      const v = [
+        ...localViews.slice(0, index + 1),
+        NEW_VIEW,
+        ...localViews.slice(index + 1)
+      ]
+      setLocalViews(v)
+      // setViews(v)
       setTimeout(() => swiperRef.current.slideTo(index + 1), 100);
     }}>
       <IoChevronBack />

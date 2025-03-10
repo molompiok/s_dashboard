@@ -118,54 +118,31 @@
   border: 2px rgb(96, 176, 255) solid;
 }
 
-
-.swiper-products .required-delete{
-  top: 0;
-  z-index: 1;
-  width: 100%;
-  height: 100%;
+.swiper-products .swiper-slide .move{
   position: absolute;
-  background: #3450;
-}
-
-.swiper-products .required-delete .ctn{
-  width: 100%;
-  height: 100%;
+  bottom: 12px;
   display: flex;
-  background: #fff6;
-  align-items: center;
-  justify-content: center;
-  flex-wrap: wrap-reverse;
-  gap: 12px;
-}
-
-
-.swiper-products .required-delete .ctn>*:hover{
-  scale: 1.04;
-  opacity: 0.9;
+  z-index: 2;
+  visibility: hidden;
+  opacity: 0;
   transition: 200ms;
 }
-.swiper-products .required-delete .ctn>*{
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: 12px;
-  background:rgba(var(--red-rgb),0.6);
-  color:#fff;
-  padding:12px 16px;
-  font-weight: bold;
-  letter-spacing: 1.5px;
+.swiper-products .swiper-slide-active .move{
+  visibility: visible;
+  opacity: 1;
+  width: 100px;
+}
+.swiper-products .swiper-slide-active .move svg:hover{
+  scale: 1.1;
   transition: 200ms;
-  cursor: pointer;
 }
-
-.swiper-products .required-delete .ctn .cancel{
-  background:rgba(var(--gray-rgb),0.5);
-  color:#fff;
-}
-.swiper-products .required-delete .ctn .delete span{
-  width: 25px;
-  height: 25px;
+.swiper-products .swiper-slide-active .move svg{
+  background: #fff;
+  border-radius: 100%;
+  width: calc(var(--variant-view-size) / 3);
+  height: auto;
+  aspect-ratio: 1;
+  transition: 200ms;
 }
 
 @media (width <440px) {

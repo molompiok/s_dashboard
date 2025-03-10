@@ -9,7 +9,8 @@ function ChildViewer({ children, title,style,back }: {back?:boolean,title?:strin
 
     return <div className="child-viewer">
         <div className="top">
-            <h1>{title}</h1>
+            <div className="close"></div>
+            <h3>{title}</h3>
             <IoCloseSharp className="close" onClick={()=>{
                 openChild(null)
             }}/>

@@ -1,6 +1,8 @@
 import { IoBagHandle, IoBagHandleOutline, IoCart, IoCartOutline, IoHome, IoHomeOutline, IoPeople, IoPeopleOutline, IoStatsChart, IoStatsChartOutline, IoStorefront, IoStorefrontOutline } from "react-icons/io5"
 
-export { Icons }
+
+export { Icons, NEW_VIEW }
+const NEW_VIEW = 'new_view'
 
 const Icons = {
     category:<IoCart/>,
@@ -21,6 +23,7 @@ const Icons = {
 
 
 /*
+IoArrowBackCircle IoArrowForwardCircle
 IoLayers IoLayersOutline
 
         IoHelp  IoHelpCircleOutline IoInformation IoInformationCircleOutline 

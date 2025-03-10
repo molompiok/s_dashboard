@@ -1,7 +1,7 @@
-
-.horizontal-swiper{
+.horizontal-swiper {
     margin-bottom: 80px;
 }
+
 .horizontal-swiper .swiper-slide {
     width: 100%;
     position: relative;
@@ -12,7 +12,7 @@
     cursor: pointer;
     /* background: #d36262; */
     border-radius: 10px;
-    
+
 }
 
 .horizontal-swiper .swiper {
@@ -21,7 +21,8 @@
     margin: 20px auto;
     overflow: visible;
 }
-.horizontal-swiper .swiper-button-next{
+
+.horizontal-swiper .swiper-button-next {
     scale: 0.8;
     transform: translateX(18px);
     background: #5675;
@@ -29,7 +30,8 @@
     padding: 10px;
     width: 40px;
 }
-.horizontal-swiper .swiper-button-prev{
+
+.horizontal-swiper .swiper-button-prev {
     scale: 0.8;
     transform: translateX(-18px);
     background: #5675;
@@ -42,7 +44,7 @@
     bottom: -60px;
 }
 
-.horizontal-swiper [class^='img']{
+.horizontal-swiper [class^='img'] {
     width: 80px;
     height: auto;
     aspect-ratio: 1;
@@ -51,50 +53,119 @@
     transition: 200ms;
 }
 
-.horizontal-swiper .img_0{
-    transform: translate(-20px,0px);    
-    transition: 200ms;
-}
-.horizontal-swiper .img_1{
-    transform: translate(-5px,5px);    
-    transition: 200ms;
-}
-.horizontal-swiper .img_2{
-    transform: translate(10px,10px);    
-    transition: 200ms;
-}
-.horizontal-swiper .img_3{
-    transform: translate(25px,15px);    
+.horizontal-swiper .img_0 {
+    transform: translate(-20px, 0px);
     transition: 200ms;
 }
 
-.horizontal-swiper .swiper-slide-active .img_0{
-    transform: translate(0px,0px);
-    transition: 200ms;
-}
-.horizontal-swiper .swiper-slide-active .img_1{
-    transform: translate(10px,10px);
-    transition: 200ms;
-}
-.horizontal-swiper .swiper-slide-active .img_2{
-    transform: translate(20px,20px);
-    transition: 200ms;
-}
-.horizontal-swiper .swiper-slide-active .img_3{
-    transform: translate(30px,30px);
+.horizontal-swiper .img_1 {
+    transform: translate(-5px, 5px);
     transition: 200ms;
 }
 
-
-
-@media (width<300px) {
-    
-.horizontal-swiper [class^='img']{
-    width: 60px;
- }
- 
-.horizontal-swiper .swiper-pagination {
-    bottom: -30px;
+.horizontal-swiper .img_2 {
+    transform: translate(10px, 10px);
+    transition: 200ms;
 }
+
+.horizontal-swiper .img_3 {
+    transform: translate(25px, 15px);
+    transition: 200ms;
+}
+
+.horizontal-swiper .swiper-slide-active .img_0 {
+    transform: translate(0px, 0px);
+    transition: 200ms;
+}
+
+.horizontal-swiper .swiper-slide-active .img_1 {
+    transform: translate(10px, 10px);
+    transition: 200ms;
+}
+
+.horizontal-swiper .swiper-slide-active .img_2 {
+    transform: translate(20px, 20px);
+    transition: 200ms;
+}
+
+.horizontal-swiper .swiper-slide-active .img_3 {
+    transform: translate(30px, 30px);
+    transition: 200ms;
+}
+
+.horizontal-swiper .swiper-slide-active .trash svg {
+    width: calc(var(--variant-view-size) / 4);
+    height: auto;
+    aspect-ratio: 1;
+    transition: 200ms;
+}
+
+.horizontal-swiper .swiper-slide-active .trash svg:hover {
+    scale: 1.1;
+    transition: 200ms;
+}
+
+.horizontal-swiper .swiper-slide-active .trash {
+    display: inline-block;
+    position: absolute;
+    top: 0;
+    transform: translateX(40px);
+    z-index: 2;
+    padding: 4px;
+    border-radius: 100%;
+    background: var(--background);
+    color: var(--discret-3);
+}
+.horizontal-swiper .add-variant .img {
+    width: var(--variant-view-size);
+    height: auto;
+    background: var(--discret-3);
+    aspect-ratio: 1;
+}
+.horizontal-swiper .add-variant svg {
+    width: 50px;
+    height: auto;
+    aspect-ratio: 1;
+}
+
+.horizontal-swiper .swiper-slide .move{
+    position: absolute;
+    display: flex;
+    z-index: 2;
+    visibility: hidden;
+    opacity: 0;
+    transition: 200ms;
+}
+.horizontal-swiper .swiper-slide-active .move{
+    visibility: visible;
+    opacity: 1;
+    width: 100px;
+    transform: translateY(calc(var(--variant-view-size) / 1.));
+}
+.horizontal-swiper .swiper-slide-active .move svg:hover{
+    scale: 1.1;
+    transition: 200ms;
+}
+.horizontal-swiper .swiper-slide-active .move svg{
+    background: #fff;
+    border-radius: 100%;
+    width: calc(var(--variant-view-size) / 3);
+    height: auto;
+    aspect-ratio: 1;
+    transition: 200ms;
+}
+
+:root{
+    --variant-view-size:80px
+}
+@media (width<460px) {
+
+    .horizontal-swiper [class^='img'] {
+        width: 60px;
+    }
+
+    .horizontal-swiper .swiper-pagination {
+        bottom: -30px;
+    }
 
 }
