@@ -123,8 +123,8 @@ function Content({ children }: { children: React.ReactNode }) {
       maxHeight: '100vh',
       maxWidth: '100%',
       overflowX:'hidden',
-      overflowY:'auto',
-      paddingBottom:'200px',
+      // overflowY:'auto',
+      // paddingBottom:'200px',
       width:'calc(100% - var(--side-bar))'
     }}
   >

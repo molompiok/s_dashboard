@@ -110,7 +110,7 @@ function SwiperProducts({ views, setViews }: { views: (string | Blob)[], setView
                 })() : setRequireDetele(index)
               }}
             />
-            <div className="move">
+            <div className="move" style={{display:(localViews[index] == NEW_VIEW || requireDetele==index) ?'none':''}}>
               <IoArrowBackCircleOutline style={{ opacity: index == 0 ? '0.6' : '' }} onClick={() => {
                 if (index == 0) return
                 const lastView = localViews[index - 1];

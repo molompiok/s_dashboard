@@ -1,0 +1,27 @@
+.order-status-element{
+    background: #3452;
+    color: #345;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 12px;
+    padding: 4px 10px;
+    gap: 8px;
+}
+.order-status-element span{
+    font-size: 0.75em;
+    letter-spacing: 1px;
+}
+
+:root{
+    --status-PENDING: #FFA500;          
+    --status-CANCELED: #FF4C4C;
+    --status-CONFIRMED: #4CAF50;
+    --status-RETURNED: #6C757D;
+    --status-DELIVERED: #00AA33;
+    --status-PICKED_UP: #007BFF;
+    --status-NOT_DELIVERED: #FF6347;
+    --status-NOT_PICKED_UP: #FF6347;
+    --status-WAITING_FOR_PAYMENT: #c9ab00;
+    --status-WAITING_PICKED_UP: #17A2B8;
+}

@@ -14,56 +14,15 @@
     gap: 8px;
 }
 
-.commandes-list .command:hover{
-    scale: 1.01;
-    background: var(--discret-2);
-    transition: 100ms;
-}
-
-.commandes-list .command{
-    width: 100%;
-    border-radius: 16px;
-    background: var(--discret-3);
-    padding:8px  12px ;
-    display: flex;
-    gap: 8px;
-    cursor: pointer;
-    transition: 100ms;
-    flex-wrap: wrap;
-}
-.commandes-list .command .info{
-    display: flex;
-    justify-content: center;
-    flex-direction: column;
-    gap: 2px;
-}
-.commandes-list .command .info h2{
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    max-width: 200px;
-}
-.commandes-list .command .info p{
-    font-size: 0.9em;
-    color: var(--discret-1);
-}
-.commandes-list .command .right{
-    margin-left: auto;
-    display: flex;
-    justify-content: center;
-    flex-direction: column;
-    gap: 12px;
-}
-.commandes-list .command .image {
-    width:60px;
-    height: 60px;
-    border-radius: 12px;
-}
 
 .commandes-list .top{
     width: 100%;
     display: flex;
     justify-content: space-between;
+}
+
+.commandes-list .filter{
+    position: relative;
 }
 
 .commandes-list .filter-icon:hover{
@@ -73,4 +32,12 @@
     width: 25px;
     height: 25px;
     cursor: pointer;
+}
+
+.commandes-list .popup-filter{
+    position: absolute;
+    right: 10px;
+    width: 240px;
+    height: 440px;
+    background: #345;
 }

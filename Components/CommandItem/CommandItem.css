@@ -1,0 +1,72 @@
+
+.command-item:hover{
+    scale: 1.01;
+    background: var(--discret-2);
+    transition: 100ms;
+}
+
+.command-item{
+    width: 100%;
+    border-radius: 16px;
+    background: var(--discret-3);
+    padding:8px  12px ;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    transition: 100ms;
+}
+.command-item .info{
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    gap: 2px;
+}
+.command-item .info h2{
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 200px;
+}
+.command-item .info p{
+    font-size: 0.9em;
+    color: var(--discret-1);
+}
+.command-item .right{
+    margin-left: auto;
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    gap: 12px;
+}
+.command-item .status {
+    width: 170px;
+    display: flex;
+    justify-content: flex-end;
+}
+.command-item .price{
+    width: 120px;
+    padding: 4px 10px;
+    background: #3451;
+    border-radius: 8px;
+    font-weight: normal;
+}
+
+.command-item .image {
+    width:60px;
+    height: 60px;
+    border-radius: 12px;
+}
+
+@media (width<760px){
+    .command-item .right{
+        display: flex;
+        flex-wrap: wrap-reverse;
+        gap: 12px;
+    }
+
+}@media (width<480px){
+    .command-item{
+        flex-wrap: wrap;
+   }
+}

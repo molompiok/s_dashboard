@@ -37,6 +37,7 @@ function HomeManage() {
                 <span>{1}</span>
             </div>
         </a>
+        <div className="div" style={{minWidth:'20vw'}}></div>
     </div>
 }
 

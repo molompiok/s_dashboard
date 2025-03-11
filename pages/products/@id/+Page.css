@@ -1,7 +1,3 @@
-.product{
- /* width: calc(100% - var(--side-bar)); */
-}
-
 .product .views{
     width: 100%;
     /* background: #3345; */

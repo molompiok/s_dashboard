@@ -9,8 +9,11 @@ body {
   font-size: 1rem;
   width: 100vw;
   height: 100vh;
-  color: #fff;
-  font-family:  Cantarell, sans-serif;;
+  color: #fff;font-optical-sizing: auto;
+  font-style: normal;
+  font-size: 1em; 
+  color: var(--text-color);
+  font-family: Optimistic Text, -apple-system, ui-sans-serif, system-ui, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
 }
 
 
@@ -19,11 +22,6 @@ body {
   padding: 0;
   margin: 0;
   box-sizing: border-box;
-  font-optical-sizing: auto;
-  font-style: normal;
-  font-size: 1em; 
-  color: var(--text-color);
-  font-family: Optimistic Text, -apple-system, ui-sans-serif, system-ui, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
 }
 
 #open-child{
