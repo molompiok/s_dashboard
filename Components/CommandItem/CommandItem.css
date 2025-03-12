@@ -1,14 +1,22 @@
 
 .command-item:hover{
     scale: 1.01;
-    background: var(--discret-2);
+    background: rgba(var(--gray-rgb-3),0.3);
     transition: 100ms;
 }
 
 .command-item{
+    background: rgba(var(--gray-rgb-4),0.4);
     width: 100%;
     border-radius: 16px;
-    background: var(--discret-3);
+    gap: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+}
+.command-item .client-info{
+    width: 100%;
+    border-radius: 16px;
     padding:8px  12px ;
     display: flex;
     align-items: center;
@@ -44,17 +52,55 @@
     display: flex;
     justify-content: flex-end;
 }
-.command-item .price{
+.command-item .price-command{
     width: 120px;
     padding: 4px 10px;
-    background: #3451;
+    background: rgba(var(--gray-rgb-3),0.3);
     border-radius: 8px;
     font-weight: normal;
 }
 
-.command-item .image {
+.command-item .image-produit,
+.command-item .image-client {
     width:60px;
     height: 60px;
+    border-radius: 12px;
+}
+
+.command-item .products-previews{
+    padding: 12px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+}
+.command-item .product-prev.return{
+    background: #FF4C4C33;
+}
+.command-item .product-prev{
+    display: flex;
+    padding: 6px 8px;
+    border-radius: 12px;
+}
+
+.command-item .price-product{
+    font-weight: normal;
+}
+
+.command-item .see-more{
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+    padding-top: 12px;
+}
+
+.command-item .see-more div{
+    background: var(--discret-2);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 4px 12px;
     border-radius: 12px;
 }
 

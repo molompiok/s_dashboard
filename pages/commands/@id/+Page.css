@@ -1,0 +1,30 @@
+.product .views{
+    width: 100%;
+    /* background: #3345; */
+    
+}
+
+.product > h3{
+    margin-top: 16px;
+    margin-bottom: 3px;
+    color:var(--discret-1);
+    cursor: pointer;
+    transform-origin: 0% 50%;
+    transition: 200ms;
+}
+
+.product > h3:hover{
+    scale: 1.05;
+    transition: 200ms;
+}
+
+.product .view{
+    width: 80%;
+    height: auto;
+    aspect-ratio: 2;
+}
+
+.unlimited{
+    width: 200vw;
+}
+

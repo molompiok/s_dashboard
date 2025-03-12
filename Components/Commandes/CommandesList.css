@@ -1,4 +1,4 @@
-.commandes-list{
+.commands-list {
     width: 100%;
     display: flex;
     flex-direction: column;
@@ -6,7 +6,7 @@
     gap: 8px;
 }
 
-.commandes-list .list{
+.commands-list .list {
     width: 100%;
     display: flex;
     flex-direction: column;
@@ -15,29 +15,206 @@
 }
 
 
-.commandes-list .top{
+.commands-list>.top {
     width: 100%;
     display: flex;
     justify-content: space-between;
 }
 
-.commandes-list .filter{
-    position: relative;
+.commands-list .filter:hover {
+    scale: 1.05;
 }
 
-.commandes-list .filter-icon:hover{
-    scale: 1.1;
-}
-.commandes-list .filter-icon{
-    width: 25px;
-    height: 25px;
+.commands-list .filter {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 8px;
     cursor: pointer;
 }
 
-.commandes-list .popup-filter{
+.commands-list .filter-icon {
+    width: 22px;
+    height: 22px;
+}
+
+.commands-list .popup-filter {
     position: absolute;
     right: 10px;
     width: 240px;
     height: 440px;
     background: #345;
 }
+
+
+
+
+/*  commands-filters */
+
+.commands-list {
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 0px;
+}
+
+.commands-list .onglet {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    padding: 8px;
+    gap: 12px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    background: rgba(117, 147, 177, 0.085);
+    border-radius: 12px;
+}
+
+.commands-list .onglet>*:hover {
+    transition: 200ms;
+    scale: 1.05;
+}
+
+.commands-list .onglet>* {
+    display: inline-flex;
+    align-items: center;
+    background: #3452;
+    border-radius: 8px;
+    padding: 2px 8px;
+    cursor: pointer;
+    transition: 200ms;
+}
+
+.commands-list  .onglet svg {
+    transform: translateY(2px);
+    margin-left: 8px;
+}
+
+.commands-list .onglet .collected {
+    color: #08f;
+    background: #0088ff14;
+}
+.commands-list .onglet .active {
+    color: #08f;
+    background: #0088ff2b;
+    border: 1px solid #08f;
+}
+
+.commands-list  .onglet .active svg {
+    rotate: 180deg;
+    transform: translateY(0px);
+}
+
+
+.commands-list .chose>div {
+    height: 0%;
+    height: 0;
+    opacity: 0;
+    visibility: hidden;
+    transition: 200ms;
+}
+
+.commands-list .chose >div.active {
+    height: 100%;
+    opacity: 1;
+    visibility: visible;
+    transition: 200ms;
+}
+
+.commands-list .chose .status-filter-component,
+.commands-list .chose .order-filter-component,
+.commands-list .chose .price-filter-component{
+    gap: 6px;
+    display: flex;
+    flex-wrap: wrap;
+    padding: 4px;
+}
+
+.commands-list .chose .order-filter-component span {
+    padding: 2px 8px;
+    background: var(--discret-3);
+    color: var(--discret-1);
+    border-radius: 8px;
+}
+.commands-list .chose .order-filter-component span.order {
+    background: #ffa50022;
+    color: #ffa500;
+}
+.commands-list .chose .price-filter-component label{
+    display: flex;
+    flex-direction: column;
+    width: 160px;
+    position: relative;
+    padding: 12px;
+    padding-top: 2px;
+    border: 1px solid #3455;
+}
+.commands-list .chose .price-filter-component label input{
+    all: unset;
+    padding:6px 12px ;
+}
+.commands-list .chose .price-filter-component label span{
+    /* position: absolute; */
+    font-size: 0.9em;
+}
+
+.commands-list .chose .date-filter-component .dates{
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.commands-list .chose .date-filter-component .dates  span {
+    padding: 2px 8px;
+    background: var(--discret-3);
+    color: var(--discret-1);
+    border-radius: 8px;
+}
+.commands-list .chose .date-filter-component .dates span.marge {
+    background: #ffa50022;
+    color: #ffa500;
+}
+
+
+
+.commands-list .chose .reset span{
+    background: var(--discret-3);
+    color: var(--discret-2);
+    cursor: default;
+    padding: 4px 12px;
+    border-radius: 8px;
+    display: inline-flex;
+}
+.commands-list .chose .reset span.ok:hover{
+    scale: 1.02;
+    background: var(--discret-2);
+}
+.commands-list .chose .reset span.ok{
+    cursor: pointer;
+    color: var(--color);
+}
+
+
+
+
+
+
+
+
+
+
+.rdp-range_middle{
+    color: #345;
+    background-color: rgba(var(--gray-rgb-4), 0.5)!important;
+}
+
+.rdp-range_start{
+    background-image: linear-gradient(90deg, transparent 50%, rgba(var(--gray-rgb-4), 0.5) 50%)!important;;
+}
+.rdp-range_end{
+    background-image: linear-gradient(90deg, rgba(var(--gray-rgb-4), 0.5) 50%, transparent 50%)!important;;
+}
+.rdp-range_start.rdp-range_end{
+    background-image: linear-gradient(90deg, transparent 50%, transparent 50%)!important;;
+}
+

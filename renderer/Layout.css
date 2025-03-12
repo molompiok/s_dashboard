@@ -136,7 +136,10 @@ h3{
   --category-size: 80px;
   --box-shadow: 0px 2px 12px -7px #000;
   --red-rgb:255, 51, 0;
-  --gray-rgb:51, 68, 85;
+  --gray-rgb-1:60, 60, 60;
+  --gray-rgb-2:128, 128, 128;
+  --gray-rgb-3:162, 162, 162;
+  --gray-rgb-4:226, 226, 226;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -149,9 +152,9 @@ h3{
       --contrast-1: #e0e0e0;
       --contrast-2: #c0c0c0;
       --contrast-3: #a0a0a0;
-      --discret-1: #3a3a3a;
-      --discret-2: #4a4a4a;
-      --discret-3: #5a5a5a;
+      --discret-1: #dddddd;
+      --discret-2: #7979799d;
+      --discret-3: #72727259;
       --text-color: #ffffff;
       --contrast-text-color: #ff5722; /* Orange color for contrast text */
   }

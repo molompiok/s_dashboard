@@ -39,12 +39,14 @@ const statusColors: Record<keyof typeof OrderStatus, string> = {
 
 const getStatusColor = (status: keyof typeof OrderStatus) => statusColors[status] || '#000000';  // Default color
 
-const OrderStatusElement = ({ status }: { status: keyof typeof OrderStatus }) => (
-    <span className='order-status-element' style={{background: `${getStatusColor(status)}22` }}  ref={ref=>{
+const OrderStatusElement = ({ status , color,background}: {background?:string|undefined,color?:string|undefined, status: keyof typeof OrderStatus }) => {
+    const c =  color || getStatusColor(status)
+    return (
+    <span className='order-status-element' style={{background: background || `${c}22` }}  ref={ref=>{
         if(!ref) return;
         const svg = ref.querySelector('svg')!;
-        svg.style.color = getStatusColor(status);
+        svg.style.color = c;
     }}>
-        {getStatusIcon(status)} <span style={{color: `${getStatusColor(status)}`}}>{status.split('_').join(' ').toLowerCase()}</span>
+        {getStatusIcon(status)} <span style={{color:c}}>{status.split('_').join(' ').toLowerCase()}</span>
     </span>
-);
+)};

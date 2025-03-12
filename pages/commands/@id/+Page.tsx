@@ -5,7 +5,6 @@ import { CommandeList } from '../../../Components/Commandes/CommandesList'
 import { useEffect, useState } from 'react'
 import { Topbar } from '../../../Components/TopBar/TopBar'
 import { SwiperProducts } from '../../../Components/Swipers/SwiperProducts'
-import { images as imgs } from "./images";
 import { HoriszontalSwiper } from '../../../Components/Swipers/HoriszontalSwiper'
 import { FeatureValueInterface } from '../../../Interfaces/Interfaces'
 import { NEW_VIEW } from '../../../Components/Utils/constants'
@@ -14,7 +13,7 @@ import { NEW_VIEW } from '../../../Components/Utils/constants'
 //TODO add markdon dans la description du produit?
 export function Page() {
   // const [currentValue, setCurrentValue] = useState<FeatureValueInterface>();
-  const [values, setValues] = useState<FeatureValueInterface[]>(imgs as any);
+  const [values, setValues] = useState<FeatureValueInterface[]>([] as any);
   const [index, setindex] = useState(0);
 
   const clearValues = () => {
