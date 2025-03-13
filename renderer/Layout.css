@@ -1,22 +1,23 @@
-body, html{
+body,
+html {
   box-sizing: border-box;
   background: var(--background);
   overflow: hidden;
   padding: 0;
   margin: 0;
 }
+
 body {
   font-size: 1rem;
   width: 100vw;
   height: 100vh;
-  color: #fff;font-optical-sizing: auto;
+  color: #fff;
+  font-optical-sizing: auto;
   font-style: normal;
-  font-size: 1em; 
+  font-size: 1em;
   color: var(--text-color);
-  font-family: Optimistic Text, -apple-system, ui-sans-serif, system-ui, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
+  font-family:  system-ui, sans-serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol, Noto Color Emoji;
 }
-
-
 
 * {
   padding: 0;
@@ -24,15 +25,16 @@ body {
   box-sizing: border-box;
 }
 
-#open-child{
+#open-child {
   position: absolute;
   z-index: 9999;
   top: 0;
   left: 0;
-  width: 100%; 
+  width: 100%;
   height: 100%;
 }
-#open-child #viewer-ctn{
+
+#open-child #viewer-ctn {
   width: 100%;
   height: 100%;
   position: relative;
@@ -41,13 +43,15 @@ body {
   justify-content: center;
   align-items: center;
 }
+
 #sidebar {
   display: none;
   width: var(--side-bar);
   cursor: pointer;
 }
+
 /* #bottombar a:hover, */
-#sidebar a:hover{
+#sidebar a:hover {
   opacity: 0.9;
   transition: 200ms;
   background-color: var(--discret-2);
@@ -59,7 +63,8 @@ body {
   background-color: var(--discret-2);
 }
 
-#bottombar a,#sidebar a {
+#bottombar a,
+#sidebar a {
   margin-left: -10px;
   display: flex;
   gap: 12px;
@@ -69,13 +74,14 @@ body {
 }
 
 
-#bottombar a > svg, #sidebar a > svg{
+#bottombar a>svg,
+#sidebar a>svg {
   width: 25px;
   height: 25px;
   opacity: 0.9;
 }
 
-#bottombar{
+#bottombar {
   display: flex;
   position: fixed;
   bottom: 0px;
@@ -84,14 +90,14 @@ body {
   background: var(--background);
   justify-content: space-around;
   border: 0 solid #e5e7eb;
-  box-shadow:  -1px 0 0 #e0e3e8, 0 -3px 6px 0 rgba(69, 98, 155, .12);
+  box-shadow: -1px 0 0 #e0e3e8, 0 -3px 6px 0 rgba(69, 98, 155, .12);
 }
 
-.row{
+.row {
   display: flex;
-  flex-direction:row;
-  align-items:center;
-  justify-content:space-around;
+  flex-direction: row;
+  align-items: center;
+  justify-content: space-around;
 }
 
 
@@ -99,20 +105,28 @@ body {
 a {
   all: unset;
 }
-h1,h2,h3,h4,h5,h6{
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   display: flex;
   align-items: center;
   gap: 8px;
 }
 
-h1{
+h1 {
   font-size: 1.4em;
 }
-h2{
- font-size: 1.2em; 
+
+h2 {
+  font-size: 1.2em;
 }
-h3{
- font-size: 1em; 
+
+h3 {
+  font-size: 1em;
 }
 
 
@@ -129,52 +143,62 @@ h3{
   --discret-2: #dddddd;
   --discret-3: #eeeeee;
   --text-color: #000000;
-  --background-child-viewer:#3454;
-  --side-bar-width-min:80px;
-  --side-bar-width-max:180px;
+  --background-child-viewer: #3454;
+  --side-bar-width-min: 80px;
+  --side-bar-width-max: 180px;
   --side-bar: var(--side-bar-width-max);
   --category-size: 80px;
   --box-shadow: 0px 2px 12px -7px #000;
-  --red-rgb:255, 51, 0;
-  --gray-rgb-1:60, 60, 60;
-  --gray-rgb-2:128, 128, 128;
-  --gray-rgb-3:162, 162, 162;
-  --gray-rgb-4:226, 226, 226;
+  --red-rgb: 255, 51, 0;
+  --gray-rgb-1: 60, 60, 60;
+  --gray-rgb-2: 128, 128, 128;
+  --gray-rgb-3: 162, 162, 162;
+  --gray-rgb-4: 226, 226, 226;
+  --contrast-text-color-1: #ffffff;
+  --contrast-text-color-2: #e6e6e6;
+  --contrast-text-color-3: #d1d1d1;
+  --contrast-text-color-4: #c0c0c0;
 }
 
 @media (prefers-color-scheme: dark) {
   :root {
-      --primary-color: #121212;
-      --secondary-color: #1e1e1e;
-      --tertiary-color: #2e2e2e;
-      --background: linear-gradient(135deg, #15141d, #1e1b38, #12123a); 
-      --background-item: #242424;
-      --contrast-1: #e0e0e0;
-      --contrast-2: #c0c0c0;
-      --contrast-3: #a0a0a0;
-      --discret-1: #dddddd;
-      --discret-2: #7979799d;
-      --discret-3: #72727259;
-      --text-color: #ffffff;
-      --contrast-text-color: #ff5722; /* Orange color for contrast text */
+    --primary-color: #121212;
+    --secondary-color: #1e1e1e;
+    --tertiary-color: #2e2e2e;
+    --background: linear-gradient(135deg, #15141d, #1e1b38, #12123a);
+    --background-item: #242424;
+    --contrast-1: #e0e0e0;
+    --contrast-2: #c0c0c0;
+    --contrast-3: #a0a0a0;
+    --discret-1: #dddddd;
+    --discret-2: #7979799d;
+    --discret-3: #72727259;
+    --text-color: #ffffff;
+    --contrast-text-color-1: #ffffff;
+    --contrast-text-color-2: #e6e6e6;
+    --contrast-text-color-3: #d1d1d1;
+    --contrast-text-color-4: #c0c0c0;
   }
 }
 
 @media (prefers-color-scheme: light) {
   :root {
-      --primary-color: #ffffff;
-      --secondary-color: #e0e0e0;
-      --tertiary-color: #c0c0c0;
-      --background: #f5f5f5;
-      --background-item: #ffffff;
-      --contrast-1: #333333;
-      --contrast-2: #666666;
-      --contrast-3: #999999;
-      --discret-1: #707070;
-      --discret-2: #dddddd;
-      --discret-3: #eeeeee;
-      --text-color: #334557;
-      --contrast-text-color: #ff0000; /* Red color for contrast text */
+    --primary-color: #ffffff;
+    --secondary-color: #e0e0e0;
+    --tertiary-color: #c0c0c0;
+    --background: #f5f5f5;
+    --background-item: #ffffff;
+    --contrast-1: #333333;
+    --contrast-2: #666666;
+    --contrast-3: #999999;
+    --discret-1: #707070;
+    --discret-2: #dddddd;
+    --discret-3: #eeeeee;
+    --text-color: #334557;
+    --contrast-text-color-1: #ffffff;
+    --contrast-text-color-2: #e6e6e6;
+    --contrast-text-color-3: #d1d1d1;
+    --contrast-text-color-4: #c0c0c0;
   }
 }
 
@@ -213,15 +237,19 @@ h3{
   width: 0px;
   height: 0px;
 }
+
 #page-content::-webkit-scrollbar-track:hover {
   background: #0000;
 }
+
 #page-content::-webkit-scrollbar-track {
   background: #0000;
 }
+
 #page-content::-webkit-scrollbar-thumb {
   background: #0000;
 }
+
 #page-content::-webkit-scrollbar-thumb:hover {
   background: #0000;
 }
@@ -235,42 +263,52 @@ h3{
   user-select: none;
 }
 
+.ellipsis{
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 200px; 
+}
+
 
 @media (width < 650px) {
   body {
-      font-size: 0.9em !important;
+    font-size: 0.9em !important;
   }
 }
 
-@media (width>550px){
-  #bottombar{
+@media (width>550px) {
+  #bottombar {
     display: none;
   }
+
   #sidebar {
     display: flex;
   }
 }
-@media (width>550px) and (width<650px){
+
+@media (width>550px) and (width<650px) {
   :root {
     --side-bar: var(--side-bar-width-min)
   }
-  #sidebar a{
+
+  #sidebar a {
     justify-content: center;
-  } 
-  #sidebar a span{
+  }
+
+  #sidebar a span {
     display: none;
   }
 }
-@media (width>650px){
+
+@media (width>650px) {
   :root {
     --side-bar: var(--side-bar-width-max)
   }
 }
-@media (width<550px){
+
+@media (width<550px) {
   :root {
     --side-bar: 0px
   }
 }
-
-
-

@@ -1,85 +1,167 @@
-import { IoPencil } from 'react-icons/io5'
+import { IoApps, IoBagHandle, IoCall, IoCard, IoCart, IoCheckmark, IoCheckmarkCircle, IoCloseOutline, IoLocationSharp, IoMail, IoPricetag, IoQrCode, IoReceipt } from 'react-icons/io5';
 import './+Page.css'
-import { CategoryItem } from '../../../Components/CategoryItem/CategoryItem'
-import { CommandeList } from '../../../Components/Commandes/CommandesList'
-import { useEffect, useState } from 'react'
-import { Topbar } from '../../../Components/TopBar/TopBar'
-import { SwiperProducts } from '../../../Components/Swipers/SwiperProducts'
-import { HoriszontalSwiper } from '../../../Components/Swipers/HoriszontalSwiper'
-import { FeatureValueInterface } from '../../../Interfaces/Interfaces'
-import { NEW_VIEW } from '../../../Components/Utils/constants'
+import './CommandProduct.css'
+import './CommandUser.css'
+import './CommandStatus.css'
+import { QRCodeCanvas } from 'qrcode.react';
+import { Image_1, OrderStatus } from '../../../Components/Utils/constants';
+import { OrderStatusElement, statusColors } from '../../../Components/Status/Satus';
+import { Topbar } from '../../../Components/TopBar/TopBar';
+import { ClientCall } from '../../../Components/Utils/functions';
+import { ProductInterface } from '../../../Interfaces/Interfaces';
+import { FaTruck } from 'react-icons/fa';
+import { Separator } from '../../../Components/Separator/Separator';
+import { kMaxLength } from 'buffer';
+import { useWindowSize } from '../../../Hooks/useWindowSize';
 
+export { Page }
 
-//TODO add markdon dans la description du produit?
-export function Page() {
-  // const [currentValue, setCurrentValue] = useState<FeatureValueInterface>();
-  const [values, setValues] = useState<FeatureValueInterface[]>([] as any);
-  const [index, setindex] = useState(0);
+function Page() {
 
-  const clearValues = () => {
-    return [...values].map(val => ({ ...val, views: (val.views || []).filter(view => view != NEW_VIEW) })).filter(val => val.views && val.views.length > 0);
-  }
-
-  useEffect(() => {
-    const vs = clearValues();
-    // setCurrentValue(vs[index]);
-    setValues(vs)
-  }, [index])
-
-  // console.log({ values, index });
-
-
-  return <div className="product">
-    <Topbar back={true} />
-    <div className="views no-selectable">
-      <SwiperProducts views={values[index]?.views || []} setViews={(localViews) => {
-
-        if (values[index] == undefined) {
-          values[index] = {
-            views: localViews
-          } as any as FeatureValueInterface
-        } else {
-          values[index].views = localViews;
-        }
-        const vs = clearValues();
-        setValues(vs)
-      }} />
+  const size = useWindowSize()
+  const w = 380;
+  const low = size.width < w;
+  const currentStep = 5
+  return <div className="command">
+    <Topbar back />
+    <div className="top">
+      <QRCodeCanvas
+        value={'lol'}
+        size={120} // Taille en pixels
+        bgColor="#ffffff" // Couleur de fond
+        fgColor="#334455" // Couleur du QR Code
+        level="H" // Niveau de correction d'erreur (L, M, Q, H)
+      />
+      <div className="data">
+        <h3>Resume de la command</h3>
+        <h2 className='stats-product'><IoBagHandle /> Produits <span>6</span></h2>
+        <h2 className='stats-categories'><IoApps /> Status <span><OrderStatusElement status='PICKED_UP' /></span></h2>
+        <h2 className='stats-command'><IoQrCode /> Id <span>#ea7f18</span></h2>
+        <h2 className='receipt'><IoReceipt />{`receipt/${'ea7f18'}`}</h2>
+      </div>
     </div>
-    <div className="image-manager no-selectable">
-      <HoriszontalSwiper values={clearValues() as any} onActiveIndexChange={(_index) => {
-        setindex(_index)
-      }} onDeleteValue={()=>{
-        // setCurrentValue(vs[index]);
-        setValues([
-          ...values.slice(0,index),
-          ...values.slice(index+1)
-        ])
-      }} forward={()=>{
-        const nextValue = values[index+1];
-        if(!nextValue || (nextValue.views.length == 0) || (nextValue.views.length == 1 && nextValue.views[0] ==NEW_VIEW )) return false;
-        const currentvalue = values[index];
-        setValues(values.map((v,i)=>i==index?nextValue:i==index+1?currentvalue:v));
-        return true;
-      }}goBack={()=>{
-        const lastValue = values[index-1];
-        if(!lastValue || (lastValue.views.length == 0) || (lastValue.views.length == 1 && lastValue.views[0] ==NEW_VIEW )) return false;
-        const currentvalue = values[index];
-        setValues(values.map((v,i)=>i==index?lastValue:i==index-1?currentvalue:v));
-      return true;
-      }} />
+    <h2>Information Client</h2>
+    <CommandUser user />
+    <h2>List des Produits <span>Total : 983 922 FCFA</span></h2>
+    <div className="products-list">
+      {/// TODO les lost doivent inclures le rest pour afficher le SEE-MORE
+        Array.from({ length: 8 }).slice(0, 3).map((_, i) => <CommandProduct key={i} product={{} as any} />)
+      }
     </div>
-
-    <h3>Nom du Produit <IoPencil /></h3>
-    <h1>{'Montre pour enfant'}</h1>
-    <h3>Decription <IoPencil /></h3>
-    <p>Lorem ipsum dolor sit, amet consectetur adipisicing elit. Eaque pariatur numquam nulla error recusandae alias quo possimus, et laboriosam quia dolores maxime explicabo ad rerum eum eveniet, cumque, est assumenda.</p>
-
-    <h3>Prix<IoPencil /></h3>
-    <h1>{'239 045 FCFA'}</h1>
-    <h3>Category Parent</h3>
-    <CategoryItem category={{} as any} />
-    <h3>Options du Produits</h3>
-
-    <CommandeList />
+    <h2>Evolution des Status</h2>
+    <div className="status-events">
+      {Object.keys(statusColors).map((k: string, i) => {
+        const d = new Date().toLocaleDateString('fr', {
+          day: 'numeric',
+          month: 'short',
+          year: 'numeric'
+        })
+        let h = new Date().toLocaleDateString('fr', {
+          hour: 'numeric',
+          minute: 'numeric',
+          second: 'numeric'
+        })
+        h = h.split(' ')[1]
+        h= h.substring(0,h.lastIndexOf(':'))
+        return (
+          <div className="command-status">
+           {!low && <div className="date">
+              <span className="day">{d}</span>
+              <span className="hour">{h}</span>
+            </div>}
+            <div className="step">
+              <span className="icon" style={{background:i<currentStep ?(statusColors as any)[k]:'#55555522'}}>
+                {i<currentStep && <IoCheckmark />}
+                </span>
+              {Object.keys(statusColors).length-1 != i && <div className="bar"></div>}
+            </div>
+            <div className="info">
+            <div style={{display:'flex', justifyContent:'space-between'}}>
+              <h3>{<OrderStatusElement status={k as any} background={i<currentStep ?undefined:'#55555522'} color={i<5 ?undefined:'#555555'}/>}</h3>
+            {low && <div className="date">
+              <span className="day">{d}</span>
+              <span className="hour">{h}</span>
+            </div>}
+              
+            </div>
+            <p>message du stautus pour aider le owner dans sa comprehention des status de sublymus</p>
+            </div>
+          </div>
+        )
+      })}
+    </div>
   </div>
+}
+const featuresFilled = {
+  color: '#red',
+  volume: '34ml',
+  type: 'carre',
+  name: 'Ladona del aminas',
+  date: '2025-03-31',
+  heure: '15:33:00',
+}
+
+function CommandUser({ user }: { user: any }) {
+  // TODO ajouter de belle card pour la livraison et le payement
+  return <div className="command-user">
+    <div className="photo" style={{ background: `no-repeat center/cover url(${Image_1})` }}></div>
+    <div className="infos">
+      <h2 className="name">Rabajois D'el Pkaco</h2>
+      <div className="phone"><IoCall />+225 07 509 92 95 15</div>
+      <div className="email"><IoMail />sublymus@gmail.com</div>
+      <div className="address"><IoLocationSharp /> Mineva, Jardoparck, Abidjan, Cote D'ivoire</div>
+      <Separator />
+      <div className="delivery-mode"><FaTruck />Livraison à Domicile</div>
+      <div className="payment-mode"><IoCard />Payement a la Livraison</div>
+    </div>
+  </div>
+}
+
+function CommandProduct({ product }: { product: ProductInterface }) {
+
+  const keys = Object.keys(statusColors);
+  const a = Math.trunc(ClientCall(Math.random, 0) * keys.length)
+  const status = keys[a] as keyof typeof statusColors
+  const isReturn = ['RETURNED'].includes(status)
+
+  return (
+    <div className={`command-product ${isReturn ? 'return' : ''}`} >
+      <div style={{
+        display: 'flex',
+        alignItems: 'flex-start',
+        gap: '8px'
+      }}>
+        <div className="image" style={{ background: `no-repeat center/cover url(${'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTaG54nN4diXe39g4OABqF-WHgknQc0m2psIimQmhZM3wRG0k7f5tAdGIfgSALD0DB-HjM&usqp=CAU'})` }}></div>
+        <div className="info">
+          <div style={{
+            display: 'flex',
+            width: '100%',
+            flexWrap: 'wrap',
+            justifyContent: 'space-between'
+          }}>
+            <div style={{ marginBottom: '12px' }}>
+              <h2 className='ellipsis'>{'Le Laconique 3.5 verion miracle'}</h2>
+              <p className='ellipsis dscription'>Le Laconique 3.5 verion miracle</p>
+            </div>
+            <div className="prices">
+
+              <h3 className='price-product'>{2} <IoCloseOutline /> 54 080 FCFA</h3>
+              <h2 className='price-product'><IoPricetag />108 160 FCFA</h2>
+            </div>
+          </div>
+          <ul className="values">{
+            Object.keys(featuresFilled).map((k) => (
+              <li key={k}><span className='key'>{k} </span> <span className='value'>{(featuresFilled as any)[k]}</span></li>
+            ))
+          }</ul>
+        </div>
+
+      </div>
+      <span className='status'>{
+        (() => {
+          return isReturn && <OrderStatusElement status={status} />
+        })()
+      }</span>
+    </div>
+  )
 }

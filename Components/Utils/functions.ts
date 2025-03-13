@@ -1,6 +1,7 @@
 export {
     ClientCall,
-    getFileType
+    getFileType,
+    shortNumber
 }
 
 
@@ -31,4 +32,13 @@ function getFileType(file: string | Blob) {
     }
   }
   return
+}
+
+
+function shortNumber(n:number) {
+  const n0 = Math.trunc(n).toString().length -1 //nombre de 0 en entrer
+  const index = Math.floor((n0 )/3); //index du array
+  const r = n0%3; // nombre de  0 a afficher
+  const result = n/Math.pow(10,n0-r)
+  return (Math.trunc(result*100)/100)+(['','K','M','B','T','Q'][index])
 }

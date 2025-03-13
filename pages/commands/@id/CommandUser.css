@@ -1,0 +1,29 @@
+.command-user{
+    padding: 12px;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+}
+
+.command-user .photo{
+    min-width: 80px;
+    height: auto;
+    aspect-ratio: 1;
+    border-radius: 12px;
+}
+
+.command-user .infos{
+    display: flex;
+    flex-direction: column;
+}
+
+.command-user .infos div {
+    display: flex;
+    gap: 12px;
+}
+
+@media (width<330px){
+    .command-user{
+        flex-wrap: wrap;
+    }
+}
