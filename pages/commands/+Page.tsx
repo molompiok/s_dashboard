@@ -1,4 +1,4 @@
-import { CommandeList } from '../../Components/Commandes/CommandesList'
+import { CommandeList } from '../../Components/CommandesList/CommandesList'
 import './Page.css'
 
 export { Page }

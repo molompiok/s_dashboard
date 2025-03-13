@@ -1,7 +1,7 @@
 import { IoPencil } from 'react-icons/io5'
 import './+Page.css'
 import { CategoryItem } from '../../../Components/CategoryItem/CategoryItem'
-import { CommandeList } from '../../../Components/Commandes/CommandesList'
+import { CommandeList } from '../../../Components/CommandesList/CommandesList'
 import { useEffect, useState } from 'react'
 import { Topbar } from '../../../Components/TopBar/TopBar'
 import { SwiperProducts } from '../../../Components/Swipers/SwiperProducts'

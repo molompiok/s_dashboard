@@ -1,0 +1,58 @@
+.receipt-veiew{
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 24px;
+    padding-top: 0;
+    padding-bottom: 200px;
+}
+.receipt-veiew > .space-between{
+    display: flex;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    align-items: center;
+}
+
+.receipt-veiew > .space-between span{
+    /* color: var(--discret-1); */
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.receipt-veiew >.top{
+    width: 100%;
+    padding: 12px;
+    padding-bottom: 0;
+}
+
+.receipt-veiew >.top h2{
+    display: flex;
+    width: 100%;
+    gap: 24px;
+    padding: 0 12px;
+}
+.receipt-veiew >.top h2 span {
+    margin-right: auto;
+}
+.receipt-veiew >.top svg {
+    width: 25px;
+    height: auto;
+    aspect-ratio: 1;
+    cursor: pointer;
+}
+
+
+.receipt-veiew >.top svg:hover{
+    scale: 1.1
+}
+
+.receipt-veiew .command-top{
+    margin-bottom: 12px;
+}
+
+
+.space-between [class^=icon]{
+    border-radius: 8px;
+  }

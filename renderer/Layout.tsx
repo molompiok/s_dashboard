@@ -44,15 +44,14 @@ function OpenChild() {
   const {urlOriginal} = usePageContext()
   console.log({urlOriginal});
   
-  return (child) && <div id="open-child">
-    <div id='viewer-ctn' style={{
+  return (child) && 
+    <div id='open-child' style={{
       alignItems, background, justifyContent
     }} onClick={(e) => {
       if (e.currentTarget == e.target) {
         openChild(null)
       }
     }}>{child}</div>
-  </div>
 }
 
 function Frame({ children }: { children: React.ReactNode }) {
@@ -117,19 +116,26 @@ function Page({ children }: { children: React.ReactNode }) {
 function Content({ children }: { children: React.ReactNode }) {
   return (
     <div
-    id="page-content"
+    id="page-container"
     style={{
-      padding: 20,
       maxHeight: '100vh',
       maxWidth: '100%',
       overflowX:'hidden',
-      // overflowY:'auto',
-      // paddingBottom:'200px',
+      overflowY:'auto',
       width:'calc(100% - var(--side-bar))'
+    }}
+  >
+    <div
+    id="page-content"
+    style={{
+      padding: 20,
+      width: '100%',
+      paddingBottom:'200px',
     }}
   >
     <div className="corrige-le-bug-content-overflow-x" style={{width:'1200px'}}></div>
     {children}
+  </div>
   </div>
   )
 }

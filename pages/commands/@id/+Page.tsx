@@ -13,33 +13,48 @@ import { FaTruck } from 'react-icons/fa';
 import { Separator } from '../../../Components/Separator/Separator';
 import { kMaxLength } from 'buffer';
 import { useWindowSize } from '../../../Hooks/useWindowSize';
+import { useState } from 'react';
+import { useApp } from '../../../renderer/Stores/UseApp';
+import { ChildViewer } from '../../../Components/ChildViewer/ChildViewer';
+import { Receipt } from './Receipt/Receipt';
 
-export { Page }
+export { Page ,CommandTop ,CommandProduct}
+
+function CommandTop({showReceipt}:{showReceipt?:boolean}) {
+  
+  const {openChild} = useApp()
+ 
+  return  <div className="command-top">
+  <QRCodeCanvas
+    value={'lol'}
+    size={120} // Taille en pixels
+    bgColor="#ffffff" // Couleur de fond
+    fgColor="#334455" // Couleur du QR Code
+    level="H" // Niveau de correction d'erreur (L, M, Q, H)
+  />
+  <div className="data">
+    <h3>Resume de la command</h3>
+    <h2 className='stats-product'><IoBagHandle /> Produits <span>6</span></h2>
+    <h2 className='stats-categories'><IoApps /> Status <span><OrderStatusElement status='PICKED_UP' /></span></h2>
+    <h2 className='stats-command'><IoQrCode /> Id <span>#ea7f18</span></h2>
+    {showReceipt!=false && <h2 className='receipt' onClick={()=>{
+      openChild(<ChildViewer>
+        <Receipt command={{} as any}/>
+      </ChildViewer>)
+    }}><IoReceipt />{`receipt/${'ea7f18'}`}</h2>}
+  </div>
+</div>
+}
 
 function Page() {
 
-  const size = useWindowSize()
+   const size = useWindowSize()
   const w = 380;
   const low = size.width < w;
   const currentStep = 5
   return <div className="command">
     <Topbar back />
-    <div className="top">
-      <QRCodeCanvas
-        value={'lol'}
-        size={120} // Taille en pixels
-        bgColor="#ffffff" // Couleur de fond
-        fgColor="#334455" // Couleur du QR Code
-        level="H" // Niveau de correction d'erreur (L, M, Q, H)
-      />
-      <div className="data">
-        <h3>Resume de la command</h3>
-        <h2 className='stats-product'><IoBagHandle /> Produits <span>6</span></h2>
-        <h2 className='stats-categories'><IoApps /> Status <span><OrderStatusElement status='PICKED_UP' /></span></h2>
-        <h2 className='stats-command'><IoQrCode /> Id <span>#ea7f18</span></h2>
-        <h2 className='receipt'><IoReceipt />{`receipt/${'ea7f18'}`}</h2>
-      </div>
-    </div>
+   <CommandTop />
     <h2>Information Client</h2>
     <CommandUser user />
     <h2>List des Produits <span>Total : 983 922 FCFA</span></h2>
@@ -142,6 +157,7 @@ function CommandProduct({ product }: { product: ProductInterface }) {
             <div style={{ marginBottom: '12px' }}>
               <h2 className='ellipsis'>{'Le Laconique 3.5 verion miracle'}</h2>
               <p className='ellipsis dscription'>Le Laconique 3.5 verion miracle</p>
+              <p>Id: #83e82a</p>
             </div>
             <div className="prices">
 

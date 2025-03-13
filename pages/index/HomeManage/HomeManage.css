@@ -12,13 +12,13 @@
     transition: 100ms;
 }
 .home-manage .card{
-    width:120px;
-    min-width:120px;
+  width:120px;
+  /* min-width:120px; */
     height:auto;
     aspect-ratio:1;
     background: rgba(212, 210, 203, 0.618);
     border-radius: 20px;
-    padding: 8px;
+    padding: 12px;
     display: flex;
     flex-direction: column;
     justify-content: space-between;

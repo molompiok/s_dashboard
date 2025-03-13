@@ -12,7 +12,7 @@
     color: var(--discret-1);
 }
 /*    TOP     */
-.command .top{
+.command-top{
     margin: 24px 0;
     width: 100%;
     display: flex;
@@ -20,20 +20,20 @@
     gap: 24px;
     align-items: flex-start;
 }
-.command .top h3{
+.command-top h3{
     color: var(--discret-1);
     margin-bottom: 4px;
 }
 
-.command .top .data{
+.command-top .data{
     display: flex;
     flex-direction: column;
     gap: 4px;
 }
-.command .top .receipt:hover{
+.command-top .receipt:hover{
     scale: 1.02;
 }
-.command .top .receipt{
+.command-top .receipt{
     text-decoration:underline;
     font-weight:normal;
     background: var(--contrast-3);
