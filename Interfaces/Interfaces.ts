@@ -1,3 +1,9 @@
+export type AnnimationType = {
+  slidesGrid: number[];
+  translate: number;
+  realIndex: number;
+  size: number
+}
 
 
 export interface CommandInterface{

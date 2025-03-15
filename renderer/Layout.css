@@ -96,7 +96,6 @@ body {
 }
 
 
-
 a {
   all: unset;
 }
@@ -274,6 +273,9 @@ h3 {
 
 /* CONTENT SCROLL invisible*/
 
+#page-content{
+  padding: 20px;
+}
 
 #page-content::-webkit-scrollbar {
   width: 0px;
@@ -312,6 +314,22 @@ h3 {
   max-width: 200px; 
 }
 
+
+.theme-specialities span{
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--discret-3);
+  border-bottom: 1px var(--contrast-3) solid;
+  
+}
+.theme-specialities{
+  padding: 6px;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px;
+}
 
 @media (width < 650px) {
   body {
@@ -352,5 +370,14 @@ h3 {
 @media (width<550px) {
   :root {
     --side-bar: 0px
+  }
+  #page-content{
+    padding: 12px;
+  }
+}
+
+@media (width<450px){
+  #page-content{
+    padding: 8px;
   }
 }

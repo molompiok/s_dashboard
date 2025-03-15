@@ -1,0 +1,18 @@
+
+/*  THEMES */
+
+.swiper.recent-used-themes,
+.swiper.preview-themes{
+    overflow: visible;
+}
+.swiper.recent-used-themes .swiper-pagination,
+.swiper.preview-themes .swiper-pagination{
+    bottom: -32px;
+}
+
+
+@media (width<590px){
+     .detail-current-theme{
+        flex-wrap: wrap;
+    }
+}

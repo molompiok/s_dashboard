@@ -5,9 +5,12 @@ import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
 const CHART_COLORS = {
-    red:'#ff0000',
-    blue:'#001faa',
-    green:'#007631'
+  red:'#ff0000',
+  blue:'#001faa',
+  green:'#007631',
+  redLight:'#ff0000',
+  blueLight:'#001faa',
+  greenLight:'#00c631',
 }
 const DATA_COUNT = 12;
 const labels = [];

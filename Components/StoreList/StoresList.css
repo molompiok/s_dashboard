@@ -1,0 +1,13 @@
+.stores-list {
+    width: 100%;
+    height: 400px;
+    overflow: visible;
+}
+
+.stores-list .swiper-pagination{
+    color: aliceblue;
+}
+/* 
+.stores-list .swiper-slide-active {
+    box-shadow: 0 0 10px -7px var(--discret-1);
+} */

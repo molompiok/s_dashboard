@@ -128,7 +128,6 @@ function Content({ children }: { children: React.ReactNode }) {
     <div
     id="page-content"
     style={{
-      padding: 20,
       width: '100%',
       paddingBottom:'200px',
     }}

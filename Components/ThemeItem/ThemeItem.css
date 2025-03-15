@@ -1,0 +1,30 @@
+/*  THEME-ITEM */
+.theme-item{
+    width: 220px;
+    height: 230px;
+    /* background: var(--discret-2); */
+    border-radius: 24px;
+}.theme-item .image{
+    width: 100%;
+    height: auto;
+    aspect-ratio: 1.4;
+    border-radius: 13px;
+    position: relative;
+}
+.theme-item .free,.theme-item .price{
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    display: flex;
+    gap: 8px;
+    color: #fff;
+    border-radius: 24px;
+    align-items: center;
+    background: #675900b8;
+    padding: 3px 8px;
+}
+.theme-item .free{
+    background: #0a6700b8;
+}
+
+

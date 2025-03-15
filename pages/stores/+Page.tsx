@@ -3,68 +3,103 @@ import 'swiper/css';
 import 'swiper/css/free-mode';
 import 'swiper/css/pagination';
 import 'swiper/css/navigation';
-
+import 'swiper/css/grid';
 
 import './Page.css'
 import { useWindowSize } from '../../Hooks/useWindowSize';
-import { useEffect, useState } from 'react';
-import { FreeMode, Navigation, Pagination } from 'swiper/modules';
+import { useState } from 'react';
+import { FreeMode } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { IoCart, IoChevronDown, IoChevronForward, IoPeople } from 'react-icons/io5';
 import { getImg } from '../../Components/Utils/StringFormater';
-import { Swiper as SwiperType } from 'swiper/types';
+
 import { Host } from '../../renderer/+config';
+import { RecentThemes, ThemeList } from '../../Components/ThemeList/ThemeList';
+import { StoresList } from '../../Components/StoreList/StoresList';
+import { IoCart, IoPeopleSharp } from 'react-icons/io5';
+import MyChart from '../index/MiniChart';
+import { Separator } from '../../Components/Separator/Separator';
+import { Progrees } from '../../Components/Progress/Pregress';
 
 export { Page }
 
-type AnnimationType = {
-  slidesGrid: number[];
-  translate: number;
-  realIndex: number;
-  size: number
-}
 
 function Page() {
 
-
+  const [currentStore, setCurrentStore] = useState(0);
+  const [SelectedStore, setSelectedStore] = useState(0);
+  const l = 9;
+  const h = 240;
+  const s = useWindowSize().width;
+  const n = s <= 550 ? (s - 250) / 300 + 1
+    : s < 750 && s >= 550 ? 2
+      : s < 900 && s >= 750 ? (s - 750) / 150 + 2
+        : 3
+  const p = s < 550 ? 20 : 30
   return (
     <div className="stores">
-      <StoresList />
+      <StoresList currentStore={currentStore} setSelectedStore={setSelectedStore}/>
       <CurrentTheme />
-      {/* <h3></h3> */}
-      <div className="manages-stores">
-        Afficher le store actutuelement manager et montrer quo'on peu manager le store presentement afficher
-      </div>
-      <div className="store-options">
-        <div className="activity">
-          <div className="stop"></div>
-          <div className="restart"></div>
+      <div className={`manages-stores ${currentStore == SelectedStore? 'active':''}`}>
+        {<div className="manage-side change-store">
+          <h3 className='store-name'>{'Boutique name'}</h3>
+          <p>Cliquer sur le boutton si dessous pour que l'app afficher les Informations de la boutique</p>
+          <div className="btn" onClick={()=>setCurrentStore(SelectedStore)}>Changer de Boutique</div>
+        </div>}
+        <div className="manage-side">
+
+          <div className="stats">
+            <div className="section commades">
+              <div className="min-info">
+                <h3><IoCart className='icon' /> {'Commandes'} <span>{'38'}</span></h3>
+              </div>
+              <MyChart color='greenLight' />
+            </div>
+            <div className="section visites">
+              <div className="min-info">
+                <h3><IoPeopleSharp className='icon' /> {'Visites'} <span>{'38'}</span></h3>
+              </div>
+              <MyChart />
+            </div>
+          </div>
+          <Separator color='var(--contrast-text-color-1)'/>
+          <div className="activities">
+            <div className="activity">
+              <h3>Points de ventes</h3>
+              <Progrees progress={0.2}/>
+              <span>{20} / {99}</span>
+            </div>
+            <div className="activity">
+              <h3>Collaborateurs</h3>
+              <Progrees progress={0.2}/>
+              <span>{2} / {10}</span>
+            </div>
+            <div className="activity">
+              <h3>Produits</h3>
+              <Progrees progress={0.2}/>
+              <span>{2} / {10}</span>
+            </div>
+            <div className="activity">
+              <h3>Pays</h3>
+              <Progrees progress={0.2}/>
+              <span>{2} / {10}</span>
+            </div>
+            <div className="activity">
+              <h3>Disque SSD <span>(Gb)</span></h3>
+              <Progrees progress={0.2}/>
+              <span>{2} / {10}</span>
+            </div>
+          </div>
         </div>
-        <div className="domaine"></div>
-        <div className="performance"></div>
       </div>
-      <h3>List des Themes Recement Utilise <span>{<IoChevronDown className='icon-25' />}</span></h3>
-      <div className="recent-used-themes">
-        {
-          Array.from({ length: 4 }).map((_, i) => (
-            <div className="used-theme"></div>
-          ))
-        }
-      </div>
-      <h3>Tout les Themes <span style={{ display: true ? '' : 'none' }}>{<IoChevronForward className='icon-25' />}</span></h3>
-      <div className="preview-themes">
-        {
-          Array.from({ length: 4 }).splice(0, 4).map((_, i) => (
-      /* i==4 && !list[5] */<div key={i} className="prev-theme"></div>
-          ))
-        }{
-    /* list[5] =>*/ true && <div className="see-more"></div>
-        }
-      </div>
-     
+
+      <RecentThemes store={0} />
+      <ThemeList store={0} />
     </div>
   )
 }
+
+
+
 
 
 function CurrentTheme() {
@@ -79,11 +114,11 @@ function CurrentTheme() {
       <div className="image" style={{ background: getImg('/res/store_img_5.jpg', 'cover', false) }}></div>
       <div className="general">
         <h2>Theme Nane Sublymus</h2>
-        <p>{
+        <p className='theme-specialities'>{
           ['multi category', '3d', 'AR', '3D seulement', 'food', 'immobilier'].map(f => <span>{f}</span>)
         }</p>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <h3>STATUS :</h3>
+          <h3 style={{ whiteSpace: 'nowrap' }}>STATUS :</h3>
           <div className="status">{'ACTIVE'}</div>
         </div>
       </div>
@@ -128,102 +163,5 @@ function CurrentTheme() {
   </div>
 
 }
-function StoresList() {
-  const size = useWindowSize();
-  const [swiperRef, setSwiperRef] = useState<SwiperType | null>(null);
-  const [animation, setAnnimation] = useState<AnnimationType | null>(null);
-  let s = size.width;
 
-  const n = s < 550 ? (
-    ((s - 260) / 290) * 1 + 1
-  ) : 2;
-
-  const p = s < 550 ? 30 : 50
-
-  const [id, setId] = useState(0)
-  const [animus, setAnimus] = useState(0)
-  useEffect(() => {
-    let i = 0;
-    clearInterval(id)
-    const _id = setInterval(() => {
-      i++;
-      if (!swiperRef) return clearInterval(_id);
-      if (i > 20) clearInterval(_id);
-      setAnnimation({
-        realIndex: swiperRef.realIndex,
-        slidesGrid: swiperRef.slidesGrid,
-        translate: swiperRef.translate,
-        size: (swiperRef as any).size
-      })
-    }, 100);
-    setId(_id as any);
-    return () => {
-      clearInterval(id);
-    }
-  }, [animus]);
-
-  return <Swiper
-    onActiveIndexChange={(_swiper) => {
-      // onActiveIndexChange?.(_swiper.activeIndex);
-    }}
-    onSliderMove={(s) => {
-      setAnnimation({
-        realIndex: s.realIndex,
-        slidesGrid: s.slidesGrid,
-        translate: s.translate,
-        size: (s as any).size
-      });
-      setAnimus(animus + 1);
-    }}
-    onSwiper={s => { setSwiperRef(s), setAnnimation(s as any) }}
-    slidesPerView={n}
-    centeredSlides={true}
-    spaceBetween={p}
-    pagination={{
-      type: 'fraction',
-    }}
-    navigation={true}
-    modules={[Pagination, Navigation]}
-    className="stores-swiper no-selectable"
-  >
-    {
-      Array.from({ length: 5 }).map((_, index) => (
-        <SwiperSlide key={index} onClick={() => {
-          swiperRef?.slideTo(index)
-        }}>
-          {swiperRef && animation && <StoreItem animation={animation} index={index} swiper={swiperRef} store />}
-        </SwiperSlide>
-      ))
-    }
-  </Swiper>
-}
-
-function StoreItem({ store, index, swiper, animation }: { store: any, index: number, animation: AnnimationType, swiper: SwiperType }) {
-  const [cp, setCp] = useState({ x: 0, y: 0 })
-  const i = 0;
-
-  let p = animation.translate + animation.slidesGrid[index]
-  p = p / 5
-  // console.log(swiper);
-  const s = animation.size
-  let op = 1 / (1 + Math.pow((p / s) * 4, 2)) - 0.5
-  op = op < 0 ? 0 : op
-  op = op * 2
-  if (index == 1) console.log({ op, s, p });
-
-  return <div className="store-item">
-    <div className="back" style={{ background: getImg('/res/store_img_1.jpg', 'cover', false) }}></div>
-    <div className="inner">
-      <div className="top">
-        <div className="icon-80 logo" style={{ background: getImg('/res/store_img_1.jpg', undefined, false) }}></div>
-        <h1>Ladonal Market</h1>
-      </div>
-      <div className="cover-image"></div>
-      <p>Description du stores visible pour les clients dans le about de la page du store/theme </p>
-      <IoCart /> commandes
-      <IoPeople /> Clients
-    </div>
-    <div className="cover-image annimated" style={{ opacity: `${op}`, left: `${p}px`, background: getImg('/res/store_img_1.jpg', undefined, false) }}></div>
-  </div>
-}
 

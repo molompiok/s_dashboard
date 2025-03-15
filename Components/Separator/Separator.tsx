@@ -2,8 +2,8 @@ import './Separator.css'
 
 export {Separator}
 
-function Separator() {
+function Separator({color}:{color?:string}) {
     
 
-    return <div className="separator"></div>
+    return <div className="separator" style={{background:color}}></div>
 }
