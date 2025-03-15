@@ -1,6 +1,7 @@
 import React, { useRef, useState } from 'react';
 // Import Swiper React components
 import { Swiper, SwiperSlide } from 'swiper/react';
+import { Swiper as SwiperType  } from 'swiper/types';
 
 // Import Swiper styles
 import 'swiper/css';
@@ -22,8 +23,9 @@ import { ConfirmDelete } from '../Confirm/ConfirmDelete';
 
 export { HoriszontalSwiper }
 
+
 function HoriszontalSwiper({ values, onActiveIndexChange, onDeleteValue, goBack, forward }: { goBack: () => boolean, forward: () => boolean, onDeleteValue?: (index: number) => void, onActiveIndexChange?: (index: number) => void, values: FeatureValueInterface[] }) {
-    const [swiperRef, setSwiperRef] = useState<any>(null);
+    const [swiperRef, setSwiperRef] = useState<SwiperType|null>(null);
 
     const size = useWindowSize()
     const { openChild } = useApp();
@@ -34,7 +36,7 @@ function HoriszontalSwiper({ values, onActiveIndexChange, onDeleteValue, goBack,
                     onActiveIndexChange?.(_swiper.activeIndex);
                 }}
                 onSwiper={setSwiperRef}
-                slidesPerView={size.width < 340 ? 2 : size.width > 800 ? 4 : 3}
+                slidesPerView={size.width < 340 ? 2 : size.width > 800 ? 2 : 3}
                 centeredSlides={true}
                 spaceBetween={20}
                 pagination={{
@@ -47,7 +49,7 @@ function HoriszontalSwiper({ values, onActiveIndexChange, onDeleteValue, goBack,
                 {
                     values.map((v, index) => (
                         <SwiperSlide key={index} onClick={() => {
-                            swiperRef.slideTo(index)
+                            swiperRef?.slideTo(index)
                         }}>
                             {
                                 v.views.slice(0, 4).map(((i, _) => (
@@ -70,13 +72,13 @@ function HoriszontalSwiper({ values, onActiveIndexChange, onDeleteValue, goBack,
                                 <IoArrowBackCircleOutline style={{opacity:index == 0 ?'0.6':''}} onClick={() => {
                                     if (index == 0) return
                                     goBack() && setTimeout(() => {
-                                        swiperRef.slideTo(index - 1)
+                                        swiperRef?.slideTo(index - 1)
                                     }, 100);
                                 }} />
                                 <IoArrowForwardCircleOutline style={{opacity:values.length - 1 == index?'0.6':'', marginLeft: 'auto' }} onClick={() => {
                                     if (values.length - 1 == index) return
                                     forward() && setTimeout(() => {
-                                        swiperRef.slideTo(index + 1)
+                                        swiperRef?.slideTo(index + 1)
                                     }, 100);
                                 }} />
                             </div>
@@ -84,7 +86,7 @@ function HoriszontalSwiper({ values, onActiveIndexChange, onDeleteValue, goBack,
                     ))
                 }{
                     <SwiperSlide className="add-variant" onClick={() => {
-                        swiperRef.slideTo(values.length)
+                        swiperRef?.slideTo(values.length)
                     }}>
                         <div className={'img'}><BiSolidImageAdd /></div>
                     </SwiperSlide>
