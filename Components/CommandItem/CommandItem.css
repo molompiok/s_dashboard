@@ -1,13 +1,13 @@
 
 .command-item:hover{
     scale: 1.01;
-    background: rgba(var(--gray-rgb-3),0.05);
+    background: var(--discret-9);
     transition: 100ms;
 }
 
 .command-item{
     /* background: rgba(var(--gray-rgb-4),0.4); */
-    box-shadow: 2px 2px 12px -7px #0005;
+    box-shadow: 2px 2px 12px -10px var(--discret-0);
     width: 100%;
     border-radius: 24px;
     gap: 8px;
@@ -18,7 +18,7 @@
 .command-item .client-info{
     width: 100%;
     border-radius: 16px;
-    padding:8px  12px ;
+    padding:4px  12px ;
     display: flex;
     align-items: center;
     gap: 8px;
@@ -36,6 +36,7 @@
     text-overflow: ellipsis;
     white-space: nowrap;
     max-width: 200px;
+    margin: 0;
 }
 .command-item .info p{
     font-size: 0.9em;
@@ -67,7 +68,7 @@
     height: 60px;
     border-radius: 12px;
 }
-
+/* 
 .command-item .products-previews{
     padding: 8px;
     width: 100%;
@@ -82,16 +83,16 @@
     justify-content: center;
     padding: 4px;
     padding-top: 12px;
-}
+} */
 
-.command-item .see-more div{
+/* .command-item .see-more div{
     background: var(--discret-2);
     display: flex;
     align-items: center;
     gap: 12px;
     padding: 4px 12px;
     border-radius: 12px;
-}
+} */
 
 .command-item .image-info{
     display: flex;

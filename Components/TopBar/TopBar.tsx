@@ -2,25 +2,24 @@ import './TopBar.css'
 import { IoSearch, IoNotifications, IoChevronBack } from "react-icons/io5";
 export { Topbar }
 
-function Topbar({back}:{back?:boolean}) {
+function Topbar({ back, notif, search , onBack}: {onBack?:()=>void ,back?: boolean, search?: boolean, notif?: boolean }) {
 
-
+    
     return (
         <div className='top-bar'>
-            {back && <IoChevronBack className='icon' onClick={()=>{
-                history.back();
-            }}/> }
+            {back != false && <IoChevronBack className='icon' onClick={() => {
+                (onBack || history.back)?.();
+            }} />}
             <div className='left'>
-
                 <h3>Bienvenu !!</h3>
                 <h2>Kouassi Noga</h2>
             </div>
             <div className='right'>
-                <IoSearch className='search-icon'></IoSearch>
-                <a href="/notifications" className="notify-icon-ctn">
-                <IoNotifications className='notify-icon'></IoNotifications>
-                <span className="available"></span>  
-                </a>
+                { search != false && <IoSearch className='search-icon'></IoSearch>}
+                {notif!==false &&<a href="/notifications" className="notify-icon-ctn">
+                    <IoNotifications className='notify-icon'></IoNotifications>
+                    <span className="available"></span>
+                </a>}
 
             </div>
         </div>
@@ -39,7 +38,7 @@ function Search({ setSearchValue, ...values }: Props) {
                 setSearchValue(e.currentTarget.value)
             }} />
             <a >
-            <IoSearch className='search-icon'></IoSearch>
+                <IoSearch className='search-icon'></IoSearch>
             </a>
         </label>
     </div>

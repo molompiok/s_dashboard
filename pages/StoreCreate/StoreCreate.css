@@ -1,0 +1,177 @@
+.store-create{
+    width: 100%;
+    height: 100%;
+    padding: 24px;
+    background: var(--discret-10);
+}
+
+.store-create .ctn{
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+}
+
+/* PROGRESS  */
+.store-create .progress-store{
+    display: flex;
+    width: 100%;
+    max-width: 500px;
+    align-items: center;
+    margin-top: 24px;
+}
+
+.store-create .progress-store div{
+    background: var(--discret-9);
+    display: inline-flex;
+    align-items: center;
+    padding: 2px 12px ;
+    border-radius: 12px;
+    cursor: pointer;
+}
+.store-create .progress-store div.active{
+    background: rgba(var(--primary-color-rgb), 0.1);
+    color: var(--primary-color);
+}
+
+
+.store-create .progress-store span{
+    background: var(--discret-0);
+    display: inline-flex;
+    align-items: center;
+    width: 100%;
+    height: 2px;
+    border-radius: 2px;
+}
+.store-create .progress-store span.active{
+    background: rgba(var(--primary-color-rgb), 1);
+}
+
+/* Sections  */
+
+.store-create .swiper{
+    width: 100%;
+    height: 300px;
+}
+.store-create .swiper-slide{
+    display: flex;
+    align-items: center;
+    flex-direction: column;
+    justify-content: center;
+}
+/*name*/
+.store-create .swiper-slide.name{
+    gap: 32px;
+}
+.store-create .swiper-slide.name input {
+    all: unset;
+    height: 40px;
+    padding: 15px;
+    /* background: linear-gradient(rgba(99, 106, 150, 0.4) 0%, rgba(182, 186, 214, 0.25) 100%); */
+    border: none;
+    border-radius: 10px;
+    box-shadow: rgba(0, 0, 0, 0.15) 0px 20px 40px, rgba(255, 255, 255, 0.3) 0px 0px 0px 0.5px inset;
+    box-sizing: border-box;
+    /* padding: 10px 42px; */
+    font-style: normal;
+    font-weight: normal;
+    font-size: 16px;
+    line-height: 130%;
+    transition: all 1s cubic-bezier(0.075, 0.82, 0.165, 1) 0s;
+    width: 100%;
+    max-width: 300px;
+}
+
+.store-create .swiper-slide.name input:focus {
+    outline: none;
+    padding-left: 42px;
+    box-shadow: rgba(47, 184, 255, 0.3) 0px 10px 40px, rgb(47, 184, 255) 0px 0px 0px 1px inset;
+    /* background: linear-gradient(rgba(24, 32, 79, 0.4) 0%, rgba(24, 32, 79, 0.25) 100%); */
+}
+
+.store-create .swiper-slide.name input.valid-name {
+    box-shadow: rgba(0, 0, 0, 0.15) 0px 20px 40px, rgba(47, 255, 168, 0.3) 0px 0px 0px 1px inset;
+}
+.store-create .swiper-slide.name input.valid-name:focus {
+    box-shadow: rgba(47, 255, 168, 0.3) 0px 10px 40px, rgb(47, 255, 168) 0px 0px 0px 1px inset;
+}
+.store-create .swiper-slide.name input.invalid-name {
+    box-shadow: rgba(0, 0, 0, 0.15) 0px 20px 40px, rgba(255, 51, 51, 0.499) 0px 0px 0px 1px inset;
+}
+.store-create .swiper-slide.name input.invalid-name:focus {
+    box-shadow: rgba(255, 47, 47, 0.3) 0px 10px 40px, rgb(255, 47, 47) 0px 0px 0px 1px inset;
+}
+
+/*logo*/
+.store-create .indicator-logo{
+    width: 100px;
+    height: 60px;
+    background: #3454;
+}
+.store-create .card-preview-logo{
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px;
+    border-radius: 12px;
+    box-shadow: 0px 2px 16px -12px #000; 
+}
+.store-create .card-preview-logo .name{
+    max-width: 130px;
+    font-size: 2em;
+}
+.store-create .card-preview-logo .logo{
+    width: 80px;
+    height: auto;
+    aspect-ratio: 1;
+    background: #3455;
+    border-radius: 12px;
+}
+
+
+
+/* DIRECTION */
+.store-create .direction{
+    display: flex;
+    align-items: center;
+    width: 100%;
+    justify-content: space-between;
+}
+.store-create .direction > div{
+    display: flex;
+    align-items: center;
+    font-size: 1.1em;
+    padding: 6px 12px;
+    border-radius: 50px;
+    gap:6px;
+    opacity: 1;
+    transition: 100ms;
+    visibility: visible;
+}
+
+.store-create .direction .back.none{
+    visibility: hidden;
+    opacity: 0;
+    transition: 100ms;
+}
+.store-create .direction .back{
+    background: var(--discret-9);
+    transition: 100ms;
+}
+.store-create .direction .next{
+    background: var(--discret-9);
+    transition: 100ms;
+}
+.store-create .direction .next.active{
+    background: var(--secondary-color);
+    color: #fff;
+    transition: 100ms;
+}
+
+@media(width<300px){
+    .store-create{
+        padding: 8px;
+    }
+}

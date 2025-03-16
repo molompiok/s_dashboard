@@ -17,7 +17,7 @@
 
 .child-viewer .close:hover{
     scale: 1.1;
-    background: var(--discret-2);
+    background: var(--discret-9);
     border-radius: 50%;
     transition: 100ms;
 }

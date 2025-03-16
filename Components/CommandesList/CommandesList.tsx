@@ -1,4 +1,4 @@
-import { IoChevronDown, IoFilterSharp } from 'react-icons/io5'
+import { IoChevronDown, IoChevronForward, IoFilterSharp } from 'react-icons/io5'
 import { useApp } from '../../renderer/Stores/UseApp'
 import { ChildViewer } from '../ChildViewer/ChildViewer'
 import './CommandesList.css'
@@ -40,24 +40,24 @@ function CommandeList() {
         <div className="top">
             <h2>List des Commandes</h2>
             {!ClientCall(() => location, { pathname: '' }).pathname.startsWith('/commands') && <a className='filter' href='/commands'>
-                Tout voir <FiMaximize className='filter-icon' onClick={() => {
+                Tout voir <IoChevronForward className='filter-icon' onClick={() => {
                 }} />
             </a>}
         </div>
         <CommandsFilters collected={collected} setCollected={setCollected} />
         <div className="list">
             {
-                Array.from({ length: 0 }).length == 0 && <div className="watting-command">
+                Array.from({ length: 0 }).length == 0 && <div key={'q'} className="watting-command">
 
                 </div>
             }
             {
-                Array.from({ length: 0 }).length == 0 && <div className="not-found-command">
+                Array.from({ length: 0 }).length == 0 && <div key={'a'}  className="not-found-command">
 
                 </div>
             }
-            {Array.from({ length: 0 }).map((a, i) => (
-                <>
+            {Array.from({ length: 10 }).map((a, i) => (
+                <div key={i}>
                     {
                         i % 5 == 0 && <h2>{new Date().toLocaleDateString('fr', {
                             day: 'numeric',
@@ -65,10 +65,10 @@ function CommandeList() {
                             year: 'numeric'
                         })}</h2>
                     }
-                    <a key={i} href={`/commands/${ClientCall(Math.random, 0)}`}>
+                    <a  href={`/commands/${ClientCall(Math.random, 0)}`}>
                         <CommandItem key={i} command={{} as CommandInterface} onClick={() => 0} />
                     </a>
-                </>
+                </div>
             ))}
         </div>
     </div>
@@ -133,7 +133,7 @@ function StatusFilterComponent({ status: _status, setStatus, active }: { active:
                         [...status, s]
 
                     setStatus(list.length > 0 ? list : undefined)
-                }}><OrderStatusElement background={status.includes(s) ? undefined : 'var(--discret-3)'} color={status.includes(s) ? undefined : 'var(--discret-1)'} status={s as any} /></span>
+                }}><OrderStatusElement background={status.includes(s) ? undefined : 'var(--discret-9)'} color={status.includes(s) ? undefined : 'var(--discret-1)'} status={s as any} /></span>
             ))
         }
     </div>

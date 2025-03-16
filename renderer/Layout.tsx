@@ -9,6 +9,8 @@ import './css/index.css'
 import './Layout.css'
 import { useApp } from './Stores/UseApp'
 import { Icons } from '../Components/Utils/constants'
+import { StoreCreate } from '../pages/StoreCreate/StoreCreate'
+import { ClientCall } from '../Components/Utils/functions'
 
 function Layout({ children, pageContext }: { children: React.ReactNode; pageContext: PageContext }) {
   return (
@@ -40,11 +42,13 @@ function Layout({ children, pageContext }: { children: React.ReactNode; pageCont
 
 function OpenChild() {
   const { currentChild, alignItems, background, justifyContent, openChild } = useApp();
-  const child = currentChild || null
-  const {urlOriginal} = usePageContext()
-  console.log({urlOriginal});
+  const child = currentChild || <StoreCreate />
+  const { urlOriginal } = usePageContext()
+  const local = ClientCall(() => location, {});
   
-  return (child) && 
+  console.log({ urlOriginal, local });
+  // return local.hash == '#open_child' && (child) &&
+  return (child) &&
     <div id='open-child' style={{
       alignItems, background, justifyContent
     }} onClick={(e) => {
@@ -116,26 +120,26 @@ function Page({ children }: { children: React.ReactNode }) {
 function Content({ children }: { children: React.ReactNode }) {
   return (
     <div
-    id="page-container"
-    style={{
-      maxHeight: '100vh',
-      maxWidth: '100%',
-      overflowX:'hidden',
-      overflowY:'auto',
-      width:'calc(100% - var(--side-bar))'
-    }}
-  >
-    <div
-    id="page-content"
-    style={{
-      width: '100%',
-      paddingBottom:'200px',
-    }}
-  >
-    <div className="corrige-le-bug-content-overflow-x" style={{width:'1200px'}}></div>
-    {children}
-  </div>
-  </div>
+      id="page-container"
+      style={{
+        maxHeight: '100vh',
+        maxWidth: '100%',
+        overflowX: 'hidden',
+        overflowY: 'auto',
+        width: 'calc(100% - var(--side-bar))'
+      }}
+    >
+      <div
+        id="page-content"
+        style={{
+          width: '100%',
+          paddingBottom: '200px',
+        }}
+      >
+        <div className="corrige-le-bug-content-overflow-x" style={{ width: '1200px' }}></div>
+        {children}
+      </div>
+    </div>
   )
 }
 

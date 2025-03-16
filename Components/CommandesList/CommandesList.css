@@ -79,7 +79,7 @@
 .commands-list .onglet>* {
     display: inline-flex;
     align-items: center;
-    background: #3452;
+    background: var(--discret-9);
     border-radius: 8px;
     padding: 2px 8px;
     cursor: pointer;
@@ -133,13 +133,14 @@
 
 .commands-list .chose .order-filter-component span {
     padding: 2px 8px;
-    background: var(--discret-3);
+    background: var(--discret-9);
     color: var(--discret-1);
     border-radius: 8px;
+    font-size: 0.9em;
 }
 .commands-list .chose .order-filter-component span.order {
-    background: #ffa50022;
-    color: #ffa500;
+    background: rgba(var(--primary-color-rbg),0.1);
+    color: var(--primary-color);
 }
 .commands-list .chose .price-filter-component label{
     display: flex;
@@ -155,8 +156,7 @@
     padding:6px 12px ;
 }
 .commands-list .chose .price-filter-component label span{
-    /* position: absolute; */
-    font-size: 0.9em;
+    font-size: 0.85em;
 }
 
 .commands-list .chose .date-filter-component .dates{
@@ -167,7 +167,7 @@
 
 .commands-list .chose .date-filter-component .dates  span {
     padding: 2px 8px;
-    background: var(--discret-3);
+    background: var(--discret-9);
     color: var(--discret-1);
     border-radius: 8px;
 }
@@ -205,15 +205,15 @@
 
 
 .rdp-range_middle{
-    color: #345;
-    background-color: rgba(var(--gray-rgb-4), 0.5)!important;
+    color: var(--discret-7);
+    background-color:  var(--discret-1)!important;
 }
 
 .rdp-range_start{
-    background-image: linear-gradient(90deg, transparent 50%, rgba(var(--gray-rgb-4), 0.5) 50%)!important;;
+    background-image: linear-gradient(90deg, transparent 50%, var(--discret-1) 50%)!important;;
 }
 .rdp-range_end{
-    background-image: linear-gradient(90deg, rgba(var(--gray-rgb-4), 0.5) 50%, transparent 50%)!important;;
+    background-image: linear-gradient(90deg, var(--discret-1) 50%, transparent 50%)!important;;
 }
 .rdp-range_start.rdp-range_end{
     background-image: linear-gradient(90deg, transparent 50%, transparent 50%)!important;;
