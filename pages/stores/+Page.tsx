@@ -15,7 +15,7 @@ import { getImg } from '../../Components/Utils/StringFormater';
 import { Host } from '../../renderer/+config';
 import { RecentThemes, ThemeList } from '../../Components/ThemeList/ThemeList';
 import { StoresList } from '../../Components/StoreList/StoresList';
-import { IoCart, IoPeopleSharp } from 'react-icons/io5';
+import { IoCart, IoChevronForward, IoClose, IoDesktop, IoFingerPrint, IoPause, IoPencil, IoPeopleSharp, IoPlay, IoSettings } from 'react-icons/io5';
 import MyChart from '../index/MiniChart';
 import { Separator } from '../../Components/Separator/Separator';
 import { Progrees } from '../../Components/Progress/Pregress';
@@ -38,15 +38,11 @@ function Page() {
   return (
     <div className="stores">
       <StoresList currentStore={currentStore} setSelectedStore={setSelectedStore}/>
+      <div className="animated-content">
       <CurrentTheme />
       <div className={`manages-stores ${currentStore == SelectedStore? 'active':''}`}>
-        {<div className="manage-side change-store">
-          <h3 className='store-name'>{'Boutique name'}</h3>
-          <p>Cliquer sur le boutton si dessous pour que l'app afficher les Informations de la boutique</p>
-          <div className="btn" onClick={()=>setCurrentStore(SelectedStore)}>Changer de Boutique</div>
-        </div>}
+        
         <div className="manage-side">
-
           <div className="stats">
             <div className="section commades">
               <div className="min-info">
@@ -90,10 +86,24 @@ function Page() {
             </div>
           </div>
         </div>
+        <div className="manage-side change-store">
+          <h3 className='store-name'>{'Boutique name'}</h3>
+          <p>Cliquer sur le boutton si dessous pour que l'app afficher les Informations de la boutique</p>
+          <div className="btn" onClick={()=>setCurrentStore(SelectedStore)}>Changer de Boutique</div>
+        </div>
+        <div className="manage-side store-options">
+          <div className="play"><IoDesktop/> Rendre Disponible <IoChevronForward className='end'/></div>
+          <div className="stop"><IoClose/> Stopper <IoChevronForward className='end'/></div>
+          <div className="secur"><IoFingerPrint/> Securite <IoChevronForward className='end'/></div>
+          <div className="edit"><IoPencil/> Modifier <IoChevronForward className='end'/></div>
+          {/* <div className="stop"><IoSettings/> Parametre</div> */}
+          <div className="stting"><IoSettings/> Parametre <IoChevronForward className='end'/></div>
+        </div>
       </div>
 
       <RecentThemes store={0} />
       <ThemeList store={0} />
+      </div>
     </div>
   )
 }

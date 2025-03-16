@@ -21,31 +21,54 @@ type CollectedType = {
 };
 
 /*
+
     const [dates,setDates] = useState< "date_desc" | "date_asc" | "price_desc" | "price_asc" | undefined>();
     const [order,setOrder] = useState<(keyof typeof statusIcons)[] | undefined>();
     const [status,setStatus] = useState<[string | undefined, string | undefined] | undefined>();
     const [prices,setPrices] = useState< [number | undefined, number | undefined] | undefined>();
+    
 */
+
 
 function CommandeList() {
     const { openChild } = useApp();
     const [collected, setCollected] = useState<CollectedType>({});
 
+    const waittingCommand = false;
 
     return <div className="commands-list">
         <div className="top">
             <h2>List des Commandes</h2>
-            {!ClientCall(()=>location,{pathname:''}).pathname.startsWith('/commands') && <a className='filter' href='/commands'>
+            {!ClientCall(() => location, { pathname: '' }).pathname.startsWith('/commands') && <a className='filter' href='/commands'>
                 Tout voir <FiMaximize className='filter-icon' onClick={() => {
                 }} />
             </a>}
         </div>
         <CommandsFilters collected={collected} setCollected={setCollected} />
         <div className="list">
-            {Array.from({ length: 25 }).map((a, i) => (
-               <a key={i} href={`/commands/${ClientCall(Math.random,0)}`}>
-                 <CommandItem key={i} command={{} as CommandInterface} onClick={()=>0}/>
-               </a>
+            {
+                Array.from({ length: 0 }).length == 0 && <div className="watting-command">
+
+                </div>
+            }
+            {
+                Array.from({ length: 0 }).length == 0 && <div className="not-found-command">
+
+                </div>
+            }
+            {Array.from({ length: 0 }).map((a, i) => (
+                <>
+                    {
+                        i % 5 == 0 && <h2>{new Date().toLocaleDateString('fr', {
+                            day: 'numeric',
+                            month: 'long',
+                            year: 'numeric'
+                        })}</h2>
+                    }
+                    <a key={i} href={`/commands/${ClientCall(Math.random, 0)}`}>
+                        <CommandItem key={i} command={{} as CommandInterface} onClick={() => 0} />
+                    </a>
+                </>
             ))}
         </div>
     </div>

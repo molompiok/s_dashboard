@@ -85,6 +85,12 @@
 .stores .manages-stores.active .change-store{
     display: none!important;
 }
+.stores .manages-stores.active .store-options{
+    display: flex!important;
+}
+.stores .manages-stores .store-options{
+    display: none;
+}
 .stores .manages-stores{
     width: 100%;
     display: flex;
@@ -112,7 +118,7 @@
     color: #fff;
 }
 .stores .manage-side.change-store{
-    gap: 12px ;
+    gap: 40px ;
     justify-content: space-around;
 }
 .stores .manage-side .btn:hover{
@@ -158,9 +164,45 @@
     gap: 8px;
     padding: 0 6px;
 }
-@media (width < 420px) {
+/**/
+
+.stores .manage-side.store-options > div:hover{
+    background: #fff4;
+    transition: 200ms;
+}
+.stores .manage-side.store-options > div{
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    white-space: nowrap;
+    min-width: 200px;
+    background: #fff2;
+    padding: 4px 12px;
+    border-radius: 12px;
+    transition: 200ms;
+    cursor: pointer;
+}
+.stores .manage-side.store-options{
+    gap: 8px;
+    align-items: center;
+}
+.stores .manage-side.store-options > div{
+    display: flex;
+    gap: 12px;
+}
+.stores .manage-side.store-options > div svg{
+    width: 20px;
+    height: 20px;
+}
+.stores .manage-side.store-options > div svg.end {
+    margin-left: auto;
+}
+
+
+@media (width < 470px) {
 
     .stores .manages-stores{
-        flex-wrap: wrap;
+        flex-wrap: wrap-reverse;
     }
 }
+

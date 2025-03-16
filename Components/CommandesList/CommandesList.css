@@ -11,9 +11,21 @@
     display: flex;
     flex-direction: column;
     align-items: stretch;
-    gap: 8px;
+    gap: 12px;
 }
 
+.commands-list .list .watting-command{
+    width: 100%;
+    height: 300px;
+}
+.commands-list .list .not-found-command{
+    width: 100%;
+    height: 300px;
+}
+
+.commands-list .list h2{
+    margin: 12px 0;
+}
 
 .commands-list>.top {
     width: 100%;
@@ -38,16 +50,6 @@
     height: 22px;
 }
 
-.commands-list .popup-filter {
-    position: absolute;
-    right: 10px;
-    width: 240px;
-    height: 440px;
-    background: #345;
-}
-
-
-
 
 /*  commands-filters */
 
@@ -66,7 +68,6 @@
     gap: 12px;
     overflow-x: auto;
     overflow-y: hidden;
-    background: rgba(117, 147, 177, 0.085);
     border-radius: 12px;
 }
 

@@ -35,7 +35,7 @@ function CommandItem({ command, onClick, preview }: { preview?: boolean, onClick
                 <h3 className='price-command'>234 565 FCFA</h3>
             </div>
         </div>
-        <div className="products-previews">
+        {/* <div className="products-previews">
             {/// TODO les lost doivent inclures le rest pour afficher le SEE-MORE
                 Array.from({ length: 8 }).slice(0, 3).map((_, i) => <CommandProduct key={i} product={{} as any} />)
             }
@@ -46,6 +46,6 @@ function CommandItem({ command, onClick, preview }: { preview?: boolean, onClick
                         <IoChevronDown />
                     </div>
                 </div>}
-        </div>
+        </div> */}
     </div>
 }
