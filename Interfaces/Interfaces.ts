@@ -4,7 +4,24 @@ export type AnnimationType = {
   realIndex: number;
   size: number
 }
+export type ListType<T> = {
+    list:T[],
+    meta:{}
+}
 
+export interface StoreInterface {
+    id:string,
+    user_id:string,
+    name: string,
+    title: string
+    description: string,
+    cover_image: (string |  Blob)[],
+    domaines:string[],
+    logo: (string | File)[],
+    disk_storage_limit_gb:number,
+    expire_at:string,
+    created_at:string,
+}
 export interface UserInterface {
   id: string,
   name: string,

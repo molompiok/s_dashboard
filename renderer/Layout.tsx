@@ -43,11 +43,17 @@ function Layout({ children, pageContext }: { children: React.ReactNode; pageCont
 
 function OpenChild() {
   const { currentChild, alignItems, background, justifyContent, openChild,back } = useApp();
-  const child = currentChild || null
   
+  const child = currentChild || null
   const hash = useHashWatcher()
 
-  
+  useEffect(() => {
+    if (!child && location.hash === "#openChild") {
+      ClientCall(() => {
+        history.replaceState(null, "", location.pathname);
+      });
+    }
+  }, [child, hash]);
 
   return (child)&& hash=='#openChild' &&
     <div id='open-child' style={{

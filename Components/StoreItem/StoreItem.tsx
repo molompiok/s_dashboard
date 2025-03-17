@@ -2,12 +2,13 @@ import { useState } from 'react';
 import './StoreItem.css'
 import { IoCart, IoPeople } from 'react-icons/io5';
 import { getImg } from '../Utils/StringFormater';
-import { AnnimationType } from '../../Interfaces/Interfaces';
+import { AnnimationType, StoreInterface } from '../../Interfaces/Interfaces';
 import { Swiper as SwiperType } from 'swiper/types';
+import { Server_Host } from '../../renderer/+config';
 
 export {StoreItem}
 
-function StoreItem({ store, index, swiper, animation , active}: {active?:boolean, store: any, index: number, animation: AnnimationType, swiper: SwiperType }) {
+function StoreItem({ store, index, swiper, animation , active}: {active?:boolean, store: StoreInterface, index: number, animation: AnnimationType, swiper: SwiperType }) {
    
     let p = animation.translate + animation.slidesGrid[index]
     p = p / 5
@@ -19,18 +20,18 @@ function StoreItem({ store, index, swiper, animation , active}: {active?:boolean
     if (index == 1) console.log({ op, s, p });
   
     return <div className={`store-item ${active?'active':''}`}>
-      <div className="back" style={{ background: getImg('/res/store_img_1.jpg', 'cover', false) }}></div>
+      <div className="back" style={{ background: getImg(store.cover_image?.[0],undefined,Server_Host) }}></div>
       <div className="inner">
         <div className="top">
-          <div className="icon-80 logo" style={{ background: getImg('/res/store_img_1.jpg', undefined, false) }}></div>
-          <h1>Ladonal Market</h1>
+          <div className="icon-80 logo" style={{ background: getImg(store.logo?.[0],undefined,Server_Host) }}></div>
+          <h1>{store.name}</h1>
         </div>
         <div className="cover-image"></div>
-        <p>Description du stores visible pour les clients dans le about de la page du store/theme </p>
+        <p className='description'>{store.description} </p>
         <IoCart /> commandes
         <IoPeople /> Clients
       </div>
-      <div className="cover-image annimated" style={{ opacity: `${op}`, left: `${p}px`, background: getImg('/res/store_img_1.jpg', undefined, false) }}></div>
+      <div className="cover-image annimated" style={{ opacity: `${op}`, left: `${p}px`, background: getImg(store.cover_image?.[0],undefined,Server_Host) }}></div>
     </div>
   }
   

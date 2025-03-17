@@ -35,75 +35,75 @@ function Page() {
       : s < 900 && s >= 750 ? (s - 750) / 150 + 2
         : 3
   const p = s < 550 ? 20 : 30;
-  
+
   return (
     <div className="stores">
-      <StoresList currentStore={currentStore} setSelectedStore={setSelectedStore}/>
+      <StoresList currentStore={currentStore} setSelectedStore={setSelectedStore} />
       <div className="animated-content">
-      <CurrentTheme />
-      <div className={`manages-stores ${currentStore == SelectedStore? 'active':''}`}>
-        
-        <div className="manage-side">
-          <div className="stats">
-            <div className="section commades">
-              <div className="min-info">
-                <h3><IoCart className='icon' /> {'Commandes'} <span>{'38'}</span></h3>
-              </div>
-              <MyChart color='greenLight' />
-            </div>
-            <div className="section visites">
-              <div className="min-info">
-                <h3><IoPeopleSharp className='icon' /> {'Visites'} <span>{'38'}</span></h3>
-              </div>
-              <MyChart />
-            </div>
-          </div>
-          <Separator color='var(--contrast-text-color-1)'/>
-          <div className="activities">
-            <div className="activity">
-              <h3>Points de ventes</h3>
-              <Progrees progress={0.2}/>
-              <span>{20} / {99}</span>
-            </div>
-            <div className="activity">
-              <h3>Collaborateurs</h3>
-              <Progrees progress={0.2}/>
-              <span>{2} / {10}</span>
-            </div>
-            <div className="activity">
-              <h3>Produits</h3>
-              <Progrees progress={0.2}/>
-              <span>{2} / {10}</span>
-            </div>
-            <div className="activity">
-              <h3>Pays</h3>
-              <Progrees progress={0.2}/>
-              <span>{2} / {10}</span>
-            </div>
-            <div className="activity">
-              <h3>Disque SSD <span>(Gb)</span></h3>
-              <Progrees progress={0.2}/>
-              <span>{2} / {10}</span>
-            </div>
-          </div>
-        </div>
-        <div className="manage-side change-store">
-          <h3 className='store-name'>{'Boutique name'}</h3>
-          <p>Cliquer sur le boutton si dessous pour que l'app afficher les Informations de la boutique</p>
-          <div className="btn" onClick={()=>setCurrentStore(SelectedStore)}>Changer de Boutique</div>
-        </div>
-        <div className="manage-side store-options">
-          <div className="play"><IoDesktop/> Rendre Disponible <IoChevronForward className='end'/></div>
-          <div className="stop"><IoClose/> Stopper <IoChevronForward className='end'/></div>
-          <div className="secur"><IoFingerPrint/> Securite <IoChevronForward className='end'/></div>
-          <div className="edit"><IoPencil/> Modifier <IoChevronForward className='end'/></div>
-          {/* <div className="stop"><IoSettings/> Parametre</div> */}
-          <div className="stting"><IoSettings/> Parametre <IoChevronForward className='end'/></div>
-        </div>
-      </div>
+        <CurrentTheme />
+        <div className={`manages-stores ${currentStore == SelectedStore ? 'active' : ''}`}>
 
-      <RecentThemes store={0} />
-      <ThemeList store={0} />
+          <div className="manage-side">
+            <div className="stats">
+              <div className="section commades">
+                <div className="min-info">
+                  <h3><IoCart className='icon' /> {'Commandes'} <span>{'38'}</span></h3>
+                </div>
+                <MyChart color='greenLight' />
+              </div>
+              <div className="section visites">
+                <div className="min-info">
+                  <h3><IoPeopleSharp className='icon' /> {'Visites'} <span>{'38'}</span></h3>
+                </div>
+                <MyChart />
+              </div>
+            </div>
+            <Separator color='var(--contrast-text-color-1)' />
+            <div className="activities">
+              <div className="activity">
+                <h3>Points de ventes</h3>
+                <Progrees progress={0.2} />
+                <span>{20} / {99}</span>
+              </div>
+              <div className="activity">
+                <h3>Collaborateurs</h3>
+                <Progrees progress={0.2} />
+                <span>{2} / {10}</span>
+              </div>
+              <div className="activity">
+                <h3>Produits</h3>
+                <Progrees progress={0.2} />
+                <span>{2} / {10}</span>
+              </div>
+              <div className="activity">
+                <h3>Pays</h3>
+                <Progrees progress={0.2} />
+                <span>{2} / {10}</span>
+              </div>
+              <div className="activity">
+                <h3>Disque SSD <span>(Gb)</span></h3>
+                <Progrees progress={0.2} />
+                <span>{2} / {10}</span>
+              </div>
+            </div>
+          </div>
+          <div className="manage-side change-store">
+            <h3 className='store-name'>{'Boutique name'}</h3>
+            <p>Cliquer sur le boutton si dessous pour que l'app afficher les Informations de la boutique</p>
+            <div className="btn" onClick={() => setCurrentStore(SelectedStore)}>Changer de Boutique</div>
+          </div>
+          <div className="manage-side store-options">
+            <div className="play"><IoDesktop /> Rendre Disponible <IoChevronForward className='end' /></div>
+            <div className="stop"><IoClose /> Stopper <IoChevronForward className='end' /></div>
+            <div className="secur"><IoFingerPrint /> Securite <IoChevronForward className='end' /></div>
+            <div className="edit"><IoPencil /> Modifier <IoChevronForward className='end' /></div>
+            {/* <div className="stop"><IoSettings/> Parametre</div> */}
+            <div className="stting"><IoSettings /> Parametre <IoChevronForward className='end' /></div>
+          </div>
+        </div>
+
+        <RecentThemes store={0} />
+        <ThemeList store={0} />
       </div>
     </div>
   )
@@ -122,7 +122,7 @@ function CurrentTheme() {
   const p = s < 550 ? 20 : 30
   return <div className="current-theme" >
     <div className="detail-current-theme">
-      <div className="image" style={{ background: getImg('/res/store_img_5.jpg', 'cover', false) }}></div>
+      <div className="image" style={{ background: getImg('/res/store_img_5.jpg', 'cover') }}></div>
       <div className="general">
         <h2>Theme Nane Sublymus</h2>
         <p className='theme-specialities'>{

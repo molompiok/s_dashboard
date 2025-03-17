@@ -1,17 +1,39 @@
 export {
     ClientCall,
     getFileType,
-    shortNumber
+    shortNumber,
+    toNameString
 }
 
 
 function ClientCall(fn:Function,defaultValue?:any,...params:any[]) {
     if (typeof window !== 'undefined')
-       return fn(...params);
+        try {
+          return fn(...params);
+        } catch (error) {
+          return defaultValue
+        }
     else
         return defaultValue
 }
 
+const CharList = Array.from({length:32}).map((_,i)=>Number(i).toString(32));
+CharList.push('_');
+
+function toNameString(name:string) {
+  
+  let n =  name.toLocaleLowerCase();
+  let _n = ''
+  for (let i = 0; i < n.length; i++) {
+    if(CharList.includes(n[i])){
+      _n += n[i];
+    }else if(n[i]==' '){
+      _n+= '_'
+    }
+    
+  }
+  return _n
+}
 function getFileType(file: string | Blob) {
   if (typeof file == 'string') {
     const ext = file.substring(file.lastIndexOf('.') + 1, file.length);

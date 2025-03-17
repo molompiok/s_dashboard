@@ -19,4 +19,5 @@ export default {
 } satisfies Config
 
 const Host = `http://172.25.69.125:3000`
-export {Host}
+const Server_Host = `http://172.25.69.125:3333`
+export {Host, Server_Host}

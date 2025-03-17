@@ -106,7 +106,7 @@ export const useAuthStore = create(combine({
         // if (!user) return
         const headers = new Headers();
         headers.append("Authorization", `Bearer ${
-            'oat_MQ.Ukt2dUN1dDBPbVNtX2twb1RiTzUyTks2NlZGUGFxLXlsQXNXZFpnTDMzNzY3NjQ5OTU'//user.token
+            'oat_MQ.OEt4d1ZlWFNKZndjb0xHV2EtUkd2SXByQ01PTTRVVVp3RjkwaVJDczIzMDM0MDE5MjU'//user.token
         }`);
         return {headers ,user}
     }

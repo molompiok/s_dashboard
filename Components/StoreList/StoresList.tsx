@@ -13,6 +13,7 @@ import 'swiper/css/navigation';
 import { IoAdd, IoStorefront } from "react-icons/io5";
 import { useApp } from "../../renderer/AppStore/UseApp";
 import { StoreCreate } from "../../pages/StoreCreate/StoreCreate";
+import { useStore } from "../../pages/stores/StoreStore";
 
 
 export {StoresList}
@@ -22,6 +23,7 @@ function StoresList({currentStore, setSelectedStore}:{currentStore:number, setSe
     const [swiperRef, setSwiperRef] = useState<SwiperType | null>(null);
     const [animation, setAnnimation] = useState<AnnimationType | null>(null);
     const { openChild} = useApp() 
+    const  {fetchOwnerStores, stores} = useStore()
 
     let s = size.width;
     
@@ -58,11 +60,12 @@ function StoresList({currentStore, setSelectedStore}:{currentStore:number, setSe
       
     },[swiperRef]);
     
-
-    const stores = Array.from({ length: 5 })
+    useEffect(()=>{
+      fetchOwnerStores({});
+    },[])
     return <Swiper
       onActiveIndexChange={(_swiper) => {
-        stores.length !== _swiper.realIndex && setSelectedStore(_swiper.realIndex)
+        stores?.list.length !== _swiper.realIndex && setSelectedStore(_swiper.realIndex)
       }}
       onSliderMove={(s) => {
         setAnnimation({
@@ -85,16 +88,16 @@ function StoresList({currentStore, setSelectedStore}:{currentStore:number, setSe
       className="stores-list no-selectable"
     >
       {
-        stores.map((_, index) => (
+        stores?.list.map((s, index) => (
           <SwiperSlide key={index} onClick={() => {
             swiperRef?.slideTo(index)
           }}>
-            {swiperRef && animation && <StoreItem active={currentStore ==index} animation={animation} index={index} swiper={swiperRef} store />}
+            {swiperRef && animation && <StoreItem active={currentStore ==index} animation={animation} index={index} swiper={swiperRef} store={s} />}
           </SwiperSlide>
         ))
       }{
         <SwiperSlide onClick={() => {
-          swiperRef?.slideTo(stores.length)
+          swiperRef?.slideTo(stores?.list.length||0)
         }}>
           {swiperRef && animation && <div className="add-new-store" onClick={()=>{
             openChild(<StoreCreate back={true}/>,{

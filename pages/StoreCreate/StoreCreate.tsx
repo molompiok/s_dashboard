@@ -6,6 +6,7 @@ import { CreateStore, StoreCollectedType } from './CreateStore';
 import { getImg } from '../../Components/Utils/StringFormater';
 import { ClientCall } from '../../Components/Utils/functions';
 import { IoChevronForward } from 'react-icons/io5';
+import { useStore } from '../stores/StoreStore';
 
 export { StoreCreate }
 
@@ -38,7 +39,7 @@ function StoreCreate({back}:{back?:boolean}) {
             {
                 page == 'loading-create' && <StoreCreateLoading collected={collected||{}} onReady={(store) => {
                     setCollected(store)
-                    setPage('create-error')
+                    setPage('create-success')
                 }} onError={(error) => {
                     setPage('create-error')
                 }} />
@@ -118,11 +119,16 @@ function CasError({ type ,openDash,onDashRequired}: { type: 'create' | 'edit' ,o
     </div>
 }
 function StoreCreateLoading({ collected, onError, onReady }: { collected: Partial<StoreCollectedType>, onReady: (collected: StoreCollectedType) => void, onError: (error: string) => void }) {
-
+    
+    const  { createStore } = useStore();
     const [message, setMessage] = useState('');
     const [time, setTime] = useState(0);
-    const [store, setStore] = useState<{} | null>(null)
     // const [setp,setStep] = useState<'loading'|''>('loading')
+    const [_s] = useState({
+        name:'',
+        usedName:''
+    })
+    _s.name = collected.name||''
     useEffect(() => {
         let i = 0;
         let s = 0;
@@ -167,11 +173,22 @@ function StoreCreateLoading({ collected, onError, onReady }: { collected: Partia
             onError('Votre Demand a bien ete enregistrer, nous vous rappelerons dans moin de 2h( en journee) (moin de 24 heurs en soiree) apres avoir Creation de la boutique')
         }, 30_000);
 
-        setTimeout(() => {
-            clearInterval(id);
-            clearTimeout(out_id);
-            onReady({} as any);
-        }, 20_000)
+        if(_s.usedName != collected.name){// Bug le createStore est appeler 2 fois;
+            _s.usedName = collected.name||'';
+            createStore(collected).then((store)=>{
+                console.log({store});
+                clearInterval(id);
+                clearTimeout(out_id);
+                onReady(store);
+            }).catch((reason)=>{
+                console.log({reason});
+                clearInterval(id);
+                clearTimeout(out_id);
+                onError(JSON.stringify(reason));
+            })
+        }
+       
+
         return () => {
             clearInterval(id);
             clearTimeout(out_id);
