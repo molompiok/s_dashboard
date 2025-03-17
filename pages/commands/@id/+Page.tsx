@@ -14,7 +14,7 @@ import { Separator } from '../../../Components/Separator/Separator';
 import { kMaxLength } from 'buffer';
 import { useWindowSize } from '../../../Hooks/useWindowSize';
 import { useState } from 'react';
-import { useApp } from '../../../renderer/Stores/UseApp';
+import { useApp } from '../../../renderer/AppStore/UseApp';
 import { ChildViewer } from '../../../Components/ChildViewer/ChildViewer';
 import { Receipt } from './Receipt/Receipt';
 

@@ -3,7 +3,7 @@ import { useWindowSize } from '../../../Hooks/useWindowSize'
 import './CategoriesList.css'
 import { CategoryItem } from '../../../Components/CategoryItem/CategoryItem';
 import { IoAddSharp, IoArrowForward } from "react-icons/io5";
-import { useApp } from '../../../renderer/Stores/UseApp';
+import { useApp } from '../../../renderer/AppStore/UseApp';
 import { ChildViewer } from '../../../Components/ChildViewer/ChildViewer';
 
 const CATEGORY_SIZE = 80;

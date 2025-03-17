@@ -17,7 +17,7 @@ import { FeatureValueInterface } from '../../Interfaces/Interfaces';
 import { IoArrowBackCircle, IoArrowBackCircleOutline, IoArrowForwardCircle, IoArrowForwardCircleOutline, IoTrash } from 'react-icons/io5';
 import { BiSolidImageAdd } from 'react-icons/bi';
 import { getFileType } from '../Utils/functions';
-import { useApp } from '../../renderer/Stores/UseApp';
+import { useApp } from '../../renderer/AppStore/UseApp';
 import { ChildViewer } from '../ChildViewer/ChildViewer';
 import { ConfirmDelete } from '../Confirm/ConfirmDelete';
 

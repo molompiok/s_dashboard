@@ -2,6 +2,7 @@ import React, { JSX, StyleHTMLAttributes } from "react";
 import { create } from "zustand";
 import { combine } from "zustand/middleware";
 import { usePageContext } from "../usePageContext";
+import { ClientCall } from "../../Components/Utils/functions";
 
 export { useApp }
 
@@ -11,6 +12,7 @@ const useApp = create(combine({
     justifyContent: '' as 'right' | 'left' | 'space-around' | 'space-between' | 'space-evenly' | 'unsafe' | 'center',
     background: '' as string,
     blur: 0,
+    back:true,
 }, (set, get) => ({
     openChild(child: JSX.Element | null | undefined, option?: Partial<ReturnType<typeof get>>&{back?:boolean}) {
         set(() => ({
@@ -19,8 +21,9 @@ const useApp = create(combine({
             justifyContent: option?.justifyContent || 'center',
             background: option?.background || '',
             blur: option?.blur || 0,
+            back:option?.back||true
         }))
-        if (!child && option?.back!==false) history.back();
+        if (!child && option?.back!==false) ClientCall(history.back,0);
         if(child) location.hash = 'openChild'
     },
 })));

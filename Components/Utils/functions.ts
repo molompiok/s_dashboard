@@ -5,7 +5,7 @@ export {
 }
 
 
-function ClientCall(fn:Function,defaultValue:any,...params:any[]) {
+function ClientCall(fn:Function,defaultValue?:any,...params:any[]) {
     if (typeof window !== 'undefined')
        return fn(...params);
     else

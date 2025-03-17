@@ -10,6 +10,9 @@ import './StoresList.css'
 import 'swiper/css';
 import 'swiper/css/pagination';
 import 'swiper/css/navigation';
+import { IoAdd, IoStorefront } from "react-icons/io5";
+import { useApp } from "../../renderer/AppStore/UseApp";
+import { StoreCreate } from "../../pages/StoreCreate/StoreCreate";
 
 
 export {StoresList}
@@ -18,8 +21,10 @@ function StoresList({currentStore, setSelectedStore}:{currentStore:number, setSe
     const size = useWindowSize();
     const [swiperRef, setSwiperRef] = useState<SwiperType | null>(null);
     const [animation, setAnnimation] = useState<AnnimationType | null>(null);
+    const { openChild} = useApp() 
+
     let s = size.width;
-  
+    
     const n = s < 550 ? (
       ((s - 260) / 290) * 1 + 1
     ) : 2;
@@ -48,9 +53,16 @@ function StoresList({currentStore, setSelectedStore}:{currentStore:number, setSe
       }
     }, [animus]);
   
+    useEffect(()=>{
+      swiperRef && swiperRef.slideTo(currentStore)
+      
+    },[swiperRef]);
+    
+
+    const stores = Array.from({ length: 5 })
     return <Swiper
       onActiveIndexChange={(_swiper) => {
-        setSelectedStore(_swiper.realIndex)
+        stores.length !== _swiper.realIndex && setSelectedStore(_swiper.realIndex)
       }}
       onSliderMove={(s) => {
         setAnnimation({
@@ -68,18 +80,31 @@ function StoresList({currentStore, setSelectedStore}:{currentStore:number, setSe
       pagination={{
         type: 'fraction',
       }}
-      navigation={true}
-      modules={[Pagination, Navigation]}
+      // navigation={true}
+      modules={[Pagination]}
       className="stores-list no-selectable"
     >
       {
-        Array.from({ length: 5 }).map((_, index) => (
+        stores.map((_, index) => (
           <SwiperSlide key={index} onClick={() => {
             swiperRef?.slideTo(index)
           }}>
             {swiperRef && animation && <StoreItem active={currentStore ==index} animation={animation} index={index} swiper={swiperRef} store />}
           </SwiperSlide>
         ))
+      }{
+        <SwiperSlide onClick={() => {
+          swiperRef?.slideTo(stores.length)
+        }}>
+          {swiperRef && animation && <div className="add-new-store" onClick={()=>{
+            openChild(<StoreCreate back={true}/>,{
+              back:true,
+            })
+          }}>
+              <IoStorefront/>
+              <span><IoAdd/>Ajouter une nouvelle boutique</span>
+          </div> }
+        </SwiperSlide>
       }
     </Swiper>
   }

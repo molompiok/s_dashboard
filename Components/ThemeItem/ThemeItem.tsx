@@ -19,7 +19,7 @@ function ThemeItem({ theme }: { theme: any }) {
       }
     </div>
     <p className='theme-specialities'>{
-      ['multi category', '3d', 'AR', '3D seulement', 'food', 'immobilier'].map(f => <span>{f}</span>)
+      ['multi category', '3d', 'AR', '3D seulement', 'food', 'immobilier'].map(f => <span key={f}>{f}</span>)
     }</p>
 
   </div>

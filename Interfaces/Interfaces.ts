@@ -5,6 +5,19 @@ export type AnnimationType = {
   size: number
 }
 
+export interface UserInterface {
+  id: string,
+  name: string,
+  email: string,
+  phone?: string,
+  password: string,
+  photos: string[],
+  // roles?: Role[],
+  token: string;
+  created_at: string,
+  // status: Status | 'NEW'
+  // s_type?: string;
+}
 
 export interface CommandInterface{
     id: '1324389495',

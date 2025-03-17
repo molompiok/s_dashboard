@@ -1,16 +1,17 @@
 export { Layout }
 
-import React from 'react'
+import React, { useEffect } from 'react'
 import logoUrl from './logo.svg'
 import { PageContextProvider, usePageContext } from './usePageContext'
 import { Link } from './Link'
 import type { PageContext } from 'vike/types'
 import './css/index.css'
 import './Layout.css'
-import { useApp } from './Stores/UseApp'
+import { useApp } from './AppStore/UseApp'
 import { Icons } from '../Components/Utils/constants'
 import { StoreCreate } from '../pages/StoreCreate/StoreCreate'
 import { ClientCall } from '../Components/Utils/functions'
+import { useHashWatcher } from '../Hooks/useHashWatcher'
 
 function Layout({ children, pageContext }: { children: React.ReactNode; pageContext: PageContext }) {
   return (
@@ -41,14 +42,14 @@ function Layout({ children, pageContext }: { children: React.ReactNode; pageCont
 }
 
 function OpenChild() {
-  const { currentChild, alignItems, background, justifyContent, openChild } = useApp();
-  const child = currentChild || <StoreCreate />
-  const { urlOriginal } = usePageContext()
-  const local = ClientCall(() => location, {});
+  const { currentChild, alignItems, background, justifyContent, openChild,back } = useApp();
+  const child = currentChild || null
   
-  console.log({ urlOriginal, local });
-  // return local.hash == '#open_child' && (child) &&
-  return (child) &&
+  const hash = useHashWatcher()
+
+  
+
+  return (child)&& hash=='#openChild' &&
     <div id='open-child' style={{
       alignItems, background, justifyContent
     }} onClick={(e) => {
@@ -114,8 +115,6 @@ function Page({ children }: { children: React.ReactNode }) {
     </div>
   )
 }
-
-
 
 function Content({ children }: { children: React.ReactNode }) {
   return (

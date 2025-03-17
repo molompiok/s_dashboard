@@ -7,7 +7,7 @@ import 'swiper/css/grid';
 
 import './Page.css'
 import { useWindowSize } from '../../Hooks/useWindowSize';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { FreeMode } from 'swiper/modules';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { getImg } from '../../Components/Utils/StringFormater';
@@ -25,7 +25,7 @@ export { Page }
 
 function Page() {
 
-  const [currentStore, setCurrentStore] = useState(0);
+  const [currentStore, setCurrentStore] = useState(2);
   const [SelectedStore, setSelectedStore] = useState(0);
   const l = 9;
   const h = 240;
@@ -34,7 +34,8 @@ function Page() {
     : s < 750 && s >= 550 ? 2
       : s < 900 && s >= 750 ? (s - 750) / 150 + 2
         : 3
-  const p = s < 550 ? 20 : 30
+  const p = s < 550 ? 20 : 30;
+  
   return (
     <div className="stores">
       <StoresList currentStore={currentStore} setSelectedStore={setSelectedStore}/>
@@ -125,7 +126,7 @@ function CurrentTheme() {
       <div className="general">
         <h2>Theme Nane Sublymus</h2>
         <p className='theme-specialities'>{
-          ['multi category', '3d', 'AR', '3D seulement', 'food', 'immobilier'].map(f => <span>{f}</span>)
+          ['multi category', '3d', 'AR', '3D seulement', 'food', 'immobilier'].map(f => <span key={f}>{f}</span>)
         }</p>
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
           <h3 style={{ whiteSpace: 'nowrap' }}>STATUS :</h3>

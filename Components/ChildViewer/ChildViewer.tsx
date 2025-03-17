@@ -1,4 +1,4 @@
-import { useApp } from '../../renderer/Stores/UseApp';
+import { useApp } from '../../renderer/AppStore/UseApp';
 import './ChildViewer.css'
 import { IoCloseSharp } from "react-icons/io5";
 export { ChildViewer }

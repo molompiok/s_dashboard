@@ -41,7 +41,7 @@ function ThemeList({ store }: { store: any }) {
       >
         {
           Array.from({ length: l }).map((_, i) => (
-            <SwiperSlide>
+            <SwiperSlide key={i}>
               <ThemeItem theme={0} />
             </SwiperSlide>
           ))
@@ -76,7 +76,7 @@ function ThemeList({ store }: { store: any }) {
       >
         {
           Array.from({ length: l }).map((_, i) => (
-            <SwiperSlide>
+            <SwiperSlide key={i}>
               <ThemeItem theme={0} />
             </SwiperSlide>
           ))
