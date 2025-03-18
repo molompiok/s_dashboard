@@ -3,14 +3,17 @@ import { useWindowSize } from '../../../Hooks/useWindowSize'
 import './CategoriesList.css'
 import { CategoryItem } from '../../../Components/CategoryItem/CategoryItem';
 import { IoAddSharp, IoArrowForward } from "react-icons/io5";
+import { CgExtensionAdd} from "react-icons/cg";
 import { useApp } from '../../../renderer/AppStore/UseApp';
 import { ChildViewer } from '../../../Components/ChildViewer/ChildViewer';
+import { CategoryInterface } from '../../../Interfaces/Interfaces';
+import { getImg } from '../../../Components/Utils/StringFormater';
 
 const CATEGORY_SIZE = 80;
 const GAP = 8
 export { CategoriesList }
 
-function CategoriesList({title}:{title?:string}) {
+function CategoriesList({ title }: { title?: string }) {
 
     const { openChild } = useApp()
     const size = useWindowSize();
@@ -22,40 +25,43 @@ function CategoriesList({title}:{title?:string}) {
         const w = listRef.current.getBoundingClientRect().width
         setListWidth(w);
     }, [size]);
+    const categories = Array.from({ length: 4 }) as CategoryInterface[];
+    let limit = Math.trunc((listWidth + GAP) / (CATEGORY_SIZE + GAP)) * 2 - 1
+    limit = Math.max(0,limit);
+    const seeMore = (categories.length||0) > limit;
 
-    const limit = Math.trunc(listWidth / (CATEGORY_SIZE + GAP)) * 2 - 1
-    const seeMore = Array.from({ length: 20 }).length > limit
     return <div className="catefgories-list">
-        <h1>{title ||'Liste des categories'}</h1>
+        <h1>{title || 'Liste des categories'}</h1>
         <div className="list" ref={listRef}>
-            <AddCategory />
+            <AddCategory isNew={categories.length == 0 }/>
             {
-                Array.from({ length: 20 }).slice(0, limit - (seeMore ? 1 : 0)).map((_, i) =>
-                    <CategoryItem key={i} category={{} as any} />
+                categories.slice(0, limit - (seeMore ? 1 : 0)).map((c, i) =>
+                    <CategoryItem key={i} category={c} />
                 )
             }
-            <SeeMore onClick={() => {
+            {seeMore && <SeeMore onClick={() => {
                 openChild(<ChildViewer title='List des categories'>
-                    <ListCategoriesPopup />
-                </ChildViewer>,{blur:10})
-            }} />
+                    <ListCategoriesPopup categories={categories} />
+                </ChildViewer>, { blur: 10 })
+            }} />}
+
         </div>
     </div>
 }
 
-function AddCategory() {
-    return <a className="add-category">
-        <IoAddSharp className='icon' />
+function AddCategory({isNew}:{isNew:boolean}) {
+    return <a href='/category?new' className={isNew? "add-new-category":"add-category"}>
+        <CgExtensionAdd className='icon' />
+       {isNew && <button>Ajoutez une categorie </button>}
     </a>
 }
-
 function SeeMore({ onClick }: { onClick: () => void }) {
-    return <div  onClick={onClick} className="more-category">
+    return <div onClick={onClick} className="more-category">
         <IoArrowForward className='icon' />
     </div>
 }
 
-function ListCategoriesPopup() {
+function ListCategoriesPopup({ categories }: { categories: CategoryInterface[] }) {
     const { openChild } = useApp()
 
     return <div className="list-categories-popup" style={{
@@ -66,7 +72,7 @@ function ListCategoriesPopup() {
         padding: '10px'
     }}>
         {
-            Array.from({ length: 40 }).map((_, i) =>
+            categories.map((_, i) =>
                 <CategoryItem key={i} category={{} as any} onClick={() => {
                     openChild(null)
                 }} />

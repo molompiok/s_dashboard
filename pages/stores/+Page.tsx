@@ -19,14 +19,27 @@ import { IoCart, IoChevronForward, IoClose, IoDesktop, IoFingerPrint, IoPause, I
 import MyChart from '../index/MiniChart';
 import { Separator } from '../../Components/Separator/Separator';
 import { Progrees } from '../../Components/Progress/Pregress';
+import { StoreInterface } from '../../Interfaces/Interfaces';
+import { useStore } from './StoreStore';
+import { ClientCall } from '../../Components/Utils/functions';
 
 export { Page }
 
 
 function Page() {
+  const a = parseInt(ClientCall(()=>localStorage.getItem('store.manage')||'0'));
+  const [index, setIndex] = useState(a);
+  const [managedIndex, setManagedIndex] = useState(a);
+  const { stores } = useStore();
 
-  const [currentStore, setCurrentStore] = useState(2);
-  const [SelectedStore, setSelectedStore] = useState(0);
+  const [animationKey, setAnimationKey] = useState(0);
+  const [page, setPage] = useState('p0');
+
+  const changePage = (newPage:string) => {
+    setPage(newPage);
+    setAnimationKey(prev => prev + 1); // Change la clé pour forcer le re-render
+  };
+
   const l = 9;
   const h = 240;
   const s = useWindowSize().width;
@@ -38,80 +51,105 @@ function Page() {
 
   return (
     <div className="stores">
-      <StoresList currentStore={currentStore} setSelectedStore={setSelectedStore} />
-      <div className="animated-content">
-        <CurrentTheme />
-        <div className={`manages-stores ${currentStore == SelectedStore ? 'active' : ''}`}>
-
-          <div className="manage-side">
-            <div className="stats">
-              <div className="section commades">
-                <div className="min-info">
-                  <h3><IoCart className='icon' /> {'Commandes'} <span>{'38'}</span></h3>
-                </div>
-                <MyChart color='greenLight' />
-              </div>
-              <div className="section visites">
-                <div className="min-info">
-                  <h3><IoPeopleSharp className='icon' /> {'Visites'} <span>{'38'}</span></h3>
-                </div>
-                <MyChart />
-              </div>
-            </div>
-            <Separator color='var(--contrast-text-color-1)' />
-            <div className="activities">
-              <div className="activity">
-                <h3>Points de ventes</h3>
-                <Progrees progress={0.2} />
-                <span>{20} / {99}</span>
-              </div>
-              <div className="activity">
-                <h3>Collaborateurs</h3>
-                <Progrees progress={0.2} />
-                <span>{2} / {10}</span>
-              </div>
-              <div className="activity">
-                <h3>Produits</h3>
-                <Progrees progress={0.2} />
-                <span>{2} / {10}</span>
-              </div>
-              <div className="activity">
-                <h3>Pays</h3>
-                <Progrees progress={0.2} />
-                <span>{2} / {10}</span>
-              </div>
-              <div className="activity">
-                <h3>Disque SSD <span>(Gb)</span></h3>
-                <Progrees progress={0.2} />
-                <span>{2} / {10}</span>
-              </div>
-            </div>
-          </div>
-          <div className="manage-side change-store">
-            <h3 className='store-name'>{'Boutique name'}</h3>
-            <p>Cliquer sur le boutton si dessous pour que l'app afficher les Informations de la boutique</p>
-            <div className="btn" onClick={() => setCurrentStore(SelectedStore)}>Changer de Boutique</div>
-          </div>
-          <div className="manage-side store-options">
-            <div className="play"><IoDesktop /> Rendre Disponible <IoChevronForward className='end' /></div>
-            <div className="stop"><IoClose /> Stopper <IoChevronForward className='end' /></div>
-            <div className="secur"><IoFingerPrint /> Securite <IoChevronForward className='end' /></div>
-            <div className="edit"><IoPencil /> Modifier <IoChevronForward className='end' /></div>
-            {/* <div className="stop"><IoSettings/> Parametre</div> */}
-            <div className="stting"><IoSettings /> Parametre <IoChevronForward className='end' /></div>
-          </div>
-        </div>
-
-        <RecentThemes store={0} />
-        <ThemeList store={0} />
-      </div>
+      <StoresList index={index} setIndex={(i) => {
+        const l = stores?.list.length||0;
+        if(i == index) return
+        else if (index == l-1 && i==l){
+          setIndex(i);
+          changePage('left');
+          return
+        }
+        else if (index == l && i ==l-1 ){
+          setIndex(i);
+          changePage('right');
+          return
+        }
+        else if (i < index) changePage('p-1');
+        else if (i > index) changePage('p1');
+        setTimeout(() => {
+          setIndex(i);
+        }, 200);
+      }} managedIndex={managedIndex} />
+      <StoreDetail key={animationKey} postion={page} store={stores?.list[index]} isActive={index == managedIndex} onActiveRequired={() => {
+        setManagedIndex(index);
+        ClientCall(()=>localStorage.setItem('store.manage',index.toString()));
+      }} />
+      {stores?.list[index] && <ThemeList store={0} />}
     </div>
   )
 }
 
 
 
+function StoreDetail({ store, postion, isActive, onActiveRequired }: { onActiveRequired: () => void, postion: string, isActive?: boolean, store?: StoreInterface | null }) {
 
+
+  return <div className={postion}>
+    <CurrentTheme />
+    <div className={`manages-stores ${isActive ? 'active' : ''}`}>
+
+      <div className="manage-side">
+        <div className="stats">
+          <div className="section commades">
+            <div className="min-info">
+              <h3><IoCart className='icon' /> {'Commandes'} <span>{'38'}</span></h3>
+            </div>
+            <MyChart color='greenLight' />
+          </div>
+          <div className="section visites">
+            <div className="min-info">
+              <h3><IoPeopleSharp className='icon' /> {'Visites'} <span>{'38'}</span></h3>
+            </div>
+            <MyChart />
+          </div>
+        </div>
+        <Separator color='var(--contrast-text-color-1)' />
+        <div className="activities">
+          <div className="activity">
+            <h3>Points de ventes</h3>
+            <Progrees progress={0.2} />
+            <span>{20} / {99}</span>
+          </div>
+          <div className="activity">
+            <h3>Collaborateurs</h3>
+            <Progrees progress={0.2} />
+            <span>{2} / {10}</span>
+          </div>
+          <div className="activity">
+            <h3>Produits</h3>
+            <Progrees progress={0.2} />
+            <span>{2} / {10}</span>
+          </div>
+          <div className="activity">
+            <h3>Pays</h3>
+            <Progrees progress={0.2} />
+            <span>{2} / {10}</span>
+          </div>
+          <div className="activity">
+            <h3>Disque SSD <span>(Gb)</span></h3>
+            <Progrees progress={0.2} />
+            <span>{2} / {10}</span>
+          </div>
+        </div>
+      </div>
+      <div className="manage-side change-store">
+        <h3 className='store-name'>{'Boutique name'}</h3>
+        <p>Cliquer sur le boutton si dessous pour que l'app afficher les Informations de la boutique</p>
+        <div className="btn" onClick={onActiveRequired}>Changer de Boutique</div>
+      </div>
+      <div className="manage-side store-options">
+        <div className="play"><IoDesktop /> Rendre Disponible <IoChevronForward className='end' /></div>
+        <div className="stop"><IoClose /> Stopper <IoChevronForward className='end' /></div>
+        <div className="secur"><IoFingerPrint /> Securite <IoChevronForward className='end' /></div>
+        <div className="edit"><IoPencil /> Modifier <IoChevronForward className='end' /></div>
+        {/* <div className="stop"><IoSettings/> Parametre</div> */}
+        <div className="stting"><IoSettings /> Parametre <IoChevronForward className='end' /></div>
+      </div>
+    </div>
+
+    <RecentThemes store={0} />
+  </div>
+}
 
 function CurrentTheme() {
   const [store, setStore] = useState<any>({})

@@ -18,17 +18,19 @@ import { useStore } from "../../pages/stores/StoreStore";
 
 export {StoresList}
 
-function StoresList({currentStore, setSelectedStore}:{currentStore:number, setSelectedStore:(store:number)=>void}) {
+function StoresList({index, setIndex,managedIndex}:{managedIndex:number,index:number, setIndex:(store:number)=>void}) {
     const size = useWindowSize();
     const [swiperRef, setSwiperRef] = useState<SwiperType | null>(null);
     const [animation, setAnnimation] = useState<AnnimationType | null>(null);
     const { openChild} = useApp() 
-    const  {fetchOwnerStores, stores} = useStore()
+    const  {fetchOwnerStores, stores} = useStore();
 
     let s = size.width;
     
     const n = s < 550 ? (
-      ((s - 260) / 290) * 1 + 1
+      ((s - 260) / 490) * 1 + 1
+    ) : s < 750 ? (
+      ((s - 260) / 490) * 1 + 0.7
     ) : 2;
   
     const p = s < 750 ? 30 : 50
@@ -56,7 +58,9 @@ function StoresList({currentStore, setSelectedStore}:{currentStore:number, setSe
     }, [animus]);
   
     useEffect(()=>{
-      swiperRef && swiperRef.slideTo(currentStore)
+      setTimeout(() => {
+        swiperRef && swiperRef.slideTo(index)
+      }, 300);
       
     },[swiperRef]);
     
@@ -65,7 +69,7 @@ function StoresList({currentStore, setSelectedStore}:{currentStore:number, setSe
     },[])
     return <Swiper
       onActiveIndexChange={(_swiper) => {
-        stores?.list.length !== _swiper.realIndex && setSelectedStore(_swiper.realIndex)
+        setIndex(_swiper.realIndex)
       }}
       onSliderMove={(s) => {
         setAnnimation({
@@ -88,18 +92,19 @@ function StoresList({currentStore, setSelectedStore}:{currentStore:number, setSe
       className="stores-list no-selectable"
     >
       {
-        stores?.list.map((s, index) => (
-          <SwiperSlide key={index} onClick={() => {
-            swiperRef?.slideTo(index)
+        stores?.list.map((s, i) => (
+          <SwiperSlide key={i} onClick={() => {
+            swiperRef?.slideTo(i)
           }}>
-            {swiperRef && animation && <StoreItem active={currentStore ==index} animation={animation} index={index} swiper={swiperRef} store={s} />}
+            {swiperRef && animation && <StoreItem active={managedIndex ==i} animation={animation} index={index} swiper={swiperRef} store={s} />}
           </SwiperSlide>
         ))
       }{
         <SwiperSlide onClick={() => {
           swiperRef?.slideTo(stores?.list.length||0)
         }}>
-          {swiperRef && animation && <div className="add-new-store" onClick={()=>{
+          {
+          swiperRef && animation && <div className="add-new-store" onClick={()=>{
             openChild(<StoreCreate back={true}/>,{
               back:true,
             })

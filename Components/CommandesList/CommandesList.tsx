@@ -12,6 +12,7 @@ import "react-day-picker/style.css";
 import { ClientCall } from '../Utils/functions'
 export { CommandeList }
 import { FiMaximize } from 'react-icons/fi';
+import { getImg } from '../Utils/StringFormater'
 
 type CollectedType = {
     order?: "date_desc" | "date_asc" | "price_desc" | "price_asc" | undefined;
@@ -30,12 +31,9 @@ type CollectedType = {
 */
 
 
-function CommandeList() {
-    const { openChild } = useApp();
+function CommandeList({product_id}:{product_id?:string}) {
     const [collected, setCollected] = useState<CollectedType>({});
-
-    const waittingCommand = false;
-
+    const commands = Array.from({ length: 0 });
     return <div className="commands-list">
         <div className="top">
             <h2>List des Commandes</h2>
@@ -46,17 +44,11 @@ function CommandeList() {
         </div>
         <CommandsFilters collected={collected} setCollected={setCollected} />
         <div className="list">
-            {/* {
-                Array.from({ length: 0 }).length == 0 && <div key={'q'} className="watting-command">
-
-                </div>
-            }
+            
             {
-                Array.from({ length: 0 }).length == 0 && <div key={'a'}  className="not-found-command">
-
-                </div>
-            } */}
-            {Array.from({ length: 10 }).map((a, i) => (
+                commands.length == 0 &&  <div className="column-center"><div className="empty" style={{background:getImg('/res/empty/search.png')}}></div>Aucune Command Trouve</div>
+            } 
+            {commands.map((a, i) => (
                 <div key={i}>
                     {
                         i % 5 == 0 && <h2>{new Date().toLocaleDateString('fr', {
