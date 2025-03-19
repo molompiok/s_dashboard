@@ -1,25 +1,126 @@
-.product .views{
+.product .views {
     width: 100%;
     /* background: #3345; */
-    
+
 }
 
-.product > h3{
+.product>h3 {
     margin-top: 16px;
-    margin-bottom: 3px;
-    color:var(--discret-1);
-    cursor: pointer;
-    transform-origin: 0% 50%;
-    transition: 200ms;
+    margin-bottom: 12px;
 }
 
-.product > h3:hover{
-    scale: 1.05;
-    transition: 200ms;
-}
-
-.product .view{
+.product .view {
     width: 80%;
     height: auto;
     aspect-ratio: 2;
+}
+
+.product label {
+    font-weight: bold;
+    display: block;
+    margin-top: 16px;
+    margin-bottom: 8px;
+    cursor: text;
+}
+
+.product input,
+.product textarea {
+    all: unset;
+    height: 40px;
+    padding: 15px;
+    /* background: linear-gradient(rgba(99, 106, 150, 0.4) 0%, rgba(182, 186, 214, 0.25) 100%); */
+    border: 1px solid var(--discret-9);
+    border-radius: 12px;
+    /* box-shadow: rgba(0, 0, 0, 0.15) 0px 20px 40px, rgba(255, 255, 255, 0.3) 0px 0px 0px 0.5px inset; */
+    box-sizing: border-box;
+    /* padding: 10px 42px; */
+    font-style: normal;
+    font-weight: normal;
+    font-size: 16px;
+    line-height: 130%;
+    transition: all 1s cubic-bezier(0.075, 0.82, 0.165, 1) 0s;
+    width: 100%;
+    /* max-width: 300px; */
+}
+
+.product input:focus,
+.product textarea:focus {
+    outline: none;
+    padding-left: 42px;
+    box-shadow: rgba(47, 184, 255, 0.3) 0px 10px 40px, rgb(47, 184, 255) 0px 0px 0px 1px inset;
+    /* background: linear-gradient(rgba(24, 32, 79, 0.4) 0%, rgba(24, 32, 79, 0.25) 100%); */
+}
+.product input:hover,
+.product textarea:hover {
+    border: 1px solid var(--discret-9);
+}
+
+.product textarea {
+    width: 100%;
+    min-height: 40px;
+    max-height: 300px;
+    overflow: hidden;
+    resize: none;
+    padding: 8px;
+    font-size: 16px;
+    border-radius: 12px;
+}
+
+#input-product-price{
+    padding-right: 60px;
+}
+.product .price-ctn{
+    position: relative;
+    max-width: 240px;
+    display: flex;
+    align-items: center;
+}
+.product .currency{
+    font-size: 1.1em;
+    position: absolute;
+    right: 16px;
+}
+
+/*  CATEGORY */
+.product .category-ctn{
+    display: flex;
+    align-items: center;
+}
+
+.product .category-ctn .icon:hover{
+    scale: 1.05;
+    box-shadow: 0px 0px 16px -8px var(--discret-0);
+}
+.product .category-ctn .icon{
+    width: 60px;
+    height: 60px;
+    margin: 0 7px;
+    /* background: rgb(139, 158, 178); */
+    box-shadow: 0px 0px 12px -8px var(--discret-0);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    gap: 6px;
+    border-radius: 12px;
+}
+.product .category-ctn span{
+    font-size: 0.7em;
+}
+.product .category-ctn svg{
+    width: 20px;
+    height: 20px;
+}
+
+.product .commands-list{
+    margin-top: 42px;
+}
+
+@media (width<350px) {
+
+    .product input:focus,
+    .product textarea:focus {
+        padding-left: 24px;
+    }
 }

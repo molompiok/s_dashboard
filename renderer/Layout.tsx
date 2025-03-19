@@ -12,6 +12,7 @@ import { Icons } from '../Components/Utils/constants'
 import { StoreCreate } from '../pages/StoreCreate/StoreCreate'
 import { ClientCall } from '../Components/Utils/functions'
 import { useHashWatcher } from '../Hooks/useHashWatcher'
+import { useStore } from '../pages/stores/StoreStore'
 
 function Layout({ children, pageContext }: { children: React.ReactNode; pageContext: PageContext }) {
   return (
@@ -44,6 +45,13 @@ function Layout({ children, pageContext }: { children: React.ReactNode; pageCont
 function OpenChild() {
   const { currentChild, alignItems, background, justifyContent, openChild,back } = useApp();
   
+  const { fetchOwnerStores,setCurrentStore } = useStore()
+useEffect(()=>{
+  fetchOwnerStores({}).then(res=>{
+    if(!res?.list) return;
+    setCurrentStore(res?.list[0])
+  })
+},[]);
   const child = currentChild || null
   const hash = useHashWatcher()
 
@@ -51,9 +59,15 @@ function OpenChild() {
     if (!child && location.hash === "#openChild") {
       ClientCall(() => {
         history.replaceState(null, "", location.pathname);
+        openChild(null)
       });
     }
+    if(location.hash !== "#openChild") {
+      openChild(null)
+    }
   }, [child, hash]);
+
+  
 
   return (child)&& hash=='#openChild' &&
     <div id='open-child' style={{

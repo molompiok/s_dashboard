@@ -24,7 +24,7 @@ const onRenderHtml: OnRenderHtmlAsync = async (pageContext): ReturnType<OnRender
 
   const title = getPageTitle(pageContext)
   const desc = pageContext.data?.description || pageContext.config.description || 'Demo of using Vike'
-
+  // const logo = (pageContext.data as any)?.logoUrl || logoUrl
   const documentHtml = escapeInject`<!DOCTYPE html>
     <html lang="fr">
       <head>

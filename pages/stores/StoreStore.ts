@@ -8,18 +8,50 @@ import { ListType, StoreInterface } from "../../Interfaces/Interfaces";
 export { useStore }
 
 const useStore = create(combine({
-    stores: undefined as ListType<StoreInterface> | undefined
+    stores: undefined as ListType<StoreInterface> | undefined,
+    currentStore:undefined as StoreInterface|undefined
 }, (set, get) => ({
+    setCurrentStore(currentStore:StoreInterface|undefined){
+        set(()=>({currentStore}));
+    },
+    // async setStoreById(d) {
+    //     if (!d.product_id) return;
+    //     const ps = get().products;
+    //     const p1 = ps?.list.find((p) => p.id == d.product_id);
+    //     if (p1) {
+    //         get().selectStore(p1)
+    //         set(() => ({ featuresCollector: p1?.featuresCollector }))
+    //         // showStoreWorld(set, p1);
+    //     } else {
+    //         const store = useRegisterStore.getState().store;
+    //         if (!store) return;
+    //         const query: any = {};
+    //         query.product_id = d.product_id;
+    //         query.is_features_required = true;
+    //         query.store_id = store.id;
+    //         query.by_product_category = !ps?.list[0] // TODO la recher n'est pas optimise, le produit peut ne pas se trouver dans la list, a cause de limit et page
+    //         const searchParams = new URLSearchParams({});
+    //         for (const key in query) {
+    //             const value = query[key];
+    //             (value != undefined) && searchParams.set(key, value);
+    //         }
+    //         const response = await fetch(`${Host}/get_products/?${searchParams.toString()}`);
+    //         const ps2 = (await response.json()) as ListType<StoreScenus>
+    //         if (!ps2.list) return
+    //         const p2 = ps2.list.find(p => p.id == d.product_id) || ps2.list[0];
+    //         set(() => ({ products: ps ? { ...ps, list: [...(ps2.list.filter(p => !ps.list.find(_p => _p.id == p.id))), ...ps.list] } : ps2, product: p2, featuresCollector: p2?.featuresCollector }))
+    //         get().selectStore(p2)
 
+    //     }
+    // },
     async available_name(name: string) {
         try {
-
-            const h = useAuthStore.getState().getHeaders().headers;
+            const h = useAuthStore.getState().getHeaders();
             if (!h) return;
 
             const requestOptions = {
                 method: "GET",
-                headers: h,
+                headers: h.headers,
             };
 
             const response = await fetch(`${Server_Host}/available_name?name=${name}`, requestOptions)
@@ -34,7 +66,7 @@ const useStore = create(combine({
     async createStore(data: Partial<StoreInterface>) {
         try {
 
-            const h = useAuthStore.getState().getHeaders().headers;
+            const h = useAuthStore.getState().getHeaders();
             if (!h) return;
 
             const form = new FormData();
@@ -58,7 +90,7 @@ const useStore = create(combine({
             const requestOptions = {
                 method: "POST",
                 body: form,
-                headers: h,
+                headers: h.headers,
             };
 
             const response = await fetch(`${Server_Host}/create_store`, requestOptions)
@@ -82,7 +114,7 @@ const useStore = create(combine({
         const searchParams = new URLSearchParams({});
         for (const key in filter) {
             const value = (filter as any)[key];
-            searchParams.set(key, value);
+            value && searchParams.set(key, value);
         }
         const response = await fetch(`${Server_Host}/get_stores/?${searchParams}`, {
             headers: h?.headers

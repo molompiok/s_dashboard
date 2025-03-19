@@ -19,9 +19,11 @@ export interface StoreInterface {
     domaines:string[],
     logo: (string | File)[],
     disk_storage_limit_gb:number,
+    url:string,
     expire_at:string,
     created_at:string,
 }
+
 export interface UserInterface {
   id: string,
   name: string,
@@ -69,6 +71,7 @@ export interface CategoryInterface{
     name: string,
     description: string,
     storeId: string,
+    slug:string,
     view: string[],
     icon: string[],
     createdAt: string,
@@ -79,14 +82,17 @@ export interface ProductInterface {
   store_id: string;
   category_id: string;
   name: string;
-  description: string;
   default_feature_id: string;
-  price: number;
+  slug: string,
+  description: string;
   barred_price: number;
+  price: number;
   currency: string;
   createdAt: Date;
   updatedAt: Date;
+  features?: FeatureInterface[]
 };
+
 
 export interface ProductFavoriteInterface {
   id: string;
@@ -107,35 +113,36 @@ export interface ProductFavoriteInterface {
 
 
 
-export interface FeatureValueInterface {
+export interface ValueInterface {
   id: string;
   featureId: string;
-  currency: string;
   views: (string|Blob)[]; 
   icon: string | null; 
   text: string | null; 
-  additionalPrice: number;
-  min: number | null; 
-  max: number | null;
-  minSize: number | null; 
-  maxSize: number | null; 
-  multiple: boolean;
-  isDouble: boolean;
+  index: number;
   createdAt: string | Date; 
   updatedAt: string | Date; 
 };
 
 export interface FeatureInterface {
-  id: string;
-  productId: string;
-  name: string;
-  type: string | null; 
-  icon: string[];
-  required: boolean;
-  default: string | number | null; 
-  createdAt: string | Date; 
-  updatedAt: string | Date; 
-  values: FeatureValueInterface[]; 
+  id: string,
+  product_id: string,
+  name: string,
+  type: string,
+  icon?: (string|Blob)[],
+  required: boolean,
+  regex?: string,
+  min?: string,
+  max?: string,
+  min_size?: string,
+  max_size?: string,
+  index?: string,
+  multiple?: false,
+  is_double?: false,
+  default?: string,
+  created_at:string,
+  updated_at: string,
+  values?: ValueInterface[]; 
 };
 
 export interface FeaturesResponseInterface {

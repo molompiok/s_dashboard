@@ -8,7 +8,7 @@ import { Host } from "../../renderer/+config";
 // export const  limit = (text: string, max: number) => {
 //     return text?.length > max ? text.substring(0, max) + '..' : (text||'')
 // }
-export const  getImg = (img?: string|Blob,size='cover',_host?:string|null) => {
+export const  getImg = (img?: string|Blob,size='cover',_host?:string|null|undefined) => {
     const _img = typeof img == 'string'
     ? img :
     img instanceof Blob ?

@@ -1,8 +1,9 @@
 //AuthStore
 import { create } from "zustand";
 import { UserInterface } from "../../Interfaces/Interfaces";
-import { Host } from "../../renderer/+config";
+import { Api_host, Host } from "../../renderer/+config";
 import { combine } from "zustand/middleware";
+import { useStore } from "../stores/StoreStore";
 
 export const useAuthStore = create(combine({
     user: undefined as UserInterface|undefined,
@@ -104,10 +105,15 @@ export const useAuthStore = create(combine({
     getHeaders() {
         let user = useAuthStore.getState().user as UserInterface;
         // if (!user) return
+        
+        const store = useStore.getState().currentStore;
+        if(!store) return;
+        store.url = store?.url||Api_host
+        
         const headers = new Headers();
         headers.append("Authorization", `Bearer ${
             'oat_MQ.OEt4d1ZlWFNKZndjb0xHV2EtUkd2SXByQ01PTTRVVVp3RjkwaVJDczIzMDM0MDE5MjU'//user.token
         }`);
-        return {headers ,user}
+        return {headers ,user,store}
     }
 })));

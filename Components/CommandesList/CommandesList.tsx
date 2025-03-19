@@ -154,8 +154,7 @@ function OrderFilterComponent({ order: _order, setOrder, active }: { active: boo
 }
 
 function PriceFilterComponent({ price, setPrice, active }: { active: boolean, price: (number | undefined)[] | undefined, setPrice: (price: (number | undefined)[] | undefined) => void }) {
-    console.log(price);
-
+    
     return <div className={`price-filter-component ${active ? 'active' : ''}`}>
         <label htmlFor="command-filter-min-price">
             <span>Prix Minimum</span>

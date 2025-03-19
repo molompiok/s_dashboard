@@ -1,7 +1,7 @@
 import React, { useRef, useState } from 'react';
 // Import Swiper React components
 import { Swiper, SwiperSlide } from 'swiper/react';
-import { Swiper as SwiperType  } from 'swiper/types';
+import { Swiper as SwiperType } from 'swiper/types';
 
 // Import Swiper styles
 import 'swiper/css';
@@ -13,20 +13,22 @@ import './HoriszontalSwiper.css';
 // import required modules
 import { Pagination, Navigation } from 'swiper/modules';
 import { useWindowSize } from '../../Hooks/useWindowSize';
-import { FeatureValueInterface } from '../../Interfaces/Interfaces';
+import { ValueInterface } from '../../Interfaces/Interfaces';
 import { IoArrowBackCircle, IoArrowBackCircleOutline, IoArrowForwardCircle, IoArrowForwardCircleOutline, IoTrash } from 'react-icons/io5';
 import { BiSolidImageAdd } from 'react-icons/bi';
 import { getFileType } from '../Utils/functions';
 import { useApp } from '../../renderer/AppStore/UseApp';
 import { ChildViewer } from '../ChildViewer/ChildViewer';
 import { ConfirmDelete } from '../Confirm/ConfirmDelete';
+import { useStore } from '../../pages/stores/StoreStore';
+import { getImg } from '../Utils/StringFormater';
 
 export { HoriszontalSwiper }
 
 
-function HoriszontalSwiper({ values, onActiveIndexChange, onDeleteValue, goBack, forward }: { goBack: () => boolean, forward: () => boolean, onDeleteValue?: (index: number) => void, onActiveIndexChange?: (index: number) => void, values: FeatureValueInterface[] }) {
-    const [swiperRef, setSwiperRef] = useState<SwiperType|null>(null);
-
+function HoriszontalSwiper({ values, onActiveIndexChange, onDeleteValue, goBack, forward }: { goBack: () => boolean, forward: () => boolean, onDeleteValue?: (index: number) => void, onActiveIndexChange?: (index: number) => void, values: ValueInterface[] }) {
+    const [swiperRef, setSwiperRef] = useState<SwiperType | null>(null);
+    const { currentStore } = useStore()
     const size = useWindowSize()
     const { openChild } = useApp();
     return values.length <= 0 ? <div style={{ width: '1200px' }}></div> : (
@@ -54,8 +56,17 @@ function HoriszontalSwiper({ values, onActiveIndexChange, onDeleteValue, goBack,
                             {
                                 v.views.slice(0, 4).map(((i, _) => (
                                     getFileType(i) == 'image' ?
-                                        <img className={`img_${_}`} key={_} src={typeof i == 'string' ? i : URL.createObjectURL(i)} />
-                                        : <video className={`img_${_}`} key={_} muted={true} src={typeof i == 'string' ? i : URL.createObjectURL(i)} />
+                                        <div key={_} className={`img_${_}`}  style={{
+                                            width: '100%',
+                                            height: '100%',
+                                            background: getImg(
+                                                typeof i == 'string' ? i
+                                                    : URL.createObjectURL(i),
+                                                undefined, typeof i == 'string' ?
+                                                currentStore?.url : undefined
+                                            )
+                                        }}></div>
+                                        : <video className={`img_${_}`} key={_} muted={true} src={typeof i == 'string' ? `${currentStore?.url}${i.startsWith('/')?i:'/'+i}` : URL.createObjectURL(i)} />
                                 )))
                             }
                             <span className='trash' onClick={() => {
@@ -69,13 +80,13 @@ function HoriszontalSwiper({ values, onActiveIndexChange, onDeleteValue, goBack,
                                 </ChildViewer>)
                             }}><IoTrash /></span>
                             <div className="move">
-                                <IoArrowBackCircleOutline style={{opacity:index == 0 ?'0.6':''}} onClick={() => {
+                                <IoArrowBackCircleOutline style={{ opacity: index == 0 ? '0.6' : '' }} onClick={() => {
                                     if (index == 0) return
                                     goBack() && setTimeout(() => {
                                         swiperRef?.slideTo(index - 1)
                                     }, 100);
                                 }} />
-                                <IoArrowForwardCircleOutline style={{opacity:values.length - 1 == index?'0.6':'', marginLeft: 'auto' }} onClick={() => {
+                                <IoArrowForwardCircleOutline style={{ opacity: values.length - 1 == index ? '0.6' : '', marginLeft: 'auto' }} onClick={() => {
                                     if (values.length - 1 == index) return
                                     forward() && setTimeout(() => {
                                         swiperRef?.slideTo(index + 1)

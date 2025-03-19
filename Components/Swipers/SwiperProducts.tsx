@@ -14,10 +14,10 @@ import { getImg } from '../Utils/StringFormater';
 import { getFileType } from '../Utils/functions';
 import { NEW_VIEW } from '../Utils/constants';
 import { ConfirmDelete } from '../Confirm/ConfirmDelete';
+import { useStore } from '../../pages/stores/StoreStore';
 
 export { SwiperProducts }
 //IoArrowBackCircle IoArrowForwardCircle IoChevronBackCircle IoChevronForwardCircle
-
 
 function SwiperProducts({ views, setViews }: { views: (string | Blob)[], setViews: (views: (string | Blob)[]) => void }) {
   const swiperRef = useRef<any>(null);
@@ -26,7 +26,7 @@ function SwiperProducts({ views, setViews }: { views: (string | Blob)[], setView
   const [requireDetele, setRequireDetele] = useState(-1);
   const [mouseMove, setMouseMove] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
-
+  const { currentStore } = useStore()
   useEffect(() => {
     setLocalViews(views.length > 0 ? views : [NEW_VIEW])
   }, [views]);
@@ -110,14 +110,14 @@ function SwiperProducts({ views, setViews }: { views: (string | Blob)[], setView
                 })() : setRequireDetele(index)
               }}
             />
-            <div className="move" style={{display:(localViews[index] == NEW_VIEW || requireDetele==index) ?'none':''}}>
+            <div className="move" style={{ display: (localViews[index] == NEW_VIEW || requireDetele == index) ? 'none' : '' }}>
               <IoArrowBackCircleOutline style={{ opacity: index == 0 ? '0.6' : '' }} onClick={() => {
                 if (index == 0) return
                 const lastView = localViews[index - 1];
                 const currentView = localViews[index];
                 setLocalViews(localViews.map((v, i) => i == index ? lastView : i == index - 1 ? currentView : v));
                 setTimeout(() => {
-                  swiperRef.current.slideTo(index-1)
+                  swiperRef.current.slideTo(index - 1)
                 }, 100);
               }} />
               <IoArrowForwardCircleOutline style={{ opacity: localViews.length - 1 == index ? '0.6' : '', marginLeft: 'auto' }} onClick={() => {
@@ -126,7 +126,7 @@ function SwiperProducts({ views, setViews }: { views: (string | Blob)[], setView
                 const currentView = localViews[index];
                 setLocalViews(localViews.map((v, i) => i == index ? lastView : i == index + 1 ? currentView : v));
                 setTimeout(() => {
-                  swiperRef.current.slideTo(index+1)
+                  swiperRef.current.slideTo(index + 1)
                 }, 100);
               }} />
             </div>
@@ -159,7 +159,18 @@ function SwiperProducts({ views, setViews }: { views: (string | Blob)[], setView
                   </label>:
                 </div> :
                 getFileType(i) == 'image' ?
-                  <img style={{ filter: `blur(${requireDetele == index ? 5 : 0}px)` }} src={typeof i == 'string' ? i : URL.createObjectURL(i)} />
+                  // <img style={{ filter: `blur(${requireDetele == index ? 5 : 0}px)` }} src={typeof i == 'string' ? i : URL.createObjectURL(i)} />
+                  <div style={{
+                    width:'100%',
+                    height:'100%',
+                    filter: `blur(${requireDetele == index ? 5 : 0}px)`,
+                    background: getImg(
+                      typeof i == 'string' ? i
+                        : URL.createObjectURL(i),
+                      'contain', typeof i == 'string' ?
+                      currentStore?.url : undefined
+                    )
+                  }}></div>
                   : <video style={{ filter: `blur(${requireDetele == index ? 5 : 0}px)` }} loop autoPlay={index == currentIndex} controls={false} muted={index != currentIndex} src={typeof i == 'string' ? i : URL.createObjectURL(i)} />
             }
             {
