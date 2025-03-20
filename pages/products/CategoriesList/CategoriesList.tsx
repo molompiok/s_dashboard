@@ -16,7 +16,10 @@ const CATEGORY_SIZE = 80;
 const GAP = 8
 export { CategoriesList}
 
-function CategoriesList({ title }: { title?: string }) {
+function CategoriesList({ 
+    title 
+}: { 
+    title?: string }) {
     const { fetchCategories ,categories} = useCategory();
     const { currentStore } = useStore()
     const { openChild } = useApp()

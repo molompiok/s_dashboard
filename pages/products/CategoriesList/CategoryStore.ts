@@ -11,7 +11,11 @@ export { useCategory }
 const useCategory = create(combine({
     categories: undefined as ListType<CategoryInterface> | undefined,
 }, (set, get) => ({
+    async updateProduct(category:Partial<CategoryInterface>) {
+        
 
+        return {}  as CategoryInterface
+    },
     async fetchCategoryBy({category_id,slug}:{category_id?:string,slug?:string}) {
         if (!category_id&&!slug) return;
         const cs = get().categories;
@@ -30,36 +34,46 @@ const useCategory = create(combine({
     async createCategory(data: Partial<CategoryInterface>) {
         try {
 
+            console.log({data});
+            
             const h = useAuthStore.getState().getHeaders()
-            if(!h) return
-           
-            const form = new FormData();
-            console.log(data);
+            if (!h) return
 
+            const form = new FormData();
+            
             Object.keys(data).forEach((k) => {
-                if (k == 'icon') {
-                    const i = data['icon']?.[0];
-                    i && form.append(k, JSON.stringify(['icon_0']));
-                    i && form.append('icon_0', i);
-                } 
+                const i = (data as any)[k];
+                if(k=='icon'){
+                    if(Array.isArray(i)){
+                        i && form.append('icon_0', i[0]);
+                    }
+                }
+                else if(k=='view'){
+                    if(Array.isArray(i)){
+                        i && form.append('view_0', i[0]);
+                    }
+                }
                 else {
-                    const i = (data as any)[k];
                     i && form.append(k, i.toString());
-                };
+                }
             })
+        
             const requestOptions = {
                 method: "POST",
                 body: form,
                 headers: h.headers,
             };
 
-            const response = await fetch(`${h.store.url}/create_store`, requestOptions)
-            const category = await response.json();
+            const response = await fetch(`${h.store.url}/create_category`, requestOptions)
+            const category = await response.json() as CategoryInterface | undefined;
+            console.log({category}, 'api-response');
+            
+            if(!category?.id) return
+            set(({ categories }) => ({ categories: categories && { ...categories, list:[category,...categories.list]} }))
             return category
         } catch (error) {
-            console.log(error);
-
-            return error
+            console.error(error);
+            return
         }
     },
     async fetchCategories(filter: Partial<{

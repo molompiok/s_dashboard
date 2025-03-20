@@ -8,14 +8,14 @@ import { CategoryItem } from '../CategoryItem/CategoryItem'
 
 export {CategoriesPopup}
 
-function CategoriesPopup({ categories,onSelected}: { categories?: CategoryInterface[], onSelected?:(category:CategoryInterface)=>void }) {
+function CategoriesPopup({ categories,onSelected }: { categories?: CategoryInterface[], onSelected?:(category:CategoryInterface)=>void }) {
     const { openChild } = useApp()
-    // const {fetchCategories , categories:_list} = useCategory()
+    const {fetchCategories , categories:_list} = useCategory()
     const {currentStore} = useStore()
      
-    // useEffect(()=>{
-    //     fetchCategories({});
-    // },[currentStore]);
+    useEffect(()=>{
+        fetchCategories({});
+    },[currentStore]);
 
     return <div className="list-categories-popup" style={{
         display: 'flex',
@@ -25,10 +25,11 @@ function CategoriesPopup({ categories,onSelected}: { categories?: CategoryInterf
         padding: '10px'
     }}>
         {
-            (categories)?.map((c, i) =>
+            (_list?.list||categories)?.map((c, i) =>
                 c && <CategoryItem key={i} openCategory={!onSelected} category={c} onClick={() => {
                     openChild(null);
                     onSelected?.(c)
+                    
                 }} />
             )
         }

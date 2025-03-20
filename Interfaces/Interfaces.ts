@@ -70,10 +70,11 @@ export interface CategoryInterface{
     id: string,
     name: string,
     description: string,
-    storeId: string,
+    parent_category_id?:string
+    store_id: string,
     slug:string,
-    view: string[],
-    icon: string[],
+    view: (string|Blob)[],
+    icon: (string|Blob)[],
     createdAt: string,
     updatedAt: string
 }

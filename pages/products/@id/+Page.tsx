@@ -20,24 +20,22 @@ import { CategoriesPopup } from '../../../Components/CategoriesPopup/CategoriesP
 import { FaRedo } from 'react-icons/fa'
 import { ConfirmDelete } from '../../../Components/Confirm/ConfirmDelete'
 import { useReplaceState } from '../../../Hooks/useRepalceState'
+import { Button } from '../../../Components/Button/Button'
+import { SaveButton } from '../../../Components/SaveButton/SaveButton'
 
 
 //TODO add markdon dans la description du produit?
 // TODO correcteur d'ortograph
 export function Page() {
 
-  const [collected, setCollected] = useState<Partial<ProductInterface>>({ 
+  const [collected, setCollected] = useState<Partial<ProductInterface>>({
     price: 23,
-    name:'product-1',
-    description:'product-1',
-    barred_price:1233,
-   });
-  const [values, setValues] = useState<ValueInterface[]>([] as any);
-  const [index, setindex] = useState(0);
-  const [isUpdated, changeUpdated] = useState(false);
-  const { fetchProductBy, updateProduct, removeProduct,createProduct } = useProductStore()
-  const { currentStore , getCurrentStore} = useStore()
-
+    name: 'product-1',
+    description: 'product-1',
+    barred_price: 1233,
+  });
+  const { fetchProductBy, updateProduct, removeProduct, createProduct } = useProductStore()
+  const { currentStore } = useStore()
   const { openChild } = useApp()
 
   const nameRef = useRef<HTMLDivElement>(null);
@@ -54,20 +52,27 @@ export function Page() {
   const [stockError, setStockError] = useState('');
   const [categoryError, setCategoryError] = useState('');
 
+
+  const [values, setValues] = useState<ValueInterface[]>([] as any);
+  const [index, setindex] = useState(0);
+  const [isUpdated, changeUpdated] = useState(false);
+  const [loading, setLoading] = useState(false);
+
   const clearValues = () => {
     return [...values].map(val => ({ ...val, views: (val.views || []).filter(view => view != NEW_VIEW) })).filter(val => val.views && val.views.length > 0);
   }
 
   const { routeParams } = usePageContext()
-  const myLocation = useReplaceState()
+  const { myLocation } = useReplaceState()
   const is_newProduct = myLocation.pathname == "/products/new";
+
   useEffect(() => {
     !is_newProduct && currentStore && fetchProductBy({ product_id: routeParams.id }).then(res => {
       if (!res?.id) return;
       setCollected(res);
       setValues(getDefaultValues(res) || [])
     })
-  }, [currentStore]);
+  }, [currentStore, myLocation]);
 
   useEffect(() => {
     const vs = clearValues();
@@ -82,9 +87,9 @@ export function Page() {
     if (!collected.price) return showError ? setPriceError('le prix du produit doit etre difinie ') : false
     return true
   }
+  const is_all_collected = isAllCollected(collected);
 
-  
-console.log({myLocation});
+  console.log({ myLocation });
 
   return <div className="product">
     <Topbar back={true} />
@@ -103,7 +108,7 @@ console.log({myLocation});
         changeUpdated(true);
       }} />
     </div>
-   { !is_newProduct&& <div className="image-manager no-selectable">
+    {!is_newProduct && <div className="image-manager no-selectable">
       <HoriszontalSwiper values={clearValues() as any} onActiveIndexChange={(_index) => {
         setindex(_index)
       }} onDeleteValue={() => {
@@ -192,26 +197,26 @@ console.log({myLocation});
     }}></textarea>
     <div className='row' style={{
       columnGap: '24px',
-      justifyContent:'flex-start',
-      flexWrap:'wrap',
+      justifyContent: 'flex-start',
+      flexWrap: 'wrap',
     }}>
-    <div className="column">
-      <label className='editor' htmlFor='input-product-price'>Prix <IoPencil /></label>
-      <div className='price-ctn'>
-        <input className='editor' type="number" id={'input-product-price'}
-          value={collected.price || ''}
-          placeholder="Prix du produit"
-          onChange={(e) => {
-            const price = e.currentTarget.value
-            setCollected({
-              ...collected,
-              ['price']: Number.parseInt(price),
-            })
-            changeUpdated(true)
-          }} />
-        <div className="currency">{'FCFA'}</div>
+      <div className="column">
+        <label className='editor' htmlFor='input-product-price'>Prix <IoPencil /></label>
+        <div className='price-ctn'>
+          <input className='editor' type="number" id={'input-product-price'}
+            value={collected.price || ''}
+            placeholder="Prix du produit"
+            onChange={(e) => {
+              const price = e.currentTarget.value
+              setCollected({
+                ...collected,
+                ['price']: Number.parseInt(price),
+              })
+              changeUpdated(true)
+            }} />
+          <div className="currency">{'FCFA'}</div>
+        </div>
       </div>
-    </div>
       <div className="column">
         <label className='editor' htmlFor='input-product-barred-price'>Prix barré <IoPencil /></label>
         <div className='price-ctn'>
@@ -269,49 +274,69 @@ console.log({myLocation});
     </div>
     {/* <h3>Options du Produits</h3> */}
     <div className="setting-product">
-     {
-      !is_newProduct &&  <>
-      <Button title='Promo' icon={<IoPricetagsSharp />} />
-      <Button title='Point de vente' icon={<IoPricetagsSharp />} />
-      <Button title='Affiliation' icon={<IoPricetagsSharp />} />
-      <Button title='Variantes et Stock' icon={<IoLayers />} />
-      <Button title='Voir les stats' icon={<IoLayers />} />
-      <Button title='Supprimer' icon={<IoTrash />} onClick={() => {
-        openChild(<ChildViewer>
-          <ConfirmDelete title={`Etes vous sur de vouloir suprimer le produit <<${collected.name}>>`} onCancel={() => {
-            openChild(null);
-          }} onDelete={() => {
-            collected.id && removeProduct(collected.id);
-            openChild(null);
+      {
+        !is_newProduct && <>
+          <Button title='Promo' icon={<IoPricetagsSharp />} />
+          <Button title='Point de vente' icon={<IoPricetagsSharp />} />
+          <Button title='Affiliation' icon={<IoPricetagsSharp />} />
+          <Button title='Variantes et Stock' icon={<IoLayers />} />
+          <Button title='Voir les stats' icon={<IoLayers />} />
+          <Button title='Supprimer' icon={<IoTrash />} onClick={() => {
+            openChild(<ChildViewer>
+              <ConfirmDelete title={`Etes vous sur de vouloir suprimer le produit <<${collected.name}>>`} onCancel={() => {
+                openChild(null);
+              }} onDelete={() => {
+                collected.id && removeProduct(collected.id);
+                openChild(null);
+              }} />
+            </ChildViewer>, {
+              background: '#3455',
+            })
           }} />
-        </ChildViewer>, {
-          background: '#3455',
-        })
-      }} />
-      </>
-     }
+        </>
+      }
     </div>
     {
       is_newProduct ?
-        <SaveButton title='Cree le produit' required={isAllCollected(collected)} onClick={() => {
-          changeUpdated(false);
-          isAllCollected(collected,true);
-          createProduct({...collected},values[0].views).then(res => {
-            console.log({res});
+        <SaveButton loading={loading} effect='color' title={is_all_collected ? 'Cree le produit' : 'Ajoutez toutes informations requises'}
+          required={is_all_collected}
+          onClick={() => {
             
-            if (!res?.id) return;
-            setCollected(res)
-            history.replaceState(null, "", `/products/${res.id}`);
-          })
-        }} /> :
-        <SaveButton required={isUpdated} onClick={() => {
-          changeUpdated(false);
-          isAllCollected(collected,true);
-          updateProduct(collected).then(res => {
-            if (!res?.id) return;
-            setCollected(res)
-          })
-        }} />
+            if (loading) return console.log('onLoading');
+            if (!isAllCollected(collected, true)) return console.log('informations incomplete');
+            setLoading(true);
+            
+            createProduct({ ...collected }, values[0].views).then(res => {
+              setTimeout(() => {
+                setLoading(false)
+                changeUpdated(false);
+              }, 1000);
+              if (!res?.id) return;
+              setCollected(res);
+              history.replaceState(null, "", `/category?id=${res.id}`);
+            })
+
+          }} /> :
+        <SaveButton loading={loading} effect='color'
+          title={isUpdated ? (is_all_collected ? 'Sauvegardez les modifications' : 'Certaines Informations sont Incorrectes') : 'Aucune modification'}
+          required={isUpdated && is_all_collected}
+          onClick={() => {
+
+            if (!isUpdated) return console.log('aucun changement');
+            if (loading) return console.log('onLoading');
+            if (!isAllCollected(collected, true)) return console.log('informations incomplete');
+            setLoading(true);
+            
+            updateProduct(collected).then(res => {
+              setTimeout(() => {
+                setLoading(false)
+                changeUpdated(false);
+              }, 1000);
+              if (!res?.id) return;
+              setCollected(res);
+            })
+
+          }} />
     }
     {
       !is_newProduct && <CommandeList product_id={undefined} />}
@@ -322,55 +347,4 @@ console.log({myLocation});
 
 
 
-function Button({
-  forward,
-  icon,
-  title,
-  isVertical,
-  justifyContent,
-  onClick,
-  style,
-  iconCtnStyle
-}: {
-  style?: React.CSSProperties | undefined,
-  onClick?: () => void,
-  title?: string,
-  icon?: JSX.Element,
-  iconCtnStyle?: React.CSSProperties | undefined,
-  forward?: JSX.Element | null,
-  isVertical?: boolean,
-  justifyContent?: 'center' | 'space-around' | 'space-between' | 'space-evenly' | 'flex-end' | 'flex-start'
-}) {
 
-  return <div className={`button ${isVertical ? 'vertical' : ''}`} style={{ justifyContent, ...style }} onClick={onClick}>
-    {
-      icon && <div className="icon" style={iconCtnStyle}>
-        {icon}
-      </div>
-    }
-    {title && <span>{title}</span>}
-    {forward !== null && (
-      forward == undefined ? <IoChevronForward className='right' /> :
-        <div className="right" style={{ display: 'inline-block' }}>{forward}</div>
-    )}
-  </div>
-}
-
-function SaveButton({ onClick, required, title }: { title?: string, required?: boolean|void|undefined|null, onClick: () => void }) {
-
-  return <Button icon={<IoCloudUploadSharp />} title={title || 'Sauvegarder les modifications'}
-    justifyContent='center'
-    forward={null}
-    iconCtnStyle={{
-      background: 'transparent',
-      width: '48px'
-    }}
-    onClick={onClick} style={{
-      height: required ? '100%' : '0px',
-      opacity: required ? 1 : 0,
-      borderRadius: '24px',
-      background: 'var(--primary-gradiant)',
-      color: 'var(--discret-10)',
-      fontSize: '1.1em'
-    }} />
-}

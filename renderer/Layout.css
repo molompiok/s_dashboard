@@ -186,6 +186,8 @@ h3 {
 :root {
   --red:#FF4C4C;
   --red-rgb:255, 76, 76;
+  --green:#4CAF50;
+  --green-rgb:76, 174, 79;
   --gray-gradiant:linear-gradient(330deg, rgba(73, 73, 73, 0.062) 0%, rgba(0, 0, 0, 0.585) 100%), linear-gradient(40deg, rgb(255, 255, 255) 0%, rgba(110, 73, 73, 0.804) 100%);
   --primary-gradiant:linear-gradient(330deg, rgba(208, 115, 0, 0.448) 0%, rgba(195, 94, 0, 0.585) 100%), linear-gradient(40deg, rgb(255, 247, 0) 0%, rgba(255, 0, 0, 0.804) 100%);
   --category-size:80px;
@@ -388,8 +390,41 @@ textarea.editor {
 
 
 
+/*  CATEGORY */
+.category-ctn{
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  height: var(--category-size);
+}
 
+.category-ctn .icon:hover{
+  scale: 1.05;
+  box-shadow: 0px 0px 16px -8px var(--discret-0);
+}
+.category-ctn .icon{
+  width: 60px;
+  height: 60px;
+  margin: 0 7px;
+  /* background: rgb(139, 158, 178); */
+  box-shadow: 0px 0px 12px -8px var(--discret-0);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  gap: 6px;
+  border-radius: 12px;
+}
+.category-ctn span{
+  font-size: 0.7em;
+}
 
+.category-ctn svg{
+  width: 20px;
+  height: 20px;
+}
 
 
 

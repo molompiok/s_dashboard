@@ -8,9 +8,10 @@
     align-items: center;
     border-radius: 12px;
     transition: 200ms;
+    position: relative;
 } 
 
-.category-item:hover{
+.category-item.hover-effect:hover{
     scale: 1.05;
     transition: 200ms;
 }
@@ -24,4 +25,29 @@
     border-radius: 8px;;
     height: auto;
     aspect-ratio: 1;
+}
+
+.category-item .delete svg{
+    width: 20px;
+    height: 20px;
+    background: var(--discret-10);
+    background-image: linear-gradient(to right, var(--red), transparent);
+    border-radius: 50px;
+}
+.category-item .delete:hover svg{
+    scale: 1.1;
+    
+    background-image: linear-gradient(to right, var(--red), var(--red));
+}
+.category-item .delete {
+    position: absolute;
+    top: 0;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 100%;
+    background: var(--discret-10)
 }

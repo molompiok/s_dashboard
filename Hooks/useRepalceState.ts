@@ -1,8 +1,25 @@
 import { useEffect, useState } from "react"
 import { ClientCall } from "../Components/Utils/functions";
-export  {useReplaceState}
-function useReplaceState() {
-    const [myLocation, setMyLocation] = useState<Location>(ClientCall(()=>location))    
+export  {useReplaceState,getSearch}
+
+function getSearch(myLocation:Location) {
+    if(!myLocation.search) return {}
+    let s = myLocation.search ;
+    s = decodeURIComponent(s.slice(1, s.length));
+    const ps = s.split('&');
+    let res:Record<string,string> = {};
+    ps.map(p=>p.split('=')).forEach(p=>{
+      try {
+        res[p[0]]=JSON.parse(p[1])
+      } catch (error) {
+        res[p[0]]=p[1]
+      }
+    });
+    return res
+  }
+
+  function useReplaceState() {
+    const [myLocation, setMyLocation] = useState<Location>(ClientCall(()=>location,{}))    
 
     useEffect(()=>{
         (function() {
@@ -33,5 +50,7 @@ function useReplaceState() {
     
     
     
-    return myLocation
+    return {myLocation, get searchPared(){
+       return getSearch(myLocation);
+    }}
 }

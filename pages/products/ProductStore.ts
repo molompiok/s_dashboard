@@ -84,7 +84,7 @@ const useProductStore = create(combine({
     async createProduct(data: Partial<ProductInterface>,views:(string|Blob)[]) {
         try {
 
-            console.log(data,views);
+            console.log({data,views});
             
             const h = useAuthStore.getState().getHeaders()
             if (!h) return
@@ -96,7 +96,9 @@ const useProductStore = create(combine({
                 if(k=='categories_id'){
                     i && form.append(k, JSON.stringify(i));
                 }
-                i && form.append(k, i.toString());
+                else{
+                    i && form.append(k, i.toString());
+                }
             })
             if(views){
                 for (let i = 0; i < views.length; i++) {
@@ -118,9 +120,8 @@ const useProductStore = create(combine({
             set(({ products }) => ({ products: products && { ...products, list:[product,...products.list]} }))
             return product
         } catch (error) {
-            console.log(error);
-
-            return error
+            console.error(error);
+            return 
         }
     },
     async fetchProducts(filter: Partial<{
