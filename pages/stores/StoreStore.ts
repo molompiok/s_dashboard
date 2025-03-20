@@ -11,8 +11,24 @@ const useStore = create(combine({
     stores: undefined as ListType<StoreInterface> | undefined,
     currentStore:undefined as StoreInterface|undefined
 }, (set, get) => ({
-    setCurrentStore(currentStore:StoreInterface|undefined){
+    async setCurrentStore(currentStore:StoreInterface|undefined){
+        if(currentStore)localStorage.setItem('current_store',JSON.stringify(currentStore));
+        else localStorage.removeItem('current_store');
         set(()=>({currentStore}));
+    },
+    async getCurrentStore(){
+        let c = get().currentStore;
+        if(!c) {
+            try {
+                const a = localStorage.getItem('current_store');
+                c = a && JSON.parse(a);
+            } catch (error) {}
+        }
+        if(!c) {
+            const l = await useStore.getState().fetchOwnerStores({})
+            c = l?.list[0];
+        }
+        return c
     },
     // async setStoreById(d) {
     //     if (!d.product_id) return;
@@ -119,7 +135,7 @@ const useStore = create(combine({
         const response = await fetch(`${Server_Host}/get_stores/?${searchParams}`, {
             headers: h?.headers
         })
-        const json = await response.json();
+        const json = await response.json() as ListType<StoreInterface>
         if (!json?.list) return
         if (!filter.no_save) set(() => ({ stores: json }))
         return json

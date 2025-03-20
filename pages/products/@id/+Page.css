@@ -9,69 +9,25 @@
     margin-bottom: 12px;
 }
 
+.product h3 span{
+    font-weight: normal;
+    opacity: 0.9;
+    font-size: 0.9em;
+}
 .product .view {
     width: 80%;
     height: auto;
     aspect-ratio: 2;
 }
 
-.product label {
-    font-weight: bold;
-    display: block;
-    margin-top: 16px;
-    margin-bottom: 8px;
-    cursor: text;
-}
 
-.product input,
-.product textarea {
-    all: unset;
-    height: 40px;
-    padding: 15px;
-    /* background: linear-gradient(rgba(99, 106, 150, 0.4) 0%, rgba(182, 186, 214, 0.25) 100%); */
-    border: 1px solid var(--discret-9);
-    border-radius: 12px;
-    /* box-shadow: rgba(0, 0, 0, 0.15) 0px 20px 40px, rgba(255, 255, 255, 0.3) 0px 0px 0px 0.5px inset; */
-    box-sizing: border-box;
-    /* padding: 10px 42px; */
-    font-style: normal;
-    font-weight: normal;
-    font-size: 16px;
-    line-height: 130%;
-    transition: all 1s cubic-bezier(0.075, 0.82, 0.165, 1) 0s;
-    width: 100%;
-    /* max-width: 300px; */
-}
-
-.product input:focus,
-.product textarea:focus {
-    outline: none;
-    padding-left: 42px;
-    box-shadow: rgba(47, 184, 255, 0.3) 0px 10px 40px, rgb(47, 184, 255) 0px 0px 0px 1px inset;
-    /* background: linear-gradient(rgba(24, 32, 79, 0.4) 0%, rgba(24, 32, 79, 0.25) 100%); */
-}
-.product input:hover,
-.product textarea:hover {
-    border: 1px solid var(--discret-9);
-}
-
-.product textarea {
-    width: 100%;
-    min-height: 40px;
-    max-height: 300px;
-    overflow: hidden;
-    resize: none;
-    padding: 8px;
-    font-size: 16px;
-    border-radius: 12px;
-}
-
+#input-product-barred-price,
 #input-product-price{
-    padding-right: 60px;
+    padding-right: 50px;
 }
 .product .price-ctn{
     position: relative;
-    max-width: 240px;
+    max-width: 180px;
     display: flex;
     align-items: center;
 }
@@ -116,6 +72,63 @@
 .product .commands-list{
     margin-top: 42px;
 }
+
+
+
+
+
+
+
+
+
+.product .setting-product{
+    width: 100%;
+    padding: 24px 0px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+.button:hover{
+    gap: 24px;
+    transition: 200ms;
+}
+.button{
+    width: 100%;
+    margin: 0 6px;
+    padding: 2px;
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    gap: 12px;
+    border-radius: 12px;
+    box-shadow: 0px 0px 12px -8px var(--discret-0);
+    transition: 200ms;
+}
+.button.vertical{
+    flex-direction: column;
+}
+.button .icon{
+    width: 56px;
+    height: auto;
+    aspect-ratio: 1;
+    border-radius: 12px; 
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--discret-9);
+}
+.button svg.right{
+    margin-left: auto;
+    margin-right: 12px;
+}
+.button svg{
+    width: 24px;
+    height: 24px;
+}
+
+
+
+
 
 @media (width<350px) {
 

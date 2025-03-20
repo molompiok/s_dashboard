@@ -34,7 +34,7 @@ function toNameString(name:string) {
   }
   return _n
 }
-function getFileType(file: string | Blob) {
+function getFileType(file: string | Blob|undefined) {
   if (typeof file == 'string') {
     const ext = file.substring(file.lastIndexOf('.') + 1, file.length);
     if (['webp', 'jpg', 'jpeg', 'png', 'avif', 'gif', 'tif', 'tiff', 'ico', 'svg'].includes(ext)) {
@@ -47,9 +47,9 @@ function getFileType(file: string | Blob) {
       return 'video'
     }
   } else {
-    if (file.type.split('/')[0] == 'image') {
+    if (file?.type.split('/')[0] == 'image') {
       return 'image'
-    } else if (file.type.split('/')[0] == 'video') {
+    } else if (file?.type.split('/')[0] == 'video') {
       return 'video'
     }
   }

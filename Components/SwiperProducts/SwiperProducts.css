@@ -20,13 +20,15 @@
   aspect-ratio: 1;
 }
 
-.swiper-products .swiper-slide img {
+
+.swiper-products .swiper-slide .view { 
   display: block;
   width: 100%;
   height: auto;
-  aspect-ratio: 1;
   border-radius: 12px;
   overflow: hidden;
+  aspect-ratio: 1 / 1; /* Toujours carré */
+  object-fit: cover;
 }
 
 

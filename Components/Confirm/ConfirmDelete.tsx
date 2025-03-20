@@ -7,6 +7,7 @@ function ConfirmDelete({ title, onCancel, onDelete ,style}: {style?:React.CSSPro
 
 
     return <div style ={style}className="confirm-delete">
+        {title && <div className="title">{title}</div>}
         <div className="ctn">
             <div className="cancel" onClick={onCancel}>Anuller</div>
             <div className="delete" onClick={e => {
@@ -15,7 +16,7 @@ function ConfirmDelete({ title, onCancel, onDelete ,style}: {style?:React.CSSPro
                 e.currentTarget.style.gap = '6px';
                 e.currentTarget.style.paddingLeft = '6px';
                 onDelete()
-            }}><span style={{ display: 'none', background: getImg('/res/loading_white.gif', undefined, false) }}></span> Supprimer</div>
+            }}><span style={{ display: 'none', background: getImg('/res/loading_white.gif', undefined) }}></span> Supprimer</div>
         </div>
     </div>
 }

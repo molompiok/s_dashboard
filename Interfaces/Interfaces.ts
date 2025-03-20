@@ -87,12 +87,12 @@ export interface ProductInterface {
   description: string;
   barred_price: number;
   price: number;
+  is_visible:boolean,// TODO
   currency: string;
   createdAt: Date;
   updatedAt: Date;
   features?: FeatureInterface[]
 };
-
 
 export interface ProductFavoriteInterface {
   id: string;

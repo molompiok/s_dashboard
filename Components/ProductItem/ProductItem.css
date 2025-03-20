@@ -18,9 +18,16 @@
 
 .product-item .views{
     min-width: 100%;
+    position: relative;
     height: auto;
     border-radius: 12px;
     aspect-ratio: 1;
+}
+.product-item .views .view{
+    width: 100%;
+    aspect-ratio: 1 / 1; /* Toujours carré */
+    object-fit: cover; /* Remplir l'espace sans déformation */
+    display: block;
 }
 
 .product-item .infos{

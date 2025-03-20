@@ -32,11 +32,7 @@ const useCategory = create(combine({
 
             const h = useAuthStore.getState().getHeaders()
             if(!h) return
-            const store = useStore.getState().currentStore;
-            if(!store) return
-            const host = store?.url||`http://172.0.0.1:3333/${store?.name}`
-    
-
+           
             const form = new FormData();
             console.log(data);
 
@@ -57,7 +53,7 @@ const useCategory = create(combine({
                 headers: h.headers,
             };
 
-            const response = await fetch(`${Server_Host}/create_store`, requestOptions)
+            const response = await fetch(`${h.store.url}/create_store`, requestOptions)
             const category = await response.json();
             return category
         } catch (error) {
@@ -75,18 +71,16 @@ const useCategory = create(combine({
         no_save: boolean
     }>) {
         const h = useAuthStore.getState().getHeaders()
-        
-        const store = useStore.getState().currentStore;
-        const host = store?.url||`http://localhost:3333`
-        
+        if(!h) return;
+       
         const searchParams = new URLSearchParams({});
         for (const key in filter) {
             const value = (filter as any)[key];
             value &&  searchParams.set(key, value);
         }
-        console.log(`${host}/get_categories/?${searchParams}`);
+        console.log(`${h.store.url}/get_categories/?${searchParams}`);
         
-        const response = await fetch(`${host}/get_categories/?${searchParams}`, {
+        const response = await fetch(`${h.store.url}/get_categories/?${searchParams}`, {
             headers: h?.headers
         })
         const categories = await response.json();

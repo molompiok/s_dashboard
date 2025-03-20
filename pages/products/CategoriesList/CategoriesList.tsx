@@ -47,7 +47,7 @@ function CategoriesList({ title }: { title?: string }) {
             <AddCategory isNew={(categories?.list.length||0) == 0 }/>
             {
                 categories?.list.slice(0, limit - (seeMore ? 1 : 0)).map((c, i) =>
-                    <CategoryItem key={i} category={c} />
+                    <CategoryItem key={i} category={c} openCategory/>
                 )
             }
             {seeMore && <SeeMore onClick={() => {
@@ -60,7 +60,7 @@ function CategoriesList({ title }: { title?: string }) {
 }
 
 function AddCategory({isNew}:{isNew:boolean}) {
-    return <a href='/category?new' className={isNew? "add-new-category":"add-category"}>
+    return <a href='/category?id=new' className={isNew? "add-new-category":"add-category"}>
         <CgExtensionAdd className='icon' />
         {!isNew && <span>ajoutez</span>}
        {isNew && <button>Ajoutez une categorie </button>}

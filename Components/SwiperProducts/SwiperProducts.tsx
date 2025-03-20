@@ -156,22 +156,35 @@ function SwiperProducts({ views, setViews }: { views: (string | Blob)[], setView
                     <div className={"chose-file " + (mouseMove ? 'mouse-move' : '')}>
                       Chosir un fichier
                     </div>
-                  </label>:
+                  </label>
                 </div> :
                 getFileType(i) == 'image' ?
-                  // <img style={{ filter: `blur(${requireDetele == index ? 5 : 0}px)` }} src={typeof i == 'string' ? i : URL.createObjectURL(i)} />
-                  <div style={{
-                    width:'100%',
-                    height:'100%',
-                    filter: `blur(${requireDetele == index ? 5 : 0}px)`,
+                  <div className={`img_${index} view`} style={{
+                    width: '100%',
+                    height: '100%',
                     background: getImg(
                       typeof i == 'string' ? i
                         : URL.createObjectURL(i),
-                      'contain', typeof i == 'string' ?
+                      undefined, typeof i == 'string' ?
                       currentStore?.url : undefined
                     )
                   }}></div>
-                  : <video style={{ filter: `blur(${requireDetele == index ? 5 : 0}px)` }} loop autoPlay={index == currentIndex} controls={false} muted={index != currentIndex} src={typeof i == 'string' ? i : URL.createObjectURL(i)} />
+                  : <video style={{ filter: `blur(${requireDetele == index ? 5 : 0}px)` }} loop autoPlay={index == currentIndex} className={`img_${index} view`} key={index} muted={true} src={typeof i == 'string' ? `${currentStore?.url}${i.startsWith('/') ? i : '/' + i}` : URL.createObjectURL(i)} />
+              // getFileType(i) == 'image' ?
+              //   // <img style={{ filter: `blur(${requireDetele == index ? 5 : 0}px)` }} src={typeof i == 'string' ? i : URL.createObjectURL(i)} />
+              //   <div className='' style={{
+              //     width:'100%',
+              //     height:'100%',
+              //     filter: `blur(${requireDetele == index ? 5 : 0}px)`,
+              //     background: getImg(
+              //       typeof i == 'string' ? i
+              //         : URL.createObjectURL(i),
+              //       'contain', typeof i == 'string' ?
+              //       currentStore?.url : undefined
+              //     )
+              //   }}></div>
+              //   : <video style={{ filter: `blur(${requireDetele == index ? 5 : 0}px)` }} loop autoPlay={index == currentIndex} controls={false} muted={index != currentIndex} src={typeof i == 'string' ? i : URL.createObjectURL(i)} />
+
             }
             {
               requireDetele == index && <ConfirmDelete style={{ position: 'absolute' }} title='' onCancel={() => setRequireDetele(-1)} onDelete={() => {

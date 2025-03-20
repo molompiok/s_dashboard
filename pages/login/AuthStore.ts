@@ -107,6 +107,8 @@ export const useAuthStore = create(combine({
         // if (!user) return
         
         const store = useStore.getState().currentStore;
+        console.log({store});
+        
         if(!store) return;
         store.url = store?.url||Api_host
         

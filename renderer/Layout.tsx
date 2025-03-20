@@ -45,20 +45,15 @@ function Layout({ children, pageContext }: { children: React.ReactNode; pageCont
 function OpenChild() {
   const { currentChild, alignItems, background, justifyContent, openChild,back } = useApp();
   
-  const { fetchOwnerStores,setCurrentStore } = useStore()
-useEffect(()=>{
-  fetchOwnerStores({}).then(res=>{
-    if(!res?.list) return;
-    setCurrentStore(res?.list[0])
-  })
-},[]);
-  const child = currentChild || null
-  const hash = useHashWatcher()
+
+  const child = currentChild || null;
+  const hash = useHashWatcher() 
 
   useEffect(() => {
     if (!child && location.hash === "#openChild") {
       ClientCall(() => {
-        history.replaceState(null, "", location.pathname);
+        // history.replaceState(null, "", location.pathname);
+        history.back()
         openChild(null)
       });
     }
@@ -137,6 +132,15 @@ function Page({ children }: { children: React.ReactNode }) {
 }
 
 function Content({ children }: { children: React.ReactNode }) {
+  const { fetchOwnerStores,setCurrentStore } = useStore()
+  useEffect(()=>{
+    fetchOwnerStores({}).then(res=>{
+      console.log(res);
+      if(!res?.list) return;
+      setCurrentStore(res?.list[1])
+
+    })
+  },[]);
   return (
     <div
       id="page-container"

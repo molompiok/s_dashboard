@@ -9,29 +9,28 @@ import { Api_host } from '../../renderer/+config'
 
 const data = async (pageContext: PageContextServer) => {
   await sleep(300) // Simulate slow network
-    console.log(pageContext.urlParsed.search['store'],pageContext.urlParsed.search['id']);
-    let categories :ListType<CategoryInterface>|undefined=undefined ;
-  
+  console.log(pageContext.urlParsed.search['store'], pageContext.urlParsed.search['id']);
+  let categories: ListType<CategoryInterface> | undefined = undefined;
+const id = pageContext.urlParsed.search['id'];
   try {
-    const response = await fetch(`${Api_host}/get_categories/?category_id=${'adf42305-683c-4dad-99f6-918dccbda642'}`)//&store_name=${pageContext.urlParsed.search['store']}
-   categories = (await response.json()) as ListType<CategoryInterface>
-  console.log({categories});
-  
+    if ( id!== 'new') {
+      const response = await fetch(`${Api_host}/get_categories/?category_id=${id}`)//&store_name=${pageContext.urlParsed.search['store']}
+      categories = (await response.json()) as ListType<CategoryInterface>
+    }
   } catch (error) {
     console.error(error);
-      
   }
-    const category =  categories?.list[0]
+  const category = categories?.list[0]
   // We remove data we don't need because the data is passed to the client; we should
   // minimize what is sent over the network.
-//   category = minimize(category);
+  //   category = minimize(category);
 
   return {
     category,
     // The page's <title>
     title: category?.name,
-    description:category?.description,
-    logoUrl:category?.view?.[0]||category?.icon?.[0]
+    description: category?.description,
+    logoUrl: category?.view?.[0] || category?.icon?.[0]
   }
 }
 
