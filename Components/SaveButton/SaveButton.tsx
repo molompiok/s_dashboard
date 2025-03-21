@@ -30,7 +30,7 @@ const EffectRequired = {
 }
 function SaveButton({ onClick, required, title, effect='color' ,loading}: {loading?:boolean, effect?: 'color' | 'height', title?: string, required?: boolean | void | undefined | null, onClick: () => void }) {
 
-    return <Button icon={
+    return <Button className='save-button' icon={
         loading ? (
             <div className='icon-25' style={{background:getImg('/res/loading_white.gif')}}></div>
         ): <IoCloudUploadSharp/>

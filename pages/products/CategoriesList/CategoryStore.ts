@@ -11,23 +11,85 @@ export { useCategory }
 const useCategory = create(combine({
     categories: undefined as ListType<CategoryInterface> | undefined,
 }, (set, get) => ({
+    async removeCategory(category_id:string){
+        const h = useAuthStore.getState().getHeaders();
+        if (!h) return
+        const response = await fetch(`${h.store.url}/delete_category/${category_id}`, {
+            method: 'DELETE',
+            headers: h.headers
+        });
+        const json = await response.json();
+        console.log(json);
+        set(({ categories }) => ({ categories: categories && { ...categories, list: categories.list.filter(c=>c.id !== category_id)} }))
+        return json?.isDeleted;
+    },
     async updateProduct(category:Partial<CategoryInterface>) {
+        if (!category.id) return console.error('Product.id required');
         
+                const h = useAuthStore.getState().getHeaders();
+                if (!h) return
+        
+                const formData = new FormData();
+                let send = false;
+                Object.keys(category).forEach((k) => {
+                    const i = (category as any)[k];
+                    if(k=='icon'){
+                        if(Array.isArray(i)){
+                            if(typeof i[0] == 'string'){
+                                formData.append('icon', JSON.stringify(i));    
+                            }else{
+                                formData.append('icon_0', i[0]);
+                                formData.append('icon', JSON.stringify(['icon_0']));
+                            }
+                        }
+                    }
+                    else if(k=='view'){
+                        if(Array.isArray(i)){
+                            if(typeof i[0] == 'string'){
+                                formData.append('view', JSON.stringify(i));    
+                            }else{
+                                formData.append('view_0', i[0]);
+                                formData.append('view', JSON.stringify(['view_0']));
+                            }
+                        }
+                    }
+                    else {
+                        i!=undefined && formData.append(k, i.toString());
+                    }
+                })
+                formData.append('category_id', category.id);
+                
+        
+                try {
+                    const response = await fetch(`${h.store.url}/update_category`, {
+                        method: 'PUT',
+                        body: formData,
+                        headers: h.headers
+                    });
+                    const updatedCategory = await response.json() as CategoryInterface | null;
+                    if (!updatedCategory?.id) return;
+                    set(({ categories }) => ({ categories: categories && { ...categories, list: categories.list.map((p) => p.id == updatedCategory.id ? updatedCategory : p) } }))
+                    console.log({updatedCategory});
+                    
+                    return updatedCategory;
+                } catch (error) {
+                    console.error(error);
+                }
 
         return {}  as CategoryInterface
     },
     async fetchCategoryBy({category_id,slug}:{category_id?:string,slug?:string}) {
         if (!category_id&&!slug) return;
         const cs = get().categories;
-        console.log({cs});
+        // console.log({cs});
         
         const localProduct = cs?.list.find((c) => c.id == category_id||c.slug == slug);
-        console.log({localProduct});
+        // console.log({localProduct});
         if (localProduct) {
             return localProduct
         } else {
             const list  = await useCategory.getState().fetchCategories({category_id,slug}) ;
-            console.log({list});
+            // console.log({list});
             return  list?.list[0];
         }
     },
@@ -66,7 +128,7 @@ const useCategory = create(combine({
 
             const response = await fetch(`${h.store.url}/create_category`, requestOptions)
             const category = await response.json() as CategoryInterface | undefined;
-            console.log({category}, 'api-response');
+            // console.log({category}, 'api-response');
             
             if(!category?.id) return
             set(({ categories }) => ({ categories: categories && { ...categories, list:[category,...categories.list]} }))
@@ -92,13 +154,13 @@ const useCategory = create(combine({
             const value = (filter as any)[key];
             value &&  searchParams.set(key, value);
         }
-        console.log(`${h.store.url}/get_categories/?${searchParams}`);
+        // console.log(`${h.store.url}/get_categories/?${searchParams}`);
         
         const response = await fetch(`${h.store.url}/get_categories/?${searchParams}`, {
             headers: h?.headers
         })
         const categories = await response.json();
-        console.log({categories});
+        // console.log({categories});
         if (!categories?.list) return
         if (!filter.no_save) set(() => ({ categories: categories }))
         return categories as ListType<CategoryInterface> | undefined

@@ -49,7 +49,7 @@ function CategoryItem({
                 <IoClose/>
             </div>
         )}
-        <div className="item-view" style={{ background: getImg(c.view[0],undefined, Api_host)  }} ></div>
+        <div className="item-view" style={{ background: getImg(c.view[0],'contain', Api_host)  }} ></div>
         <span className="ellipsis">{c.name}</span>
     </a>
 }

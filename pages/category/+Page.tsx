@@ -1,4 +1,5 @@
-import { IoAdd, IoApps, IoBagHandle, IoCart, IoCloudUploadOutline, IoPencil } from 'react-icons/io5'
+import { IoAdd, IoApps, IoBagHandle, IoCart, IoCloudUploadOutline, IoLayers, IoPencil, IoTrash } from 'react-icons/io5'
+import { RiImageEditFill } from 'react-icons/ri'
 import './Page.css'
 import { Indicator } from '../../Components/Indicator/Indicator'
 import { ProductList } from '../products/ProductList/ProductList'
@@ -22,6 +23,8 @@ import { CategoryItem } from '../../Components/CategoryItem/CategoryItem'
 import { SaveButton } from '../../Components/SaveButton/SaveButton'
 import { ClientCall } from '../../Components/Utils/functions'
 import { useReplaceState } from '../../Hooks/useRepalceState'
+import { Button } from '../../Components/Button/Button'
+import { ConfirmDelete } from '../../Components/Confirm/ConfirmDelete'
 
 export { Page }
 
@@ -29,9 +32,9 @@ function Page() {
 
   const { openChild } = useApp()
   const { category } = useData<Data>()
-  const [collected, setCollected] = useState<Partial<CategoryInterface>>(category || {})
+  const [collected, setCollected] = useState<Partial<CategoryInterface&{prevIcon?:string,prevView?:string}>>(category || {})
   const { currentStore } = useStore();
-  const { fetchCategoryBy, createCategory, updateProduct } = useCategory()
+  const { fetchCategoryBy, createCategory, updateProduct,removeCategory } = useCategory()
 
 
   const { urlParsed } = usePageContext()
@@ -78,30 +81,34 @@ function Page() {
   const view = collected?.view?.[0];
   const icon = collected?.icon?.[0];
 
-  console.log(collected);
   return (
     <div className="category">
       <Topbar back={true} />
-      <h3>Grande Image de couverture</h3>
+      <h3>Grande Image de couverture <Indicator title={`l'image qui contient un exemple visuel de la category`} description={`Nous nous recommandons, 1️⃣ D'utiliser une image de haute qualite, 2️⃣ grand format, 3️⃣ le contenu de l'image doit etre centre,`}/></h3>
       <div className="column">
-        <label htmlFor='chose-category-view' className="icon-180-category view shadow" style={{
+        <label htmlFor='chose-category-view' className={"icon-180-category view shadow  "+(is_newCategory?'is-new':'cover-image')}  style={{
           background:
             view ? getImg(
               typeof view == 'string' ? view
-                : URL.createObjectURL(view),
-              undefined, typeof icon == 'string' ?
+                : collected.prevView,
+              undefined, typeof view == 'string' ?
               currentStore?.url : undefined
             ) : getImg('/res/empty/drag-and-drop.png', '80%')
         }} >
           <input id='chose-category-view' multiple type="file" accept={'image/*,video/*'} style={{ display: 'none' }} onChange={(e) => {
             const files = e.currentTarget.files;
             console.log({ files });
-            if (!files) return
-            setCollected({
-              ...collected,
-              view: Array.from(files)
-            })
+            if (!files?.[0]) return
+            setCollected((prev)=>({
+              ...prev,
+              view: Array.from(files),
+              prevView:URL.createObjectURL(files[0])
+            }))
+            changeUpdated(true)
           }} />
+          {
+            !is_newCategory && <div className="edit"><RiImageEditFill className='edit-img'/></div>
+          }
           {is_newCategory && !view && <span> <IoCloudUploadOutline />
             choisissez Image</span>}
             {
@@ -109,25 +116,30 @@ function Page() {
             }
         </label>
       </div>
-      <h3>Logo ou icon</h3>
+     <h3>Logo ou icon<Indicator title={`Cette image apparetra souvant en premiere position`} description='elle doit etre representative de la category'/></h3>
       <div className={"info-icon " + (is_newCategory ? 'is-new' : '')} >
         <label htmlFor='chose-category-icon' className="icon-140-category view shadow" style={{
           background:
             icon ? getImg(
               typeof icon == 'string' ? icon
-                : URL.createObjectURL(icon),
+                :collected.prevIcon,
               undefined, typeof icon == 'string' ?
               currentStore?.url : undefined
             ) : getImg('/res/empty/drag-and-drop.png', '80%')
         }}>
           <input id='chose-category-icon' multiple type="file" accept={'image/*,video/*'} style={{ display: 'none' }} onChange={(e) => {
             const files = e.currentTarget.files;
-            if (!files) return
-            setCollected({
-              ...collected,
-              icon: Array.from(files)
-            })
+            if (!files?.[0]) return
+            setCollected((prev)=>({
+              ...prev,
+              icon: Array.from(files),
+              prevIcon:URL.createObjectURL(files[0])
+            }))
+            changeUpdated(true)
           }} />
+           {
+            !is_newCategory && <div className="edit"><RiImageEditFill className='edit-img'/></div>
+          }
           {is_newCategory && !icon && <span> <IoCloudUploadOutline />
             choisissez Image</span>}
         </label>
@@ -141,10 +153,10 @@ function Page() {
       <label className='editor' htmlFor='input-category-name'>Nom de la categorie <IoPencil /></label>
       <input ref={nameRef} className='editor' type="text" id={'input-category-name'} value={collected.name || ''} placeholder="Ajoutez un nom de produit" onChange={(e) => {
         const name = e.currentTarget.value
-        setCollected({
-          ...collected,
+        setCollected((prev)=>({
+          ...prev,
           ['name']: name.substring(0, 52),
-        })
+        }))
         changeUpdated(true)
       }} onKeyUp={(e) => {
         if (e.code == 'Enter') {
@@ -187,10 +199,10 @@ function Page() {
         }, 200);
       }} value={collected.description} onChange={(e) => {
         const description = e.currentTarget.value
-        setCollected({
-          ...collected,
+        setCollected((prev)=>({
+          ...prev,
           ['description']: description.substring(0, 512),
-        });
+        }));
         changeUpdated(true)
       }} onKeyDown={(e) => {
         if (e.code == 'Tab') {
@@ -202,10 +214,10 @@ function Page() {
         <div className={`icon ${collected.parent_category_id ? 'replace' : 'add'}`} onClick={() => {
           openChild(<ChildViewer title='Choisissez la category parent'>
             <CategoriesPopup onSelected={(c) => {
-              setCollected({
-                ...collected,
+              setCollected((prev)=>({
+                ...prev,
                 parent_category_id: c.id
-              })
+              }))
               changeUpdated(true)
             }} />
           </ChildViewer>, { blur: 10 })
@@ -216,13 +228,33 @@ function Page() {
         {
           collected.parent_category_id && <CategoryItem key={collected.parent_category_id}
             openCategory category_id={collected.parent_category_id} onDelete={(c) => {
-              setCollected({
-                ...collected,
-                parent_category_id: undefined
-              })
+              setCollected((prev)=>({
+                ...prev,
+                parent_category_id: ''
+              }))
+              changeUpdated(true)
             }} />
         }
       </div>
+      <div className="setting-product">
+      {
+        !is_newCategory && <>
+          <Button title='Voir les stats' icon={<IoLayers />} />
+          <Button title='Supprimer' icon={<IoTrash />} onClick={() => {
+            openChild(<ChildViewer>
+              <ConfirmDelete title={`Etes vous sur de vouloir suprimer la categorie "${collected.name}"`} onCancel={() => {
+                openChild(null);
+              }} onDelete={() => {
+                collected.id && removeCategory(collected.id);
+                openChild(null);
+              }} />
+            </ChildViewer>, {
+              background: '#3455',
+            })
+          }} />
+        </>
+      }
+    </div>
       {
         is_newCategory ?
           <SaveButton loading={loading} effect='color' title={is_all_collected ? 'Cree la Categorie' : 'Ajoutez toutes informations requises'}

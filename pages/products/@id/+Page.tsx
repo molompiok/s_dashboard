@@ -283,7 +283,7 @@ export function Page() {
           <Button title='Voir les stats' icon={<IoLayers />} />
           <Button title='Supprimer' icon={<IoTrash />} onClick={() => {
             openChild(<ChildViewer>
-              <ConfirmDelete title={`Etes vous sur de vouloir suprimer le produit <<${collected.name}>>`} onCancel={() => {
+              <ConfirmDelete title={`Etes vous sur de vouloir suprimer le produit "${collected.name}"`} onCancel={() => {
                 openChild(null);
               }} onDelete={() => {
                 collected.id && removeProduct(collected.id);

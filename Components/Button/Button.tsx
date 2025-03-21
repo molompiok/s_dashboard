@@ -12,8 +12,10 @@ function Button({
   justifyContent,
   onClick,
   style,
-  iconCtnStyle
+  iconCtnStyle,
+  className
 }: {
+  className?:string,
   style?: React.CSSProperties | undefined,
   onClick?: () => void,
   title?: string,
@@ -24,7 +26,7 @@ function Button({
   justifyContent?: 'center' | 'space-around' | 'space-between' | 'space-evenly' | 'flex-end' | 'flex-start'
 }) {
 
-  return <div className={`button ${isVertical ? 'vertical' : ''}`} style={{ justifyContent, ...style }} onClick={onClick}>
+  return <div className={`button ${isVertical ? 'vertical' : ''} ${className||''}`} style={{ justifyContent, ...style }} onClick={onClick}>
     {
       icon && <div className="icon" style={iconCtnStyle}>
         {icon}
