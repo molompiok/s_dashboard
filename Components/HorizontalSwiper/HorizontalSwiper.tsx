@@ -57,8 +57,6 @@ function HoriszontalSwiper({ values, onActiveIndexChange, onDeleteValue, goBack,
                                 v.views.slice(0, 4).map(((i, _) => (
                                     getFileType(i) == 'image' ?
                                         <div key={_} className={`img_${_}`}  style={{
-                                            width: '100%',
-                                            height: '100%',
                                             background: getImg(
                                                 typeof i == 'string' ? i
                                                     : URL.createObjectURL(i),

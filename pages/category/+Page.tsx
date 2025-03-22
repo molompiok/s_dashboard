@@ -32,10 +32,9 @@ function Page() {
 
   const { openChild } = useApp()
   const { category } = useData<Data>()
-  const [collected, setCollected] = useState<Partial<CategoryInterface&{prevIcon?:string,prevView?:string}>>(category || {})
+  const [collected, setCollected] = useState<Partial<CategoryInterface & { prevIcon?: string, prevView?: string }>>(category || {})
   const { currentStore } = useStore();
-  const { fetchCategoryBy, createCategory, updateProduct,removeCategory } = useCategory()
-
+  const { fetchCategoryBy, createCategory, updateProduct, removeCategory } = useCategory()
 
   const { urlParsed } = usePageContext()
   const { myLocation, searchPared } = useReplaceState();
@@ -62,31 +61,36 @@ function Page() {
 
 
   function isAllCollected(collected: Partial<CategoryInterface>, showError?: boolean) {
-    if (!collected.name) {
+    
+    let v: void|boolean= true;
+
+    if (!collected.name || collected.name.length < 3) {
       showError && setNameError('le nom doit contenir au moin 3 carateres')
       showError && nameRef.current?.focus()
-      return false
+      v = false
     }
-    if (!collected.description) {
+    if (!collected.description || collected.description.length < 3) {
       showError && setDescriptionError('la description doit contenir au moin 3 carateres')
       showError && descriptionRef.current?.focus()
-      return false
+      v = false
     }
-    if (!collected.view) return showError ? setViewError('cliquez sur le cadre pour ajouter une image') : false
-    if (!collected.icon) return showError ? setIconError('cliquez sur le cadre pour ajouter une image') : false
-    return true
+    if (!collected.view||collected.view.length<=0) v = (showError ? setViewError('cliquez sur le cadre pour ajouter une image') : false)
+    if (!collected.icon||collected.icon.length<=0) v =( showError ? setIconError('cliquez sur le cadre pour ajouter une image') : false)
+    return v
   }
+  
   const is_all_collected = isAllCollected(collected);
-
+  // collected.view = undefined
+  // collected.icon = undefined
   const view = collected?.view?.[0];
   const icon = collected?.icon?.[0];
 
   return (
     <div className="category">
       <Topbar back={true} />
-      <h3>Grande Image de couverture <Indicator title={`l'image qui contient un exemple visuel de la category`} description={`Nous nous recommandons, 1️⃣ D'utiliser une image de haute qualite, 2️⃣ grand format, 3️⃣ le contenu de l'image doit etre centre,`}/></h3>
+      <h3>Grande Image de couverture <Indicator title={`l'image qui contient un exemple visuel de la category`} description={`Nous vous recommandons, 1️⃣ D'utiliser une image de haute qualite, 2️⃣ grand format, 3️⃣ le contenu de l'image doit etre centre,`} /></h3>
       <div className="column">
-        <label htmlFor='chose-category-view' className={"icon-180-category view shadow  "+(is_newCategory?'is-new':'cover-image')}  style={{
+        <label htmlFor='chose-category-view' className={`icon-180-category view shadow  ${(is_newCategory ? 'is-new' : 'cover-image')} ${viewError?'error':''} `} style={{
           background:
             view ? getImg(
               typeof view == 'string' ? view
@@ -95,53 +99,52 @@ function Page() {
               currentStore?.url : undefined
             ) : getImg('/res/empty/drag-and-drop.png', '80%')
         }} >
-          <input id='chose-category-view' multiple type="file" accept={'image/*,video/*'} style={{ display: 'none' }} onChange={(e) => {
+          <input id='chose-category-view' type="file" accept={'image/*'} style={{ display: 'none' }} onChange={(e) => {
             const files = e.currentTarget.files;
             console.log({ files });
             if (!files?.[0]) return
-            setCollected((prev)=>({
+            setCollected((prev) => ({
               ...prev,
               view: Array.from(files),
-              prevView:URL.createObjectURL(files[0])
+              prevView: URL.createObjectURL(files[0])
             }))
             changeUpdated(true)
+            setViewError('')
           }} />
           {
-            !is_newCategory && <div className="edit"><RiImageEditFill className='edit-img'/></div>
+            !is_newCategory  && !viewError && <div className="edit"><RiImageEditFill className='edit-img' /></div>
           }
-          {is_newCategory && !view && <span> <IoCloudUploadOutline />
-            choisissez Image</span>}
-            {
-              // collected.view && 
-            }
+          {(is_newCategory||viewError) && !view && <span> <IoCloudUploadOutline />
+            choisissez l'Image</span>}
         </label>
       </div>
-     <h3>Logo ou icon<Indicator title={`Cette image apparetra souvant en premiere position`} description='elle doit etre representative de la category'/></h3>
+      <h3>Logo ou icon<Indicator title={`Cette image apparetra souvant en premiere position`} description='elle doit etre representative de la category' /></h3>
       <div className={"info-icon " + (is_newCategory ? 'is-new' : '')} >
-        <label htmlFor='chose-category-icon' className="icon-140-category view shadow" style={{
+        <label htmlFor='chose-category-icon' className={`icon-140-category view shadow ${iconError?'error':''} `} style={{
           background:
             icon ? getImg(
               typeof icon == 'string' ? icon
-                :collected.prevIcon,
+                : collected.prevIcon,
               undefined, typeof icon == 'string' ?
               currentStore?.url : undefined
             ) : getImg('/res/empty/drag-and-drop.png', '80%')
         }}>
-          <input id='chose-category-icon' multiple type="file" accept={'image/*,video/*'} style={{ display: 'none' }} onChange={(e) => {
+          <input id='chose-category-icon' type="file" accept={'image/*'} style={{ display: 'none' }} onChange={(e) => {
             const files = e.currentTarget.files;
             if (!files?.[0]) return
-            setCollected((prev)=>({
+            setCollected((prev) => ({
               ...prev,
               icon: Array.from(files),
-              prevIcon:URL.createObjectURL(files[0])
+              prevIcon: URL.createObjectURL(files[0])
             }))
             changeUpdated(true)
+            setIconError('')
           }} />
-           {
-            !is_newCategory && <div className="edit"><RiImageEditFill className='edit-img'/></div>
+          {
+            !is_newCategory && !iconError && <div className="edit"><RiImageEditFill className='edit-img' /></div>
           }
-          {is_newCategory && !icon && <span> <IoCloudUploadOutline />
-            choisissez Image</span>}
+          {(is_newCategory||iconError) && !icon && <span> <IoCloudUploadOutline />
+            choisissez l'Image</span>}
         </label>
         {!is_newCategory && <div className="stats">
           <h3>Donnee de Performance</h3>
@@ -151,13 +154,14 @@ function Page() {
         </div>}
       </div>
       <label className='editor' htmlFor='input-category-name'>Nom de la categorie <IoPencil /></label>
-      <input ref={nameRef} className='editor' type="text" id={'input-category-name'} value={collected.name || ''} placeholder="Ajoutez un nom de produit" onChange={(e) => {
+      <input ref={nameRef} className={`editor ${nameError?'error':''}`} type="text" id={'input-category-name'} value={collected.name || ''} placeholder="Ajoutez un nom de produit" onChange={(e) => {
         const name = e.currentTarget.value
-        setCollected((prev)=>({
+        setCollected((prev) => ({
           ...prev,
-          ['name']: name.substring(0, 52),
+          ['name']: name.replace(/\s+/g, ' ').substring(0, 512),
         }))
-        changeUpdated(true)
+        changeUpdated(true);
+        setNameError('')
       }} onKeyUp={(e) => {
         if (e.code == 'Enter') {
           const p = document.querySelector('#input-category-description') as HTMLTextAreaElement | null;
@@ -171,8 +175,9 @@ function Page() {
           p && p.focus()
         }
       }} />
+      <div className="input-message"><span className='error-message'>{nameError}</span><span className='right'></span>{(collected.name?.trim()?.length||0)} / 32</div>
       <label className='editor' htmlFor='input-category-description'>Description <IoPencil /></label>
-      <textarea className='editor' id="input-category-description" placeholder='Ajoutez la description du produit' cols={10} rows={1} ref={ref => {
+      <textarea className={`editor ${descriptionError?'error':''}`} id="input-category-description" placeholder='Ajoutez la description du produit' cols={10} rows={1} ref={ref => {
         if (!ref) return
         descriptionRef.current = ref;
         if ((ref as any).init) return
@@ -199,22 +204,24 @@ function Page() {
         }, 200);
       }} value={collected.description} onChange={(e) => {
         const description = e.currentTarget.value
-        setCollected((prev)=>({
+        setCollected((prev) => ({
           ...prev,
-          ['description']: description.substring(0, 512),
+          ['description']: description.replace(/\s+/g, ' ').substring(0, 512),
         }));
+        setDescriptionError('')
         changeUpdated(true)
       }} onKeyDown={(e) => {
         if (e.code == 'Tab') {
           // si un autre input en bas
         }
       }}></textarea>
-      <h3>Ajoutez en tant que sous Category<span>(facultatif)</span></h3>
+      <div className="input-message"><span className='error-message'>{descriptionError}</span><span className='right'>{(collected.description?.trim()?.length||0)} / 512</span></div>
+      <h3 style={{marginTop:'12px'}}>Ajoutez en tant que sous Category<span>(facultatif)</span></h3>
       <div className='category-ctn'>
         <div className={`icon ${collected.parent_category_id ? 'replace' : 'add'}`} onClick={() => {
           openChild(<ChildViewer title='Choisissez la category parent'>
             <CategoriesPopup onSelected={(c) => {
-              setCollected((prev)=>({
+              setCollected((prev) => ({
                 ...prev,
                 parent_category_id: c.id
               }))
@@ -227,8 +234,9 @@ function Page() {
         </div>
         {
           collected.parent_category_id && <CategoryItem key={collected.parent_category_id}
-            openCategory category_id={collected.parent_category_id} onDelete={(c) => {
-              setCollected((prev)=>({
+            openCategory category_id={collected.parent_category_id}
+            onDelete={(c) => {
+              setCollected((prev) => ({
                 ...prev,
                 parent_category_id: ''
               }))
@@ -237,24 +245,24 @@ function Page() {
         }
       </div>
       <div className="setting-product">
-      {
-        !is_newCategory && <>
-          <Button title='Voir les stats' icon={<IoLayers />} />
-          <Button title='Supprimer' icon={<IoTrash />} onClick={() => {
-            openChild(<ChildViewer>
-              <ConfirmDelete title={`Etes vous sur de vouloir suprimer la categorie "${collected.name}"`} onCancel={() => {
-                openChild(null);
-              }} onDelete={() => {
-                collected.id && removeCategory(collected.id);
-                openChild(null);
-              }} />
-            </ChildViewer>, {
-              background: '#3455',
-            })
-          }} />
-        </>
-      }
-    </div>
+        {
+          !is_newCategory && <>
+            <Button title='Voir les stats' icon={<IoLayers />} />
+            <Button title='Supprimer' icon={<IoTrash />} onClick={() => {
+              openChild(<ChildViewer>
+                <ConfirmDelete title={`Etes vous sur de vouloir suprimer la categorie "${collected.name}"`} onCancel={() => {
+                  openChild(null);
+                }} onDelete={() => {
+                  collected.id && removeCategory(collected.id);
+                  openChild(null);
+                }} />
+              </ChildViewer>, {
+                background: '#3455',
+              })
+            }} />
+          </>
+        }
+      </div>
       {
         is_newCategory ?
           <SaveButton loading={loading} effect='color' title={is_all_collected ? 'Cree la Categorie' : 'Ajoutez toutes informations requises'}
@@ -284,7 +292,7 @@ function Page() {
               if (loading) return console.log('onLoading');
               if (!isAllCollected(collected, true)) return console.log('informations incomplete');
               setLoading(true);
-              
+
               updateProduct(collected).then(res => {
                 setTimeout(() => {
                   setLoading(false)

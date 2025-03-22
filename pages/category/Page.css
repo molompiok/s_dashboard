@@ -16,16 +16,23 @@
 
 
 
+
+
 .category .info-icon {
     display: inline-flex;
     display: flex;
     gap: 24px;
     flex-wrap: wrap;
+    margin-bottom: 24px;
 }
 
 .category .info-icon.is-new:hover {
     scale: 1.03;
     background-color: rgba(var(--green-rgb), 0.2);
+}
+
+.category .error{
+    box-shadow: 0px 2px 8px -2px  var(--red)!important ;
 }
 
 .category .view svg {
@@ -82,7 +89,7 @@
 }
 
 .category h3 {
-    margin-top: 16px;
+    margin-top: 24px;
     margin-bottom: 12px;
     color: var(--discret-1);
     cursor: pointer;

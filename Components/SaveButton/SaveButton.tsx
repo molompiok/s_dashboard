@@ -10,6 +10,7 @@ const EffectRequired = {
             height: '100%',
             opacity: 1,
             background: 'var(--primary-gradiant)',
+            boxShadow:'0px 6px 16px -8px var(--primary-color)',
         } satisfies React.CSSProperties,
         not_required: {
             height: '100%',
@@ -49,6 +50,7 @@ function SaveButton({ onClick, required, title, effect='color' ,loading}: {loadi
             background: 'var(--primary-gradiant)',
             color: 'var(--discret-10)',
             fontSize: '1.1em',
+            boxShadow:'0px 6px 16px -8px var(--gray-color)',
             ...(
                 required ?
                 EffectRequired[effect].required :

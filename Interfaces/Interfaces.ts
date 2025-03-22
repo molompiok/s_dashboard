@@ -117,8 +117,8 @@ export interface ProductFavoriteInterface {
 export interface ValueInterface {
   id: string;
   featureId: string;
-  views: (string|Blob)[]; 
-  icon: string | null; 
+  views: (string|Blob)[]|null; 
+  icon:  (string|Blob)[] | null; 
   text: string | null; 
   index: number;
   createdAt: string | Date; 

@@ -1,17 +1,23 @@
 import { FeatureInterface, ProductInterface } from "../../Interfaces/Interfaces";
 
-export { getDefaultFeature, getDefaultValues }
+export { getDefaultFeature, getDefaultValues,IsFeaturesHere }
 
-function getDefaultFeature(product:ProductInterface) {
+function IsFeaturesHere(product:Partial<ProductInterface>) {
+    if(!product?.features) return false
+    const defaultFeature = product.features?.find(f=>f.id !== product.default_feature_id);
+    return !!defaultFeature
+}
+
+function getDefaultFeature(product:Partial<ProductInterface>) {
     const defaultFeature = product.features?.find(f=>f.id == product.default_feature_id);
     return defaultFeature
 }
 
-function isProduct(source:any): source is ProductInterface {
+function isProduct(source:any): source is Partial<ProductInterface> {
     return !!source.features
 }
 
-function getDefaultValues(source:ProductInterface|FeatureInterface) {
+function getDefaultValues(source:Partial<ProductInterface>|FeatureInterface) {
     let f:FeatureInterface|undefined;
     if(isProduct(source)){
         f = getDefaultFeature(source)

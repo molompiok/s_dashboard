@@ -78,6 +78,12 @@ body {
   opacity: 0.9;
 }
 
+.prompt{ /* en petit caractere*/
+  all: unset;
+  font-size: 0.8em;
+  font-weight: normal;
+} 
+
 #bottombar {
   display: flex;
   position: fixed;
@@ -191,6 +197,7 @@ h3 {
   --box-shadow: 0px 0px 16px -8px var(--discret-0);;
   --gray-gradiant:linear-gradient(330deg, rgba(73, 73, 73, 0.062) 0%, rgba(0, 0, 0, 0.585) 100%), linear-gradient(40deg, rgb(255, 255, 255) 0%, rgba(110, 73, 73, 0.804) 100%);
   --primary-gradiant:linear-gradient(330deg, rgba(208, 115, 0, 0.448) 0%, rgba(195, 94, 0, 0.585) 100%), linear-gradient(40deg, rgb(255, 247, 0) 0%, rgba(255, 0, 0, 0.804) 100%);
+  --secondary-gradiant:linear-gradient(330deg, rgba(0, 21, 208, 0.448) 0%, rgba(0, 159, 195, 0.585) 100%), linear-gradient(40deg, rgb(0, 251, 255) 0%, rgba(17, 0, 171, 0.804) 100%);
   --category-size:80px;
   --primary-color: rgb(255, 162, 0);
   --primary-color-rgb:255, 162, 0;
@@ -340,9 +347,11 @@ h3 {
 
 label.editor {
   font-weight: bold;
-  display: block;
-  margin-top: 16px;
-  margin-bottom: 8px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  margin-top: 0px;
+  margin-bottom: 0px;
   cursor: text;
 }
 
@@ -377,7 +386,18 @@ input.editor:hover,
 textarea.editor:hover {
   border: 1px solid var(--discret-9);
 }
+.input-message{
+  display: flex;
+  align-items: center;
+}
+.input-message .error-message{
+  font-size: 0.8em;
 
+}
+.input-message .right{
+  margin-left: auto;
+  font-size: 0.8em;
+}
 textarea.editor {
   width: 100%;
   min-height: 40px;

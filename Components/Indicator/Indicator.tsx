@@ -4,12 +4,12 @@ import './Indicator.css'
 
 export {Indicator}
 
-function Indicator({title,description}:{title:string,description?:string}) {
+function Indicator({title,description, style,className}:{style?:React.CSSProperties | undefined,className?:string,title:string,description?:string}) {
     
 
-    return <div className="indicator"> 
+    return <div style={style} className={"indicator "+ (className||'')}> 
     <IoHelp/>
-    <div className="info">
+    <div  className="info">
         <h2>{title}</h2>
         {<p>{description}</p>}
     </div>

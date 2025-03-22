@@ -81,7 +81,7 @@ const useProductStore = create(combine({
         }
     },
 
-    async createProduct(data: Partial<ProductInterface>,views:(string|Blob)[]) {
+    async createProduct(data: Partial<ProductInterface>,views:(string|Blob)[]|null) {
         try {
 
             console.log({data,views});

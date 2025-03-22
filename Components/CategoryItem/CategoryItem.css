@@ -35,11 +35,13 @@
     background-image: linear-gradient(to right, var(--red), transparent);
     border-radius: 50px;
 }
+
 .category-item .delete:hover svg{
     scale: 1.1;
     
     background-image: linear-gradient(to right, var(--red), var(--red));
 }
+
 .category-item .delete {
     position: absolute;
     top: 0;
