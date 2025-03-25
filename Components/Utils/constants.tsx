@@ -1,7 +1,21 @@
 import { IoBagHandle, IoBagHandleOutline, IoCart, IoCartOutline, IoHome, IoHomeOutline, IoPeople, IoPeopleOutline, IoStatsChart, IoStatsChartOutline, IoStorefront, IoStorefrontOutline } from "react-icons/io5"
+import { FeatureInterface } from "../../Interfaces/Interfaces"
 
 
-export { Icons, NEW_VIEW, OrderStatus, PaymentMethod, PaymentStatus , Image_1}
+export { 
+    Icons,
+    NEW_VIEW,
+    OrderStatus,
+    PaymentMethod,
+    PaymentStatus ,
+    Image_1,
+    Colors,
+    EDITED_DATA,
+    NEW_ID_START
+}
+
+const NEW_ID_START = 'new_'
+const EDITED_DATA = 'edited'
 const NEW_VIEW = 'new_view'
 
 const Icons = {
@@ -46,6 +60,110 @@ enum PaymentStatus {
     FAILED = 'failed',
     REFUNDED = 'refunded',
 }
+
+const Colors = [
+    {
+      "name": "Rouge",
+      "variants": [
+        { "name": "Bordeaux", "hex": "#800020" },
+        { "name": "Rouge foncé", "hex": "#8B0000" },
+        { "name": "Rouge corail", "hex": "#FF6F61" },
+        { "name": "Rouge vif", "hex": "#FF0000" },
+        { "name": "Rouge rosé", "hex": "#FF4D4D" }
+      ]
+    },
+    {
+      "name": "Bleu",
+      "variants": [
+        { "name": "Bleu marine", "hex": "#000080" },
+        { "name": "Bleu roi", "hex": "#4169E1" },
+        { "name": "Bleu turquoise", "hex": "#40E0D0" },
+        { "name": "Bleu ciel", "hex": "#87CEEB" },
+        { "name": "Bleu pastel", "hex": "#B0E0E6" }
+      ]
+    },
+    {
+      "name": "Vert",
+      "variants": [
+        { "name": "Vert forêt", "hex": "#228B22" },
+        { "name": "Vert olive", "hex": "#808000" },
+        { "name": "Vert émeraude", "hex": "#50C878" },
+        { "name": "Vert clair", "hex": "#90EE90" },
+        { "name": "Vert menthe", "hex": "#98FB98" }
+      ]
+    },
+    {
+      "name": "Jaune",
+      "variants": [
+        { "name": "Jaune doré", "hex": "#DAA520" },
+        { "name": "Jaune moutarde", "hex": "#FFDB58" },
+        { "name": "Jaune citron", "hex": "#FFD700" },
+        { "name": "Jaune pâle", "hex": "#FFFFE0" },
+        { "name": "Jaune vanille", "hex": "#FFFACD" }
+      ]
+    },
+    {
+      "name": "Orange",
+      "variants": [
+        { "name": "Orange brûlé", "hex": "#CC5500" },
+        { "name": "Mandarine", "hex": "#FF8243" },
+        { "name": "Orange vif", "hex": "#FFA500" },
+        { "name": "Orange saumon", "hex": "#FA8072" },
+        { "name": "Orange abricot", "hex": "#FFB347" }
+      ]
+    },
+    {
+      "name": "Violet",
+      "variants": [
+        { "name": "Violet foncé", "hex": "#9400D3" },
+        { "name": "Violet prune", "hex": "#8E4585" },
+        { "name": "Mauve", "hex": "#9932CC" },
+        { "name": "Lavande", "hex": "#E6E6FA" },
+        { "name": "Violet lilas", "hex": "#C8A2C8" }
+      ]
+    },
+    {
+      "name": "Rose",
+      "variants": [
+        { "name": "Fuchsia", "hex": "#FF00FF" },
+        { "name": "Rose corail", "hex": "#E75480" },
+        { "name": "Rose bonbon", "hex": "#FF69B4" },
+        { "name": "Rose pastel", "hex": "#FFC0CB" },
+        { "name": "Rose dragée", "hex": "#FFD1DC" }
+      ]
+    },
+    {
+      "name": "Marron",
+      "variants": [
+        { "name": "Marron foncé", "hex": "#5C4033" },
+        { "name": "Chocolat", "hex": "#8B4513" },
+        { "name": "Brun", "hex": "#A52A2A" },
+        { "name": "Noisette", "hex": "#D2691E" },
+        { "name": "Marron caramel", "hex": "#C19A6B" }
+      ]
+    },
+    {
+      "name": "Gris",
+      "variants": [
+        { "name": "Gris anthracite", "hex": "#2F4F4F" },
+        { "name": "Gris souris", "hex": "#808080" },
+        { "name": "Gris perle", "hex": "#C0C0C0" },
+        { "name": "Gris clair", "hex": "#D3D3D3" },
+        { "name": "Gris argent", "hex": "#E5E4E2" }
+      ]
+    },
+    {
+      "name": "Noir & Blanc",
+      "variants": [
+          { "name": "Noir", "hex": "#000000" },
+          { "name": "Ébène", "hex": "#334455" },
+        { "name": "Ivoire", "hex": "#FFFFF0" },
+        { "name": "Blanc", "hex": "#FFFFFF" },
+        { "name": "Blanc neige", "hex": "#FFFAFA" }
+      ]
+    }
+  ]
+  
 /*
 IoArrowBackCircle IoArrowForwardCircle
 IoLayers IoLayersOutline

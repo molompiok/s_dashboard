@@ -1,0 +1,35 @@
+
+.list-type{
+   width: 100%;
+   height: auto;
+}
+
+.list-type .type-option{
+    width: 100%;
+    display: inline-flex;
+    align-items: center;
+    gap: 16px;
+    border-radius: 12px;
+    cursor: pointer;
+    transition: 200ms;
+    padding: 6px;
+}
+.list-type .preview-type{
+    min-width: 100px;
+    width: 100px;
+    height: 60px;
+}
+
+.list-type .type-option.active,
+.list-type .type-option:hover{
+    background: var(--discret-9);
+    transition: 200ms;
+}
+
+
+.list-type{
+    overflow: visible;
+}
+.list-type .swiper-pagination{
+    bottom: -8px;
+}

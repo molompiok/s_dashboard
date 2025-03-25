@@ -23,8 +23,8 @@ const useCategory = create(combine({
         set(({ categories }) => ({ categories: categories && { ...categories, list: categories.list.filter(c=>c.id !== category_id)} }))
         return json?.isDeleted;
     },
-    async updateProduct(category:Partial<CategoryInterface>) {
-        if (!category.id) return console.error('Product.id required');
+    async updateCategory(category:Partial<CategoryInterface>) {
+        if (!category.id) return console.error('Categories.id required');
         
                 const h = useAuthStore.getState().getHeaders();
                 if (!h) return
@@ -78,19 +78,21 @@ const useCategory = create(combine({
 
         return {}  as CategoryInterface
     },
-    async fetchCategoryBy({category_id,slug}:{category_id?:string,slug?:string}) {
-        if (!category_id&&!slug) return;
+    async fetchCategoriesBy({categories_id,slug}:{categories_id?:string[],slug?:string}) {
+        if ((!categories_id || categories_id?.length==0)&&!slug) return;
         const cs = get().categories;
         // console.log({cs});
         
-        const localProduct = cs?.list.find((c) => c.id == category_id||c.slug == slug);
-        // console.log({localProduct});
-        if (localProduct) {
-            return localProduct
+        const localCategories = categories_id?.map(
+            (c) => cs?.list.find(_c=>_c.id == c)
+        ).filter(c=>!!c);
+        
+        if (localCategories && localCategories.length >0) {
+            
+            return localCategories
         } else {
-            const list  = await useCategory.getState().fetchCategories({category_id,slug}) ;
-            // console.log({list});
-            return  list?.list[0];
+            const list  = await useCategory.getState().fetchCategories({categories_id:categories_id||[],slug}) ;
+            return  list?.list;
         }
     },
     async createCategory(data: Partial<CategoryInterface>) {
@@ -139,20 +141,25 @@ const useCategory = create(combine({
         }
     },
     async fetchCategories(filter: Partial<{
-        category_id: string,
+        categories_id: string[],
         slug: string,
         order_by: string,
         page: number,
         limit: number,
         no_save: boolean
     }>) {
-        const h = useAuthStore.getState().getHeaders()
+        try {
+            const h = useAuthStore.getState().getHeaders()
         if(!h) return;
        
         const searchParams = new URLSearchParams({});
         for (const key in filter) {
             const value = (filter as any)[key];
-            value &&  searchParams.set(key, value);
+            if(key == 'categories_id'){
+                value &&  searchParams.set(key, JSON.stringify(value));
+            }else{
+                value &&  searchParams.set(key, value);
+            }
         }
         // console.log(`${h.store.url}/get_categories/?${searchParams}`);
         
@@ -164,6 +171,10 @@ const useCategory = create(combine({
         if (!categories?.list) return
         if (!filter.no_save) set(() => ({ categories: categories }))
         return categories as ListType<CategoryInterface> | undefined
+        } catch (error) {
+            console.log(error);
+            
+        }
     }
 })));
 

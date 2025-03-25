@@ -29,17 +29,25 @@ function CategoryItem({
     hoverEffect?:boolean,
 }) {
     const [c,setC] = useState(category); 
-    const {fetchCategoryBy} = useCategory();
-    const {currentStore} = useStore()
+    const {fetchCategoriesBy} = useCategory();
+    const {currentStore} = useStore();
+    const [s] = useState({
+        init:false
+    })
     useEffect(()=>{
         if(!c && category_id){
-            fetchCategoryBy({category_id}).then(res=>{
-                if(!res?.id) return;
-                setC(res);
+            const id = Math.random();
+            console.log(id,category_id)
+            if(s.init) return
+            s.init = true
+            fetchCategoriesBy({categories_id:[category_id]}).then(res=>{
+                if(!res?.[0]) return;
+                setC(res[0]);
             })
         }
     },[currentStore]);
-    return c && <a className={"category-item "+(hoverEffect?'hover-effect':'')} onClick={() => onClick?.(c)} href={(openCategory||undefined)&&`/category?id=${c.id}`} >
+    
+    return c && <a key={category_id} className={"category-item "+(hoverEffect?'hover-effect':'')} onClick={() => onClick?.(c)} href={(openCategory||undefined)&&`/category?id=${c.id}`} >
         {onDelete && (
             <div className="delete" onClick={(e)=>{
                 e.preventDefault();

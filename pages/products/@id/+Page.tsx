@@ -1,4 +1,4 @@
-import { IoAdd, IoChevronDown, IoChevronForward, IoClose, IoCloudUploadSharp, IoLayers, IoMegaphoneOutline, IoPencil, IoPricetagsSharp, IoTrash } from 'react-icons/io5'
+import { IoAdd, IoChevronBack, IoChevronDown, IoChevronForward, IoClose, IoCloudUploadSharp, IoEllipsisHorizontal, IoLayers, IoMegaphoneOutline, IoPencil, IoPricetagsSharp, IoTrash } from 'react-icons/io5'
 import './+Page.css'
 import { CategoryItem } from '../../../Components/CategoryItem/CategoryItem'
 import { CommandeList } from '../../../Components/CommandesList/CommandesList'
@@ -7,13 +7,13 @@ import { Topbar } from '../../../Components/TopBar/TopBar'
 import { SwiperProducts } from '../../../Components/SwiperProducts/SwiperProducts'
 import { images as imgs } from "./images";
 import { HoriszontalSwiper } from '../../../Components/HorizontalSwiper/HorizontalSwiper'
-import { FeatureInterface, ProductInterface, ValueInterface } from '../../../Interfaces/Interfaces'
-import { NEW_VIEW } from '../../../Components/Utils/constants'
+import { FeatureInterface, ProductInterface, UpdateFeature, ValueInterface } from '../../../Interfaces/Interfaces'
+import { EDITED_DATA, NEW_ID_START, NEW_VIEW } from '../../../Components/Utils/constants'
 import { ClientCall } from '../../../Components/Utils/functions'
 import { usePageContext } from '../../../renderer/usePageContext'
 import { useStore } from '../../stores/StoreStore'
 import { useProductStore } from '../ProductStore'
-import { getDefaultValues, IsFeaturesHere } from '../../../Components/Utils/parseData'
+import { getDefaultFeature, getDefaultValues, IsFeaturesHere } from '../../../Components/Utils/parseData'
 import { useApp } from '../../../renderer/AppStore/UseApp'
 import { ChildViewer } from '../../../Components/ChildViewer/ChildViewer'
 import { CategoriesPopup } from '../../../Components/CategoriesPopup/CategoriesPopup'
@@ -26,29 +26,42 @@ import { Indicator } from '../../../Components/Indicator/Indicator'
 import { getImg } from '../../../Components/Utils/StringFormater'
 
 import { Separator } from '../../../Components/Separator/Separator'
-import { Swiper, SwiperSlide } from 'swiper/react'
-import { useWindowSize } from '../../../Hooks/useWindowSize';
-import { Grid, Pagination } from 'swiper/modules';
-import 'swiper/css';
-import 'swiper/css/pagination';
-import 'swiper/css/grid';
+import { FeatureTypes } from '../../../Components/FeatureTypes/FeatureTypes'
+import { Feature } from '../../../Components/Feature/Feature'
+import { FeatureInfo } from '../../../Components/FeatureInfo/FeatureInfo'
 
 
+function getNewFeature() {
+  return {
+    id: NEW_ID_START + ClientCall(Math.random, 0).toString(),
+    created_at: '',
+    name: '',
+    product_id: '',
+    required: false,
+    type: '',
+    updated_at: '',
+    default: '',
+    icon: [],
+    index: '',
+    is_double: false,
+    max: '',
+    max_size: '',
+    min: '',
+    min_size: '',
+    multiple: false,
+    regex: '',
+    values: []
+  } satisfies FeatureInterface
+}
 
 
-const VALUE_LIMIT = 7
-const FEATURE_LIMIT = 5
+const FEATURE_LIMIT = 20
 
 //TODO add markdon dans la description du produit?
 // TODO correcteur d'ortograph
 export function Page() {
 
-  const [collected, setCollected] = useState<Partial<ProductInterface>>({
-    price: 23,
-    name: 'product-1',
-    description: 'product-1',
-    barred_price: 1233,
-  });
+
   const { fetchProductBy, updateProduct, removeProduct, createProduct } = useProductStore()
   const { currentStore } = useStore()
   const { openChild } = useApp()
@@ -77,13 +90,30 @@ export function Page() {
   const { myLocation } = useReplaceState()
   const is_newProduct = myLocation.pathname == "/products/new";
 
+  const [collected, setCollected] = useState<Partial<ProductInterface>>({
+    price: 23,
+    name: 'product-1',
+    description: 'product-1',
+    barred_price: 1233,
+  });
+
   const is_features_here = IsFeaturesHere(collected);
 
+  const [s] = useState({
+    init: false,
+    features: undefined as Partial<FeatureInterface>[] | undefined,
+  })
+
+  function resetProduct(res: ProductInterface) {
+    s.features = res.features || [];
+    setCollected({ ...res, features: (res.features || []).filter(f => f.id !== res.default_feature_id) });
+    setValues(getDefaultValues(res) || [])
+  }
   useEffect(() => {
-    !is_newProduct && currentStore && fetchProductBy({ product_id: routeParams.id }).then(res => {
+    !is_newProduct && currentStore && !s.init && fetchProductBy({ product_id: routeParams.id }).then(res => {
+      s.init = true;
       if (!res?.id) return;
-      setCollected(res);
-      setValues(getDefaultValues(res) || [])
+      resetProduct(res)
     })
   }, [currentStore, myLocation]);
 
@@ -91,7 +121,6 @@ export function Page() {
     const vs = clearValues();
     setValues(vs)
   }, [index])
-
 
   function isAllCollected(collected: Partial<ProductInterface>, showError?: boolean) {
     let v: void | boolean = true;
@@ -118,9 +147,27 @@ export function Page() {
     // if (!collected.values) return showError ? setViewError('cliquez sur le cadre pour ajouter une image') : false
     return v
   }
+  const openFeatureOption = (f: FeatureInterface | undefined, metod: 'add' | 'replace') => {
+    openChild(<ChildViewer title='Les Informations sur la variante'>
+      <FeatureInfo feature={f || (getNewFeature())} onChange={(f) => {
+        const fs = collected.features || [];
+        (f as any)[EDITED_DATA] = EDITED_DATA
+        const l = metod == 'add' ? [...fs, f] : fs.map(_f => (_f == f || _f.id == f.id) ? f : _f);
+        setCollected({
+          ...collected,
+          features: l,
+        })
+        openChild(null)
+        changeUpdated(true)
+      }} onCancel={() => {
+        openChild(null)
+
+      }} />
+    </ChildViewer>, {
+      background: '#3455'
+    })
+  }
   const is_all_collected = isAllCollected(collected);
-
-
   const is_feature_max = (collected.features?.length || 0) >= FEATURE_LIMIT;
 
   return <div className="product">
@@ -165,14 +212,14 @@ export function Page() {
         return true;
       }} />
     </div>}
-    <div className="product-section-minimal" style={{ display: 'none' }}>
+    <div className="product-section-minimal">
       <label className='editor' htmlFor='input-product-name'>Nom du Produit <IoPencil /></label>
       <input className={`editor ${nameError ? 'error' : ''}`} type="text" id={'input-product-name'} value={collected.name || ''} placeholder="Ajoutez un nom de produit" onChange={(e) => {
         const name = e.currentTarget.value
-        setCollected((prev) => ({
-          ...prev,
+        setCollected({
+          ...collected,
           ['name']: name.replace(/\s+/g, ' ').substring(0, 256),
-        }))
+        })
         changeUpdated(true)
         setNameError('')
       }} onKeyUp={(e) => {
@@ -213,13 +260,13 @@ export function Page() {
         });
         setTimeout(() => {
           autoResizeTextarea(ref);
-        }, 200);
+        }, 500);
       }} value={collected.description} onChange={(e) => {
         const description = e.currentTarget.value
-        setCollected((prev) => ({
-          ...prev,
+        setCollected({
+          ...collected,
           ['description']: description.replace(/\s+/g, ' ').substring(0, 1024),
-        }));
+        });
         changeUpdated(true)
         setDescriptionError('')
       }} onKeyDown={(e) => {
@@ -244,10 +291,10 @@ export function Page() {
               placeholder="Prix du produit"
               onChange={(e) => {
                 const price = e.currentTarget.value
-                setCollected((prev) => ({
-                  ...prev,
+                setCollected({
+                  ...collected,
                   ['price']: Number.parseInt(price),
-                }))
+                })
                 changeUpdated(true)
                 setPriceError('')
               }} />
@@ -262,10 +309,10 @@ export function Page() {
               placeholder="Prix du produit"
               onChange={(e) => {
                 const barred_price = e.currentTarget.value
-                setCollected((prev) => ({
-                  ...prev,
+                setCollected({
+                  ...collected,
                   ['barred_price']: Number.parseInt(barred_price),
-                }))
+                })
                 changeUpdated(true)
                 setBarredError('')
               }} />
@@ -275,76 +322,48 @@ export function Page() {
       </div>
       <h3>Category du Produit <span>(facultatif)</span></h3>
       <div className='category-ctn'>
-        <div className={`icon ${collected.category_id ? 'replace' : 'add'}`} onClick={() => {
+        <div className={`icon add`} onClick={() => {
           openChild(<ChildViewer title='List des categories'>
             <CategoriesPopup onSelected={(c) => {
-              setCollected((prev) => ({
-                ...prev,
-                category_id: c.id
+              setCollected((current) => ({
+                ...current,
+                categories_id: [c.id, ...(current.categories_id || [])]
               }))
               changeUpdated(true)
             }} />
           </ChildViewer>, { blur: 10 })
         }}>
-          {collected.category_id ? <FaRedo /> : <IoAdd />}
-          <span>{collected.category_id ? 'remplacez' : 'ajoutez'}</span>
+          <IoAdd />
+          <span>ajoutez</span>
         </div>
         {
-          collected.category_id && <CategoryItem
-            openCategory key={collected.category_id}
-            category_id={collected.category_id}
-            onDelete={(c) => {
-              setCollected((prev) => ({
-                ...prev,
-                category_id: ''
-              }))
-              changeUpdated(true)
-            }}
-          />
+          collected.categories_id?.map(c => (
+            <CategoryItem
+              key={c}
+              openCategory
+              category_id={c}
+              onDelete={(d_c) => {
+                setCollected((current) => ({
+                  ...current,
+                  categories_id: current.categories_id?.filter(_c => d_c.id !== _c)
+                }))
+                changeUpdated(true)
+              }}
+            />
+          ))
         }
       </div>
     </div>
     <div className="product-section-feature">
       <div className="top">
-        <h2>Les Variantes du Produit <b className='prompt'>( {collected.features?.length || 0} / {FEATURE_LIMIT} )</b>
+        <h2 style={{ flexWrap: 'wrap' }}> Les Variantes du Produit <b className='prompt'>( {collected.features?.length || 0} / {FEATURE_LIMIT} )</b>
           <Indicator title=''
             description={!is_feature_max ? `Vous pouvez ajoueter jusqu\'a ${FEATURE_LIMIT} variantes par produit` : `Vous avez atteint la limit ${FEATURE_LIMIT} variantes par produit`}
-            className='right' />
+          />
         </h2>
         {<span className={is_feature_max ? 'max' : ''} onClick={() => {
           if (is_feature_max) return
-          openChild(<ChildViewer title='Les Informations sur la variante'>
-            <FeatureInfo feature={{
-              id: ClientCall(Math.random, 0).toString(),
-              created_at: '',
-              name: '',
-              product_id: '',
-              required: true,
-              type: '',
-              updated_at: '',
-              default: '',
-              icon: [],
-              index: '',
-              is_double: false,
-              max: '',
-              max_size: '',
-              min: '',
-              min_size: '',
-              multiple: false,
-              regex: '',
-              values: []
-            }} onChange={(f) => {
-              setCollected((prev) => {
-                const fs = prev.features?.filter(f => f.id !== prev.default_feature_id) || [];
-                return {
-                  ...prev,
-                  features: [...fs, f]
-                }
-              })
-            }} />
-          </ChildViewer>, {
-            background: '#3455'
-          })
+          openFeatureOption(undefined, 'add')
         }}>Ajoutez</span>}
       </div>
       <Separator style={{ marginTop: '8px' }} color='#3455' />
@@ -354,12 +373,19 @@ export function Page() {
       {
         collected.features?.map(((f, i) => (
           <Feature key={i} feature={f} setFeature={(cb) => {
-            console.log(cb, cb(f));
-
-            setCollected((prev) => ({
-              ...prev,
+            setCollected((current) => ({
+              ...current,
               features: collected.features?.map(_f => _f.id == f.id ? cb(f) as any : _f)
             }))
+            changeUpdated(true)
+          }} onOpenRequired={(f) => {
+            openFeatureOption(f as any, 'replace')
+          }} onDelete={() => {
+            setCollected((current) => ({
+              ...current,
+              features: collected.features?.filter(_f => _f.id !== f.id)
+            }))
+            changeUpdated(true)
           }} />
         )))
       }
@@ -374,7 +400,7 @@ export function Page() {
             if (!isAllCollected(collected, true)) return console.log('informations incomplete');
             setLoading(true);
 
-            createProduct({ ...collected }, values[0].views).then(res => {
+            createProduct({ ...collected }, values[0]?.views || []).then(res => {
               setTimeout(() => {
                 setLoading(false)
                 changeUpdated(false);
@@ -392,24 +418,22 @@ export function Page() {
             if (!isUpdated) return console.log('aucun changement');
             if (loading) return console.log('onLoading');
             if (!isAllCollected(collected, true)) return console.log('informations incomplete');
+
             setLoading(true);
 
-            updateProduct(collected).then(res => {
+            updateProduct(collected, s.features || []).then(res => {
               setTimeout(() => {
                 setLoading(false)
+                console.log('SaveButton ', res);
+                if (!res?.id) return;
+                resetProduct(res)
                 changeUpdated(false);
               }, 1000);
-              if (!res?.id) return;
-              setCollected(res);
+             
             })
           }} />
     }
-    <ListType active={collected.features?.[0].type} onSelected={(type) => {
-        // setFeature((prev) => ({
-        //   ...prev,
-        //   ...MapFeatureTypeParams[type]
-        // }));
-      }} />
+
     <div className="setting-product">
       {
         !is_newProduct && <>
@@ -441,57 +465,6 @@ export function Page() {
 }
 // TODO ajouter peference d'affichage des values des produits. dans la feature preference:'select'|'vertical-list' ..etc
 // TODO values.key => 3d.action(key)
-
-function FeatureInfo({ feature, onChange }: { feature: FeatureInterface, onChange: (feature: FeatureInterface) => void }) {
-
-  const [f, setFeature] = useState(feature);
-
-  // Fonction pour gérer le changement des cases à cocher
-  const handleCheckboxChange = (key: keyof FeatureInterface) => {
-    setFeature((prev) => {
-      const updatedFeature = { ...prev, [key]: !prev[key] };
-      onChange(updatedFeature);
-      return updatedFeature;
-    });
-  };
-
-  return (
-    <div className="feature-info">
-      {/* Nom de la variante */}
-      <h3>Nom de la Variante <IoPencil /></h3>
-      <label htmlFor="feature-info-name-input">
-        <input
-          className="editor"
-          placeholder="Nom de la variante"
-          id="feature-info-name-input"
-          type="text"
-          value={f.name}
-          onChange={(e) => {
-            const name = e.currentTarget.value;
-            if (!name) return;
-            setFeature((prev) => ({ ...prev, name }));
-          }}
-        />
-      </label>
-      <h3 style={{ whiteSpace: 'nowrap' }}>La Variante est-elle <span className={`check-text no-selectable prompt ${f.required ? 'ok' : ''}`} onClick={() => handleCheckboxChange("required")} >requise</span> ?</h3>
-      <label>
-        <input
-          type="checkbox"
-          checked={f.required}
-          onChange={() => handleCheckboxChange("required")}
-        />
-        <span style={{ fontSize: '0.9em' }}> Oui, cette variante est obligatoire pour passer commande. Le client doit choisir cette variante avant d'ajouter le produit au panier</span>
-      </label>
-      <h3 style={{ display: 'flex', flexWrap: 'wrap' }}>Choisez l'affichage de la variante</h3>
-      <ListType className='list open' active={f.type} onSelected={(type) => {
-        setFeature((prev) => ({
-          ...prev,
-          ...MapFeatureTypeParams[type]
-        }));
-      }} />
-    </div>
-  );
-}
 
 {/* Variante requise */ }
 
@@ -529,284 +502,6 @@ function NotVariantHere() {
   </div>
 }
 
-const MapFeatureTypeParams: Record<string, Partial<FeatureInterface>> = {
-  icon: {
-    name: '',
-    required: true,
-    type: 'icon',
-    updated_at: '',
-    default: '',
-    icon: [],
-  },
-  text: {
-    type: 'text',
-  },
-  icon_text: {
-    type: 'icon_text',
-    icon: [],
-  },
-  color: {
-    type: 'color',
-  }
-}
-
-
-function ListType({ className, onSelected, active }: { active?: string, onSelected: (type: string) => void, className?: string }) {
-
-  const types = [<div key={'text'} className={` no-selectable type-option ${active == 'text' ? 'active' : ''}`} onClick={() => {
-    onSelected('text')
-  }}>
-    <div className="preview-type" style={{ background: getImg('/res/Google__G__logo.svg.webp') }}></div>
-    <div className="name">{'Text'}</div>
-  </div>,
-  <div key={'icon'} className={` no-selectable type-option ${active == 'icon' ? 'active' : ''}`} onClick={() => {
-    onSelected('icon')
-  }}>
-    <div className="preview-type" style={{ background: getImg('/res/Google__G__logo.svg.webp') }}></div>
-    <div className="name">{'Icon'}</div>
-  </div>,
-  <div key={'icon_text'} className={` no-selectable type-option ${active == 'icon_text' ? 'active' : ''}`} onClick={() => {
-    onSelected('icon_text')
-  }}>
-    <div className="preview-type" style={{ background: getImg('/res/Google__G__logo.svg.webp') }}></div>
-    <div className="name">{'Icon Text'}</div>
-  </div>,
-  <div key={'color'} className={` no-selectable type-option ${active == 'color' ? 'active' : ''}`} onClick={() => {
-    onSelected('color')
-  }}>
-    <div className="preview-type" style={{ background: getImg('/res/Google__G__logo.svg.webp') }}></div>
-    <div className="name">{'Couleur'}</div>
-  </div>,
-  <div key={'date'} className={` no-selectable type-option ${active == 'date' ? 'active' : ''}`} onClick={() => {
-    onSelected('date')
-  }}>
-    <div className="preview-type" style={{ background: getImg('/res/Google__G__logo.svg.webp') }}></div>
-    <div className="name">{'Date'}</div>
-  </div>,
-  <div key={'date_double'} className={` no-selectable type-option ${active == 'date_double' ? 'active' : ''}`} onClick={() => {
-    onSelected('date_double')
-  }}>
-    <div className="preview-type" style={{ background: getImg('/res/Google__G__logo.svg.webp') }}></div>
-    <div className="name">{'Interval de date'}</div>
-  </div>,
-  <div key={'slide'} className={` no-selectable type-option ${active == 'slide' ? 'active' : ''}`} onClick={() => {
-    onSelected('slide')
-  }}>
-    <div className="preview-type" style={{ background: getImg('/res/Google__G__logo.svg.webp') }}></div>
-    <div className="name">{'Niveau'}</div>
-  </div>,
-  <div key={'slide_double'} className={` no-selectable type-option ${active == 'slide_double' ? 'active' : ''}`} onClick={() => {
-    onSelected('slide_double')
-  }}>
-    <div className="preview-type" style={{ background: getImg('/res/Google__G__logo.svg.webp') }}></div>
-    <div className="name">{'Interval'}</div>
-  </div>,
-  <div key={'input'} className={` no-selectable type-option ${active == 'input' ? 'active' : ''}`} onClick={() => {
-    onSelected('input')
-  }}>
-    <div className="preview-type" style={{ background: getImg('/res/Google__G__logo.svg.webp') }}></div>
-    <div className="name">{'Saisie text'}</div>
-  </div>];
-
-  const s = useWindowSize().width;
-  const n = s <= 580 ? (s - 260) / 220 + 0.9
-    : 2;
-
-  return <div className={`list-type ${className || ''} `}>
-    <Swiper
-      slidesPerView={n}
-      grid={{
-        rows: 2,
-        fill: 'column'
-      }}
-      spaceBetween={30}
-      pagination={{
-        clickable: true,
-      }}
-      modules={[Grid, Pagination]}
-    >
-      {
-        [...types].map((t, i) => (
-          <SwiperSlide key={i}>
-            {t}
-          </SwiperSlide>
-        ))
-      }
-    </Swiper>
-    {
-
-    }
-  </div>
-}
-
-function Feature({ feature, setFeature }: { setFeature: (cb: (feature: Partial<FeatureInterface> | undefined) => Partial<FeatureInterface> | undefined) => void, feature?: Partial<FeatureInterface> }) {
-  const [isTypeOpen, changeTypeOpen] = useState(false);
-  const [isRequired, changeRequired] = useState(false);
-  const [affectStock, setAffectStock] = useState(false)
-  const id = feature?.id || 0;
-
-  return <div className="feature">
-    <div className="top">
-      <label htmlFor={`feature-name-input ${id}`}>
-        <input className='editor' placeholder='Nom de la variante' id={`feature-name-input ${id}`} type="text" value={feature?.name} onChange={(e) => {
-          const name = e.currentTarget.value
-          if (!name) return;
-          setFeature((prev) => ({
-            ...prev,
-            name
-          }))
-        }} />
-        <IoPencil />
-      </label>
-      <div className="options">
-        <div className={`required no-selectable ${isRequired ? 'ok' : ''}`} onClick={() => {
-          changeRequired(!isRequired)
-        }}>Requis</div>
-        <div className="type no-selectable" onClick={(e) => {
-          if (e.currentTarget == e.target) {
-            changeTypeOpen(!isTypeOpen);
-          }
-        }}>{feature?.type || 'Type'}<IoChevronDown style={{ marginLeft: 'auto' }} />
-          <ListType className={isTypeOpen ? 'open' : ''} onSelected={(type) => {
-            setFeature((prev) => ({
-              ...prev,
-              ...MapFeatureTypeParams[type]
-            }));
-            changeTypeOpen(false);
-          }} />
-        </div>
-      </div>
-    </div>
-    <div className="list-values">
-      {
-        (feature?.values || [])?.map((v, i) => {
-          return (
-            <Value key={i} value={v} feature={feature as any} onRemove={() => {
-              console.log('#####', v);
-
-              setFeature((prev) => ({
-                ...prev,
-                values: prev?.values?.filter(_v => _v.id != v.id)
-              }))
-            }} />
-          )
-        })
-      }
-      {
-        (feature?.values?.length || 0) < VALUE_LIMIT && <div className="add-new" onClick={() => {
-          setFeature((prev) => ({
-            ...prev,
-            values: [...(prev?.values || []), {
-              id: ClientCall(Math.random, 0).toString(),
-              featureId: prev?.id || '',
-              index: 0,
-              text: '',
-              icon: [],
-              createdAt: '',
-              updatedAt: '',
-              views: [],
-            }]
-          }))
-        }}>
-          <IoAdd />
-          <span>ajoutez ({(feature?.values?.length || 0)}/{VALUE_LIMIT})</span>
-        </div>
-      }
-    </div>
-  </div>
-}
 
 
 
-function Value({ value, feature, onRemove }: { onRemove?: () => void, value: ValueInterface, feature: Partial<FeatureInterface> }) {
-
-  const MapValues = {
-    get icon_text() {
-      return <IconTextValue feature={feature} value={value} onRemove={onRemove} />
-    },
-    get text() {
-      return <IconTextValue feature={feature} value={value} onRemove={onRemove} />
-    },
-    get icon() {
-      return <IconTextValue feature={feature} value={value} onRemove={onRemove} />
-    },
-    get color() {
-      return <IconTextValue feature={feature} value={value} onRemove={onRemove} />
-    }
-  }
-
-  console.log(value);
-
-
-  return <div className="f-value">
-    {(MapValues as any)[feature?.type || 'text'] || <IconTextValue feature={feature} value={value} />}
-  </div>
-}
-
-function IconTextValue({ value, onClick, feature, onRemove }: { onRemove?: () => void, feature: Partial<FeatureInterface>, onClick?: () => void, value: ValueInterface }) {
-  const [collected, setCollected] = useState<ValueInterface & ({ prevIcon?: string })>(value);
-  const icon = collected.icon?.[0];
-  const { currentStore } = useStore()
-
-  console.log(feature.type);
-
-  return <div className="value-icon-text  no-selectable " onClick={() => {
-
-  }}>
-    {/* <label htmlFor='chose-category-icon' className={`icon-60-value`} style={{
-      background:
-        icon ? getImg(
-          typeof icon == 'string' ? icon
-            : collected.prevIcon,
-          undefined, typeof icon == 'string' ?
-          undefined: undefined
-        ) : getImg('/res/empty/drag-and-drop.png', '80%')
-    }}>
-      <input id='chose-category-icon' type="file" accept={'image/*'} style={{ display: 'none' }} onChange={(e) => {
-        const files = e.currentTarget.files;
-        if (!files?.[0]) return
-        setCollected((prev) => ({
-          ...prev,
-          icon: Array.from(files),
-          prevIcon: URL.createObjectURL(files[0])
-        }))
-      }} />
-    </label> */}
-    <div className="delete" onClick={() => {
-      onRemove?.()
-    }}><IoClose /></div>
-    {
-      ((feature?.type || 'icon')?.includes('icon')) && <div className="icon-60-value" style={{
-        background:
-          icon ? getImg(
-            typeof icon == 'string' ? icon
-              : collected.prevIcon,
-            undefined, typeof icon == 'string' ?
-            undefined : undefined
-          ) : getImg('/res/empty/drag-and-drop.png', '160%')
-      }}>
-      </div>
-    }
-    {(feature?.type == 'text' || feature?.type == 'icon_text') && <span className='ellipsis'>{value.text}</span>}
-  </div>
-}
-function DateValue({ value, onRemove }: { onRemove?: () => void, value: ValueInterface }) {
-
-  return <div className="date-value"></div>
-}
-function ColorValue({ value, onRemove }: { onRemove?: () => void, value: ValueInterface }) {
-
-  return <div className="color-value"></div>
-}
-function FileValue({ value, onRemove }: { onRemove?: () => void, value: ValueInterface }) {
-
-  return <div className="file-value"></div>
-}
-function InputValue({ value, onRemove }: { onRemove?: () => void, value: ValueInterface }) {
-
-  return <div className="input-value"></div>
-}
-function SlideValue({ value, onRemove }: { onRemove?: () => void, value: ValueInterface }) {
-
-  return <div className="slide-value"></div>
-}

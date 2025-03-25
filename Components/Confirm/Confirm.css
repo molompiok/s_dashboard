@@ -1,0 +1,35 @@
+
+.confirm{
+    width: 100%;
+    padding: 12px 0;
+    gap: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-around;
+}
+.confirm .cancel,
+.confirm .ok{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    border-radius: 24px;
+    padding: 8px 16px;
+    background: var(--discret-8);
+    cursor: pointer;
+    text-align: center;
+    min-width: 100px;
+}
+
+.confirm .cancel:hover,
+.confirm .ok:hover{
+    opacity: 0.8;
+}
+.confirm .ok{
+    background: var(--primary-gradiant);
+    color: #fff;
+}
+.confirm .ok.no-confirm{
+    background: var(--discret-9);
+    color: var(--text-color);
+}

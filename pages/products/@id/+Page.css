@@ -28,7 +28,7 @@
     aspect-ratio: 2;
 }
 
-.product .error{
+.editor.error{
     box-shadow: 0px 2px 8px -2px  var(--red)!important ;
 }
 
@@ -87,7 +87,6 @@
     display: flex;
     width: 100%;
     align-items: center;
-    align-items: stretch;
 }
 
 .product .product-section-feature > .top span:hover{
@@ -97,7 +96,6 @@
 .product .product-section-feature > .top span.max:hover{
     scale: 1;
     opacity: 1;
-    cursor: not-allowed;
 }
 .product .product-section-feature > .top span.max{
     background: var(--gray-gradiant);
@@ -146,174 +144,6 @@
 }
 
 
-/*  feature  */
-.feature{
-    width: 100%;
-    padding-bottom: 12px;
-}
-.feature > .top {
-    display: flex;
-    align-items: center;
-    flex-wrap: wrap;
-    margin-bottom: 12px;
-}
-.feature > .top .options {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
-}
-.feature-info .check-text,
-.feature > .top .options > div{
-    padding: 2px 12px;
-    border-radius: 12px;
-    background: var(--discret-9);
-    border: 1px solid #0000;
-}
-.feature-info .check-text.ok,
-.feature > .top .options > div.ok{
-    color: #08f;
-    background: #0088ff2b;
-    border: 1px solid #08f;
-}
-.feature > .top .options > div.type{
-    background: none;
-    border:1px solid var(--discret-7);
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 120px;
-}
-.feature .top label{
-    display: inline-flex;
-    align-items: center;
-    gap: 12px;
-    margin-right: auto;
-    margin-bottom: 12px;
-}
-.feature input { /* Name */
-    width: none;
-    display: inline-flex;
-    padding: 8px 12px;
-    box-shadow: 0px 0px 12px -7px var(--discret-7);
-}
-
-.feature .list-values{
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-}
-.feature .add-new  span{
-    white-space: nowrap;
-}
-.feature .add-new:hover{
-    scale: 1.1;
-}
-.feature .add-new  svg{
-    min-width: 30px;
-    min-height: 30px;
-    background: var(--discret-9);
-    border-radius: 8px;
-}
-
-.feature .add-new{
-    cursor: pointer;
-    margin: 0 24px;
-    flex-direction: column;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    font-size: 0.7em;
-}
-
-/*  list-type  */
-.list-type{
-    z-index: 2;
-    display: flex;
-    align-items: center;
-    flex-direction: column;
-    gap: 6px;
-    right: 0px;
-    top: 40px;
-    width: 100%;
-    padding: 0;
-    box-shadow: none;
-    position: initial;
-}
-
-.list-type .type-option{
-    display: flex;
-    width: 100%;
-    align-items: center;
-    gap: 16px;
-    border-radius: 12px;
-    cursor: pointer;
-    transition: 200ms;
-    padding: 6px;
-}
-.list-type .preview-type{
-    min-width: 100px;
-    width: 100px;
-    height: 60px;
-}
-
-.list-type .type-option.active,
-.list-type .type-option:hover{
-    background: var(--discret-9);
-    transition: 200ms;
-}
-
-
-.list-type .swiper{
-    overflow: visible;
-}
-.list-type .swiper-pagination{
-    bottom: -24px;
-}
-
-/*  value-icon-text  */
-
-.value-icon-text{
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 6px;
-    cursor: pointer;
-    position: relative;
-}
-.feature .delete svg{
-    width: 20px;
-    height: 20px;
-    background: var(--discret-10);
-    background-image: linear-gradient(to right, var(--red), transparent);
-    border-radius: 50px;
-}
-
-.feature .delete:hover svg{
-    scale: 1.1;
-    background-image: linear-gradient(to right, var(--red), var(--red));
-}
-
-.feature .delete {
-    position: absolute;
-    top: -12px;
-    right: -12px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    border-radius: 100%;
-    background: var(--discret-10)
-}
-
-.feature-info{
-    padding: 24px;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
 
 @media (width<350px) {
     .product input:focus,

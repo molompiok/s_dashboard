@@ -9,6 +9,18 @@ export type ListType<T> = {
     meta:{}
 }
 
+
+export type UpdateValue = {
+  update: Partial<ValueInterface>[],
+  create: Partial<ValueInterface>[],
+  delete: string[],
+}
+export  type UpdateFeature = {
+  update: Partial<FeatureInterface>[],
+  create: Partial<FeatureInterface>[],
+  delete: string[],
+}
+
 export interface StoreInterface {
     id:string,
     user_id:string,
@@ -75,13 +87,13 @@ export interface CategoryInterface{
     slug:string,
     view: (string|Blob)[],
     icon: (string|Blob)[],
-    createdAt: string,
-    updatedAt: string
+    created_at: string,
+    updated_at: string
 }
 export interface ProductInterface {
   id: string;
   store_id: string;
-  category_id: string;
+  categories_id: string[];
   name: string;
   default_feature_id: string;
   slug: string,
@@ -90,8 +102,8 @@ export interface ProductInterface {
   price: number;
   is_visible:boolean,// TODO
   currency: string;
-  createdAt: Date;
-  updatedAt: Date;
+  created_at: Date;
+  updated_at: Date;
   features?: FeatureInterface[]
 };
 
@@ -112,17 +124,19 @@ export interface ProductFavoriteInterface {
   product_id: string;
 };
 
-
-
 export interface ValueInterface {
   id: string;
-  featureId: string;
-  views: (string|Blob)[]|null; 
-  icon:  (string|Blob)[] | null; 
-  text: string | null; 
+  feature_id: string;
+  views?: (string|Blob)[]|null; 
+  icon?:  (string|Blob)[] | null; 
+  text?: string | null;  
+  key?: string | null; 
+  stock?:number |null
+  decreases_stock?:boolean,
+  continue_selling?:boolean
   index: number;
-  createdAt: string | Date; 
-  updatedAt: string | Date; 
+  created_at: string | Date; 
+  updated_at: string | Date; 
 };
 
 export interface FeatureInterface {

@@ -34,7 +34,7 @@ function Page() {
   const { category } = useData<Data>()
   const [collected, setCollected] = useState<Partial<CategoryInterface & { prevIcon?: string, prevView?: string }>>(category || {})
   const { currentStore } = useStore();
-  const { fetchCategoryBy, createCategory, updateProduct, removeCategory } = useCategory()
+  const { fetchCategoriesBy, createCategory, updateCategory, removeCategory } = useCategory()
 
   const { urlParsed } = usePageContext()
   const { myLocation, searchPared } = useReplaceState();
@@ -44,6 +44,7 @@ function Page() {
   const descriptionRef = useRef<HTMLTextAreaElement>(null);
 
   const [nameError, setNameError] = useState('');
+
   const [descriptionError, setDescriptionError] = useState('');
   const [iconError, setIconError] = useState('');
   const [viewError, setViewError] = useState('');
@@ -52,10 +53,10 @@ function Page() {
   const [isUpdated, changeUpdated] = useState(false);
 
   useEffect(() => {
-    searchPared['id'] != 'new' && fetchCategoryBy({ category_id: searchPared['id'] }).then(res => {
-      if (!res?.id) return;
+    searchPared['id'] != 'new' && fetchCategoriesBy({ categories_id: [searchPared['id']] }).then(res => {
+      if (!res?.[0].id) return;
       changeNewCategory(false)
-      setCollected(res);
+      setCollected(res[0]);
     })
   }, [currentStore, myLocation]);
 
@@ -293,7 +294,7 @@ function Page() {
               if (!isAllCollected(collected, true)) return console.log('informations incomplete');
               setLoading(true);
 
-              updateProduct(collected).then(res => {
+              updateCategory(collected).then(res => {
                 setTimeout(() => {
                   setLoading(false)
                   changeUpdated(false);
