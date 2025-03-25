@@ -69,6 +69,10 @@
 }
 
 
+.icon-text-info h3, .icon-text-info label {
+    margin-top: 16px;
+    margin-bottom: 8px;
+}
 /*-------------------  icon_text / icon   ------------------*/
 
 .value-icon-text{
@@ -115,9 +119,10 @@
     border-radius: 100%;
     background: var(--discret-10)
 }
+
 /* ---------------------  text Value -----------------------*/
 .value-text{
-    min-width: 80px;
+    /* min-width: 80px; */
     max-width: 140px;
     border-radius: 100px;
     border: 1px solid var(--discret-8);

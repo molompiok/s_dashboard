@@ -21,6 +21,7 @@
     border-radius: 50%;
     transition: 100ms;
 }
+
 .child-viewer .close{
     margin-left: auto;
     width: 25px;
@@ -28,7 +29,6 @@
     cursor: pointer;
     transition: 100ms;
 }
-
 
 .child-viewer .ctn{
     width: 100%;

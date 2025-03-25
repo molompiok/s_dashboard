@@ -1,59 +1,61 @@
-.right{
+.right {
     margin-left: auto;
 }
 
 .product .views {
     width: 100%;
     /* background: #3345; */
-
 }
 
-.product label.editor{
+.product label.editor {
     /* margin-top: 16px; */
     margin-bottom: 6px;
 }
+
 .product h3 {
     margin-top: 16px;
     margin-bottom: 0px;
 }
 
-.product h3 span{
+.product h3 span {
     font-weight: normal;
     opacity: 0.9;
     font-size: 0.9em;
 }
+
 .product .view {
     width: 80%;
     height: auto;
     aspect-ratio: 2;
 }
 
-.editor.error{
-    box-shadow: 0px 2px 8px -2px  var(--red)!important ;
+.editor.error {
+    box-shadow: 0px 2px 8px -2px var(--red) !important;
 }
 
-#input-product-barred-price,
-#input-product-price{
+input.price {
     padding-right: 50px;
 }
-.product .price-ctn{
+
+.price-ctn {
     position: relative;
     max-width: 180px;
     display: flex;
     align-items: center;
 }
-.product .currency{
+
+.price-ctn .currency {
     font-size: 1.1em;
     position: absolute;
     right: 16px;
 }
 
 
-.product .commands-list{
+.product .commands-list {
     margin-top: 42px;
 }
 
-.product .setting-product{
+.product .setting-product {
     width: 100%;
     padding: 24px 0px;
     display: flex;
@@ -61,11 +63,11 @@
     gap: 10px;
 }
 
-.product .save-button{
+.product .save-button {
     margin-top: 20px;
 }
 
-.product [class^='product-section']{
+.product [class^='product-section'] {
     /* background: rgba(var(--gray-color-rgb), 0.04); */
     padding: 12px;
     border-radius: 16px;
@@ -74,7 +76,7 @@
 
 /*  product-section-feature  */
 
-.product .product-section-feature{
+.product .product-section-feature {
     margin-top: 24px;
     display: flex;
     flex-direction: column;
@@ -83,25 +85,28 @@
     padding-bottom: 24px;
 }
 
-.product .product-section-feature > .top{
+.product .product-section-feature>.top {
     display: flex;
     width: 100%;
     align-items: center;
 }
 
-.product .product-section-feature > .top span:hover{
+.product .product-section-feature>.top span:hover {
     opacity: 0.9;
     scale: 1.02;
 }
-.product .product-section-feature > .top span.max:hover{
+
+.product .product-section-feature>.top span.max:hover {
     scale: 1;
     opacity: 1;
 }
-.product .product-section-feature > .top span.max{
+
+.product .product-section-feature>.top span.max {
     background: var(--gray-gradiant);
     box-shadow: 0px 8px 16px -8px var(--gray);
 }
-.product .product-section-feature > .top span{
+
+.product .product-section-feature>.top span {
     margin-left: auto;
     padding: 8px 16px;
     border-radius: 50px;
@@ -111,29 +116,35 @@
     cursor: pointer;
     font-size: 1.1em;
 }
-.product .product-section-feature > .top h2 b{
+
+.product .product-section-feature>.top h2 b {
     all: unset;
     font-size: 0.8em;
     font-weight: normal;
-} 
-.product .product-section-feature > .top h2 {
+}
+
+.product .product-section-feature>.top h2 {
     font-weight: 600;
 }
-.product .product-section-feature .not-feature-here{
+
+.product .product-section-feature .not-feature-here {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 12px;
 }
-.product .product-section-feature .exemple{
+
+.product .product-section-feature .exemple {
     width: 140px;
     height: 140px;
 }
-.product .product-section-feature a:hover{
+
+.product .product-section-feature a:hover {
     gap: 12px;
     transition: 200ms;
 }
-.product .product-section-feature a{
+
+.product .product-section-feature a {
     text-decoration: underline;
     color: var(--secondary-color);
     display: flex;
@@ -143,9 +154,166 @@
     transition: 200ms;
 }
 
+.bind-list {
+    width: 100%;
+}
+
+.bind {
+    width: 100%;
+    min-width: 260px;
+    height: auto;
+    font-size: 1em;
+}
+
+.bind .rt{
+    display: flex;
+    padding-right: 24px;
+    justify-content: space-between;
+}
+.bind .rt b{
+    display: inline-block;
+    width: 160px;
+}
+
+.bind .bind-rows {
+    width: 100%;
+}
+
+.bind .bind-row {
+    display: flex;
+    background: var(--discret-9);
+    margin: 2px 0;
+}
+
+.bind .bind-row>* {
+    padding: 4px;
+    flex: 1;
+    width: 100%;
+}
+
+.bind .bind-row .bind-cell-feature {
+    /* width: 100px; */
+    /* min-width: 40px; */
+    /* border:#3345 solid 1px; */
+    display: flex;
+    align-items: center;
+}
+
+.bind .bind-row .bind-cell-value {
+    min-width: 60px;
+    max-width: 180px;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.bind-column {
+    width: 100px;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 24px;
+    justify-content: space-between;
+}
+
+.bind .bind-row .bind-cell-stock div,
+.bind .bind-row .bind-cell-price div {
+    font-size: 0.8em;
+    padding: 2px 6px;
+    background: var(--discret-8);
+    display: inline-block;
+    border-radius: 8px;
+}
+
+/* .bind .bind-row .bind-cell-price{
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    
+    } */
+
+.bind .bind-row .bind-cell-price,
+.bind .bind-row .bind-cell-stock {
+    width: 80px;
+    max-width: 80px;
+    min-width: 80px;
+    display: flex;
+    gap: 12px;
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: flex-end;
+}
+
+.bind .bind-row .bind-cell-price {
+    width: 140px;
+    max-width: 140px;
+    min-width: 140px;
+}
+
+@media (width < 460px) {
+
+
+    .bind .bind-row .bind-cell-price,
+    .bind .bind-row .bind-cell-stock {
+        flex-direction: column;
+        align-items: flex-end;
+        width: 60px;
+        max-width: 60px;
+        min-width: 60px;
+    }
+
+    .bind .bind-row .bind-cell-price {
+        width: 80px;
+        max-width: 80px;
+        min-width: 80px;
+    }
+
+    .bind-column {
+        gap: 8px;
+    }
+}
+
+
+
+@media (width < 360px) {
+    .bind .bind-row .bind-column{
+        flex-direction: column;
+        align-items: flex-end;
+    }
+    .bind .bind-row .bind-cell-price,
+    .bind .bind-row .bind-cell-stock {
+        flex-direction: row;
+        align-items: flex-start;
+        justify-content: flex-end;
+        width: 60px;
+        gap: 2px;
+        max-width: 60px;
+        min-width: 60px;
+    }
+
+    .bind .bind-row .bind-cell-price {
+        width: 120px;
+        max-width: 120px;
+        min-width: 120px;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 @media (width<350px) {
+
     .product input:focus,
     .product textarea:focus {
         padding-left: 24px;

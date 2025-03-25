@@ -65,7 +65,7 @@ function ColorInfo({ value, feature, onChange, onCancel }: { feature: Partial<Fe
         {v.key && <div className="color-preview" style={{background:v.key}}></div>}
         <input
           className={"editor " + (textError ? 'error' : '')}
-          placeholder="Nom de la variante"
+          placeholder="Nom de la couleur"
           id="feature-info-text-input"
           type="text"
           value={v.text || ''}
@@ -142,14 +142,13 @@ function ColorInfo({ value, feature, onChange, onCancel }: { feature: Partial<Fe
   );
 }
 
-
 function ColorValue({ value, onRemove, feature, onClick }: { onClick?: () => void, feature: Partial<FeatureInterface>, onRemove?: () => void, value: ValueInterface }) {
 
   return <div className="value-color  no-selectable " onClick={(e) => {
     e.preventDefault()
     onClick?.()
   }}>
-    <div className="delete" onClick={(e) => {
+    <div className="delete"  style={{display:onRemove?'':'none'}}  onClick={(e) => {
       e.preventDefault()
       e.stopPropagation()
       onRemove?.()

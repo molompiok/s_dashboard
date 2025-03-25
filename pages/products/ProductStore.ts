@@ -14,36 +14,41 @@ const useProductStore = create(combine({
 }, (set, get) => ({
     async updateProduct(product: Partial<ProductInterface>, initialFeatures?: Partial<FeatureInterface>[]) {
         let features: any[] = []
-        let p :ProductInterface|undefined|void|null ;
-        if(initialFeatures && product.id){
-            p = await  multiple_features_values(product,initialFeatures);
-            if(p?.features){
+        let p: ProductInterface | undefined | void | null;
+
+        console.log('initialFeatures ', initialFeatures, 'product.id', product.id);
+        if (initialFeatures && product.id) {
+            p = await multiple_features_values(product, initialFeatures);
+            if (p?.features) {
                 features = p.features
             }
         }
-        
+
+        console.log('#############  Product  ####################', p);
+
         const h = useAuthStore.getState().getHeaders();
-        if (!h) return console.error('Headeur error',h);
-        if (!product.id) return console.error('Product.id required',product);
+        if (!h) return console.error('Headeur error', h);
+        if (!product.id) return console.error('Product.id required', product);
 
         const formData = new FormData();
         let send = false;
-        
+
         formData.append('product_id', product.id);
-        
+
         (['name', 'description', 'stock', 'categories_id', 'is_visible', 'index', 'price', 'barred_price']).forEach(p => {
             if ((product as any)[p] != undefined) {
-                if(p=='categories_id'){
-                    formData.append(p, Array.isArray((product as any)[p])?JSON.stringify((product as any)[p]):(product as any)[p]);
+                if (p == 'categories_id') {
+                    formData.append(p, Array.isArray((product as any)[p]) ? JSON.stringify((product as any)[p]) : (product as any)[p]);
                 }
-                else{
+                else {
                     formData.append(p, (product as any)[p]);
                 }
                 send = true
             }
         });
 
-        if(!send) return p
+        if (!send) return p
+        console.log('##############   send   ###################', product);
         try {
             const response = await fetch(`${h.store.url}/update_product`, {
                 method: 'PUT',
@@ -51,10 +56,12 @@ const useProductStore = create(combine({
                 headers: h.headers
             });
             const updatedProduct = await response.json() as ProductInterface | null;
+
+            console.log({ updatedProduct });
+
             if (!updatedProduct?.id) return;
             updatedProduct.features = features;
             set(({ products }) => ({ products: products && { ...products, list: products.list.map((p) => p.id == updatedProduct.id ? updatedProduct : p) } }))
-            console.log({ updatedProduct });
 
             return updatedProduct;
         } catch (error) {
@@ -81,7 +88,7 @@ const useProductStore = create(combine({
         } else {
             const list = await useProductStore.getState().fetchProducts({ product_id, slug });
             const l = list?.list[0];
-            if(!l) return
+            if (!l) return
             // set(({ products }) => ({ products: products && { ...products, list: products.list.map((p) => p.id == l.id ? l : p) } }))
             return l;
         }
@@ -161,105 +168,100 @@ const useProductStore = create(combine({
     }
 })));
 
-async function multiple_features_values(product:Partial<ProductInterface>, initialFeatures:Partial<FeatureInterface>[]) {
+async function multiple_features_values(product: Partial<ProductInterface>, initialFeatures: Partial<FeatureInterface>[]) {
+
     try {
-        const delete_features: string[] = []
+
+        initialFeatures = initialFeatures.filter(f => f.id !== product.default_feature_id);
+        product.features = product.features?.filter(f => f.id !== product.default_feature_id);
+
+        const delete_features_id: string[] = []
         const update_features: Partial<FeatureInterface>[] = []
         const create_features: Partial<FeatureInterface>[] = []
-        const next_f :Partial<FeatureInterface>[] =[]
+        const values: Record<string, {
+            create_values: Partial<ValueInterface>[],
+            update_values: Partial<ValueInterface>[],
+            delete_values_id: string[],
+        }> = {}
+
+        const next_f: Partial<FeatureInterface>[] = []
         for (const f of product.features || []) {
             if (f.id.startsWith(NEW_ID_START)) {
                 create_features.push(f);
-            }else{
+            } else {
                 next_f.push(f)
             }
         }
-        initialFeatures = initialFeatures.filter(f=>f.id !== product.default_feature_id);
-        product.features = product.features?.filter(f=>f.id !== product.default_feature_id);
+
         for (const initial_f of initialFeatures) {
-            const found_delete = (next_f || []).find(f => initial_f.id == f.id);
-            if (!found_delete) {
-                initial_f.id && delete_features.push(initial_f.id);
+            const initial_here = (next_f || []).find(f => initial_f.id == f.id);
+            if (!initial_here) {
+                initial_f.id && delete_features_id.push(initial_f.id);
                 continue
             }
-
-            const found_update = (next_f || []).find(f => initial_f.id == f.id && (f as any)[EDITED_DATA] == EDITED_DATA);
-            if (!found_update) continue
-
-            update_features.push(found_update);
-            
-            /************  VALUES ************/
-            const deleteValues: Partial<ValueInterface>[] = []
-            const updateValues: Partial<ValueInterface>[] = []
-            const createValues: Partial<ValueInterface>[] = []
-            const next_v : Partial<ValueInterface>[] = []
-            /** CREATE */
-            for (const f_value of found_update.values||[]) {
-                if (f_value.id.startsWith(NEW_ID_START)) {
-                    createValues.push(f_value);
-                }else{
-                    next_v.push(f_value);
+            initial_here.id && (values[initial_here.id] = {
+                create_values: [],
+                update_values: [],
+                delete_values_id: [],
+            });
+            const next_v: Partial<ValueInterface>[] = []
+            for (const v of initial_here.values || []) {
+                if (v.id.startsWith(NEW_ID_START)) {
+                    initial_here.id && values[initial_here.id].create_values.push(v);
+                } else {
+                    next_v.push(v)
                 }
             }
-            /** UPDATE */
-            for (const initial_f_value of initial_f.values||[]) {
-                const v_delete = (next_v|| []).find(v => initial_f_value.id == v.id);
-                if (!v_delete) {
-                    deleteValues.push(initial_f_value);
-                    continue
-                };
-                
-                const v_update = (next_v|| []).find(v=> initial_f_value.id == v.id && (v as any)[EDITED_DATA] == EDITED_DATA);
-                if (v_update) {
-                    updateValues.push(v_update);
+          
+            for (const i_v of initial_f.values || []) {
+                const same_inital_value = next_v.find(_v => _v.id == i_v.id);
+                console.log({ same_inital_value, initial_f, i_v });
+
+                if (!same_inital_value) {
+                    initial_here.id && values[initial_here.id].delete_values_id.push(i_v.id)
+                } else if ((same_inital_value as any)[EDITED_DATA] == EDITED_DATA) {
+                    initial_here.id && values[initial_here.id].update_values.push(same_inital_value);
                 }
             }
-            
-            (found_update as any).multiple_update_values ={
-                deleteValues,
-                updateValues,
-                createValues,
-            }
+            const need_update = (initial_here as any)[EDITED_DATA] == EDITED_DATA
+            if (!need_update) continue
+            update_features.push(initial_here);
+
         }
         const multiple_update_features = {
-            delete_features,
+            delete_features_id,
             update_features,
-            create_features
+            create_features,
+            values,
         }
-        
+
+        console.log('avant ==> multi_update_features', multiple_update_features);
         /************  ENvoie a l'Api  du store    ************/
 
-        const h = useAuthStore.getState().getHeaders();
-        if (!h) return console.error('Headeur error',h);
-        if (!product.id) return console.error('Product.id required');
-        
 
+        const h = useAuthStore.getState().getHeaders();
+        if (!h) return console.error('Headeur error', h);
+        if (!product.id) return console.error('Product.id required');
         const formData = new FormData();
-        let send = false;
         formData.append('product_id', product.id);
         formData.append('multiple_update_features', JSON.stringify(multiple_update_features));
-        
+
         try {
             const response = await fetch(`${h.store.url}/muptiple_update_features_values`, {
                 method: 'post',
                 body: formData,
                 headers: h.headers
             });
-            const res = await response.json() as {
-                createdFeatures:FeatureInterface[],
-                deletedFeatures:string[],
-                updatedFeatures:FeatureInterface[],
-                product: ProductInterface
-            } | null
-            console.log('multiple_update_features',res);
-            
-            if(res?.product){
-                return res?.product; 
-            }else{
+            const res = await response.json() as ProductInterface | null
+            console.log('apres ==> multi_update_features', res);
+
+            if (res?.id) {
+                return res;
+            } else {
                 console.error(res);
             }
         } catch (error) {
-            console.error('multiple_features_values',error);
+            console.error('multiple_features_values', error);
         }
     } catch (error) {
 

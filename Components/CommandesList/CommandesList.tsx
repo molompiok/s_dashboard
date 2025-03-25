@@ -33,7 +33,7 @@ type CollectedType = {
 
 function CommandeList({product_id}:{product_id?:string}) {
     const [collected, setCollected] = useState<CollectedType>({});
-    const commands = Array.from({ length: 0 });
+    const commands = Array.from({ length: 12 });
     return <div className="commands-list">
         <div className="top">
             <h2>List des Commandes</h2>

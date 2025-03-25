@@ -132,6 +132,7 @@ export interface ValueInterface {
   text?: string | null;  
   key?: string | null; 
   stock?:number |null
+  additional_price?:number|null
   decreases_stock?:boolean,
   continue_selling?:boolean
   index: number;
@@ -147,11 +148,11 @@ export interface FeatureInterface {
   icon?: (string|Blob)[],
   required: boolean,
   regex?: string,
-  min?: string,
-  max?: string,
-  min_size?: string,
-  max_size?: string,
-  index?: string,
+  min?: number,
+  max?: number,
+  min_size?: number,
+  max_size?: number,
+  index?: number,
   multiple?: false,
   is_double?: false,
   default?: string,

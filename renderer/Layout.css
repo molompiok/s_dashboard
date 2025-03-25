@@ -414,7 +414,6 @@ textarea.editor {
   align-items: center;
   flex-wrap: wrap;
   gap: 8px;
-  height: var(--category-size);
 }
 
 .category-ctn .icon:hover{

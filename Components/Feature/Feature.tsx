@@ -9,7 +9,7 @@ import { ColorInfo, ColorValue } from '../FV_Color_Info/FV_Color_Info';
 import { EDITED_DATA, NEW_ID_START } from '../Utils/constants';
 import { ConfirmDelete } from '../Confirm/ConfirmDelete';
 
-export { Feature }
+export { Feature,Value }
 
 const VALUE_LIMIT = 7
 
@@ -52,7 +52,7 @@ function Feature({ feature, setFeature, onOpenRequired,onDelete }: {onDelete:()=
                     feature,
                     value: v,
                     onChange: (new_v) => {
-                      (v as any)[EDITED_DATA] = EDITED_DATA
+                      (new_v as any)[EDITED_DATA] = EDITED_DATA
                       setFeature((current) => ({
                         ...current,
                         values: (current?.values || []).map(_v => (_v == new_v || _v.id == new_v.id) ? new_v : _v)
@@ -80,7 +80,7 @@ function Feature({ feature, setFeature, onOpenRequired,onDelete }: {onDelete:()=
                 value: {
                   id: NEW_ID_START + ClientCall(Math.random, 0).toString(),
                   feature_id: feature?.id || '',
-                  index: 0,
+                  index: 1,
                   text: '',
                   continue_selling: false,
                   decreases_stock: true,

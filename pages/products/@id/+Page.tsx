@@ -9,7 +9,7 @@ import { images as imgs } from "./images";
 import { HoriszontalSwiper } from '../../../Components/HorizontalSwiper/HorizontalSwiper'
 import { FeatureInterface, ProductInterface, UpdateFeature, ValueInterface } from '../../../Interfaces/Interfaces'
 import { EDITED_DATA, NEW_ID_START, NEW_VIEW } from '../../../Components/Utils/constants'
-import { ClientCall } from '../../../Components/Utils/functions'
+import { ClientCall, getAllCombinations } from '../../../Components/Utils/functions'
 import { usePageContext } from '../../../renderer/usePageContext'
 import { useStore } from '../../stores/StoreStore'
 import { useProductStore } from '../ProductStore'
@@ -27,7 +27,7 @@ import { getImg } from '../../../Components/Utils/StringFormater'
 
 import { Separator } from '../../../Components/Separator/Separator'
 import { FeatureTypes } from '../../../Components/FeatureTypes/FeatureTypes'
-import { Feature } from '../../../Components/Feature/Feature'
+import { Feature, Value } from '../../../Components/Feature/Feature'
 import { FeatureInfo } from '../../../Components/FeatureInfo/FeatureInfo'
 
 
@@ -42,12 +42,12 @@ function getNewFeature() {
     updated_at: '',
     default: '',
     icon: [],
-    index: '',
+    index: 1,
     is_double: false,
-    max: '',
-    max_size: '',
-    min: '',
-    min_size: '',
+    max: 0,
+    max_size: 0,
+    min: 0,
+    min_size: 0,
     multiple: false,
     regex: '',
     values: []
@@ -62,7 +62,7 @@ const FEATURE_LIMIT = 20
 export function Page() {
 
 
-  const { fetchProductBy, updateProduct, removeProduct, createProduct } = useProductStore()
+  const { fetchProducts, updateProduct, removeProduct, createProduct } = useProductStore()
   const { currentStore } = useStore()
   const { openChild } = useApp()
 
@@ -104,17 +104,20 @@ export function Page() {
     features: undefined as Partial<FeatureInterface>[] | undefined,
   })
 
-  function resetProduct(res: ProductInterface) {
-    s.features = res.features || [];
-    setCollected({ ...res, features: (res.features || []).filter(f => f.id !== res.default_feature_id) });
-    setValues(getDefaultValues(res) || [])
+  function resetProduct(product_id: string) {
+    fetchProducts({ product_id }).then(res => {
+      const p = res?.list[0]
+      if (!p?.id) return;
+      s.init = true;
+      s.features = p.features || [];
+      setCollected({ ...p, features: (p.features || []).filter(f => f.id !== p.default_feature_id) });
+      setValues(getDefaultValues(p) || [])
+      changeUpdated(false);
+    });
+
   }
   useEffect(() => {
-    !is_newProduct && currentStore && !s.init && fetchProductBy({ product_id: routeParams.id }).then(res => {
-      s.init = true;
-      if (!res?.id) return;
-      resetProduct(res)
-    })
+    !is_newProduct && currentStore && !s.init && resetProduct(routeParams.id)
   }, [currentStore, myLocation]);
 
   useEffect(() => {
@@ -286,9 +289,11 @@ export function Page() {
         <div className="column">
           <label className='editor' htmlFor='input-product-price'>Prix de base<IoPencil /></label>
           <div className='price-ctn'>
-            <input className={`editor ${priceError ? 'error' : ''}`} type="number" id={'input-product-price'}
+            <input className={`price  editor ${priceError ? 'error' : ''}`} type="number" id={'input-product-price'}
               value={collected.price || ''}
               placeholder="Prix du produit"
+              max={1_000_000_000}
+              min={0}
               onChange={(e) => {
                 const price = e.currentTarget.value
                 setCollected({
@@ -304,9 +309,11 @@ export function Page() {
         <div className="column">
           <label className='editor' htmlFor='input-product-barred-price'>Prix barré <IoPencil /> <Indicator style={{ marginLeft: 'auto' }} title={`L'ancien prix ou le prix actuel du marcher`} description={`Ce prix sert de référence au client. Il indique au client que votre produit est en réduction`} /></label>
           <div className='price-ctn'>
-            <input className={`editor ${barredError ? 'error' : ''}`} type="number" id={'input-product-barred-price'}
+            <input className={`price editor ${barredError ? 'error' : ''}`} type="number" id={'input-product-barred-price'}
               value={collected.barred_price || ''}
-              placeholder="Prix du produit"
+              placeholder="Prix barré"
+              max={1_000_000_000}
+              min={0}
               onChange={(e) => {
                 const barred_price = e.currentTarget.value
                 setCollected({
@@ -390,6 +397,38 @@ export function Page() {
         )))
       }
     </div>
+    <div className="bind-list">
+      {
+        getAllCombinations(collected as any).map(bind => (
+          <div className="bind">
+            <div className="bind-rows">{Object.keys(bind.bind).map((f_id: string) => {
+              const f = collected.features?.find(f => f.id == f_id)
+              const v = f?.values?.find(v => v.id == bind.bind[f_id])
+              return v && f && <div className="bind-row">
+                <div className="bind-cell-feature ellipsis">{f.name}</div>
+                <div className="bind-cell-value"><Value feature={f} value={v} /></div>
+                <div className="bind-column">
+                  <div className="bind-cell-price">
+                    <span>+{v.additional_price || 0}</span>
+                    <div>FCFA</div>
+                  </div>
+                  <div className={"bind-cell-stock " + (v?.stock ?? 'no')}>
+                    <span>{v?.stock ?? 'illimité'}</span>
+                    <div>stock</div>
+                  </div>
+                </div>
+              </div>
+            })}</div>
+            <div className="rt price"><b>Prix du produit : </b><span style={{whiteSpace:'nowrap'}}>{collected.price} {'FCFA'}</span></div>
+            <div className="rt price"><b>Prix Total : </b><span style={{whiteSpace:'nowrap'}}>{(collected.price||0)+(bind.additional_price || 0)} {'FCFA'}</span></div>
+            <div className={" rt stock" + (bind.stock ?? 'no')}><b>Stock </b><span>{bind.stock??'illimité'}</span></div>
+            <div className="rt decreases_stock"><b>diminu le stock </b><span className={"check " + (bind.decreases_stock ?? 'no')}></span></div>
+            <div className="rt continue_selling"><b>Vendre sans stock </b><span className={"check " + ((bind.decreases_stock && bind.continue_selling) ?? 'no')}></span></div>
+          </div>
+        ))
+
+      }
+    </div>
     {
       is_newProduct ?
         <SaveButton loading={loading} effect='color' title={is_all_collected ? 'Cree le produit' : 'Ajoutez toutes informations requises'}
@@ -426,10 +465,11 @@ export function Page() {
                 setLoading(false)
                 console.log('SaveButton ', res);
                 if (!res?.id) return;
-                resetProduct(res)
-                changeUpdated(false);
+                resetProduct(res.id)
+                console.log('resetProduct  ', res);
+
               }, 1000);
-             
+
             })
           }} />
     }
