@@ -9,7 +9,7 @@ import { ColorInfo, ColorValue } from '../FV_Color_Info/FV_Color_Info';
 import { EDITED_DATA, NEW_ID_START } from '../Utils/constants';
 import { ConfirmDelete } from '../Confirm/ConfirmDelete';
 
-export { Feature,Value }
+export { Feature,Value,getInfoPopup }
 
 const VALUE_LIMIT = 7
 

@@ -111,6 +111,12 @@ function generateGroupProduct(bind: Record<string, string>, product: Partial<Pro
 
   return {
     bind,
+    bindNames: Object.keys(bind).map(b_f_id=>{
+      const f = product.features?.find(f => f.id === b_f_id);
+      if (!f) return null;
+      return {[f.name || '']:f.values?.find(v => v.id === bind[b_f_id])}
+    }).filter(f=>!!f),
+    bind_hash: JSON.stringify(bind),
     additional_price: additionalPrice,
     stock: stock,
     product_id: product.id,

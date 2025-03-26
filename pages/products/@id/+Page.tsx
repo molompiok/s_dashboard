@@ -170,6 +170,22 @@ export function Page() {
       background: '#3455'
     })
   }
+  const onSave = async () => {
+    if (!isUpdated) return console.log('aucun changement');
+    if (loading) return console.log('onLoading');
+    if (!isAllCollected(collected, true)) return console.log('informations incomplete');
+
+    setLoading(true);
+
+    const res = await updateProduct(collected, s.features || [])
+    setTimeout(() => {
+      setLoading(false)
+      console.log('SaveButton ', res);
+      if (!res?.id) return;
+      resetProduct(res.id)
+      console.log('resetProduct  ', res);
+    }, 1000);
+  }
   const is_all_collected = isAllCollected(collected);
   const is_feature_max = (collected.features?.length || 0) >= FEATURE_LIMIT;
 
@@ -397,38 +413,16 @@ export function Page() {
         )))
       }
     </div>
-    <div className="bind-list">
-      {
-        getAllCombinations(collected as any).map(bind => (
-          <div className="bind">
-            <div className="bind-rows">{Object.keys(bind.bind).map((f_id: string) => {
-              const f = collected.features?.find(f => f.id == f_id)
-              const v = f?.values?.find(v => v.id == bind.bind[f_id])
-              return v && f && <div className="bind-row">
-                <div className="bind-cell-feature ellipsis">{f.name}</div>
-                <div className="bind-cell-value"><Value feature={f} value={v} /></div>
-                <div className="bind-column">
-                  <div className="bind-cell-price">
-                    <span>+{v.additional_price || 0}</span>
-                    <div>FCFA</div>
-                  </div>
-                  <div className={"bind-cell-stock " + (v?.stock ?? 'no')}>
-                    <span>{v?.stock ?? 'illimité'}</span>
-                    <div>stock</div>
-                  </div>
-                </div>
-              </div>
-            })}</div>
-            <div className="rt price"><b>Prix du produit : </b><span style={{whiteSpace:'nowrap'}}>{collected.price} {'FCFA'}</span></div>
-            <div className="rt price"><b>Prix Total : </b><span style={{whiteSpace:'nowrap'}}>{(collected.price||0)+(bind.additional_price || 0)} {'FCFA'}</span></div>
-            <div className={" rt stock" + (bind.stock ?? 'no')}><b>Stock </b><span>{bind.stock??'illimité'}</span></div>
-            <div className="rt decreases_stock"><b>diminu le stock </b><span className={"check " + (bind.decreases_stock ?? 'no')}></span></div>
-            <div className="rt continue_selling"><b>Vendre sans stock </b><span className={"check " + ((bind.decreases_stock && bind.continue_selling) ?? 'no')}></span></div>
-          </div>
-        ))
 
+    {
+      (collected.features?.length || 0) > 0 && <Button title='Prix et stock avanceé' icon={<IoAdd />} onClick={() => {
+        (async () => {
+          await onSave()
+          window.location.assign(`/products/${collected.id}/prix-stock`)
+        })()
       }
-    </div>
+      } />
+    }
     {
       is_newProduct ?
         <SaveButton loading={loading} effect='color' title={is_all_collected ? 'Cree le produit' : 'Ajoutez toutes informations requises'}
@@ -452,26 +446,7 @@ export function Page() {
         <SaveButton loading={loading} effect='color'
           title={isUpdated ? (is_all_collected ? 'Sauvegardez les modifications' : 'Certaines Informations sont Incorrectes') : 'Aucune modification'}
           required={isUpdated && is_all_collected}
-          onClick={() => {
-
-            if (!isUpdated) return console.log('aucun changement');
-            if (loading) return console.log('onLoading');
-            if (!isAllCollected(collected, true)) return console.log('informations incomplete');
-
-            setLoading(true);
-
-            updateProduct(collected, s.features || []).then(res => {
-              setTimeout(() => {
-                setLoading(false)
-                console.log('SaveButton ', res);
-                if (!res?.id) return;
-                resetProduct(res.id)
-                console.log('resetProduct  ', res);
-
-              }, 1000);
-
-            })
-          }} />
+          onClick={onSave} />
     }
 
     <div className="setting-product">
