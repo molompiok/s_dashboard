@@ -57,10 +57,40 @@
     transform: scaleX(-1)  translateX(30px);
  }
 
-@media (width<480px) {
+ .product-list .top-search{
+    display: flex;
+    align-items: center;
+ }
 
-    .product-list .list{
-        gap: 4px;
-    }
-}
+.product-list .top-search label input{
+    padding-right: 50px;
+    max-width: 260px;
+    width: 50vw;
+ }
+ .product-list .top-search label svg{
+    position: absolute;
+    right: 10px;
+    width: 25px;
+    height: 25px;
+ }
+ .product-list .top-search label{
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+    position: relative;
+ }
+ @media (width<480px) {
+     .product-list .list{
+         gap: 4px;
+     }
+ }
+ @media (width<380px) {
+    .product-list .top-search label{
+       max-width: 80%;
+       width: 80%;
+     }
+     .product-list .top-search{
+        flex-wrap: wrap;
+     }
+ }
 

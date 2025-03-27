@@ -54,14 +54,14 @@
 
 /*  commands-filters */
 
-.commands-list {
+.filters {
     width: 100%;
     display: flex;
     flex-direction: column;
     margin-bottom: 0px;
 }
 
-.commands-list .onglet {
+.filters .onglet {
     width: 100%;
     display: flex;
     align-items: center;
@@ -72,12 +72,12 @@
     border-radius: 12px;
 }
 
-.commands-list .onglet>*:hover {
+.filters .onglet>*:hover {
     transition: 200ms;
     scale: 1.05;
 }
 
-.commands-list .onglet>* {
+.filters .onglet>* {
     display: inline-flex;
     align-items: center;
     background: var(--discret-9);
@@ -87,28 +87,28 @@
     transition: 200ms;
 }
 
-.commands-list  .onglet svg {
+.filters  .onglet svg {
     transform: translateY(2px);
     margin-left: 8px;
 }
 
-.commands-list .onglet .collected {
+.filters .onglet .collected {
     color: #08f;
     background: #0088ff14;
 }
-.commands-list .onglet .active {
+.filters .onglet .active {
     color: #08f;
     background: #0088ff2b;
     border: 1px solid #08f;
 }
 
-.commands-list  .onglet .active svg {
+.filters  .onglet .active svg {
     rotate: 180deg;
     transform: translateY(0px);
 }
 
 
-.commands-list .chose>div {
+.filters .chose>div {
     height: 0%;
     height: 0;
     opacity: 0;
@@ -116,34 +116,34 @@
     transition: 200ms;
 }
 
-.commands-list .chose >div.active {
+.filters .chose >div.active {
     height: 100%;
     opacity: 1;
     visibility: visible;
     transition: 200ms;
 }
 
-.commands-list .chose .status-filter-component,
-.commands-list .chose .order-filter-component,
-.commands-list .chose .price-filter-component{
+.filters .chose .status-filter-component,
+.filters .chose .order-filter-component,
+.filters .chose .price-filter-component{
     gap: 6px;
     display: flex;
     flex-wrap: wrap;
     padding: 4px;
 }
 
-.commands-list .chose .order-filter-component span {
+.filters .chose .order-filter-component span {
     padding: 2px 8px;
     background: var(--discret-9);
     color: var(--discret-1);
     border-radius: 8px;
     font-size: 0.9em;
 }
-.commands-list .chose .order-filter-component span.order {
-    background: rgba(var(--primary-color-rbg),0.1);
+.filters .chose .order-filter-component span.order {
+    background: rgba(var(--primary-color-rgb),0.1);
     color: var(--primary-color);
 }
-.commands-list .chose .price-filter-component label{
+.filters .chose .price-filter-component label{
     display: flex;
     flex-direction: column;
     width: 160px;
@@ -152,34 +152,34 @@
     padding-top: 2px;
     border: 1px solid #3455;
 }
-.commands-list .chose .price-filter-component label input{
+.filters .chose .price-filter-component label input{
     all: unset;
     padding:6px 12px ;
 }
-.commands-list .chose .price-filter-component label span{
+.filters .chose .price-filter-component label span{
     font-size: 0.85em;
 }
 
-.commands-list .chose .date-filter-component .dates{
+.filters .chose .date-filter-component .dates{
     display: flex;
     flex-wrap: wrap;
     gap: 12px;
 }
 
-.commands-list .chose .date-filter-component .dates  span {
+.filters .chose .date-filter-component .dates  span {
     padding: 2px 8px;
     background: var(--discret-9);
     color: var(--discret-1);
     border-radius: 8px;
 }
-.commands-list .chose .date-filter-component .dates span.marge {
+.filters .chose .date-filter-component .dates span.marge {
     background: #ffa50022;
     color: #ffa500;
 }
 
 
 
-.commands-list .chose .reset span{
+.filters .chose .reset span{
     background: var(--discret-3);
     color: var(--discret-2);
     cursor: default;
@@ -187,11 +187,11 @@
     border-radius: 8px;
     display: inline-flex;
 }
-.commands-list .chose .reset span.ok:hover{
+.filters .chose .reset span.ok:hover{
     scale: 1.02;
     background: var(--discret-2);
 }
-.commands-list .chose .reset span.ok{
+.filters .chose .reset span.ok{
     cursor: pointer;
     color: var(--color);
 }
@@ -199,7 +199,7 @@
 
 
 
-.commands-list .empty{
+.filters .empty{
     width: 160px;
     height: auto;
     aspect-ratio: 1;

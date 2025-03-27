@@ -14,7 +14,8 @@ export { CommandeList }
 import { FiMaximize } from 'react-icons/fi';
 import { getImg } from '../Utils/StringFormater'
 
-type CollectedType = {
+type FilterType = {
+    text?:string,
     order?: "date_desc" | "date_asc" | "price_desc" | "price_asc" | undefined;
     status?: (keyof typeof statusIcons)[] | undefined;
     dates?: [string | undefined, string | undefined] | undefined;
@@ -32,7 +33,7 @@ type CollectedType = {
 
 
 function CommandeList({product_id}:{product_id?:string}) {
-    const [collected, setCollected] = useState<CollectedType>({});
+    const [filter, setFilter] = useState<FilterType>({});
     const commands = Array.from({ length: 12 });
     return <div className="commands-list">
         <div className="top">
@@ -42,7 +43,7 @@ function CommandeList({product_id}:{product_id?:string}) {
                 }} />
             </a>}
         </div>
-        <CommandsFilters collected={collected} setCollected={setCollected} />
+        <CommandsFilters filter={filter} setFilter={setFilter} />
         <div className="list">
             
             {
@@ -66,47 +67,47 @@ function CommandeList({product_id}:{product_id?:string}) {
     </div>
 }
 
-function CommandsFilters({ collected, setCollected }: { collected: any, setCollected: (collected: any) => any }) {
+function CommandsFilters({ filter, setFilter }: { filter: any, setFilter: (filter: any) => any }) {
 
     const [currentFilter, setCurrentFilter] = useState('');
 
-    return <div className="commands-filters no-selectable">
+    return <div className="filters no-selectable">
         <div className="onglet">
-            <div className={`status-filter ${currentFilter == 'status' ? 'active' : ''} ${collected.status ? 'collected' : ''}`} onClick={() => {
+            <div className={`status-filter ${currentFilter == 'status' ? 'active' : ''} ${filter.status ? 'filter' : ''}`} onClick={() => {
                 setCurrentFilter(currentFilter == 'status' ? '' : 'status');
             }}><span>Status</span> <IoChevronDown /></div>
-            <div className={`order-filter ${currentFilter == 'order' ? 'active' : ''} ${collected.order ? 'collected' : ''}`} onClick={() => {
+            <div className={`order-filter ${currentFilter == 'order' ? 'active' : ''} ${filter.order ? 'filter' : ''}`} onClick={() => {
                 setCurrentFilter(currentFilter == 'order' ? '' : 'order');
             }}><span>Ordre</span> <IoChevronDown /></div>
-            <div className={`price-filter ${currentFilter == 'price' ? 'active' : ''} ${collected.price ? 'collected' : ''}`} onClick={() => {
+            <div className={`price-filter ${currentFilter == 'price' ? 'active' : ''} ${filter.price ? 'filter' : ''}`} onClick={() => {
                 setCurrentFilter(currentFilter == 'price' ? '' : 'price');
             }}><span>Prix</span> <IoChevronDown /></div>
-            <div className={`date-filter ${currentFilter == 'date' ? 'active' : ''} ${collected.date ? 'collected' : ''}`} onClick={() => {
+            <div className={`date-filter ${currentFilter == 'date' ? 'active' : ''} ${filter.date ? 'filter' : ''}`} onClick={() => {
                 setCurrentFilter(currentFilter == 'date' ? '' : 'date');
             }}><span>Date</span> <IoChevronDown /></div>
         </div>
         <div className="chose">
-            <StatusFilterComponent active={currentFilter == 'status'} status={collected.status} setStatus={(status) => {
-                setCollected({
-                    ...collected,
+            <StatusFilterComponent active={currentFilter == 'status'} status={filter.status} setStatus={(status) => {
+                setFilter({
+                    ...filter,
                     status
                 })
             }} />
-            <OrderFilterComponent active={currentFilter == 'order'} order={collected.order} setOrder={(order) => {
-                setCollected({
-                    ...collected,
+            <OrderFilterComponent active={currentFilter == 'order'} order={filter.order} setOrder={(order) => {
+                setFilter({
+                    ...filter,
                     order
                 })
             }} />
-            <PriceFilterComponent active={currentFilter == 'price'} price={collected.price} setPrice={(price) => {
-                setCollected({
-                    ...collected,
+            <PriceFilterComponent active={currentFilter == 'price'} price={filter.price} setPrice={(price) => {
+                setFilter({
+                    ...filter,
                     price
                 })
             }} />
-            <DateFilterComponent date={collected.date} setDate={(date) => {
-                setCollected({
-                    ...collected,
+            <DateFilterComponent date={filter.date} setDate={(date) => {
+                setFilter({
+                    ...filter,
                     date
                 })
             }} active={currentFilter == 'date'} />
@@ -131,7 +132,7 @@ function StatusFilterComponent({ status: _status, setStatus, active }: { active:
     </div>
 }
 
-function OrderFilterComponent({ order: _order, setOrder, active }: { active: boolean, order: string | undefined, setOrder: (order: string | undefined) => void }) {
+export function OrderFilterComponent({ order: _order, setOrder, active }: { active: boolean, order: string | undefined, setOrder: (order: string | undefined) => void }) {
     const order = _order
     const MapOder = {
         'date_desc': 'Plus Recent',
@@ -153,7 +154,7 @@ function OrderFilterComponent({ order: _order, setOrder, active }: { active: boo
     </div>
 }
 
-function PriceFilterComponent({ price, setPrice, active }: { active: boolean, price: (number | undefined)[] | undefined, setPrice: (price: (number | undefined)[] | undefined) => void }) {
+export function PriceFilterComponent({ price, setPrice, active }: { active: boolean, price: (number | undefined)[] | undefined, setPrice: (price: (number | undefined)[] | undefined) => void }) {
     
     return <div className={`price-filter-component ${active ? 'active' : ''}`}>
         <label htmlFor="command-filter-min-price">

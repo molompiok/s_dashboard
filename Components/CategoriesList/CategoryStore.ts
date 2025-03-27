@@ -1,9 +1,9 @@
 import { create } from "zustand";
 import { combine } from "zustand/middleware";
-import { useAuthStore } from "../../login/AuthStore";
-import { Server_Host } from "../../../renderer/+config";
-import { CategoryInterface, ListType } from "../../../Interfaces/Interfaces";
-import { useStore } from "../../stores/StoreStore";
+import { useAuthStore } from "../../pages/login/AuthStore";
+import { Server_Host } from "../../renderer/+config";
+import { CategoryInterface, ListType } from "../../Interfaces/Interfaces";
+import { useStore } from "../../pages/stores/StoreStore";
 
 
 export { useCategory }

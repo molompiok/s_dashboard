@@ -79,7 +79,13 @@ const useProductStore = create(combine({
         return json?.isDeleted;
     },
 
-    async fetchProductBy({ slug, product_id }: { slug?: string, product_id?: string }) {
+    async fetchProductBy({
+        slug,
+        product_id,
+    }:{
+        slug?: string,
+        product_id?: string
+    }) {
         if (!product_id && !slug) return;
         const ps = get().products;
         const localProduct = ps?.list.find((p) => p.id == product_id || p.slug == slug);
@@ -143,7 +149,10 @@ const useProductStore = create(combine({
         order_by: string,
         page: number,
         limit: number,
-        no_save: boolean
+        no_save: boolean,
+        min_price: number | undefined,
+        max_price: number | undefined,
+        search?:string
     }>) {
         const h = useAuthStore.getState().getHeaders()
         console.log({ h });
@@ -212,7 +221,7 @@ async function multiple_features_values(product: Partial<ProductInterface>, init
                     next_v.push(v)
                 }
             }
-          
+
             for (const i_v of initial_f.values || []) {
                 const same_inital_value = next_v.find(_v => _v.id == i_v.id);
                 console.log({ same_inital_value, initial_f, i_v });

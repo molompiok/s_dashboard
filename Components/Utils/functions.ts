@@ -91,8 +91,8 @@ function generateGroupProduct(bind: Record<string, string>, product: Partial<Pro
     }
 
     // Mettre à jour le stock (on prend le minimum)
-    if (value.stock !== null) {
-      value.stock && (stock = Math.min(stock, value.stock));
+    if (value.stock !== null && value.stock !== undefined) {
+       stock = Math.min(stock, value.stock);
     }
 
     // Mettre à jour les booléens s'ils sont définis

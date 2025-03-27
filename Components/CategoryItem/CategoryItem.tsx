@@ -4,7 +4,7 @@ import { Image_1 } from "../Utils/constants"
 import { ClientCall } from "../Utils/functions"
 import { getImg } from "../Utils/StringFormater"
 import './CategoryItem.css'
-import { useCategory } from "../../pages/products/CategoriesList/CategoryStore"
+import { useCategory } from "../CategoriesList/CategoryStore"
 import { Api_host } from "../../renderer/+config"
 import { useStore } from "../../pages/stores/StoreStore"
 import { IoClose } from "react-icons/io5"

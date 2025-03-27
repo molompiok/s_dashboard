@@ -11,9 +11,14 @@ export {
     Image_1,
     Colors,
     EDITED_DATA,
-    NEW_ID_START
+    NEW_ID_START,
+    MAX_STOCK,
+    MAX_PRICE
 }
 
+
+const MAX_STOCK = 1_000_000_000
+const MAX_PRICE = 1_000_000_000
 const NEW_ID_START = 'new_'
 const EDITED_DATA = 'edited'
 const NEW_VIEW = 'new_view'

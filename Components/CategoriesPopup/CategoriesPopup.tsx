@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { CategoryInterface } from '../../Interfaces/Interfaces'
-import { useCategory } from '../../pages/products/CategoriesList/CategoryStore'
+import { useCategory } from '../CategoriesList/CategoryStore'
 import { useStore } from '../../pages/stores/StoreStore'
 import { useApp } from '../../renderer/AppStore/UseApp'
 import './CategoriesPopup.css'

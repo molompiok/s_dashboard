@@ -79,7 +79,7 @@ export function Page() {
 
   const [values, setValues] = useState<ValueInterface[]>([] as any);
   const [index, setindex] = useState(0);
-  const [isUpdated, changeUpdated] = useState(false);
+  const [isUpdated, changeUpdated] = useState('' as '' | 'auto-save' | 'change');
   const [loading, setLoading] = useState(false);
 
   const clearValues = () => {
@@ -104,7 +104,7 @@ export function Page() {
     features: undefined as Partial<FeatureInterface>[] | undefined,
   })
 
-  function resetProduct(product_id: string) {
+  function resetProduct(product_id: string, thread = false) {
     fetchProducts({ product_id }).then(res => {
       const p = res?.list[0]
       if (!p?.id) return;
@@ -112,7 +112,7 @@ export function Page() {
       s.features = p.features || [];
       setCollected({ ...p, features: (p.features || []).filter(f => f.id !== p.default_feature_id) });
       setValues(getDefaultValues(p) || [])
-      changeUpdated(false);
+      !thread && changeUpdated('');
     });
 
   }
@@ -161,7 +161,7 @@ export function Page() {
           features: l,
         })
         openChild(null)
-        changeUpdated(true)
+        changeUpdated('auto-save')
       }} onCancel={() => {
         openChild(null)
 
@@ -170,22 +170,28 @@ export function Page() {
       background: '#3455'
     })
   }
-  const onSave = async () => {
+  const saveRequired = async (product: Partial<ProductInterface>, thread = false) => {
     if (!isUpdated) return console.log('aucun changement');
     if (loading) return console.log('onLoading');
-    if (!isAllCollected(collected, true)) return console.log('informations incomplete');
+    if (!isAllCollected(product, true)) return console.log('informations incomplete');
 
     setLoading(true);
+    try {
 
-    const res = await updateProduct(collected, s.features || [])
-    setTimeout(() => {
-      setLoading(false)
-      console.log('SaveButton ', res);
-      if (!res?.id) return;
-      resetProduct(res.id)
-      console.log('resetProduct  ', res);
-    }, 1000);
+      const res = await updateProduct(product, s.features || [])
+      setTimeout(() => {
+        setLoading(false)
+        console.log('SaveButton ', res);
+        if (!res?.id) return;
+        resetProduct(res.id, thread)
+        console.log('resetProduct  ', res);
+      }, 1000);
+    } catch (error) { }
   }
+
+  useEffect(() => {
+    isUpdated && saveRequired(collected)
+  }, [collected, isUpdated])
   const is_all_collected = isAllCollected(collected);
   const is_feature_max = (collected.features?.length || 0) >= FEATURE_LIMIT;
 
@@ -203,7 +209,7 @@ export function Page() {
         }
         const vs = clearValues();
         setValues(vs);
-        changeUpdated(true);
+        changeUpdated('auto-save');
       }} />
     </div>
     {!is_newProduct && <div className="image-manager no-selectable">
@@ -214,20 +220,18 @@ export function Page() {
           ...values.slice(0, index),
           ...values.slice(index + 1)
         ]);
-        changeUpdated(true)
+        changeUpdated('change')
       }} forward={() => {
         const nextValue = values[index + 1];
         if (!nextValue || (nextValue.views?.length == 0) || (nextValue.views?.length == 1 && nextValue.views?.[0] == NEW_VIEW)) return false;
         const currentvalue = values[index];
         setValues(values.map((v, i) => i == index ? nextValue : i == index + 1 ? currentvalue : v));
-        changeUpdated(true)
         return true;
       }} goBack={() => {
         const lastValue = values[index - 1];
         if (!lastValue || (lastValue.views?.length == 0) || (lastValue.views?.length == 1 && lastValue.views?.[0] == NEW_VIEW)) return false;
         const currentvalue = values[index];
         setValues(values.map((v, i) => i == index ? lastValue : i == index - 1 ? currentvalue : v));
-        changeUpdated(true)
         return true;
       }} />
     </div>}
@@ -239,7 +243,7 @@ export function Page() {
           ...collected,
           ['name']: name.replace(/\s+/g, ' ').substring(0, 256),
         })
-        changeUpdated(true)
+        changeUpdated('change')
         setNameError('')
       }} onKeyUp={(e) => {
         if (e.code == 'Enter') {
@@ -286,7 +290,7 @@ export function Page() {
           ...collected,
           ['description']: description.replace(/\s+/g, ' ').substring(0, 1024),
         });
-        changeUpdated(true)
+        changeUpdated('change')
         setDescriptionError('')
       }} onKeyDown={(e) => {
         if (e.code == 'Tab') {
@@ -316,7 +320,7 @@ export function Page() {
                   ...collected,
                   ['price']: Number.parseInt(price),
                 })
-                changeUpdated(true)
+                changeUpdated('change')
                 setPriceError('')
               }} />
             <div className="currency">{'FCFA'}</div>
@@ -336,7 +340,7 @@ export function Page() {
                   ...collected,
                   ['barred_price']: Number.parseInt(barred_price),
                 })
-                changeUpdated(true)
+                changeUpdated('change')
                 setBarredError('')
               }} />
             <div className="currency">{'FCFA'}</div>
@@ -352,7 +356,7 @@ export function Page() {
                 ...current,
                 categories_id: [c.id, ...(current.categories_id || [])]
               }))
-              changeUpdated(true)
+              changeUpdated('change')
             }} />
           </ChildViewer>, { blur: 10 })
         }}>
@@ -370,7 +374,7 @@ export function Page() {
                   ...current,
                   categories_id: current.categories_id?.filter(_c => d_c.id !== _c)
                 }))
-                changeUpdated(true)
+                changeUpdated('change')
               }}
             />
           ))
@@ -400,7 +404,7 @@ export function Page() {
               ...current,
               features: collected.features?.map(_f => _f.id == f.id ? cb(f) as any : _f)
             }))
-            changeUpdated(true)
+            changeUpdated('auto-save')
           }} onOpenRequired={(f) => {
             openFeatureOption(f as any, 'replace')
           }} onDelete={() => {
@@ -408,21 +412,12 @@ export function Page() {
               ...current,
               features: collected.features?.filter(_f => _f.id !== f.id)
             }))
-            changeUpdated(true)
+            changeUpdated('auto-save')
           }} />
         )))
       }
     </div>
 
-    {
-      (collected.features?.length || 0) > 0 && <Button title='Prix et stock avanceé' icon={<IoAdd />} onClick={() => {
-        (async () => {
-          await onSave()
-          window.location.assign(`/products/${collected.id}/prix-stock`)
-        })()
-      }
-      } />
-    }
     {
       is_newProduct ?
         <SaveButton loading={loading} effect='color' title={is_all_collected ? 'Cree le produit' : 'Ajoutez toutes informations requises'}
@@ -436,7 +431,7 @@ export function Page() {
             createProduct({ ...collected }, values[0]?.views || []).then(res => {
               setTimeout(() => {
                 setLoading(false)
-                changeUpdated(false);
+                changeUpdated('')
               }, 1000);
               if (!res?.id) return;
               setCollected(res);
@@ -445,19 +440,23 @@ export function Page() {
           }} /> :
         <SaveButton loading={loading} effect='color'
           title={isUpdated ? (is_all_collected ? 'Sauvegardez les modifications' : 'Certaines Informations sont Incorrectes') : 'Aucune modification'}
-          required={isUpdated && is_all_collected}
-          onClick={onSave} />
+          required={!!isUpdated && is_all_collected}
+          onClick={() => saveRequired(collected)} />
     }
 
     <div className="setting-product">
       {
         !is_newProduct && <>
+          <Button title='Prix et stock avanceé' icon={<IoPricetagsSharp />} onClick={() => {
+            (async () => {
+              await saveRequired(collected)
+              window.location.assign(`/products/${collected.id}/prix-stock`)
+            })()
+          }
+          } />
           <Button title='Promo' icon={<IoPricetagsSharp />} />
           <Button title='Point de vente' icon={<IoPricetagsSharp />} />
           <Button title='Affiliation' icon={<IoPricetagsSharp />} />
-          <Button title='Variantes et Stock' icon={<IoLayers />} onClick={() => {
-            window.location.assign(`/products/${collected.id}/variantes`);
-          }} />
           <Button title='Voir les stats' icon={<IoLayers />} />
           <Button title='Supprimer' icon={<IoTrash />} onClick={() => {
             openChild(<ChildViewer>

@@ -1,7 +1,7 @@
 import { Topbar } from '../../Components/TopBar/TopBar'
-import { CategoriesList } from './CategoriesList/CategoriesList'
+import { CategoriesList } from '../../Components/CategoriesList/CategoriesList'
 import './Page.css'
-import { ProductList } from './ProductList/ProductList'
+import { ProductList } from '../../Components/ProductList/ProductList'
 
 export { Page }
 

@@ -1,16 +1,16 @@
 import { useEffect, useRef, useState } from 'react';
-import { useWindowSize } from '../../../Hooks/useWindowSize'
+import { useWindowSize } from '../../Hooks/useWindowSize'
 import './CategoriesList.css'
-import { CategoryItem } from '../../../Components/CategoryItem/CategoryItem';
+import { CategoryItem } from '../CategoryItem/CategoryItem';
 import { IoAddSharp, IoArrowForward } from "react-icons/io5";
 import { CgExtensionAdd} from "react-icons/cg";
-import { useApp } from '../../../renderer/AppStore/UseApp';
-import { ChildViewer } from '../../../Components/ChildViewer/ChildViewer';
-import { CategoryInterface } from '../../../Interfaces/Interfaces';
+import { useApp } from '../../renderer/AppStore/UseApp';
+import { ChildViewer } from '../ChildViewer/ChildViewer';
+import { CategoryInterface } from '../../Interfaces/Interfaces';
 import { useCategory } from './CategoryStore';
-import { useStore } from '../../stores/StoreStore';
-import { usePageContext } from '../../../renderer/usePageContext';
-import { CategoriesPopup } from '../../../Components/CategoriesPopup/CategoriesPopup';
+import { useStore } from '../../pages/stores/StoreStore';
+import { usePageContext } from '../../renderer/usePageContext';
+import { CategoriesPopup } from '../CategoriesPopup/CategoriesPopup';
 
 const CATEGORY_SIZE = 80;
 const GAP = 8
