@@ -25,14 +25,16 @@ import { ClientCall } from '../../Components/Utils/functions'
 import { useMyLocation } from '../../Hooks/useRepalceState'
 import { Button } from '../../Components/Button/Button'
 import { ConfirmDelete } from '../../Components/Confirm/ConfirmDelete'
+import { MarkdownEditor2 } from '../../Components/MackdownEditor/MarkdownEditor'
 
 export { Page }
 
 function Page() {
 
   const { openChild } = useApp()
-  const { category } = useData<Data>()
-  const [collected, setCollected] = useState<Partial<CategoryInterface & { prevIcon?: string, prevView?: string }>>(category || {})
+  const { category:categoryData } = useData<Data>()
+  const [category, setCategory] = useState<Partial<CategoryInterface & { prevIcon?: string, prevView?: string }>>(categoryData || {})
+  const [collected, setCollected] = useState<Partial<CategoryInterface & { prevIcon?: string, prevView?: string }>>({})
   const { currentStore } = useStore();
   const { fetchCategoriesBy, createCategory, updateCategory, removeCategory } = useCategory()
 
@@ -50,19 +52,18 @@ function Page() {
   const [viewError, setViewError] = useState('');
 
   const [loading, setLoading] = useState(false);
-  const [isUpdated, changeUpdated] = useState(false);
+  const [isUpdated, changeUpdated] = useState('' as 'change'|'auto-save'|'');
   const [s] = useState({
     isUpdated : false,
-    searchPared
+    searchPared,
+    // init:false
   })
   s.searchPared = searchPared;
   useEffect(() => {
-    console.log({isUpdated: s.isUpdated});
-    
     s.searchPared['id'] != 'new' && fetchCategoriesBy({ categories_id: [s.searchPared['id']] }).then(res => {
       if (!res?.[0].id) return;
       changeNewCategory(false);
-      changeUpdated(false)
+      changeUpdated('')
       setCollected(res[0]);
     })
   }, [currentStore, searchPared]);  
@@ -86,11 +87,32 @@ function Page() {
     return v
   }
   
-  const is_all_collected = isAllCollected(collected);
+  const saveRequired = (category:Partial<CategoryInterface>) => {
+    if (!isUpdated) return console.log('aucun changement');
+    if (loading) return console.log('onLoading');
+    if (!isAllCollected(category, true)) return console.log('informations incomplete');
+    setLoading(true);
+
+    updateCategory(collected).then(res => {
+      setTimeout(() => {
+        setLoading(false)
+        changeUpdated('');
+      }, 1000);
+      if (!res?.id) return;
+      setCollected(res);
+    })
+  }
+
+  
+  useEffect(() => {
+    isUpdated == 'auto-save' && saveRequired(collected)
+  }, [collected, isUpdated])
+ 
+  const is_all_collected = isAllCollected(category);
   // collected.view = undefined
   // collected.icon = undefined
-  const view = collected?.view?.[0];
-  const icon = collected?.icon?.[0];
+  const view = category?.view?.[0];
+  const icon = category?.icon?.[0];
 
   return (
     <div className="category">
@@ -101,7 +123,7 @@ function Page() {
           background:
             view ? getImg(
               typeof view == 'string' ? view
-                : collected.prevView,
+                : category.prevView,
               undefined, typeof view == 'string' ?
               currentStore?.url : undefined
             ) : getImg('/res/empty/drag-and-drop.png', '80%')
@@ -115,7 +137,12 @@ function Page() {
               view: Array.from(files),
               prevView: URL.createObjectURL(files[0])
             }))
-            changeUpdated(true)
+            setCategory((prev) => ({
+              ...prev,
+              view: Array.from(files),
+              prevView: URL.createObjectURL(files[0])
+            }))
+            changeUpdated('auto-save')
             setViewError('')
           }} />
           {
@@ -131,7 +158,7 @@ function Page() {
           background:
             icon ? getImg(
               typeof icon == 'string' ? icon
-                : collected.prevIcon,
+                : category.prevIcon,
               undefined, typeof icon == 'string' ?
               currentStore?.url : undefined
             ) : getImg('/res/empty/drag-and-drop.png', '80%')
@@ -144,7 +171,12 @@ function Page() {
               icon: Array.from(files),
               prevIcon: URL.createObjectURL(files[0])
             }))
-            changeUpdated(true)
+            setCategory((prev) => ({
+              ...prev,
+              icon: Array.from(files),
+              prevIcon: URL.createObjectURL(files[0])
+            }))
+            changeUpdated('auto-save')
             setIconError('')
           }} />
           {
@@ -161,13 +193,17 @@ function Page() {
         </div>}
       </div>
       <label className='editor' htmlFor='input-category-name'>Nom de la categorie <IoPencil /></label>
-      <input ref={nameRef} className={`editor ${nameError?'error':''}`} type="text" id={'input-category-name'} value={collected.name || ''} placeholder="Ajoutez un nom de produit" onChange={(e) => {
+      <input ref={nameRef} className={`editor ${nameError?'error':''}`} type="text" id={'input-category-name'} value={category.name || ''} placeholder="Ajoutez un nom de produit" onChange={(e) => {
         const name = e.currentTarget.value
         setCollected((prev) => ({
           ...prev,
           ['name']: name.replace(/\s+/g, ' ').substring(0, 512),
         }))
-        changeUpdated(true);
+        setCategory((prev) => ({
+          ...prev,
+          ['name']: name.replace(/\s+/g, ' ').substring(0, 512),
+        }))
+        changeUpdated('auto-save');
         setNameError('')
       }} onKeyUp={(e) => {
         if (e.code == 'Enter') {
@@ -182,9 +218,20 @@ function Page() {
           p && p.focus()
         }
       }} />
-      <div className="input-message"><span className='error-message'>{nameError}</span><span className='right'></span>{(collected.name?.trim()?.length||0)} / 32</div>
+      <div className="input-message"><span className='error-message'>{nameError}</span><span className='right'></span>{(category.name?.trim()?.length||0)} / 32</div>
       <label className='editor' htmlFor='input-category-description'>Description <IoPencil /></label>
-      <textarea className={`editor ${descriptionError?'error':''}`} id="input-category-description" placeholder='Ajoutez la description du produit' cols={10} rows={1} ref={ref => {
+     {  <MarkdownEditor2 value={category.description || ''} setValue={(value) => {
+             setCollected((current) => ({
+               ...current,
+               description: value
+             }));
+             setCategory((current) => ({
+               ...current,
+               description: value
+             }));
+             changeUpdated('auto-save')
+           }} />}
+      {/* <textarea className={`editor ${descriptionError?'error':''}`} id="input-category-description" placeholder='Ajoutez la description du produit' cols={10} rows={1} ref={ref => {
         if (!ref) return
         descriptionRef.current = ref;
         if ((ref as any).init) return
@@ -209,45 +256,53 @@ function Page() {
         setTimeout(() => {
           autoResizeTextarea(ref);
         }, 200);
-      }} value={collected.description} onChange={(e) => {
+      }} value={category.description} onChange={(e) => {
         const description = e.currentTarget.value
         setCollected((prev) => ({
           ...prev,
           ['description']: description.replace(/\s+/g, ' ').substring(0, 512),
         }));
         setDescriptionError('')
-        changeUpdated(true)
+        changeUpdated('auto-save')
       }} onKeyDown={(e) => {
         if (e.code == 'Tab') {
           // si un autre input en bas
         }
-      }}></textarea>
-      <div className="input-message"><span className='error-message'>{descriptionError}</span><span className='right'>{(collected.description?.trim()?.length||0)} / 512</span></div>
+      }}></textarea> */}
+      <div className="input-message"><span className='error-message'>{descriptionError}</span><span className='right'>{(category.description?.trim()?.length||0)} / 512</span></div>
       <h3 style={{marginTop:'12px'}}>Ajoutez en tant que sous Category<span>(facultatif)</span></h3>
       <div className='category-ctn'>
-        <div className={`icon ${collected.parent_category_id ? 'replace' : 'add'}`} onClick={() => {
+        <div className={`icon ${category.parent_category_id ? 'replace' : 'add'}`} onClick={() => {
           openChild(<ChildViewer title='Choisissez la category parent'>
             <CategoriesPopup onSelected={(c) => {
               setCollected((prev) => ({
                 ...prev,
                 parent_category_id: c.id
               }))
-              changeUpdated(true)
+              setCategory((prev) => ({
+                ...prev,
+                parent_category_id: c.id
+              }))
+              changeUpdated('auto-save')
             }} />
           </ChildViewer>, {background:'#3455', back:false})
         }}>
-          {collected.parent_category_id ? <FaRedo /> : <IoAdd />}
-          <span>{collected.parent_category_id ? 'remplacez' : 'ajoutez'}</span>
+          {category.parent_category_id ? <FaRedo /> : <IoAdd />}
+          <span>{category.parent_category_id ? 'remplacez' : 'ajoutez'}</span>
         </div>
         {
-          collected.parent_category_id && <CategoryItem key={collected.parent_category_id}
-            openCategory category_id={collected.parent_category_id}
+          category.parent_category_id && <CategoryItem key={category.parent_category_id}
+            openCategory category_id={category.parent_category_id}
             onDelete={(c) => {
               setCollected((prev) => ({
                 ...prev,
                 parent_category_id: ''
               }))
-              changeUpdated(true)
+              setCategory((prev) => ({
+                ...prev,
+                parent_category_id: ''
+              }))
+              changeUpdated('auto-save')
             }} />
         }
       </div>
@@ -257,10 +312,10 @@ function Page() {
             <Button title='Voir les stats' icon={<IoLayers />} />
             <Button title='Supprimer' icon={<IoTrash />} onClick={() => {
               openChild(<ChildViewer>
-                <ConfirmDelete title={`Etes vous sur de vouloir suprimer la categorie "${collected.name}"`} onCancel={() => {
+                <ConfirmDelete title={`Etes vous sur de vouloir suprimer la categorie "${category.name}"`} onCancel={() => {
                   openChild(null);
                 }} onDelete={() => {
-                  collected.id && removeCategory(collected.id);
+                  category.id && removeCategory(category.id);
                   openChild(null);
                 }} />
               </ChildViewer>, {
@@ -277,13 +332,13 @@ function Page() {
             onClick={() => {
 
               if (loading) return console.log('onLoading');
-              if (!isAllCollected(collected, true)) return console.log('informations incomplete');
+              if (!isAllCollected({...category,...collected}, true)) return console.log('informations incomplete');
               setLoading(true);
 
               createCategory(collected).then(res => {
                 setTimeout(() => {
                   setLoading(false)
-                  changeUpdated(false);
+                  changeUpdated('');
                 }, 1000);
                 if (!res?.id) return;
                 setCollected(res);
@@ -292,24 +347,8 @@ function Page() {
             }} /> :
           <SaveButton loading={loading} effect='color'
             title={isUpdated ? (is_all_collected ? 'Sauvegardez les modifications' : 'Certaines Informations sont Incorrectes') : 'Aucune modification'}
-            required={isUpdated && is_all_collected}
-            onClick={() => {
-
-              if (!isUpdated) return console.log('aucun changement');
-              if (loading) return console.log('onLoading');
-              if (!isAllCollected(collected, true)) return console.log('informations incomplete');
-              setLoading(true);
-
-              updateCategory(collected).then(res => {
-                setTimeout(() => {
-                  setLoading(false)
-                  changeUpdated(false);
-                }, 1000);
-                if (!res?.id) return;
-                setCollected(res);
-              })
-
-            }} />
+            required={!!isUpdated && is_all_collected}
+            onClick={()=>saveRequired(collected)} />
       }
       {!is_newCategory && <ProductList key={searchPared['id']} baseFilter={{categories_id:[searchPared['id']]}}/>}
     </div>

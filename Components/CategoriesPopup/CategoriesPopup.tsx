@@ -46,6 +46,7 @@ function CategoriesPopup({ categories, onSelected }: { categories?: CategoryInte
                     placeholder="Nom, description, #id"
                     id="icon-text-name-input"
                     type="text"
+                    autoFocus
                     value={filter.search || ''}
                     onChange={(e) => {
                         const search = e.currentTarget.value;

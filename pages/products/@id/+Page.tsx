@@ -2,22 +2,19 @@ import { IoAdd, IoChevronBack, IoChevronDown, IoChevronForward, IoClose, IoCloud
 import './+Page.css'
 import { CategoryItem } from '../../../Components/CategoryItem/CategoryItem'
 import { CommandeList } from '../../../Components/CommandesList/CommandesList'
-import { JSX, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Topbar } from '../../../Components/TopBar/TopBar'
 import { SwiperProducts } from '../../../Components/SwiperProducts/SwiperProducts'
-import { images as imgs } from "./images";
-import { HoriszontalSwiper } from '../../../Components/HorizontalSwiper/HorizontalSwiper'
 import { FeatureInterface, ProductInterface, UpdateFeature, ValueInterface } from '../../../Interfaces/Interfaces'
 import { EDITED_DATA, NEW_ID_START, NEW_VIEW } from '../../../Components/Utils/constants'
-import { ClientCall, getAllCombinations } from '../../../Components/Utils/functions'
+import { ClientCall } from '../../../Components/Utils/functions'
 import { usePageContext } from '../../../renderer/usePageContext'
 import { useStore } from '../../stores/StoreStore'
 import { useProductStore } from '../ProductStore'
-import { getDefaultFeature, getDefaultValues, IsFeaturesHere } from '../../../Components/Utils/parseData'
+import { getDefaultValues, IsFeaturesHere } from '../../../Components/Utils/parseData'
 import { useApp } from '../../../renderer/AppStore/UseApp'
 import { ChildViewer } from '../../../Components/ChildViewer/ChildViewer'
 import { CategoriesPopup } from '../../../Components/CategoriesPopup/CategoriesPopup'
-import { FaRedo } from 'react-icons/fa'
 import { ConfirmDelete } from '../../../Components/Confirm/ConfirmDelete'
 import { useMyLocation } from '../../../Hooks/useRepalceState'
 import { Button } from '../../../Components/Button/Button'
@@ -26,9 +23,10 @@ import { Indicator } from '../../../Components/Indicator/Indicator'
 import { getImg } from '../../../Components/Utils/StringFormater'
 
 import { Separator } from '../../../Components/Separator/Separator'
-import { FeatureTypes } from '../../../Components/FeatureTypes/FeatureTypes'
 import { Feature, Value } from '../../../Components/Feature/Feature'
 import { FeatureInfo } from '../../../Components/FeatureInfo/FeatureInfo'
+import { MarkdownEditor2 } from '../../../Components/MackdownEditor/MarkdownEditor'
+import { HoriszontalSwiper } from '../../../Components/HorizontalSwiper/HorizontalSwiper'
 
 
 function getNewFeature() {
@@ -90,27 +88,23 @@ export function Page() {
   const { myLocation } = useMyLocation()
   const is_newProduct = myLocation.pathname == "/products/new";
 
-  const [collected, setCollected] = useState<Partial<ProductInterface>>({
-    price: 23,
-    name: 'product-1',
-    description: 'product-1',
-    barred_price: 1233,
-  });
+  const [collected, setCollected] = useState<Partial<ProductInterface>>({});
+  const [product, setProduct] = useState<Partial<ProductInterface>>({});
 
-  const is_features_here = IsFeaturesHere(collected);
+  const is_features_here = IsFeaturesHere(product);
 
   const [s] = useState({
     init: false,
     features: undefined as Partial<FeatureInterface>[] | undefined,
   })
-
   function resetProduct(product_id: string, thread = false) {
     !s.init && fetchProducts({ product_id }).then(res => {
       const p = res?.list[0]
       if (!p?.id) return;
       s.init = true;
       s.features = p.features || [];
-      setCollected({ ...p, features: (p.features || []).filter(f => f.id !== p.default_feature_id) });
+      setProduct({ ...p, features: (p.features || []).filter(f => f.id !== p.default_feature_id) });
+      setCollected({})
       setValues(getDefaultValues(p) || [])
       !thread && changeUpdated('');
     });
@@ -124,41 +118,55 @@ export function Page() {
     setValues(vs)
   }, [index])
 
-  function isAllCollected(collected: Partial<ProductInterface>, showError?: boolean) {
+  function isAllProduct(product: Partial<ProductInterface>, showError?: boolean) {
     let v: void | boolean = true;
-    if (!collected.name || collected.name.length < 3) {
+    if (!product.name || product.name.length < 3) {
       showError && setNameError('le nom doit contenir au moin 3 carateres')
       showError && nameRef.current?.focus()
       v = false
     }
-    if (!collected.description || collected.description.length < 3) {
+    if (!product.description || product.description.length < 3) {
       showError && setDescriptionError('la description doit contenir au moin 3 carateres');
       showError && descriptionRef.current?.focus()
       v = false
     }
-    if (!collected.barred_price || (collected.barred_price < (collected.price || 0))) {
+    if (!product.barred_price || (product.barred_price <= (product.price || 0))) {
       showError && setBarredError('le prix barre doit etre supperieur au prix du produit');
       v = false
       barredPriceRef.current?.focus()
     }
-    if (!collected.price) {
+    if (!product.price) {
       showError && setPriceError('le prix du produit doit etre difinie ');
       v = false
       priceRef.current?.focus()
+    } else {
+      if ((product.barred_price || 0) <= product.price) {
+        !barredError && setBarredError('le prix du produit doit etre difinie ');
+        v = false
+      } else {
+        barredError && setBarredError('');
+      }
     }
-    // if (!collected.values) return showError ? setViewError('cliquez sur le cadre pour ajouter une image') : false
+
+    // if (!product.values) return showError ? setViewError('cliquez sur le cadre pour ajouter une image') : false
     return v
   }
   const openFeatureOption = (f: FeatureInterface | undefined, metod: 'add' | 'replace') => {
     openChild(<ChildViewer title='Les Informations sur la variante'>
       <FeatureInfo feature={f || (getNewFeature())} onChange={(f) => {
-        const fs = collected.features || [];
+        const fs = product.features || [];
         (f as any)[EDITED_DATA] = EDITED_DATA
         const l = metod == 'add' ? [...fs, f] : fs.map(_f => (_f == f || _f.id == f.id) ? f : _f);
-        setCollected({
-          ...collected,
+
+        setCollected((current) => ({
+          ...current,
           features: l,
-        })
+        }))
+        setProduct((current) => ({
+          ...current,
+          features: l,
+        }))
+        
         openChild(null)
         changeUpdated('auto-save')
       }} onCancel={() => {
@@ -172,16 +180,18 @@ export function Page() {
   const saveRequired = async (product: Partial<ProductInterface>, thread = false) => {
     if (!isUpdated) return console.log('aucun changement');
     if (loading) return console.log('onLoading');
-    if (!isAllCollected(product, true)) return console.log('informations incomplete');
+    if (!isAllProduct(product, true)) return console.log('informations incomplete');
 
     setLoading(true);
     try {
-
-      const res = await updateProduct(product, s.features || [])
+      product.description = (product.description || '')
+      collected.id = product.id
+      const res = await updateProduct(collected, s.features || [])
       setTimeout(() => {
         setLoading(false)
         console.log('SaveButton ', res);
         if (!res?.id) return;
+        res.description = (res.description || '');
         resetProduct(res.id, thread)
         console.log('resetProduct  ', res);
       }, 1000);
@@ -189,13 +199,15 @@ export function Page() {
   }
 
   useEffect(() => {
-    isUpdated && saveRequired(collected)
+    isUpdated == 'auto-save' && saveRequired(collected)
   }, [collected, isUpdated])
+ 
 
+  const is_all_product = isAllProduct(product);
+  const is_feature_max = (product.features?.length || 0) >= FEATURE_LIMIT;
 
+  console.log(product, collected);
 
-  const is_all_collected = isAllCollected(collected);
-  const is_feature_max = (collected.features?.length || 0) >= FEATURE_LIMIT;
 
   return <div className="product">
     <Topbar back={true} />
@@ -211,7 +223,7 @@ export function Page() {
         }
         const vs = clearValues();
         setValues(vs);
-        changeUpdated('auto-save');
+        // changeUpdated('auto-save');
       }} />
     </div>
     {!is_newProduct && <div className="image-manager no-selectable">
@@ -222,7 +234,7 @@ export function Page() {
           ...values.slice(0, index),
           ...values.slice(index + 1)
         ]);
-        changeUpdated('change')
+        changeUpdated('auto-save')
       }} forward={() => {
         const nextValue = values[index + 1];
         if (!nextValue || (nextValue.views?.length == 0) || (nextValue.views?.length == 1 && nextValue.views?.[0] == NEW_VIEW)) return false;
@@ -239,13 +251,18 @@ export function Page() {
     </div>}
     <div className="product-section-minimal">
       <label className='editor' htmlFor='input-product-name'>Nom du Produit <IoPencil /></label>
-      <input className={`editor ${nameError ? 'error' : ''}`} type="text" id={'input-product-name'} value={collected.name || ''} placeholder="Ajoutez un nom de produit" onChange={(e) => {
+      <input className={`editor ${nameError ? 'error' : ''}`} type="text" id={'input-product-name'} value={product.name || ''} placeholder="Ajoutez un nom de produit" onChange={(e) => {
         const name = e.currentTarget.value
-        setCollected({
-          ...collected,
+        setCollected((current) => ({
+          ...current,
           ['name']: name.replace(/\s+/g, ' ').substring(0, 256),
-        })
-        changeUpdated('change')
+        }))
+        setProduct((current) => ({
+          ...current,
+          ['name']: name.replace(/\s+/g, ' ').substring(0, 256),
+        }))
+        
+        changeUpdated('auto-save')
         setNameError('')
       }} onKeyUp={(e) => {
         if (e.code == 'Enter') {
@@ -260,50 +277,21 @@ export function Page() {
           p && p.focus()
         }
       }} />
-      <div className="input-message"><span className='error-message'>{nameError}</span><span className='right'>{(collected.name?.trim()?.length || 0)} / 256</span></div>
+      <div className="input-message"><span className='error-message'>{nameError}</span><span className='right'>{(product.name?.trim()?.length || 0)} / 256</span></div>
       <label className='editor' htmlFor='input-product-description'>Description <IoPencil /></label>
-      <textarea className={`editor ${descriptionError ? 'error' : ''}`} id="input-product-description" placeholder='Ajoutez la description du produit' cols={10} rows={1} ref={ref => {
-        if (!ref) return
-        if ((ref as any).init) return
-        (ref as any).init = 'init';
-        import("easymde").then((mod) => {
-          const EasyMDE = (mod.default )
-          const instance = new EasyMDE({ element: ref,
-            spellChecker: false, // Désactive le correcteur d'orthographe
-            renderingConfig: {
-              singleLineBreaks: false, // Désactive la conversion automatique des retours à la ligne
-            } });
-          instance.value(collected.description || "");
-          instance.codemirror.on("change", () => {
-            setCollected((current) => ({
-              ...current,
-              description: instance.value(),
-            }));
-            changeUpdated('change')
-          });
-          const elem = document.querySelector('.EasyMDEContainer .CodeMirror-scroll') as HTMLDivElement;
-          if(elem){
-            elem.style.minHeight = '';
-          }
-        })
-        
-      }} value={collected.description} onChange={(e) => {
-        // const description = e.currentTarget.value
-        // setCollected({
-        //   ...collected,
-        //   ['description']: description.replace(/\s+/g, ' ').substring(0, 1024),
-        // });
-        // changeUpdated('change')
-        // setDescriptionError('')
-      }} onKeyDown={(e) => {
-        if (e.code == 'Tab') {
-          e.stopPropagation();
-          e.preventDefault();
-          const p = document.querySelector('#input-product-price') as HTMLTextAreaElement | null;
-          p && p.focus();
-        }
-      }}></textarea>
-      <div className="input-message"><span className='error-message'>{descriptionError}</span><span className='right'>{(collected.description?.trim()?.length || 0)} / 1024</span></div>
+
+      {s.init && <MarkdownEditor2 value={product.description || ''} setValue={(value) => {
+        setCollected((current) => ({
+          ...current,
+          description: value
+        }));
+        setProduct((current) => ({
+          ...current,
+          description: value
+        }));
+        changeUpdated('auto-save')
+      }} />}
+      <div className="input-message"><span className='error-message'>{descriptionError}</span><span className='right'>{(product.description?.trim()?.length || 0)} / 1024</span></div>
       <div className='row' style={{
         columnGap: '24px',
         justifyContent: 'flex-start',
@@ -313,17 +301,22 @@ export function Page() {
           <label className='editor' htmlFor='input-product-price'>Prix de base<IoPencil /></label>
           <div className='price-ctn'>
             <input className={`price  editor ${priceError ? 'error' : ''}`} type="number" id={'input-product-price'}
-              value={collected.price || ''}
+              value={product.price || ''}
               placeholder="Prix du produit"
               max={1_000_000_000}
               min={0}
               onChange={(e) => {
                 const price = e.currentTarget.value
-                setCollected({
-                  ...collected,
+                setCollected((current) => ({
+                  ...current,
                   ['price']: Number.parseInt(price),
-                })
-                changeUpdated('change')
+                }))
+                setProduct((current) => ({
+                  ...current,
+                  ['price']: Number.parseInt(price),
+                }))
+                
+                changeUpdated('auto-save')
                 setPriceError('')
               }} />
             <div className="currency">{'FCFA'}</div>
@@ -333,17 +326,22 @@ export function Page() {
           <label className='editor' htmlFor='input-product-barred-price'>Prix barré <IoPencil /> <Indicator style={{ marginLeft: 'auto' }} title={`L'ancien prix ou le prix actuel du marcher`} description={`Ce prix sert de référence au client. Il indique au client que votre produit est en réduction`} /></label>
           <div className='price-ctn'>
             <input className={`price editor ${barredError ? 'error' : ''}`} type="number" id={'input-product-barred-price'}
-              value={collected.barred_price || ''}
+              value={product.barred_price || ''}
               placeholder="Prix barré"
               max={1_000_000_000}
               min={0}
               onChange={(e) => {
                 const barred_price = e.currentTarget.value
-                setCollected({
-                  ...collected,
+                setCollected((current) => ({
+                  ...current,
                   ['barred_price']: Number.parseInt(barred_price),
-                })
-                changeUpdated('change')
+                }))
+                setProduct((current) => ({
+                  ...current,
+                  ['barred_price']: Number.parseInt(barred_price),
+                }))
+                
+                changeUpdated('auto-save')
                 setBarredError('')
               }} />
             <div className="currency">{'FCFA'}</div>
@@ -359,7 +357,12 @@ export function Page() {
                 ...current,
                 categories_id: [c.id, ...(current.categories_id || [])]
               }))
-              changeUpdated('change')
+              setProduct((current) => ({
+                ...current,
+                categories_id: [c.id, ...(current.categories_id || [])]
+              }))
+              
+              changeUpdated('auto-save')
             }} />
           </ChildViewer>, { background: '#3345' })
         }}>
@@ -367,7 +370,7 @@ export function Page() {
           <span>ajoutez</span>
         </div>
         {
-          collected.categories_id?.map(c => (
+          product.categories_id?.map(c => (
             <CategoryItem
               key={c}
               openCategory
@@ -377,7 +380,12 @@ export function Page() {
                   ...current,
                   categories_id: current.categories_id?.filter(_c => d_c.id !== _c)
                 }))
-                changeUpdated('change')
+                setProduct((current) => ({
+                  ...current,
+                  categories_id: current.categories_id?.filter(_c => d_c.id !== _c)
+                }))
+                
+                changeUpdated('auto-save')
               }}
             />
           ))
@@ -386,7 +394,7 @@ export function Page() {
     </div>
     <div className="product-section-feature">
       <div className="top">
-        <h2 style={{ flexWrap: 'wrap' }}> Les Variantes du Produit <b className='prompt'>( {collected.features?.length || 0} / {FEATURE_LIMIT} )</b>
+        <h2 style={{ flexWrap: 'wrap' }}> Les Variantes du Produit <b className='prompt'>( {product.features?.length || 0} / {FEATURE_LIMIT} )</b>
           <Indicator title=''
             description={!is_feature_max ? `Vous pouvez ajoueter jusqu\'a ${FEATURE_LIMIT} variantes par produit` : `Vous avez atteint la limit ${FEATURE_LIMIT} variantes par produit`}
           />
@@ -401,20 +409,30 @@ export function Page() {
         !is_features_here && <NotVariantHere />
       }
       {
-        collected.features?.map(((f, i) => (
+        product.features?.map(((f, i) => (
           <Feature key={i} feature={f} setFeature={(cb) => {
             setCollected((current) => ({
               ...current,
-              features: collected.features?.map(_f => _f.id == f.id ? cb(f) as any : _f)
+              features: product.features?.map(_f => _f.id == f.id ? cb(f) as any : _f)
             }))
+            setProduct((current) => ({
+              ...current,
+              features: product.features?.map(_f => _f.id == f.id ? cb(f) as any : _f)
+            }))
+            
             changeUpdated('auto-save')
           }} onOpenRequired={(f) => {
             openFeatureOption(f as any, 'replace')
           }} onDelete={() => {
             setCollected((current) => ({
               ...current,
-              features: collected.features?.filter(_f => _f.id !== f.id)
+              features: product.features?.filter(_f => _f.id !== f.id)
             }))
+            setProduct((current) => ({
+              ...current,
+              features: product.features?.filter(_f => _f.id !== f.id)
+            }))
+            
             changeUpdated('auto-save')
           }} />
         )))
@@ -423,28 +441,29 @@ export function Page() {
 
     {
       is_newProduct ?
-        <SaveButton loading={loading} effect='color' title={is_all_collected ? 'Cree le produit' : 'Ajoutez toutes informations requises'}
-          required={is_all_collected}
+        <SaveButton loading={loading} effect='color' title={is_all_product ? 'Cree le produit' : 'Ajoutez toutes informations requises'}
+          required={is_all_product}
           onClick={() => {
 
             if (loading) return console.log('onLoading');
-            if (!isAllCollected(collected, true)) return console.log('informations incomplete');
+            if (!isAllProduct(product, true)) return console.log('informations incomplete');
             setLoading(true);
 
-            createProduct({ ...collected }, values[0]?.views || []).then(res => {
+            createProduct({ ...product }, values[0]?.views || []).then(res => {
               setTimeout(() => {
                 setLoading(false)
                 changeUpdated('')
               }, 1000);
               if (!res?.id) return;
-              setCollected(res);
+              setProduct(res);
+              setCollected({})
               history.replaceState(null, "", `/category?id=${res.id}`);
             })
           }} /> :
         <SaveButton loading={loading} effect='color'
-          title={isUpdated ? (is_all_collected ? 'Sauvegardez les modifications' : 'Certaines Informations sont Incorrectes') : 'Aucune modification'}
-          required={!!isUpdated && is_all_collected}
-          onClick={() => saveRequired(collected)} />
+          title={isUpdated ? (is_all_product ? 'Sauvegardez les modifications' : 'Certaines Informations sont Incorrectes') : 'Aucune modification'}
+          required={!!isUpdated && is_all_product}
+          onClick={() => saveRequired(product)} />
     }
 
     <div className="setting-product">
@@ -452,8 +471,8 @@ export function Page() {
         !is_newProduct && <>
           <Button title='Prix et stock avanceé' icon={<IoPricetagsSharp />} onClick={() => {
             (async () => {
-              await saveRequired(collected)
-              window.location.assign(`/products/${collected.id}/prix-stock`)
+              await saveRequired(product)
+              window.location.assign(`/products/${product.id}/prix-stock`)
             })()
           }
           } />
@@ -463,10 +482,10 @@ export function Page() {
           <Button title='Voir les stats' icon={<IoLayers />} />
           <Button title='Supprimer' icon={<IoTrash />} onClick={() => {
             openChild(<ChildViewer>
-              <ConfirmDelete title={`Etes vous sur de vouloir suprimer le produit "${collected.name}"`} onCancel={() => {
+              <ConfirmDelete title={`Etes vous sur de vouloir suprimer le produit "${product.name}"`} onCancel={() => {
                 openChild(null);
               }} onDelete={() => {
-                collected.id && removeProduct(collected.id);
+                product.id && removeProduct(product.id);
                 openChild(null);
               }} />
             </ChildViewer>, {

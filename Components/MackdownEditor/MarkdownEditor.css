@@ -1,0 +1,8 @@
+.toastui-editor-contents {
+    max-height: 300px !important; /* 🔥 Max 300px */
+    overflow-y: auto !important;  /* 🔄 Scroll si dépasse 300px */
+  }
+
+#root  .toastui-editor-defaultUI-toolbar button{
+    margin: 7px 0px;
+  }

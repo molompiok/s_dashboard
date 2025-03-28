@@ -40,7 +40,7 @@ function ProductList({ baseFilter }: { baseFilter?: FilterType}) {
             <label htmlFor="icon-text-name-input" className='label-icon-right'>
                 <input
                     className={"editor "}
-                    placeholder="Nom de l'option"
+                    placeholder="Nom, description, #id"
                     id="icon-text-name-input"
                     type="text"
                     value={filter.search || ''}

@@ -20,6 +20,9 @@ importers:
       '@tanstack/react-query-devtools':
         specifier: ^5.66.11
         version: 5.66.11(@tanstack/react-query@5.66.11(react@19.0.0))(react@19.0.0)
+      '@toast-ui/editor':
+        specifier: ^3.2.2
+        version: 3.2.2
       '@toast-ui/react-editor':
         specifier: ^3.2.3
         version: 3.2.3(react@19.0.0)
@@ -98,6 +101,9 @@ importers:
       tailwindcss:
         specifier: ^4.0.6
         version: 4.0.9
+      toastui-editor.css:
+        specifier: link:@toast-ui/editor/dist/toastui-editor.css
+        version: link:@toast-ui/editor/dist/toastui-editor.css
       ts-node:
         specifier: ^10.9.2
         version: 10.9.2(@types/node@22.13.4)(typescript@5.7.3)

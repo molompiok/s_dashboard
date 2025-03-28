@@ -5,15 +5,16 @@ import './ProductItem.css'
 import { getImg } from '../Utils/StringFormater';
 import { getDefaultValues } from '../Utils/parseData';
 import { useStore } from '../../pages/stores/StoreStore';
+import { markdownToPlainText, MarkdownViewer } from '../MarkdownViewer/MarkdownViewer';
 export { ProductItem }
-function ProductItem({ product, onClick }: { onClick?: () => void, product: ProductInterface }) {
+function ProductItem({ product, onClick, openProduct =true}: { openProduct?:boolean,onClick?: () => void, product: ProductInterface }) {
 
     const { currentStore } = useStore()
     const rating = 2.5
     const n = 1342
     const values = getDefaultValues(product);
     const v = values[0]?.views?.[0];
-    return <a href={onClick?undefined:`/products/${product.id}`} className="product-item" onClick={onClick}>
+    return <a href={openProduct?`/products/${product.id}`:undefined} className="product-item" onClick={onClick}>
         <div className="views">
             {v && (getFileType(v) == 'image' ?
                 <div className="view" style={{
@@ -32,9 +33,9 @@ function ProductItem({ product, onClick }: { onClick?: () => void, product: Prod
             }
         </div>
         <div className="infos">
-            <h2>{product.price}</h2>
+            <h2 className='ellipsis'>{product.price}</h2>
             <h3>{product.name}</h3>
-            <p>{product.description}</p>
+            <p>{markdownToPlainText(product.description)}</p>
             <div className="rating">
                 <span>
                     <IoStarHalf />

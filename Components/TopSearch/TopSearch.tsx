@@ -4,7 +4,7 @@ import 'swiper/css';
 import 'swiper/css/free-mode';
 
 import { useEffect, useState } from 'react'
-import { CategoryInterface, FilterType } from '../../Interfaces/Interfaces'
+import { CategoryInterface, CommandInterface, FilterType, ProductClientInterface } from '../../Interfaces/Interfaces'
 import { useCategory } from '../CategoriesList/CategoryStore'
 import { useStore } from '../../pages/stores/StoreStore'
 import { useApp, type GlobalSearchType } from '../../renderer/AppStore/UseApp'
@@ -18,7 +18,7 @@ import { useWindowSize } from '../../Hooks/useWindowSize';
 
 export { TopSearch }
 
-function TopSearch({ categories, onSelected }: { categories?: CategoryInterface[], onSelected?: (category: CategoryInterface) => void }) {
+function TopSearch({  onClientSelected,onProductSelected ,onCategorySelected,onCommandSelected }: {onCommandSelected?: (cammand:CommandInterface) => void,onCategorySelected?: (category:CategoryInterface) => void,onProductSelected?: (product:ProductClientInterface) => void,onClientSelected?: (client:any) => void }) {
     const { openChild, gobalSearch } = useApp()
     const { currentStore } = useStore()
     const [filter, setFilter] = useState<FilterType>({});
@@ -54,6 +54,7 @@ function TopSearch({ categories, onSelected }: { categories?: CategoryInterface[
                     placeholder="Nom, description, #id"
                     id="icon-text-name-input"
                     type="text"
+                    autoFocus
                     value={filter.search || ''}
                     onChange={(e) => {
                         const search = e.currentTarget.value;
@@ -81,9 +82,9 @@ function TopSearch({ categories, onSelected }: { categories?: CategoryInterface[
                     {
                         data.categories?.map((c, i) =>
                             c && <SwiperSlide>
-                                <CategoryItem key={c.id} openCategory={!onSelected} category={c} onClick={() => {
+                                <CategoryItem key={c.id} openCategory={true} category={c} onClick={() => {
                                     openChild(null);
-                                    console.log(c);
+                                    onCategorySelected?.(c);
                                 }} />
                             </SwiperSlide>
                         )
@@ -112,6 +113,7 @@ function TopSearch({ categories, onSelected }: { categories?: CategoryInterface[
                             p && <SwiperSlide>
                                 <ProductItem key={p.id} product={p} onClick={() => {
                                     console.log(p);
+                                    onProductSelected?.(p)
                                     openChild(null);
                                 }} />
                             </SwiperSlide>

@@ -3,6 +3,7 @@
     transition: 200ms;
 }
 
+
 .product-item{
     width: 200px;
     height: auto;
@@ -37,6 +38,8 @@
     justify-content: space-around;
     height: 100%;
 }
+.product-item .infos h2,
+.product-item .infos h3,
 .product-item .infos p{
     overflow: hidden;
     text-overflow: ellipsis;

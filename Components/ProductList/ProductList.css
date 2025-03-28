@@ -1,13 +1,14 @@
-.product-list{
+.product-list {
     display: flex;
     flex-direction: column;
 }
-.product-list h1{
+
+.product-list h1 {
     margin: 24px 0;
 }
 
-.product-list .list{
-    width:100%;
+.product-list .list {
+    width: 100%;
     display: flex;
     justify-content: center;
     align-items: center;
@@ -15,33 +16,38 @@
     gap: 16px;
 }
 
-.product-list .add-product .add{
+.product-list .add-product .add {
     width: 30px;
-    height:auto;
+    height: auto;
     aspect-ratio: 1;
     transform: translateY(10px);
 }
+
 .product-list .add-product svg {
     width: 60px;
-    height:auto;
+    height: auto;
     aspect-ratio: 1;
 }
-.product-list .add-product:hover{
+
+.product-list .add-product:hover {
     scale: 1.02;
 }
-.product-list .add-product{
+
+.product-list .add-product {
     gap: 20px;
     box-shadow: 0px 0px 12px -8px var(--discret-0);
     /* padding: 32px 12px ; */
     border-radius: 12px;
     cursor: pointer;
 }
-.product-list .add-product .empty{
+
+.product-list .add-product .empty {
     width: 160px;
-    height:auto;
+    height: auto;
     aspect-ratio: 1;
 }
-.product-list .add-product button{
+
+.product-list .add-product button {
     all: unset;
     font-size: 0.9em;
     padding: 8px;
@@ -50,36 +56,44 @@
     border-radius: 12px;
     box-shadow: 0px 2px 6px -4px var(--primary-color);
 }
-.product-list .add-product .indicator{
+
+.product-list .add-product .indicator {
     width: 60px;
     height: auto;
     aspect-ratio: 1;
-    transform: scaleX(-1)  translateX(30px);
- }
+    transform: scaleX(-1) translateX(30px);
+}
 
- .product-list .product-top-search{
+.product-list .product-top-search {
     display: flex;
     align-items: center;
- }
+}
 
- .product-list .product-top-search label{
+.product-list .product-top-search label {
     max-width: 50%;
     width: 50vw;
     margin-left: auto;
-  }
+}
 
- @media (width<480px) {
-     .product-list .list{
-         gap: 4px;
-     }
- }
- @media (width<380px) {
-    .product-list .product-top-search label{
-       max-width: 80%;
-       width: 80%;
-     }
-     .product-list .product-top-search{
+.product-list .product-top-search input {
+    max-width: 100%;
+    width:100%;
+    padding-right: 40px;
+}
+
+@media (width<480px) {
+    .product-list .list {
+        gap: 4px;
+    }
+}
+
+@media (width<380px) {
+    .product-list .product-top-search label {
+        max-width: 80%;
+        width: 80%;
+
+    }
+    .product-list .product-top-search {
         flex-wrap: wrap;
-     }
- }
-
+    }
+}

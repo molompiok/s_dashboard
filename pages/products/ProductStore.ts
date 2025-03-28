@@ -23,7 +23,7 @@ const useProductStore = create(combine({
                 features = p.features
             }
         }
-
+        // product.description = product.description?.replaceAll("\n", "§")
         console.log('#############  Product  ####################', p);
 
         const h = useAuthStore.getState().getHeaders();
@@ -159,7 +159,6 @@ const useProductStore = create(combine({
     }>) {
         const h = useAuthStore.getState().getHeaders()
        
-        console.log(filter);
         if(filter.categories_id){
             try {
                 (filter as any).categories_id = JSON.stringify(filter.categories_id)
@@ -174,16 +173,16 @@ const useProductStore = create(combine({
             const value = (filter as any)[key];
             value && searchParams.set(key, value);
         }
-        console.log(`${h.store.url}/get_products/?${searchParams}`);
+        // console.log(`${h.store.url}/get_products/?${searchParams}`);
 
         const response = await fetch(`${h.store.url}/get_products/?${searchParams}`, {
             headers: h?.headers
         })
-        console.log({ response });
+        // console.log({ response });
         const products = await response.json();
         if (!products?.list) return
         console.log({ products:products?.list });
-        if (!filter.no_save) set(() => ({ products }))
+        if (!filter.no_save) set(() => ({ products:products }))
         return products as ListType<ProductInterface> | undefined
     }
 })));
