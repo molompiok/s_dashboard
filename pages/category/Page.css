@@ -1,3 +1,7 @@
+.category .product-list {
+    margin-top: 48px;
+}
+
 .category .icon-info {
     display: flex;
     align-items: flex-start;
@@ -13,8 +17,6 @@
     border-radius: 12px;
     cursor: pointer;
 }
-
-
 
 
 
@@ -88,7 +90,7 @@
     color: var(--discret-1);
 }
 
-.category h3 {
+.category > h3 {
     margin-top: 24px;
     margin-bottom: 12px;
     color: var(--discret-1);

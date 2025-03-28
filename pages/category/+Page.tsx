@@ -22,7 +22,7 @@ import { FaRedo } from 'react-icons/fa'
 import { CategoryItem } from '../../Components/CategoryItem/CategoryItem'
 import { SaveButton } from '../../Components/SaveButton/SaveButton'
 import { ClientCall } from '../../Components/Utils/functions'
-import { useReplaceState } from '../../Hooks/useRepalceState'
+import { useMyLocation } from '../../Hooks/useRepalceState'
 import { Button } from '../../Components/Button/Button'
 import { ConfirmDelete } from '../../Components/Confirm/ConfirmDelete'
 
@@ -37,9 +37,9 @@ function Page() {
   const { fetchCategoriesBy, createCategory, updateCategory, removeCategory } = useCategory()
 
   const { urlParsed } = usePageContext()
-  const { myLocation, searchPared } = useReplaceState();
+  const { searchPared } = useMyLocation();
   const [is_newCategory, changeNewCategory] = useState(urlParsed.search['id'] == 'new')
-
+  
   const nameRef = useRef<HTMLInputElement>(null);
   const descriptionRef = useRef<HTMLTextAreaElement>(null);
 
@@ -51,15 +51,21 @@ function Page() {
 
   const [loading, setLoading] = useState(false);
   const [isUpdated, changeUpdated] = useState(false);
-
+  const [s] = useState({
+    isUpdated : false,
+    searchPared
+  })
+  s.searchPared = searchPared;
   useEffect(() => {
-    searchPared['id'] != 'new' && fetchCategoriesBy({ categories_id: [searchPared['id']] }).then(res => {
+    console.log({isUpdated: s.isUpdated});
+    
+    s.searchPared['id'] != 'new' && fetchCategoriesBy({ categories_id: [s.searchPared['id']] }).then(res => {
       if (!res?.[0].id) return;
-      changeNewCategory(false)
+      changeNewCategory(false);
+      changeUpdated(false)
       setCollected(res[0]);
     })
-  }, [currentStore, myLocation]);
-
+  }, [currentStore, searchPared]);  
 
   function isAllCollected(collected: Partial<CategoryInterface>, showError?: boolean) {
     
@@ -228,7 +234,7 @@ function Page() {
               }))
               changeUpdated(true)
             }} />
-          </ChildViewer>, { blur: 10 })
+          </ChildViewer>, {background:'#3455', back:false})
         }}>
           {collected.parent_category_id ? <FaRedo /> : <IoAdd />}
           <span>{collected.parent_category_id ? 'remplacez' : 'ajoutez'}</span>
@@ -305,7 +311,7 @@ function Page() {
 
             }} />
       }
-      {!is_newCategory && <ProductList />}
+      {!is_newCategory && <ProductList key={searchPared['id']} baseFilter={{categories_id:[searchPared['id']]}}/>}
     </div>
   )
 }

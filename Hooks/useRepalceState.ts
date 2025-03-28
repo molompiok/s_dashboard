@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react"
 import { ClientCall } from "../Components/Utils/functions";
-export  {useReplaceState,getSearch}
+export  {useMyLocation,getSearch}
 
 function getSearch(myLocation:Location) {
     if(!myLocation.search) return {}
@@ -18,7 +18,7 @@ function getSearch(myLocation:Location) {
     return res
   }
 
-  function useReplaceState() {
+  function useMyLocation() {
     const [myLocation, setMyLocation] = useState<Location>(ClientCall(()=>location,{}))    
 
     useEffect(()=>{

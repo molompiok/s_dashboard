@@ -146,7 +146,10 @@ const useProductStore = create(combine({
     async fetchProducts(filter: Partial<{
         product_id: string,
         slug: string,
-        order_by: string,
+        categories_id:string[],
+        slug_cat:string,
+        slug_product:string,
+        order_by?: "date_desc" | "date_asc" | "price_desc" | "price_asc" | undefined,
         page: number,
         limit: number,
         no_save: boolean,
@@ -155,8 +158,16 @@ const useProductStore = create(combine({
         search?:string
     }>) {
         const h = useAuthStore.getState().getHeaders()
-        console.log({ h });
-        filter.order_by = 'date_desc'
+       
+        console.log(filter);
+        if(filter.categories_id){
+            try {
+                (filter as any).categories_id = JSON.stringify(filter.categories_id)
+            } catch (error) {
+            }
+        } 
+        filter.slug_product = filter.slug_product || filter.slug;
+        
         if (!h) return
         const searchParams = new URLSearchParams({});
         for (const key in filter) {
@@ -170,8 +181,8 @@ const useProductStore = create(combine({
         })
         console.log({ response });
         const products = await response.json();
-        console.log({ products });
         if (!products?.list) return
+        console.log({ products:products?.list });
         if (!filter.no_save) set(() => ({ products }))
         return products as ListType<ProductInterface> | undefined
     }

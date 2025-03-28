@@ -9,6 +9,22 @@ export type ListType<T> = {
     meta:{}
 }
 
+export type FilterType = {
+    order_by?: "date_desc" | "date_asc" | "price_desc" | "price_asc" | undefined;
+    prices?: [number | undefined, number | undefined] | undefined;
+    product_id?: string,
+    slug?: string,
+    categories_id?:string[],
+    slug_cat?:string,
+    slug_product?:string,
+    page?: number,
+    limit?: number,
+    no_save?: boolean,
+    min_price?: number | undefined,
+    max_price?: number | undefined,
+    search?:string
+};
+
 
 export type UpdateValue = {
   update: Partial<ValueInterface>[],

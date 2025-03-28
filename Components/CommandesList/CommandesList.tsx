@@ -3,7 +3,7 @@ import { useApp } from '../../renderer/AppStore/UseApp'
 import { ChildViewer } from '../ChildViewer/ChildViewer'
 import './CommandesList.css'
 import { CommandItem } from '../CommandItem/CommandItem'
-import { CommandInterface } from '../../Interfaces/Interfaces'
+import { CommandInterface, FilterType } from '../../Interfaces/Interfaces'
 import { useState } from 'react'
 import { OrderStatusElement, statusColors, statusIcons } from '../Status/Satus'
 
@@ -13,14 +13,6 @@ import { ClientCall } from '../Utils/functions'
 export { CommandeList }
 import { FiMaximize } from 'react-icons/fi';
 import { getImg } from '../Utils/StringFormater'
-
-type FilterType = {
-    text?:string,
-    order?: "date_desc" | "date_asc" | "price_desc" | "price_asc" | undefined;
-    status?: (keyof typeof statusIcons)[] | undefined;
-    dates?: [string | undefined, string | undefined] | undefined;
-    prices?: [number | undefined, number | undefined] | undefined;
-};
 
 /*
 
@@ -99,7 +91,7 @@ function CommandsFilters({ filter, setFilter }: { filter: any, setFilter: (filte
                     order
                 })
             }} />
-            <PriceFilterComponent active={currentFilter == 'price'} price={filter.price} setPrice={(price) => {
+            <PriceFilterComponent active={currentFilter == 'price'} prices={filter.prices} setPrice={(price) => {
                 setFilter({
                     ...filter,
                     price
@@ -132,7 +124,7 @@ function StatusFilterComponent({ status: _status, setStatus, active }: { active:
     </div>
 }
 
-export function OrderFilterComponent({ order: _order, setOrder, active }: { active: boolean, order: string | undefined, setOrder: (order: string | undefined) => void }) {
+export function OrderFilterComponent({ order: _order, setOrder, active }: { active: boolean, order: string | undefined, setOrder: (order: FilterType['order_by'] | undefined) => void }) {
     const order = _order
     const MapOder = {
         'date_desc': 'Plus Recent',
@@ -154,29 +146,29 @@ export function OrderFilterComponent({ order: _order, setOrder, active }: { acti
     </div>
 }
 
-export function PriceFilterComponent({ price, setPrice, active }: { active: boolean, price: (number | undefined)[] | undefined, setPrice: (price: (number | undefined)[] | undefined) => void }) {
+export function PriceFilterComponent({ prices, setPrice, active }: { active: boolean, prices: [number | undefined,number | undefined]  | undefined, setPrice: (price: [number | undefined,number | undefined] | undefined) => void }) {
     
     return <div className={`price-filter-component ${active ? 'active' : ''}`}>
         <label htmlFor="command-filter-min-price">
             <span>Prix Minimum</span>
-            <input type="number" id="command-filter-min-price" value={price?.[0] || ''} placeholder={'Prix Minimum'} onChange={(e) => {
+            <input type="number" id="command-filter-min-price" value={prices?.[0] || ''} placeholder={'Prix Minimum'} onChange={(e) => {
                 let minPrice = parseInt(e.currentTarget.value) as number | undefined
                 minPrice = Number.isNaN(minPrice) ? undefined : minPrice
-                const p = [minPrice, price?.[1]]
-                setPrice((p[0] == undefined && p[1] == undefined) ? undefined : p)
+                const p = [minPrice, prices?.[1]] as  [number | undefined,number | undefined]  | undefined
+                setPrice(p)
             }} />
         </label>
         <label htmlFor="command-filter-max-price">
             <span>Prix Maximum</span>
-            <input type="number" id="command-filter-max-price" value={price?.[1] || ''} placeholder={'Prix Maximum'} onChange={(e) => {
+            <input type="number" id="command-filter-max-price" value={prices?.[1] || ''} placeholder={'Prix Maximum'} onChange={(e) => {
                 let maxPrice = parseInt(e.currentTarget.value) as number | undefined;
                 maxPrice = Number.isNaN(maxPrice) ? undefined : maxPrice
-                const p = [price?.[0], maxPrice]
-                setPrice((p[0] == undefined && p[1] == undefined) ? undefined : p)
+                const p = [prices?.[0], maxPrice] as  [number | undefined,number | undefined]  | undefined
+                setPrice(p)
             }} />
         </label>
         <div className="reset" style={{ width: '500px' }}>
-            <span className={price && (price?.[0] != undefined || price?.[1] != undefined) ? 'ok' : ''} onClick={(e) => {
+            <span className={prices && (prices?.[0] != undefined || prices?.[1] != undefined) ? 'ok' : ''} onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 console.log('clicke-clear');

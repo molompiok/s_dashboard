@@ -19,7 +19,7 @@ import { ChildViewer } from '../../../Components/ChildViewer/ChildViewer'
 import { CategoriesPopup } from '../../../Components/CategoriesPopup/CategoriesPopup'
 import { FaRedo } from 'react-icons/fa'
 import { ConfirmDelete } from '../../../Components/Confirm/ConfirmDelete'
-import { useReplaceState } from '../../../Hooks/useRepalceState'
+import { useMyLocation } from '../../../Hooks/useRepalceState'
 import { Button } from '../../../Components/Button/Button'
 import { SaveButton } from '../../../Components/SaveButton/SaveButton'
 import { Indicator } from '../../../Components/Indicator/Indicator'
@@ -87,7 +87,7 @@ export function Page() {
   }
 
   const { routeParams } = usePageContext()
-  const { myLocation } = useReplaceState()
+  const { myLocation } = useMyLocation()
   const is_newProduct = myLocation.pathname == "/products/new";
 
   const [collected, setCollected] = useState<Partial<ProductInterface>>({
@@ -105,7 +105,7 @@ export function Page() {
   })
 
   function resetProduct(product_id: string, thread = false) {
-    fetchProducts({ product_id }).then(res => {
+    !s.init && fetchProducts({ product_id }).then(res => {
       const p = res?.list[0]
       if (!p?.id) return;
       s.init = true;
@@ -114,7 +114,6 @@ export function Page() {
       setValues(getDefaultValues(p) || [])
       !thread && changeUpdated('');
     });
-
   }
   useEffect(() => {
     !is_newProduct && currentStore && !s.init && resetProduct(routeParams.id)
@@ -192,6 +191,9 @@ export function Page() {
   useEffect(() => {
     isUpdated && saveRequired(collected)
   }, [collected, isUpdated])
+
+
+
   const is_all_collected = isAllCollected(collected);
   const is_feature_max = (collected.features?.length || 0) >= FEATURE_LIMIT;
 
@@ -264,34 +266,35 @@ export function Page() {
         if (!ref) return
         if ((ref as any).init) return
         (ref as any).init = 'init';
-        function autoResizeTextarea(ref: HTMLTextAreaElement) {
-          ref.style.height = 'auto';
-          if (ref.scrollHeight > 300) {
-            ref.style.overflowY = 'auto';
-            ref.style.overflowX = 'hidden';
-          } else {
-            ref.style.overflowY = 'hidden';
-            ref.style.overflowX = 'hidden';
+        import("easymde").then((mod) => {
+          const EasyMDE = (mod.default )
+          const instance = new EasyMDE({ element: ref,
+            spellChecker: false, // Désactive le correcteur d'orthographe
+            renderingConfig: {
+              singleLineBreaks: false, // Désactive la conversion automatique des retours à la ligne
+            } });
+          instance.value(collected.description || "");
+          instance.codemirror.on("change", () => {
+            setCollected((current) => ({
+              ...current,
+              description: instance.value(),
+            }));
+            changeUpdated('change')
+          });
+          const elem = document.querySelector('.EasyMDEContainer .CodeMirror-scroll') as HTMLDivElement;
+          if(elem){
+            elem.style.minHeight = '';
           }
-          ref.style.height = ref.scrollHeight + 'px';
-        }
-        window.addEventListener('resize', function () {
-          autoResizeTextarea(ref);
         })
-        ref.addEventListener('input', function () {
-          autoResizeTextarea(ref);
-        });
-        setTimeout(() => {
-          autoResizeTextarea(ref);
-        }, 500);
+        
       }} value={collected.description} onChange={(e) => {
-        const description = e.currentTarget.value
-        setCollected({
-          ...collected,
-          ['description']: description.replace(/\s+/g, ' ').substring(0, 1024),
-        });
-        changeUpdated('change')
-        setDescriptionError('')
+        // const description = e.currentTarget.value
+        // setCollected({
+        //   ...collected,
+        //   ['description']: description.replace(/\s+/g, ' ').substring(0, 1024),
+        // });
+        // changeUpdated('change')
+        // setDescriptionError('')
       }} onKeyDown={(e) => {
         if (e.code == 'Tab') {
           e.stopPropagation();
@@ -358,7 +361,7 @@ export function Page() {
               }))
               changeUpdated('change')
             }} />
-          </ChildViewer>, { blur: 10 })
+          </ChildViewer>, { background: '#3345' })
         }}>
           <IoAdd />
           <span>ajoutez</span>

@@ -1,4 +1,4 @@
-import { ProductInterface } from "../../Interfaces/Interfaces";
+import { ProductInterface, ValueInterface } from "../../Interfaces/Interfaces";
 
 export {
   ClientCall,
@@ -6,7 +6,7 @@ export {
   shortNumber,
   toNameString,
   getAllCombinations,
-  generateGroupProduct
+  getOptions
 }
 
 
@@ -69,38 +69,67 @@ function shortNumber(n: number) {
   return (Math.trunc(result * 100) / 100) + (['', 'K', 'M', 'B', 'T', 'Q'][index])
 }
 
-function generateGroupProduct(bind: Record<string, string>, product: Partial<ProductInterface>) {
+
+export enum FeaturType {
+
+  ICON_TEXT = 'icon_text',
+  COLOR = 'color',
+  TEXT = 'text',
+  ICON = 'icon',
+  INPUT = 'input',
+  DATE = 'date',
+  DOUBLE_DATE = 'double_date',
+  RANGE = 'range',
+  LEVEL = 'level',
+  FILE = ' file',
+}
+
+
+function getOptions(bind: Record<string, string>, product: Partial<ProductInterface>) {
   let additionalPrice = 0;
   let stock: number | null = Infinity; // On prend le minimum donc on part d'un grand nombre
   let decreasesStock = false;
   let continueSelling = false;
-
+  let bindNames: Record<string, ValueInterface | string> = {}
+  let bindIds: Record<string, ValueInterface | string> = {}
   // Vérifier les features et récupérer les infos des valeurs sélectionnées
   for (let feature of product.features || []) {
     let featureId = feature.id;
-    let valueId = bind[featureId];
 
-    if (!valueId) continue; // Si la feature n'est pas dans le bind, on passe
+    if ([
+      FeaturType.TEXT,
+      FeaturType.COLOR,
+      FeaturType.ICON,
+      FeaturType.ICON_TEXT
+    ].includes(feature.type as any)) {
+      let valueId = bind[featureId];
+      if (!valueId) continue; // Si la feature n'est pas dans le bind, on passe
 
-    let value = feature.values?.find(v => v.id === valueId);
-    if (!value) continue; // Si la valeur n'existe pas, on passe
+      let value = feature.values?.find(v => v.id === valueId);
+      if (!value) continue; // Si la valeur n'existe pas, on passe
+      bindNames[feature.name] = value
+      bindIds[feature.id] = value
 
-    // Mettre à jour le prix supplémentaire
-    if (value.additional_price) {
-      additionalPrice += value.additional_price;
-    }
+      // Mettre à jour le prix supplémentaire
+      if (value.additional_price) {
+        additionalPrice += value.additional_price;
+      }
 
-    // Mettre à jour le stock (on prend le minimum)
-    if (value.stock !== null && value.stock !== undefined) {
-       stock = Math.min(stock, value.stock);
-    }
+      // Mettre à jour le stock (on prend le minimum)
+      if (value.stock !== null && value.stock !== undefined) {
+        stock = Math.min(stock, value.stock);
+      }
 
-    // Mettre à jour les booléens s'ils sont définis
-    if (value.decreases_stock !== null) {
-      decreasesStock = decreasesStock || !!value.decreases_stock;
-    }
-    if (value.continue_selling !== null) {
-      continueSelling = continueSelling || !!value.continue_selling;
+      // Mettre à jour les booléens s'ils sont définis
+      if (value.decreases_stock !== null) {
+        decreasesStock = decreasesStock || !!value.decreases_stock;
+      }
+      if (value.continue_selling !== null) {
+        continueSelling = continueSelling || !!value.continue_selling;
+      }
+    } else {
+      bindIds[feature.id] = bind[featureId]
+      bindNames[feature.name] = bind[featureId]
     }
   }
 
@@ -111,11 +140,8 @@ function generateGroupProduct(bind: Record<string, string>, product: Partial<Pro
 
   return {
     bind,
-    bindNames: Object.keys(bind).map(b_f_id=>{
-      const f = product.features?.find(f => f.id === b_f_id);
-      if (!f) return null;
-      return {[f.name || '']:f.values?.find(v => v.id === bind[b_f_id])}
-    }).filter(f=>!!f),
+    bindNames,
+    bindIds,
     bind_hash: JSON.stringify(bind),
     additional_price: additionalPrice,
     stock: stock,
@@ -146,7 +172,7 @@ function getAllCombinations(product: Partial<ProductInterface>) {
     if (arr.length === 0) return []; // 🔥 Si aucune feature avec valeurs, retourner []
     return arr.reduce((acc: any, values: any) =>
       acc.map((comb: any) => values.map((val: any) => [...comb, val])).flat()
-    , [[]]);
+      , [[]]);
   }
 
   // Générer toutes les combinaisons possibles
@@ -164,5 +190,5 @@ function getAllCombinations(product: Partial<ProductInterface>) {
   console.log({ allBinds });
 
   // Générer tous les group_products
-  return allBinds.map((bind: any) => generateGroupProduct(bind, product)) as (ReturnType<typeof generateGroupProduct>)[];
+  return allBinds.map((bind: any) => getOptions(bind, product)) as (ReturnType<typeof getOptions>)[];
 }

@@ -1,0 +1,27 @@
+.top-search {
+    padding: 48px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    gap: 8px;
+}
+
+.top-search label {
+    margin-bottom: 24px;
+}
+
+.top-search .list {
+    padding: 4px;
+}
+.top-search .product-item {
+    width: 144px;
+}
+
+@media (width < 550px) {
+    .top-search {
+        padding: 24px;
+    }
+
+}
+

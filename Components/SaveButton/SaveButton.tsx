@@ -46,7 +46,7 @@ function SaveButton({ onClick, required, title, effect='color' ,loading}: {loadi
         }}
         onClick={onClick} style={{
             borderRadius: '24px',
-            cursor:required? 'pointer':'not-allowed',
+            cursor:required? 'pointer':'default',
             background: 'var(--primary-gradiant)',
             color: 'var(--discret-10)',
             fontSize: '1.1em',

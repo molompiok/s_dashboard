@@ -372,6 +372,23 @@ textarea.editor {
   /* max-width: 300px; */
 }
 
+.label-icon-right input{
+  padding-right: 50px;
+  max-width: 260px;
+  width: 80vw;
+}
+.label-icon-right svg{
+  position: absolute;
+  right: 10px;
+  width: 25px;
+  height: 25px;
+}
+.label-icon-right{
+  display: flex;
+  align-items: center;
+  position: relative;
+}
+
 input.editor:focus,
 textarea.editor:focus {
   outline: none;
