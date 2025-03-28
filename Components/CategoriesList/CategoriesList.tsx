@@ -38,10 +38,10 @@ function CategoriesList({
     const seeMore = (categories?.list.length||0) > limit;
 
     useEffect(()=>{
-        fetchCategories({});
+        fetchCategories({with_product_count:true});
     },[currentStore])
 
-    // console.log(categories);
+    console.log(categories);
     
 
     return <div className="catefgories-list">

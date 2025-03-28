@@ -10,7 +10,7 @@ import { getImg } from '../Utils/StringFormater'
 
 export { CategoriesPopup }
 
-function CategoriesPopup({ categories, onSelected }: { categories?: CategoryInterface[], onSelected?: (category: CategoryInterface) => void }) {
+function CategoriesPopup({ categories, onSelected, ignore }: {ignore?:string[], categories?: CategoryInterface[], onSelected?: (category: CategoryInterface) => void }) {
     const { openChild } = useApp()
     const { fetchCategories, categories: _list } = useCategory()
     const { currentStore } = useStore()
@@ -57,11 +57,10 @@ function CategoriesPopup({ categories, onSelected }: { categories?: CategoryInte
             </label>
         </div>
         {
-            list?.map((c, i) =>
+            list?.filter(c=>!ignore?.includes(c.id))?.map((c, i) =>
                 c && <CategoryItem key={i} openCategory={!onSelected} category={c} onClick={() => {
                     openChild(null);
                     onSelected?.(c)
-
                 }} />
             )
         }{

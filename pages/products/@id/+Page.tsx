@@ -280,7 +280,7 @@ export function Page() {
       <div className="input-message"><span className='error-message'>{nameError}</span><span className='right'>{(product.name?.trim()?.length || 0)} / 256</span></div>
       <label className='editor' htmlFor='input-product-description'>Description <IoPencil /></label>
 
-      {s.init && <MarkdownEditor2 value={product.description || ''} setValue={(value) => {
+      { <MarkdownEditor2 value={product.description || ''} setValue={(value) => {
         setCollected((current) => ({
           ...current,
           description: value

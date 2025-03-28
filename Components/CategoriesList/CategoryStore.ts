@@ -20,7 +20,9 @@ const useCategory = create(combine({
         });
         const json = await response.json();
         console.log(json);
-        set(({ categories }) => ({ categories: categories && { ...categories, list: categories.list.filter(c=>c.id !== category_id)} }))
+        if(json?.isDeleted){
+            set(({ categories }) => ({ categories: categories && { ...categories, list: categories.list.filter(c=>c.id !== category_id)} }))
+        }
         return json?.isDeleted;
     },
     async updateCategory(category:Partial<CategoryInterface>) {
@@ -78,7 +80,7 @@ const useCategory = create(combine({
 
         return {}  as CategoryInterface
     },
-    async fetchCategoriesBy({categories_id,slug}:{categories_id?:string[],slug?:string}) {
+    async fetchCategoriesBy({categories_id,slug,with_product_count}:{with_product_count?:boolean,categories_id?:string[],slug?:string}) {
         if ((!categories_id || categories_id?.length==0)&&!slug) return;
         const cs = get().categories;
         // console.log({cs});
@@ -91,7 +93,7 @@ const useCategory = create(combine({
             
             return localCategories
         } else {
-            const list  = await useCategory.getState().fetchCategories({categories_id:categories_id||[],slug}) ;
+            const list  = await useCategory.getState().fetchCategories({categories_id:categories_id||[],slug,with_product_count}) ;
             return  list?.list;
         }
     },
@@ -146,7 +148,8 @@ const useCategory = create(combine({
         order_by: string,
         page: number,
         limit: number,
-        no_save: boolean
+        no_save: boolean,
+        with_product_count?:boolean
     }>) {
         try {
             const h = useAuthStore.getState().getHeaders()
@@ -156,9 +159,11 @@ const useCategory = create(combine({
         for (const key in filter) {
             const value = (filter as any)[key];
             if(key == 'categories_id'){
-                value &&  searchParams.set(key, JSON.stringify(value));
+                value!=undefined &&  searchParams.set(key, JSON.stringify(value));
+            }if(key == 'with_product_count'){
+                value && searchParams.set(key,'true');
             }else{
-                value &&  searchParams.set(key, value);
+                value!=undefined &&  searchParams.set(key, value);
             }
         }
         // console.log(`${h.store.url}/get_categories/?${searchParams}`);

@@ -1,0 +1,26 @@
+.page-not-found{
+    display: flex;
+    width: 100%;
+    height:calc( 100vh - 100px);
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.page-not-found h2{
+    padding: 12px;
+}
+.page-not-found .bottom{
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+.page-not-found .home{
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+    color: blue;
+    text-decoration: underline;
+}

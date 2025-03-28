@@ -101,6 +101,7 @@ export interface CategoryInterface{
     parent_category_id?:string
     store_id: string,
     slug:string,
+    product_count?:number
     view: (string|Blob)[],
     icon: (string|Blob)[],
     created_at: string,

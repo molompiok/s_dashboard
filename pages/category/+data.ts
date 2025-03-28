@@ -14,13 +14,15 @@ const data = async (pageContext: PageContextServer) => {
 const id = pageContext.urlParsed.search['id'];
   try {
     if ( id!== 'new') {
+      console.log({id});
+      
       const response = await fetch(`${Api_host}/get_categories/?category_id=${id}`)//&store_name=${pageContext.urlParsed.search['store']}
       categories = (await response.json()) as ListType<CategoryInterface>
     }
   } catch (error) {
     console.error(error);
   }
-  const category = categories?.list[0]
+  const category = categories?.list?.[0]
   // We remove data we don't need because the data is passed to the client; we should
   // minimize what is sent over the network.
   //   category = minimize(category);

@@ -13,51 +13,55 @@ export { CategoryItem }
 
 // additionnal service, lors de la command, sur la page de comfirmation on/le owner peut propropser des additional services. voir => public/res/14.jpg
 
-function CategoryItem({ 
-    category, 
-    onClick, 
+function CategoryItem({
+    category,
+    onClick,
     category_id,
     openCategory,
     hoverEffect,
     onDelete
 }: {
-    openCategory?:boolean,
-    category_id?:string,
-    category?: CategoryInterface, 
-    onClick?: (categorie:CategoryInterface) => void,
-    onDelete?:(categorie:CategoryInterface)=>void,
-    hoverEffect?:boolean,
+    openCategory?: boolean,
+    category_id?: string,
+    category?: CategoryInterface,
+    onClick?: (categorie: CategoryInterface) => void,
+    onDelete?: (categorie: CategoryInterface) => void,
+    hoverEffect?: boolean,
 }) {
-    const [c,setC] = useState(category); 
-    const {fetchCategoriesBy} = useCategory();
-    const {currentStore} = useStore();
+    const [c, setC] = useState(category);
+    const { fetchCategoriesBy } = useCategory();
+    const { currentStore } = useStore();
     const [s] = useState({
-        init:false
+        init: false
     })
-    useEffect(()=>{
-        if(!c && category_id){
+    useEffect(() => {
+        if (!c && category_id) {
             const id = Math.random();
-            console.log(id,category_id)
-            if(s.init) return
+            console.log(id, category_id)
+            if (s.init) return
             s.init = true
-            fetchCategoriesBy({categories_id:[category_id]}).then(res=>{
-                if(!res?.[0]) return;
+            fetchCategoriesBy({ categories_id: [category_id],with_product_count:true}).then(res => {
+                if (!res?.[0]) return;
                 setC(res[0]);
             })
         }
-    },[currentStore]);
-    
-    return c && <a key={category_id} className={"category-item "+(hoverEffect?'hover-effect':'')} onClick={() => onClick?.(c)} href={(openCategory||undefined)&&`/category?id=${c.id}`} >
-        {onDelete && (
-            <div className="delete" onClick={(e)=>{
-                e.preventDefault();
-                e.stopPropagation();
-                onDelete(c);
-            }}>
-                <IoClose/>
-            </div>
-        )}
-        <div className="item-view" style={{ background: getImg(c.view[0],'contain', Api_host)  }} ></div>
+    }, [currentStore]);
+
+    return c && <a key={category_id} className={"category-item " + (hoverEffect ? 'hover-effect' : '')} onClick={() => onClick?.(c)} href={(openCategory || undefined) && `/category?id=${c.id}`} >
+
+        <div className={"delete "+(onDelete?'required':'') } onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            onDelete?.(c);
+        }}>{
+                onDelete ?
+                    <IoClose /> :
+                    0
+            }
+
+        </div>
+
+        <div className="item-view" style={{ background: getImg(c.icon?.[0] || c.view?.[0], 'contain', Api_host) }} ></div>
         <span className="ellipsis">{c.name}</span>
     </a>
 }

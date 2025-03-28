@@ -6,7 +6,8 @@ export {
   shortNumber,
   toNameString,
   getAllCombinations,
-  getOptions
+  getOptions,
+  debounce,
 }
 
 
@@ -191,4 +192,26 @@ function getAllCombinations(product: Partial<ProductInterface>) {
 
   // Générer tous les group_products
   return allBinds.map((bind: any) => getOptions(bind, product)) as (ReturnType<typeof getOptions>)[];
+}
+
+const MapCallId: Record<string,{isRuning:boolean,next:(()=>void)|null}>= {}
+function debounce(fn:()=>void,id:string,out=300) {
+  MapCallId[id] = MapCallId[id]??{
+    isRuning:false,
+    next:null
+  }
+  
+  if(MapCallId[id].isRuning){
+    MapCallId[id].next = fn
+  }else{
+    const outId = setTimeout(() => {
+      fn()
+      MapCallId[id].isRuning=false;
+      if(MapCallId[id].next){
+        debounce(MapCallId[id].next,id,out);
+      }
+    }, out);
+    MapCallId[id].isRuning=true;
+    MapCallId[id].next = null;
+  }
 }

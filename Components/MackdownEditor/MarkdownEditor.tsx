@@ -67,59 +67,68 @@ export function MarkdownEditor({ value, setValue }: { value: any, setValue: (val
   );
 }
 
-
 export function MarkdownEditor2({ value, setValue }: { value: string, setValue: (value: string) => void }) {
   const editorRef = useRef<any>(null);
+  const containerRef = useRef<HTMLDivElement>(null); // ✅ Référence pour ajuster la hauteur
   const [editor, setEditor] = useState<JSX.Element>()
+
   const handleChange = () => {
     const instance = editorRef.current?.getInstance();
-    setValue(instance?.getMarkdown())
+    setValue(instance?.getMarkdown() || "");
+    adjustHeight();
   };
+
   useEffect(() => {
     (async () => {
-
       await import('@toast-ui/editor/dist/toastui-editor.css');
       const { Editor } = await import('@toast-ui/react-editor');
-      editorRef.current = Editor;
-      setEditor(<Editor
-        ref={editorRef}
-        initialValue={value || ""}
-        previewStyle="vertical"
-        height="300px"
-        initialEditType="wysiwyg" // ✅ Mode édition directe
-        useCommandShortcut={true}
-        
-        onChange={handleChange}
-        toolbarItems={[
-          ['bold', 'italic', 'strike','hr', 'quote','ul', 'task','table'], // ✅ Tableaux + liens, mais sans image
-          /*
-          ['heading', 'bold', 'italic', 'strike'],
-          ['hr', 'quote'],
-          ['ul', 'ol', 'task'],
-          ['table', 'link'], // ✅ Tableaux + liens, mais sans image
-          ['code', 'codeblock'],
-          ['scrollSync'],
-          ['image']
-          */
-        ]}
-      />)
-    })()
-  }, [])
+
+      setEditor(
+        <Editor
+          ref={editorRef}
+          initialValue={value || ""}
+          previewStyle="vertical"
+          initialEditType="wysiwyg"
+          useCommandShortcut={true}
+          height="auto" // 🔥 Hauteur auto (sera gérée par CSS & JS)
+          onChange={handleChange}
+          toolbarItems={[
+            ['bold', 'italic', 'strike'],
+            // ['hr', 'quote'],
+            // ['ul', 'ol', 'task'],
+            // ['table', 'link'],
+            // ['code', 'codeblock'],
+          ]}
+        />
+      );
+    })();
+  }, []);
+
   useEffect(() => {
-    // 🔄 Mettre à jour le contenu quand `value` change
     if (editorRef.current) {
       const editor = editorRef.current.getInstance();
       if (editor && editor.getMarkdown() !== value) {
-        editor.setMarkdown(value || ""); // ✅ Mise à jour du texte
+        editor.setMarkdown(value || "");
+        adjustHeight(); // 🔥 Ajuster la hauteur au chargement
       }
     }
-    
-  }, [value]); // 🔥 S'exécute à chaque changement de `value`
+  }, [value]);
 
+  // 📏 Fonction pour ajuster la hauteur de l'éditeur
+  const adjustHeight = () => {
+    if (!containerRef.current) return;
+    
+    // 🏗 Récupérer la hauteur du contenu et ajuster
+    const contentHeight = containerRef.current.scrollHeight;
+    const newHeight = Math.min(Math.max(contentHeight, 150), 300); // Min: 150px, Max: 300px
+    containerRef.current.style.height = `${newHeight}px`;
+  };
 
   if (!editor) return <p>Chargement de l'éditeur...</p>;
 
   return (
-    <>{editor}</>
+    <div ref={containerRef} style={{ minHeight: '150px', maxHeight: '300px', overflowY: 'auto' }}>
+      {editor}
+    </div>
   );
 }

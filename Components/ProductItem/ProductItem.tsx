@@ -5,7 +5,7 @@ import './ProductItem.css'
 import { getImg } from '../Utils/StringFormater';
 import { getDefaultValues } from '../Utils/parseData';
 import { useStore } from '../../pages/stores/StoreStore';
-import { markdownToPlainText, MarkdownViewer } from '../MarkdownViewer/MarkdownViewer';
+import { markdownToPlainText } from '../MarkdownViewer/MarkdownViewer';
 export { ProductItem }
 function ProductItem({ product, onClick, openProduct =true}: { openProduct?:boolean,onClick?: () => void, product: ProductInterface }) {
 
