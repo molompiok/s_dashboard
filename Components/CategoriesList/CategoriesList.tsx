@@ -7,7 +7,7 @@ import { CgExtensionAdd} from "react-icons/cg";
 import { useApp } from '../../renderer/AppStore/UseApp';
 import { ChildViewer } from '../ChildViewer/ChildViewer';
 import { CategoryInterface } from '../../Interfaces/Interfaces';
-import { useCategory } from './CategoryStore';
+import { useCategory } from '../../pages/category/CategoryStore';
 import { useStore } from '../../pages/stores/StoreStore';
 import { usePageContext } from '../../renderer/usePageContext';
 import { CategoriesPopup } from '../CategoriesPopup/CategoriesPopup';

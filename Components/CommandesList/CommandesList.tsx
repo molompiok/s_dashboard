@@ -4,15 +4,17 @@ import { ChildViewer } from '../ChildViewer/ChildViewer'
 import './CommandesList.css'
 import { CommandItem } from '../CommandItem/CommandItem'
 import { CommandInterface, FilterType } from '../../Interfaces/Interfaces'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { OrderStatusElement, statusColors, statusIcons } from '../Status/Satus'
 
 import { DateRange, DayPicker } from "react-day-picker";
 import "react-day-picker/style.css";
-import { ClientCall } from '../Utils/functions'
+import { ClientCall, debounce } from '../Utils/functions'
 export { CommandeList }
 import { FiMaximize } from 'react-icons/fi';
 import { getImg } from '../Utils/StringFormater'
+import { CommandFilterType, useCommandStore } from '../../pages/commands/CommandStore'
+import { useStore } from '../../pages/stores/StoreStore'
 
 /*
 
@@ -24,9 +26,29 @@ import { getImg } from '../Utils/StringFormater'
 */
 
 
-function CommandeList({product_id}:{product_id?:string}) {
-    const [filter, setFilter] = useState<FilterType>({});
-    const commands = Array.from({ length: 12 });
+function CommandeList({ product_id }: { product_id?: string }) {
+    const [filter, setFilter] = useState<CommandFilterType>({});
+    const { getCommand } = useCommandStore()
+    const { currentStore } = useStore();
+    const [commands, setCommands] = useState<CommandInterface[]>([])
+
+    const [s] = useState({
+        isUpdated: true
+    });
+
+    useEffect(() => {
+        currentStore && s.isUpdated && filter && debounce(() => {
+            getCommand(filter).then(res => {
+                console.log({res});
+                
+                s.isUpdated = false;
+                if (!res?.list) return
+                setCommands(res.list);
+            });
+        }, 'filter-command', 1000)
+    }, [currentStore, filter])
+
+
     return <div className="commands-list">
         <div className="top">
             <h2>List des Commandes</h2>
@@ -37,10 +59,10 @@ function CommandeList({product_id}:{product_id?:string}) {
         </div>
         <CommandsFilters filter={filter} setFilter={setFilter} />
         <div className="list">
-            
+
             {
-                commands.length == 0 &&  <div className="column-center"><div className="empty" style={{background:getImg('/res/empty/search.png')}}></div>Aucune Command Trouve</div>
-            } 
+                commands.length == 0 && <div className="column-center"><div className="empty" style={{ background: getImg('/res/empty/search.png') }}></div>Aucune Command Trouve</div>
+            }
             {commands.map((a, i) => (
                 <div key={i}>
                     {
@@ -50,8 +72,8 @@ function CommandeList({product_id}:{product_id?:string}) {
                             year: 'numeric'
                         })}</h2>
                     }
-                    <a  href={`/commands/${ClientCall(Math.random, 0)}`}>
-                        <CommandItem key={i} command={{} as CommandInterface} onClick={() => 0} />
+                    <a href={`/commands/${ClientCall(Math.random, 0)}`}>
+                        <CommandItem key={i} command={a} onClick={() => 0} />
                     </a>
                 </div>
             ))}
@@ -146,15 +168,15 @@ export function OrderFilterComponent({ order: _order, setOrder, active }: { acti
     </div>
 }
 
-export function PriceFilterComponent({ prices, setPrice, active }: { active: boolean, prices: [number | undefined,number | undefined]  | undefined, setPrice: (price: [number | undefined,number | undefined] | undefined) => void }) {
-    
+export function PriceFilterComponent({ prices, setPrice, active }: { active: boolean, prices: [number | undefined, number | undefined] | undefined, setPrice: (price: [number | undefined, number | undefined] | undefined) => void }) {
+
     return <div className={`price-filter-component ${active ? 'active' : ''}`}>
         <label htmlFor="command-filter-min-price">
             <span>Prix Minimum</span>
             <input type="number" id="command-filter-min-price" value={prices?.[0] || ''} placeholder={'Prix Minimum'} onChange={(e) => {
                 let minPrice = parseInt(e.currentTarget.value) as number | undefined
                 minPrice = Number.isNaN(minPrice) ? undefined : minPrice
-                const p = [minPrice, prices?.[1]] as  [number | undefined,number | undefined]  | undefined
+                const p = [minPrice, prices?.[1]] as [number | undefined, number | undefined] | undefined
                 setPrice(p)
             }} />
         </label>
@@ -163,7 +185,7 @@ export function PriceFilterComponent({ prices, setPrice, active }: { active: boo
             <input type="number" id="command-filter-max-price" value={prices?.[1] || ''} placeholder={'Prix Maximum'} onChange={(e) => {
                 let maxPrice = parseInt(e.currentTarget.value) as number | undefined;
                 maxPrice = Number.isNaN(maxPrice) ? undefined : maxPrice
-                const p = [prices?.[0], maxPrice] as  [number | undefined,number | undefined]  | undefined
+                const p = [prices?.[0], maxPrice] as [number | undefined, number | undefined] | undefined
                 setPrice(p)
             }} />
         </label>

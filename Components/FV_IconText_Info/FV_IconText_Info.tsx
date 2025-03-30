@@ -109,7 +109,6 @@ const { openChild } = useApp()
     <div className="delete" style={{display:onRemove?'':'none'}}  onClick={(e) => {
       e.preventDefault()
       e.stopPropagation()
-     
       openChild(<ChildViewer>
         <ConfirmDelete title='Etez vous sur de vouloir supprimer cette option' onCancel={() => {
           

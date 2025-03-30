@@ -31,6 +31,14 @@ function HoriszontalSwiper({ values, onActiveIndexChange, onDeleteValue, goBack,
     const { currentStore } = useStore()
     const size = useWindowSize()
     const { openChild } = useApp();
+    
+
+    const s = useWindowSize().width;
+    const n = s <= 580 ? ((s - 260) / 200) + 2
+        : 3.4
+    const p = s < 480 ? 0 : 0;
+
+
     return values.length <= 0 ? <div style={{ width: '1200px' }}></div> : (
         <div className='horizontal-swiper'>
             <Swiper
@@ -38,7 +46,7 @@ function HoriszontalSwiper({ values, onActiveIndexChange, onDeleteValue, goBack,
                     onActiveIndexChange?.(_swiper.activeIndex);
                 }}
                 onSwiper={setSwiperRef}
-                slidesPerView={size.width < 340 ? 2 : size.width > 800 ? 2 : 3}
+                slidesPerView={n}
                 centeredSlides={true}
                 spaceBetween={20}
                 pagination={{
@@ -54,7 +62,7 @@ function HoriszontalSwiper({ values, onActiveIndexChange, onDeleteValue, goBack,
                             swiperRef?.slideTo(index)
                         }}>
                             {
-                                v.views.slice(0, 4).map(((i, _) => (
+                                v.views?.slice(0, 4).map(((i, _) => (
                                     getFileType(i) == 'image' ?
                                         <div key={_} className={`img_${_}`}  style={{
                                             background: getImg(

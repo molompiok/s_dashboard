@@ -67,7 +67,7 @@ export function MarkdownEditor({ value, setValue }: { value: any, setValue: (val
   );
 }
 
-export function MarkdownEditor2({ value, setValue }: { value: string, setValue: (value: string) => void }) {
+export function MarkdownEditor2({ value, setValue,error }: { value: string, setValue: (value: string) => void ,error?:boolean}) {
   const editorRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null); // ✅ Référence pour ajuster la hauteur
   const [editor, setEditor] = useState<JSX.Element>()
@@ -127,7 +127,7 @@ export function MarkdownEditor2({ value, setValue }: { value: string, setValue: 
   if (!editor) return <p>Chargement de l'éditeur...</p>;
 
   return (
-    <div ref={containerRef} style={{ minHeight: '150px', maxHeight: '300px', overflowY: 'auto' }}>
+    <div className={'editor '+(error?"error":'')} ref={containerRef} style={{ minHeight: '150px', maxHeight: '300px', overflowY: 'auto' }}>
       {editor}
     </div>
   );

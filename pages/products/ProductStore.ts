@@ -5,6 +5,7 @@ import { Api_host, Server_Host } from "../../renderer/+config";
 import { ProductInterface, ListType, FeatureInterface, ValueInterface, UpdateFeature } from "../../Interfaces/Interfaces";
 import { useStore } from "../stores/StoreStore";
 import { EDITED_DATA, NEW_ID_START } from "../../Components/Utils/constants";
+import { features } from "process";
 
 export { useProductStore }
 
@@ -12,43 +13,46 @@ export { useProductStore }
 const useProductStore = create(combine({
     products: undefined as ListType<ProductInterface> | undefined,
 }, (set, get) => ({
-    async updateProduct(product: Partial<ProductInterface>, initialFeatures?: Partial<FeatureInterface>[]) {
+    async updateProduct(colleted: Partial<ProductInterface>,_product: Partial<ProductInterface>, initialFeatures?: Partial<FeatureInterface>[]) {
         let features: any[] = []
-        let p: ProductInterface | undefined | void | null;
-
-        console.log('initialFeatures ', initialFeatures, 'product.id', product.id);
-        if (initialFeatures && product.id) {
-            p = await multiple_features_values(product, initialFeatures);
-            if (p?.features) {
-                features = p.features
-            }
+        
+        if (initialFeatures && colleted.id) {
+            features = (await multiple_features_values(colleted, initialFeatures))?.features||[];
+            _product.features = features;
         }
-        // product.description = product.description?.replaceAll("\n", "§")
-        console.log('#############  Product  ####################', p);
+
+        console.log('^^^^^^^^^^^^', features);
+        
 
         const h = useAuthStore.getState().getHeaders();
-        if (!h) return console.error('Headeur error', h);
-        if (!product.id) return console.error('Product.id required', product);
+        if (!h) {
+            console.error('Headeur error', h);
+            return _product
+        }
+        if (!colleted.id) {
+            console.error('Product.id required', colleted);
+            return _product
+        }
 
         const formData = new FormData();
         let send = false;
 
-        formData.append('product_id', product.id);
+        formData.append('product_id', colleted.id);
 
         (['name', 'description', 'stock', 'categories_id', 'is_visible', 'index', 'price', 'barred_price']).forEach(p => {
-            if ((product as any)[p] != undefined) {
+            if ((colleted as any)[p] != undefined) {
                 if (p == 'categories_id') {
-                    formData.append(p, Array.isArray((product as any)[p]) ? JSON.stringify((product as any)[p]) : (product as any)[p]);
+                    formData.append(p, Array.isArray((colleted as any)[p]) ? JSON.stringify((colleted as any)[p]) : (colleted as any)[p]);
                 }
                 else {
-                    formData.append(p, (product as any)[p]);
+                    formData.append(p, (colleted as any)[p]);
                 }
                 send = true
             }
         });
 
-        if (!send) return p
-        console.log('##############   send   ###################', product);
+        if (!send) return _product
+        console.log('##############   send   ###################', colleted);
         try {
             const response = await fetch(`${h.store.url}/update_product`, {
                 method: 'PUT',
@@ -59,13 +63,14 @@ const useProductStore = create(combine({
 
             console.log({ updatedProduct });
 
-            if (!updatedProduct?.id) return;
+            if (!updatedProduct?.id) return _product;
             updatedProduct.features = features;
-            set(({ products }) => ({ products: products && { ...products, list: products.list.map((p) => p.id == updatedProduct.id ? updatedProduct : p) } }))
+            set(({ products }) => ({ products: products && { ...products, list: products.list.map((_p) => _p.id == updatedProduct.id ? updatedProduct : _p) } }))
 
             return updatedProduct;
         } catch (error) {
             console.error(error);
+            return _product
         }
     },
     async removeProduct(product_id: string) {
@@ -82,7 +87,7 @@ const useProductStore = create(combine({
     async fetchProductBy({
         slug,
         product_id,
-    }:{
+    }: {
         slug?: string,
         product_id?: string
     }) {
@@ -125,6 +130,7 @@ const useProductStore = create(combine({
                     v && form.append(`views_${i}`, v);
                 }
             }
+            delete data.features;
             const requestOptions = {
                 method: "POST",
                 body: form,
@@ -146,67 +152,67 @@ const useProductStore = create(combine({
     async fetchProducts(filter: Partial<{
         product_id: string,
         slug: string,
-        categories_id:string[],
-        slug_cat:string,
-        slug_product:string,
+        categories_id: string[],
+        slug_cat: string,
+        slug_product: string,
         order_by?: "date_desc" | "date_asc" | "price_desc" | "price_asc" | undefined,
         page: number,
         limit: number,
         no_save: boolean,
         min_price: number | undefined,
         max_price: number | undefined,
-        search?:string
+        search?: string
     }>) {
         const h = useAuthStore.getState().getHeaders()
-       
-        if(filter.categories_id){
+
+        if (filter.categories_id) {
             try {
                 (filter as any).categories_id = JSON.stringify(filter.categories_id)
             } catch (error) {
             }
-        } 
+        }
         filter.slug_product = filter.slug_product || filter.slug;
-        
+
         if (!h) return
         const searchParams = new URLSearchParams({});
         for (const key in filter) {
             const value = (filter as any)[key];
             value && searchParams.set(key, value);
         }
-        // console.log(`${h.store.url}/get_products/?${searchParams}`);
-
         const response = await fetch(`${h.store.url}/get_products/?${searchParams}`, {
             headers: h?.headers
         })
         // console.log({ response });
         const products = await response.json();
         if (!products?.list) return
-        console.log({ products:products?.list });
-        if (!filter.no_save) set(() => ({ products:products }))
+        console.log({ products: products?.list });
+        if (!filter.no_save) set(() => ({ products: products }))
         return products as ListType<ProductInterface> | undefined
     }
 })));
 
 async function multiple_features_values(product: Partial<ProductInterface>, initialFeatures: Partial<FeatureInterface>[]) {
 
+    if (!product.features) return { features: initialFeatures } as Partial<ProductInterface>;
     try {
+        let p_f = { features: product.features }
 
-        initialFeatures = initialFeatures.filter(f => f.id !== product.default_feature_id);
-        product.features = product.features?.filter(f => f.id !== product.default_feature_id);
+        let send = false;
 
         const delete_features_id: string[] = []
         const update_features: Partial<FeatureInterface>[] = []
         const create_features: Partial<FeatureInterface>[] = []
-        const values: Record<string, {
+        const values: Record<string, Partial<{
             create_values: Partial<ValueInterface>[],
             update_values: Partial<ValueInterface>[],
             delete_values_id: string[],
-        }> = {}
+        }>> = {}
 
         const next_f: Partial<FeatureInterface>[] = []
-        for (const f of product.features || []) {
+        for (const f of product.features) {
             if (f.id.startsWith(NEW_ID_START)) {
                 create_features.push(f);
+                send = true
             } else {
                 next_f.push(f)
             }
@@ -216,17 +222,17 @@ async function multiple_features_values(product: Partial<ProductInterface>, init
             const initial_here = (next_f || []).find(f => initial_f.id == f.id);
             if (!initial_here) {
                 initial_f.id && delete_features_id.push(initial_f.id);
+                send = true
                 continue
             }
-            initial_here.id && (values[initial_here.id] = {
-                create_values: [],
-                update_values: [],
-                delete_values_id: [],
-            });
+            if (!initial_here.id) continue
             const next_v: Partial<ValueInterface>[] = []
             for (const v of initial_here.values || []) {
                 if (v.id.startsWith(NEW_ID_START)) {
-                    initial_here.id && values[initial_here.id].create_values.push(v);
+                    if (!values[initial_here.id]) values[initial_here.id] = {};
+                    if (!values[initial_here.id].create_values) values[initial_here.id].create_values = []
+                    values[initial_here.id].create_values?.push(v);
+                    send = true
                 } else {
                     next_v.push(v)
                 }
@@ -234,56 +240,105 @@ async function multiple_features_values(product: Partial<ProductInterface>, init
 
             for (const i_v of initial_f.values || []) {
                 const same_inital_value = next_v.find(_v => _v.id == i_v.id);
-                console.log({ same_inital_value, initial_f, i_v });
 
                 if (!same_inital_value) {
-                    initial_here.id && values[initial_here.id].delete_values_id.push(i_v.id)
+                    if (!values[initial_here.id]) values[initial_here.id] = {};
+                    if (!values[initial_here.id].delete_values_id) values[initial_here.id].delete_values_id = []
+                    values[initial_here.id].delete_values_id?.push(i_v.id)
+                    send = true
                 } else if ((same_inital_value as any)[EDITED_DATA] == EDITED_DATA) {
-                    initial_here.id && values[initial_here.id].update_values.push(same_inital_value);
+                    if (!values[initial_here.id]) values[initial_here.id] = {};
+                    if (!values[initial_here.id].update_values) values[initial_here.id].update_values = []
+                    values[initial_here.id].update_values?.push(same_inital_value);
+                    send = true
                 }
             }
             const need_update = (initial_here as any)[EDITED_DATA] == EDITED_DATA
             if (!need_update) continue
             update_features.push(initial_here);
-
+            send = true
         }
         const multiple_update_features = {
-            delete_features_id,
-            update_features,
-            create_features,
+            delete_features_id: delete_features_id.length > 0 ? delete_features_id : undefined,
+            update_features: update_features.length > 0 ? update_features : undefined,
+            create_features: create_features.length > 0 ? create_features : undefined,
             values,
         }
 
-        console.log('avant ==> multi_update_features', multiple_update_features);
+        if (!send) return product
+        console.log('avant ==> multi_update_features', { multiple_update_features, initialFeatures, product });
         /************  ENvoie a l'Api  du store    ************/
 
 
+
         const h = useAuthStore.getState().getHeaders();
-        if (!h) return console.error('Headeur error', h);
-        if (!product.id) return console.error('Product.id required');
+        if (!h) {
+            console.error('Headeur error', h);
+            return product
+        }
+        if (!product.id) {
+            console.error('Product.id required');
+            return product
+        }
+
+        const newFiles = (newV: Partial<ValueInterface>) => {
+            (['icon', 'views'] as const).forEach((a) => {
+
+                if (!Array.isArray(newV[a])) return console.warn('newV[a] n\'est pas array', newV[a]); // Sécurisation
+
+                (newV as any)[a] = newV[a].map((v, i) => {
+                    if (typeof v === 'string') return v; // Conserver les strings
+
+                    if (!(v instanceof Blob)) return console.warn('newV[a][' + i + '] n\'est un string ou Blob', v);; // Sécurité supplémentaire
+
+                    if (!newV.id) {
+                        console.warn(`ID manquant pour l'élément ${a}, index ${i}`);
+                        return null;
+                    }
+
+                    const field = `${newV.id.replace('.','')}:${a}_${i}`;
+                    formData.append(field, v);
+                    return field;
+                }).filter(Boolean); // Supprime les valeurs null ou undefined
+            });
+        }
+
         const formData = new FormData();
+        for (const value of Object.values(multiple_update_features.values)) {
+            for (const newV of value.create_values || []) {
+                newFiles(newV)
+            }
+            for (const newV of value.update_values || []) {
+                newFiles(newV)
+            }
+        }
+        for (const feature of multiple_update_features.create_features || []) {
+            for (const newV of feature.values || []) {
+                newFiles(newV)
+            }
+        }
+        console.log('##&#&#&## multi_update_features', multiple_update_features.values);
         formData.append('product_id', product.id);
         formData.append('multiple_update_features', JSON.stringify(multiple_update_features));
 
-        try {
-            const response = await fetch(`${h.store.url}/muptiple_update_features_values`, {
-                method: 'post',
-                body: formData,
-                headers: h.headers
-            });
-            const res = await response.json() as ProductInterface | null
-            console.log('apres ==> multi_update_features', res);
+        const response = await fetch(`${h.store.url}/muptiple_update_features_values`, {
+            method: 'post',
+            body: formData,
+            headers: h.headers
+        });
+        const res = await response.json() as ProductInterface | null
+        console.log('apres ==> multi_update_features', res);
 
-            if (res?.id) {
-                return res;
-            } else {
-                console.error(res);
-            }
-        } catch (error) {
-            console.error('multiple_features_values', error);
+        if (res?.id) {
+            console.log('==============', res);
+            return res;
+        } else {
+            console.error(res);
+            return product;
         }
     } catch (error) {
-
+        console.error('multiple_features_values', error);
     }
+    return product
 }
 

@@ -35,7 +35,6 @@ function toNameString(name: string) {
     } else if (n[i] == ' ') {
       _n += '_'
     }
-
   }
   return _n
 }
@@ -194,24 +193,28 @@ function getAllCombinations(product: Partial<ProductInterface>) {
   return allBinds.map((bind: any) => getOptions(bind, product)) as (ReturnType<typeof getOptions>)[];
 }
 
-const MapCallId: Record<string,{isRuning:boolean,next:(()=>void)|null}>= {}
-function debounce(fn:()=>void,id:string,out=300) {
-  MapCallId[id] = MapCallId[id]??{
-    isRuning:false,
-    next:null
+const MapCallId: Record<string, { out: number, isRuning: boolean, next: (() => void) | null }> = {}
+function debounce(fn: () => void, id: string, out = 300) {
+  MapCallId[id] = MapCallId[id] ?? {
+    isRuning: false,
+    next: null,
+    out
   }
-  
-  if(MapCallId[id].isRuning){
+
+  if (MapCallId[id].isRuning) {
     MapCallId[id].next = fn
-  }else{
-    const outId = setTimeout(() => {
-      fn()
-      MapCallId[id].isRuning=false;
-      if(MapCallId[id].next){
-        debounce(MapCallId[id].next,id,out);
-      }
+    MapCallId[id].out = out
+  } else {
+    MapCallId[id].isRuning = true;
+    console.log('isRuning',true);
+    
+    fn()
+    
+    setTimeout(() => {
+      MapCallId[id].isRuning = false;
+      console.log('isRuning',false);
+      MapCallId[id].next && debounce(MapCallId[id].next, id, MapCallId[id].out);
+      MapCallId[id].next = null;
     }, out);
-    MapCallId[id].isRuning=true;
-    MapCallId[id].next = null;
   }
 }

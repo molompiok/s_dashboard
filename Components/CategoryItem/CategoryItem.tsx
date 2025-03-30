@@ -4,7 +4,7 @@ import { Image_1 } from "../Utils/constants"
 import { ClientCall } from "../Utils/functions"
 import { getImg } from "../Utils/StringFormater"
 import './CategoryItem.css'
-import { useCategory } from "../CategoriesList/CategoryStore"
+import { useCategory } from "../../pages/category/CategoryStore"
 import { Api_host } from "../../renderer/+config"
 import { useStore } from "../../pages/stores/StoreStore"
 import { IoClose } from "react-icons/io5"
@@ -29,20 +29,17 @@ function CategoryItem({
     hoverEffect?: boolean,
 }) {
     const [c, setC] = useState(category);
-    const { fetchCategoriesBy } = useCategory();
+    const { fetchCategoryBy } = useCategory();
     const { currentStore } = useStore();
     const [s] = useState({
         init: false
     })
     useEffect(() => {
-        if (!c && category_id) {
-            const id = Math.random();
-            console.log(id, category_id)
-            if (s.init) return
-            s.init = true
-            fetchCategoriesBy({ categories_id: [category_id],with_product_count:true}).then(res => {
-                if (!res?.[0]) return;
-                setC(res[0]);
+        if (!c && !s.init  && category_id) {
+            fetchCategoryBy({ category_id,with_product_count:true}).then(res => {
+                if (!res) return;
+                s.init = true
+                setC(res);
             })
         }
     }, [currentStore]);

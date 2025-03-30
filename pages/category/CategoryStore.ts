@@ -1,9 +1,7 @@
 import { create } from "zustand";
 import { combine } from "zustand/middleware";
-import { useAuthStore } from "../../pages/login/AuthStore";
-import { Server_Host } from "../../renderer/+config";
+import { useAuthStore } from "../login/AuthStore";
 import { CategoryInterface, ListType } from "../../Interfaces/Interfaces";
-import { useStore } from "../../pages/stores/StoreStore";
 
 
 export { useCategory }
@@ -80,21 +78,17 @@ const useCategory = create(combine({
 
         return {}  as CategoryInterface
     },
-    async fetchCategoriesBy({categories_id,slug,with_product_count}:{with_product_count?:boolean,categories_id?:string[],slug?:string}) {
-        if ((!categories_id || categories_id?.length==0)&&!slug) return;
+    async fetchCategoryBy({slug,with_product_count,category_id}:{category_id:string,with_product_count?:boolean,categories_id?:string[],slug?:string}) {
+        if (!category_id && !slug) return;
         const cs = get().categories;
         // console.log({cs});
         
-        const localCategories = categories_id?.map(
-            (c) => cs?.list.find(_c=>_c.id == c)
-        ).filter(c=>!!c);
-        
-        if (localCategories && localCategories.length >0) {
-            
-            return localCategories
+        const localCategory = cs?.list.find( (c) => c.id == category_id)
+        if (localCategory) {
+            return localCategory
         } else {
-            const list  = await useCategory.getState().fetchCategories({categories_id:categories_id||[],slug,with_product_count}) ;
-            return  list?.list;
+            const list  = await useCategory.getState().fetchCategories({category_id,slug,with_product_count}) ;
+            return  list?.list[0];
         }
     },
     async createCategory(data: Partial<CategoryInterface>) {
@@ -149,7 +143,8 @@ const useCategory = create(combine({
         page: number,
         limit: number,
         no_save: boolean,
-        with_product_count?:boolean
+        with_product_count?:boolean,
+        category_id:string,
     }>) {
         try {
             const h = useAuthStore.getState().getHeaders()
@@ -159,8 +154,13 @@ const useCategory = create(combine({
         for (const key in filter) {
             const value = (filter as any)[key];
             if(key == 'categories_id'){
-                value!=undefined &&  searchParams.set(key, JSON.stringify(value));
-            }if(key == 'with_product_count'){
+                if(value!=undefined) continue;
+                if(Array.isArray(value)){
+                    searchParams.set(key, JSON.stringify(value)); 
+                }else{
+                    searchParams.set(key, value);
+                }
+            }else if(key == 'with_product_count'){
                 value && searchParams.set(key,'true');
             }else{
                 value!=undefined &&  searchParams.set(key, value);

@@ -68,7 +68,7 @@ function ColorInfo({ value, feature, onChange, onCancel }: { feature: Partial<Fe
       <label htmlFor="feature-info-text-input">
         {v.key && <div className="color-preview" style={{background:v.key}}></div>}
         <input
-          className={"editor " + (textError ? 'error' : '')}
+          className={"editor name " + (textError ? 'error' : '')}
           placeholder="Nom de la couleur"
           id="feature-info-text-input"
           type="text"
@@ -104,7 +104,6 @@ function ColorValue({ value, onRemove, feature, onClick }: { onClick?: () => voi
     <div className="delete"  style={{display:onRemove?'':'none'}}  onClick={(e) => {
       e.preventDefault()
       e.stopPropagation()
-      onRemove?.()
       openChild(<ChildViewer>
         <ConfirmDelete title='Etez vous sur de vouloir supprimer cette option' onCancel={() => {
           openChild(null);

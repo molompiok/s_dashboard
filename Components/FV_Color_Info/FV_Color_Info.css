@@ -34,10 +34,10 @@
     border: 1px solid var(--discret-7);
 }
 
-.color-info input:focus{
+.color-info input.name:focus{
     padding-left: 48px;
 }
-.color-info input{
+.color-info input.name{
     padding-left: 40px;
 }
 .color-info label {

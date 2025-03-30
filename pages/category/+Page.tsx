@@ -13,7 +13,7 @@ import { Api_host } from '../../renderer/+config'
 import { useEffect, useRef, useState } from 'react'
 import { CategoryInterface } from '../../Interfaces/Interfaces'
 import { useStore } from '../stores/StoreStore'
-import { useCategory } from '../../Components/CategoriesList/CategoryStore'
+import { useCategory } from './CategoryStore'
 import { CategoriesList } from '../../Components/CategoriesList/CategoriesList'
 import { useApp } from '../../renderer/AppStore/UseApp'
 import { ChildViewer } from '../../Components/ChildViewer/ChildViewer'
@@ -34,15 +34,15 @@ export { Page }
 function Page() {
 
   const { openChild } = useApp()
-  const { category:categoryData } = useData<Data>()
+  const { category: categoryData } = useData<Data>()
   const [category, setCategory] = useState<Partial<CategoryInterface & { prevIcon?: string, prevView?: string }>>(categoryData || {})
   const { currentStore } = useStore();
-  const { fetchCategoriesBy, createCategory, updateCategory, removeCategory } = useCategory()
+  const { fetchCategoryBy, createCategory, updateCategory, removeCategory } = useCategory()
 
   const { urlParsed } = usePageContext()
   const { searchPared } = useMyLocation();
   const [is_newCategory, changeNewCategory] = useState(urlParsed.search['id'] == 'new')
-  
+
   const nameRef = useRef<HTMLInputElement>(null);
   const descriptionRef = useRef<HTMLTextAreaElement>(null);
 
@@ -53,32 +53,21 @@ function Page() {
   const [viewError, setViewError] = useState('');
 
   const [loading, setLoading] = useState(false);
-  const [isUpdated, changeUpdated] = useState('' as 'change'|'auto-save'|'');
+  const [isUpdated, changeUpdated] = useState('' as 'change' | 'auto-save' | '');
   const [s] = useState({
-    isUpdated : false,
     searchPared,
-    init:false,
-    collected:{} as Partial<CategoryInterface>
+    init: false,
+    is_newCategory,
+    collected: {} as Partial<CategoryInterface>
   })
   s.searchPared = searchPared;
-  useEffect(() => {
-    console.log(searchPared);
-    
-    currentStore&& !s.init && s.searchPared['id'] != 'new' && fetchCategoriesBy({ categories_id: [s.searchPared['id']] }).then(res => {
-      s.init = true
-      if (!res?.[0]?.id) {
-        return
-      };
-      changeNewCategory(false);
-      changeUpdated('')
-      setCategory(res[0])
-      s.collected = {}
-    })
-  }, [currentStore, searchPared]);  
+  s.is_newCategory =is_newCategory;
+
+  // console.log(category);
 
   function isAllCollected(collected: Partial<CategoryInterface>, showError?: boolean) {
-    
-    let v: void|boolean= true;
+
+    let v: void | boolean = true;
 
     if (!collected.name || collected.name.length < 3) {
       showError && setNameError('le nom doit contenir au moin 3 carateres')
@@ -90,54 +79,68 @@ function Page() {
       showError && descriptionRef.current?.focus()
       v = false
     }
-    if (!collected.view||collected.view.length<=0) v = (showError ? setViewError('cliquez sur le cadre pour ajouter une image') : false)
-    if (!collected.icon||collected.icon.length<=0) v =( showError ? setIconError('cliquez sur le cadre pour ajouter une image') : false)
+    if (!collected.view || collected.view.length <= 0) v = (showError ? setViewError('cliquez sur le cadre pour ajouter une image') : false)
+    if (!collected.icon || collected.icon.length <= 0) v = (showError ? setIconError('cliquez sur le cadre pour ajouter une image') : false)
     return v
   }
-  
-  const saveRequired = (category:Partial<CategoryInterface>) => {
+
+  const saveRequired = (category: Partial<CategoryInterface>) => {
     if (!isUpdated) return console.log('aucun changement');
     if (loading) return console.log('onLoading');
     if (!isAllCollected(category, true)) return console.log('informations incomplete');
     setLoading(true);
-
-    updateCategory({...s.collected,id:category.id}).then(res => {
+    s.collected.id = category.id
+    updateCategory(s.collected).then(res => {
       setTimeout(() => {
         setLoading(false)
-        changeUpdated('');
+        s.collected = {};
+        changeUpdated('')
+        if (isUpdated == 'auto-save') {
+          return
+        }
+        if (!res?.id) return;
+        setCategory(res)
       }, 1000);
-      if (!res?.id) return;
-      s.collected = {};
-      setCategory(res);
     })
   }
 
-  const updateLocalData =(cb :(current:Partial<CategoryInterface>)=>Partial<CategoryInterface>)=>{
-    setCategory((current)=>{
-      const d = cb(current);
-      s.collected = {...s.collected,...d}
-      return d
+  const updateLocalData = (cb: (current: Partial<CategoryInterface>) => Partial<CategoryInterface>) => {
+    setCategory((current) => {
+      const d = cb({});
+      s.collected = { ...s.collected, ...d }
+      return { ...current, ...d }
     });
   }
-  
+
   useEffect(() => {
-    isUpdated == 'auto-save' &&  debounce(()=>{
-      saveRequired(s.collected)
-    },'auto-save',3000)
+    currentStore && !s.init && s.searchPared['id'] != 'new' && fetchCategoryBy({ category_id: s.searchPared['id'] }).then(res => {
+      s.init = true
+      if (!res?.id) {
+        return
+      };
+      changeUpdated('')
+      changeNewCategory(false);
+      setCategory(res)
+      s.collected = {}
+    })
+  }, [currentStore, searchPared]);
+
+  useEffect(() => {
+    isUpdated == 'auto-save'&& !s.is_newCategory && debounce(() => {
+      saveRequired(category)
+    }, 'auto-save', 3000)
   }, [category, isUpdated])
- 
+
   const is_all_collected = isAllCollected(category);
-  // collected.view = undefined
-  // collected.icon = undefined
   const view = category?.view?.[0];
   const icon = category?.icon?.[0];
-  
-  return (s.searchPared['id'] != 'new' && !category.id) ?<PageNotFound title={`Cette categorie n'a pas été trouvé`}  description=''/>:(
+
+  return (s.searchPared['id'] != 'new' && !category.id) ? <PageNotFound title={`Cette categorie n'a pas été trouvé`} description='' /> : (
     <div className="category">
       <Topbar back={true} />
       <h3>Grande Image de couverture <Indicator title={`l'image qui contient un exemple visuel de la category`} description={`Nous vous recommandons, 1️⃣ D'utiliser une image de haute qualite, 2️⃣ grand format, 3️⃣ le contenu de l'image doit etre centre,`} /></h3>
       <div className="column">
-        <label htmlFor='chose-category-view' className={`icon-180-category view shadow  ${(is_newCategory ? 'is-new' : 'cover-image')} ${viewError?'error':''} `} style={{
+        <label htmlFor='chose-category-view' className={`icon-180-category view shadow  ${(is_newCategory ? 'is-new' : 'cover-image')} ${viewError ? 'error' : ''} `} style={{
           background:
             view ? getImg(
               typeof view == 'string' ? view
@@ -159,15 +162,15 @@ function Page() {
             setViewError('')
           }} />
           {
-            !is_newCategory  && !viewError && <div className="edit"><RiImageEditFill className='edit-img' /></div>
+            !is_newCategory && !viewError && <div className="edit"><RiImageEditFill className='edit-img' /></div>
           }
-          {(is_newCategory||viewError) && !view && <span> <IoCloudUploadOutline />
+          {(is_newCategory || viewError) && !view && <span> <IoCloudUploadOutline />
             choisissez l'Image</span>}
         </label>
       </div>
       <h3>Logo ou icon<Indicator title={`Cette image apparetra souvant en premiere position`} description='elle doit etre representative de la category' /></h3>
       <div className={"info-icon " + (is_newCategory ? 'is-new' : '')} >
-        <label htmlFor='chose-category-icon' className={`icon-140-category view shadow ${iconError?'error':''} `} style={{
+        <label htmlFor='chose-category-icon' className={`icon-140-category view shadow ${iconError ? 'error' : ''} `} style={{
           background:
             icon ? getImg(
               typeof icon == 'string' ? icon
@@ -190,7 +193,7 @@ function Page() {
           {
             !is_newCategory && !iconError && <div className="edit"><RiImageEditFill className='edit-img' /></div>
           }
-          {(is_newCategory||iconError) && !icon && <span> <IoCloudUploadOutline />
+          {(is_newCategory || iconError) && !icon && <span> <IoCloudUploadOutline />
             choisissez l'Image</span>}
         </label>
         {!is_newCategory && <div className="stats">
@@ -201,7 +204,7 @@ function Page() {
         </div>}
       </div>
       <label className='editor' htmlFor='input-category-name'>Nom de la categorie <IoPencil /></label>
-      <input ref={nameRef} className={`editor ${nameError?'error':''}`} type="text" id={'input-category-name'} value={category.name || ''} placeholder="Ajoutez un nom de produit" onChange={(e) => {
+      <input ref={nameRef} className={`editor ${nameError ? 'error' : ''}`} type="text" id={'input-category-name'} value={category.name || ''} placeholder="Ajoutez un nom de produit" onChange={(e) => {
         const name = e.currentTarget.value
         updateLocalData((prev) => ({
           ...prev,
@@ -222,15 +225,15 @@ function Page() {
           p && p.focus()
         }
       }} />
-      <div className="input-message"><span className='error-message'>{nameError}</span><span className='right'></span>{(category.name?.trim()?.length||0)} / 32</div>
+      <div className="input-message"><span className='error-message'>{nameError}</span><span className='right'></span>{(category.name?.trim()?.length || 0)} / 32</div>
       <label className='editor'>Description <IoPencil /></label>
-     {  <MarkdownEditor2 value={category.description || ''} setValue={(value) => {
-            updateLocalData((prev) => ({
-              ...prev,
-              ['description']: value.substring(0, 1024),
-            }))
-             changeUpdated('auto-save')
-           }} />}
+      {<MarkdownEditor2 value={category.description || ''} setValue={(value) => {
+        updateLocalData((prev) => ({
+          ...prev,
+          ['description']: value.substring(0, 1024),
+        }))
+        changeUpdated('auto-save')
+      }} />}
       {/* <textarea className={`editor ${descriptionError?'error':''}`} id="input-category-description" placeholder='Ajoutez la description du produit' cols={10} rows={1} ref={ref => {
         if (!ref) return
         descriptionRef.current = ref;
@@ -269,19 +272,19 @@ function Page() {
           // si un autre input en bas
         }
       }}></textarea> */}
-      <div className="input-message"><span className='error-message'>{descriptionError}</span><span className='right'>{(category.description?.trim()?.length||0)} / 512</span></div>
-      <h3 style={{marginTop:'12px'}}>Ajoutez en tant que sous Category<span>(facultatif)</span></h3>
+      <div className="input-message"><span className='error-message'>{descriptionError}</span><span className='right'>{(category.description?.trim()?.length || 0)} / 512</span></div>
+      <h3 style={{ marginTop: '12px' }}>Ajoutez en tant que sous Category<span>(facultatif)</span></h3>
       <div className='category-ctn'>
         <div className={`icon ${category.parent_category_id ? 'replace' : 'add'}`} onClick={() => {
           openChild(<ChildViewer title='Choisissez la category parent'>
-            <CategoriesPopup ignore={[category?.id||'']} onSelected={(c) => {
+            <CategoriesPopup ignore={[category?.id || '']} onSelected={(c) => {
               updateLocalData((prev) => ({
                 ...prev,
                 parent_category_id: c.id
               }))
               changeUpdated('auto-save')
             }} />
-          </ChildViewer>, {background:'#3455', back:false})
+          </ChildViewer>, { background: '#3455', back: false })
         }}>
           {category.parent_category_id ? <FaRedo /> : <IoAdd />}
           <span>{category.parent_category_id ? 'remplacez' : 'choisissez'}</span>
@@ -307,9 +310,9 @@ function Page() {
                 <ConfirmDelete title={`Etes vous sur de vouloir suprimer la categorie "${category.name}"`} onCancel={() => {
                   openChild(null);
                 }} onDelete={() => {
-                  category.id && removeCategory(category.id).then(res=>{
-                    console.log('delete,====>>>',res);
-                    if(res){
+                  category.id && removeCategory(category.id).then(res => {
+                    console.log('delete,====>>>', res);
+                    if (res) {
                       setCategory({});
                       s.collected = {}
                     }
@@ -347,9 +350,9 @@ function Page() {
           <SaveButton loading={loading} effect='color'
             title={isUpdated ? (is_all_collected ? 'Sauvegardez les modifications' : 'Certaines Informations sont Incorrectes') : 'Aucune modification'}
             required={!!isUpdated && is_all_collected}
-            onClick={()=>saveRequired(category)} />
+            onClick={() => saveRequired(category)} />
       }
-      {!is_newCategory && <ProductList key={searchPared['id']} baseFilter={{categories_id:[searchPared['id']]}}/>}
+      {/* {!is_newCategory && <ProductList key={searchPared['id']} baseFilter={{categories_id:[searchPared['id']]}}/>} */}
     </div>
   )
 }

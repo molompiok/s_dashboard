@@ -7,7 +7,7 @@
 
 .command-item{
     /* background: rgba(var(--gray-rgb-4),0.4); */
-    box-shadow: 2px 2px 12px -10px var(--discret-0);
+    box-shadow: 0px 0px 12px -10px var(--discret-0);
     width: 100%;
     border-radius: 24px;
     gap: 8px;
@@ -37,9 +37,10 @@
     white-space: nowrap;
     max-width: 200px;
     margin: 0;
+    font-weight: normal;
 }
 .command-item .info p{
-    font-size: 0.9em;
+    font-size: 0.8em;
     color: var(--discret-1);
 }
 .command-item .right{

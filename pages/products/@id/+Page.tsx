@@ -7,7 +7,7 @@ import { Topbar } from '../../../Components/TopBar/TopBar'
 import { SwiperProducts } from '../../../Components/SwiperProducts/SwiperProducts'
 import { FeatureInterface, ProductInterface, UpdateFeature, ValueInterface } from '../../../Interfaces/Interfaces'
 import { EDITED_DATA, NEW_ID_START, NEW_VIEW } from '../../../Components/Utils/constants'
-import { ClientCall } from '../../../Components/Utils/functions'
+import { ClientCall, debounce } from '../../../Components/Utils/functions'
 import { usePageContext } from '../../../renderer/usePageContext'
 import { useStore } from '../../stores/StoreStore'
 import { useProductStore } from '../ProductStore'
@@ -77,7 +77,6 @@ export function Page() {
 
   const [values, setValues] = useState<ValueInterface[]>([] as any);
   const [index, setindex] = useState(0);
-  const [isUpdated, changeUpdated] = useState('' as '' | 'auto-save' | 'change');
   const [loading, setLoading] = useState(false);
 
   const clearValues = () => {
@@ -88,7 +87,6 @@ export function Page() {
   const { myLocation } = useMyLocation()
   const is_newProduct = myLocation.pathname == "/products/new";
 
-  const [collected, setCollected] = useState<Partial<ProductInterface>>({});
   const [product, setProduct] = useState<Partial<ProductInterface>>({});
 
   const is_features_here = IsFeaturesHere(product);
@@ -96,51 +94,79 @@ export function Page() {
   const [s] = useState({
     init: false,
     features: undefined as Partial<FeatureInterface>[] | undefined,
-  })
-  function resetProduct(product_id: string, thread = false) {
+    collected: {} as Partial<ProductInterface>,
+    isUpdated : '' as '' | 'auto-save' | 'change'
+  });
+  
+  const updateViews = (values: ValueInterface[],p?:Partial<ProductInterface>) => {
+    updateLocalData((current) => ({
+      ...current,
+      features:(p|| product).features?.map(f => {
+        if (f.id !== (p||product).default_feature_id) return f;
+        return { ...f, values }
+      })
+    }))
+    setValues(values)
+  }
+
+  function resetProduct(product_id: string) {
     !s.init && fetchProducts({ product_id }).then(res => {
+      s.init = true;
       const p = res?.list[0]
       if (!p?.id) return;
-      s.init = true;
-      s.features = p.features || [];
-      setProduct({ ...p, features: (p.features || []).filter(f => f.id !== p.default_feature_id) });
-      setCollected({})
-      setValues(getDefaultValues(p) || [])
-      !thread && changeUpdated('');
+      s.collected = {}
+      s.isUpdated = ''
+      s.features = p.features;
+      setProduct(p);
+      updateViews(p.features?.find(f => f.id == p.default_feature_id)?.values || [],p)
     });
   }
-  useEffect(() => {
-    !is_newProduct && currentStore && !s.init && resetProduct(routeParams.id)
-  }, [currentStore, myLocation]);
+  const saveRequired = async (product: Partial<ProductInterface>) => {
+    // if (!s.isUpdated) return console.log('aucun changement');
+    if (loading) return console.log('onLoading');
+    if (!isAllProduct(product, true)) return console.log('informations incomplete');
+    if (s.isUpdated != 'auto-save') {
+        s.isUpdated = ''
+      }
+    setLoading(true);
+    try {
+      s.collected.id = product.id
+      const res = await updateProduct(s.collected,product, s.features || [])
+      setLoading(false)
+      console.log('---------------', res);
+      
+      if (!res?.id) return;
+      s.collected = {};
+      s.features = res.features;
+      setProduct(res);
+      updateViews(res.features?.find(f => f.id == res.default_feature_id)?.values || [],res)
+      
+    } catch (error) {}
+  }
 
-  useEffect(() => {
-    const vs = clearValues();
-    setValues(vs)
-  }, [index])
-
-  function isAllProduct(product: Partial<ProductInterface>, showError?: boolean) {
+  function isAllProduct(product: Partial<ProductInterface>, showError?: boolean, keys?: string[]) {
     let v: void | boolean = true;
-    if (!product.name || product.name.length < 3) {
+    if ((!product.name || product.name.length < 3) && (!keys || (keys && keys.includes('name')))) {
       showError && setNameError('le nom doit contenir au moin 3 carateres')
       showError && nameRef.current?.focus()
       v = false
     }
-    if (!product.description || product.description.length < 3) {
+    if ((!product.description || product.description.length < 3) && (!keys || (keys && keys.includes('description')))) {
       showError && setDescriptionError('la description doit contenir au moin 3 carateres');
       showError && descriptionRef.current?.focus()
       v = false
     }
-    if (!product.barred_price || (product.barred_price <= (product.price || 0))) {
+    if ((!product.barred_price || (product.barred_price <= (product.price || 0))) && (!keys || (keys && keys.includes('barred_price')))) {
       showError && setBarredError('le prix barre doit etre supperieur au prix du produit');
       v = false
       barredPriceRef.current?.focus()
     }
-    if (!product.price) {
+    if (!product.price && (!keys || (keys && keys.includes('price')))) {
       showError && setPriceError('le prix du produit doit etre difinie ');
       v = false
       priceRef.current?.focus()
     } else {
-      if ((product.barred_price || 0) <= product.price) {
+      if (((product.barred_price || 0) <= (product.price || 0)) && (!keys || (keys && keys.includes('price')))) {
         !barredError && setBarredError('le prix du produit doit etre difinie ');
         v = false
       } else {
@@ -158,17 +184,12 @@ export function Page() {
         (f as any)[EDITED_DATA] = EDITED_DATA
         const l = metod == 'add' ? [...fs, f] : fs.map(_f => (_f == f || _f.id == f.id) ? f : _f);
 
-        setCollected((current) => ({
+        s.isUpdated = 'change'
+        updateLocalData((current) => ({
           ...current,
           features: l,
         }))
-        setProduct((current) => ({
-          ...current,
-          features: l,
-        }))
-        
         openChild(null)
-        changeUpdated('auto-save')
       }} onCancel={() => {
         openChild(null)
 
@@ -177,38 +198,38 @@ export function Page() {
       background: '#3455'
     })
   }
-  const saveRequired = async (product: Partial<ProductInterface>, thread = false) => {
-    if (!isUpdated) return console.log('aucun changement');
-    if (loading) return console.log('onLoading');
-    if (!isAllProduct(product, true)) return console.log('informations incomplete');
 
-    setLoading(true);
-    try {
-      product.description = (product.description || '')
-      collected.id = product.id
-      const res = await updateProduct(collected, s.features || [])
-      setTimeout(() => {
-        setLoading(false)
-        console.log('SaveButton ', res);
-        if (!res?.id) return;
-        res.description = (res.description || '');
-        resetProduct(res.id, thread)
-        console.log('resetProduct  ', res);
-      }, 1000);
-    } catch (error) { }
+  const updateLocalData = (cb: (current: Partial<ProductInterface>) => Partial<ProductInterface>) => {
+    setProduct((current) => {
+      const d = cb({});
+      s.collected = { ...s.collected, ...d }
+      return { ...current, ...d }
+    });
   }
+  useEffect(() => {
+    !is_newProduct && currentStore && !s.init && resetProduct(routeParams.id)
+  }, [currentStore, myLocation]);
 
   useEffect(() => {
-    isUpdated == 'auto-save' && saveRequired(collected)
-  }, [collected, isUpdated])
- 
+    const vs = clearValues();
+    updateViews(vs)
+  }, [index])
+
+  useEffect(() => {
+    s.isUpdated == 'auto-save' && !is_newProduct && (() => {
+      s.isUpdated = ''
+      debounce(() => {
+        saveRequired(product)
+      }, 'auto-save', 3000);
+      isAllProduct(product, true, Object.keys(s.collected));
+    })()
+  }, [product])
+
 
   const is_all_product = isAllProduct(product);
   const is_feature_max = (product.features?.length || 0) >= FEATURE_LIMIT;
-
-  console.log(product, collected);
-
-
+  console.log('product',product);
+  
   return <div className="product">
     <Topbar back={true} />
     <div className="views no-selectable">
@@ -216,36 +237,38 @@ export function Page() {
 
         if (values[index] == undefined) {
           values[index] = {
-            views: localViews
+            views: localViews,
+            id: NEW_VIEW,
           } as any as ValueInterface
         } else {
           values[index].views = localViews;
+          (values[index] as any)[EDITED_DATA] = EDITED_DATA
         }
         const vs = clearValues();
-        setValues(vs);
-        // changeUpdated('auto-save');
+        s.isUpdated = 'auto-save'
+        updateViews(vs);
       }} />
     </div>
     {!is_newProduct && <div className="image-manager no-selectable">
       <HoriszontalSwiper values={clearValues() as any} onActiveIndexChange={(_index) => {
         setindex(_index)
       }} onDeleteValue={() => {
-        setValues([
+        s.isUpdated = 'auto-save'
+        updateViews([
           ...values.slice(0, index),
           ...values.slice(index + 1)
         ]);
-        changeUpdated('auto-save')
       }} forward={() => {
         const nextValue = values[index + 1];
         if (!nextValue || (nextValue.views?.length == 0) || (nextValue.views?.length == 1 && nextValue.views?.[0] == NEW_VIEW)) return false;
         const currentvalue = values[index];
-        setValues(values.map((v, i) => i == index ? nextValue : i == index + 1 ? currentvalue : v));
+        updateViews(values.map((v, i) => i == index ? nextValue : i == index + 1 ? currentvalue : v));
         return true;
       }} goBack={() => {
         const lastValue = values[index - 1];
         if (!lastValue || (lastValue.views?.length == 0) || (lastValue.views?.length == 1 && lastValue.views?.[0] == NEW_VIEW)) return false;
         const currentvalue = values[index];
-        setValues(values.map((v, i) => i == index ? lastValue : i == index - 1 ? currentvalue : v));
+        updateViews(values.map((v, i) => i == index ? lastValue : i == index - 1 ? currentvalue : v));
         return true;
       }} />
     </div>}
@@ -253,16 +276,11 @@ export function Page() {
       <label className='editor' htmlFor='input-product-name'>Nom du Produit <IoPencil /></label>
       <input className={`editor ${nameError ? 'error' : ''}`} type="text" id={'input-product-name'} value={product.name || ''} placeholder="Ajoutez un nom de produit" onChange={(e) => {
         const name = e.currentTarget.value
-        setCollected((current) => ({
+        s.isUpdated = 'auto-save'
+        updateLocalData((current) => ({
           ...current,
-          ['name']: name.replace(/\s+/g, ' ').substring(0, 256),
+          ['name']: name.replace(/\s+/g, ' ').substring(0, 56),
         }))
-        setProduct((current) => ({
-          ...current,
-          ['name']: name.replace(/\s+/g, ' ').substring(0, 256),
-        }))
-        
-        changeUpdated('auto-save')
         setNameError('')
       }} onKeyUp={(e) => {
         if (e.code == 'Enter') {
@@ -277,19 +295,16 @@ export function Page() {
           p && p.focus()
         }
       }} />
-      <div className="input-message"><span className='error-message'>{nameError}</span><span className='right'>{(product.name?.trim()?.length || 0)} / 256</span></div>
+      <div className="input-message"><span className='error-message'>{nameError}</span><span className='right'>{(product.name?.trim()?.length || 0)} / 56</span></div>
       <label className='editor' htmlFor='input-product-description'>Description <IoPencil /></label>
 
-      { <MarkdownEditor2 value={product.description || ''} setValue={(value) => {
-        setCollected((current) => ({
+      {(is_newProduct || (!is_newProduct && s.init)) && <MarkdownEditor2 error={!!descriptionError} value={product.description || ''} setValue={(value) => {
+        (value.length>3) && (s.isUpdated = 'auto-save')
+        updateLocalData((current) => ({
           ...current,
-          description: value
+          description: value.substring(0, 1024)
         }));
-        setProduct((current) => ({
-          ...current,
-          description: value
-        }));
-        changeUpdated('auto-save')
+        setDescriptionError('')
       }} />}
       <div className="input-message"><span className='error-message'>{descriptionError}</span><span className='right'>{(product.description?.trim()?.length || 0)} / 1024</span></div>
       <div className='row' style={{
@@ -307,16 +322,11 @@ export function Page() {
               min={0}
               onChange={(e) => {
                 const price = e.currentTarget.value
-                setCollected((current) => ({
+                s.isUpdated = 'auto-save'
+                updateLocalData((current) => ({
                   ...current,
                   ['price']: Number.parseInt(price),
                 }))
-                setProduct((current) => ({
-                  ...current,
-                  ['price']: Number.parseInt(price),
-                }))
-                
-                changeUpdated('auto-save')
                 setPriceError('')
               }} />
             <div className="currency">{'FCFA'}</div>
@@ -332,16 +342,11 @@ export function Page() {
               min={0}
               onChange={(e) => {
                 const barred_price = e.currentTarget.value
-                setCollected((current) => ({
+                s.isUpdated = 'auto-save'
+                updateLocalData((current) => ({
                   ...current,
                   ['barred_price']: Number.parseInt(barred_price),
                 }))
-                setProduct((current) => ({
-                  ...current,
-                  ['barred_price']: Number.parseInt(barred_price),
-                }))
-                
-                changeUpdated('auto-save')
                 setBarredError('')
               }} />
             <div className="currency">{'FCFA'}</div>
@@ -353,16 +358,11 @@ export function Page() {
         <div className={`icon add`} onClick={() => {
           openChild(<ChildViewer title='List des categories'>
             <CategoriesPopup onSelected={(c) => {
-              setCollected((current) => ({
+              s.isUpdated = 'auto-save'
+              updateLocalData((current) => ({
                 ...current,
                 categories_id: [c.id, ...(current.categories_id || [])]
               }))
-              setProduct((current) => ({
-                ...current,
-                categories_id: [c.id, ...(current.categories_id || [])]
-              }))
-              
-              changeUpdated('auto-save')
             }} />
           </ChildViewer>, { background: '#3345' })
         }}>
@@ -376,23 +376,19 @@ export function Page() {
               openCategory
               category_id={c}
               onDelete={(d_c) => {
-                setCollected((current) => ({
+                s.isUpdated = 'auto-save'
+                updateLocalData((current) => ({
                   ...current,
                   categories_id: current.categories_id?.filter(_c => d_c.id !== _c)
                 }))
-                setProduct((current) => ({
-                  ...current,
-                  categories_id: current.categories_id?.filter(_c => d_c.id !== _c)
-                }))
-                
-                changeUpdated('auto-save')
               }}
             />
           ))
         }
       </div>
     </div>
-    <div className="product-section-feature">
+
+    {!is_newProduct && <div className="product-section-feature">
       <div className="top">
         <h2 style={{ flexWrap: 'wrap' }}> Les Variantes du Produit <b className='prompt'>( {product.features?.length || 0} / {FEATURE_LIMIT} )</b>
           <Indicator title=''
@@ -411,34 +407,24 @@ export function Page() {
       {
         product.features?.map(((f, i) => (
           <Feature key={i} feature={f} setFeature={(cb) => {
-            setCollected((current) => ({
+            s.isUpdated = 'change'
+            updateLocalData((current) => ({
               ...current,
               features: product.features?.map(_f => _f.id == f.id ? cb(f) as any : _f)
             }))
-            setProduct((current) => ({
-              ...current,
-              features: product.features?.map(_f => _f.id == f.id ? cb(f) as any : _f)
-            }))
-            
-            changeUpdated('auto-save')
           }} onOpenRequired={(f) => {
             openFeatureOption(f as any, 'replace')
           }} onDelete={() => {
-            setCollected((current) => ({
+            s.isUpdated = 'change'
+            updateLocalData((current) => ({
               ...current,
               features: product.features?.filter(_f => _f.id !== f.id)
             }))
-            setProduct((current) => ({
-              ...current,
-              features: product.features?.filter(_f => _f.id !== f.id)
-            }))
-            
-            changeUpdated('auto-save')
           }} />
         )))
       }
     </div>
-
+    }
     {
       is_newProduct ?
         <SaveButton loading={loading} effect='color' title={is_all_product ? 'Cree le produit' : 'Ajoutez toutes informations requises'}
@@ -450,19 +436,19 @@ export function Page() {
             setLoading(true);
 
             createProduct({ ...product }, values[0]?.views || []).then(res => {
+              s.isUpdated = ''
               setTimeout(() => {
                 setLoading(false)
-                changeUpdated('')
               }, 1000);
               if (!res?.id) return;
+              s.collected = {}
               setProduct(res);
-              setCollected({})
               history.replaceState(null, "", `/category?id=${res.id}`);
             })
           }} /> :
         <SaveButton loading={loading} effect='color'
-          title={isUpdated ? (is_all_product ? 'Sauvegardez les modifications' : 'Certaines Informations sont Incorrectes') : 'Aucune modification'}
-          required={!!isUpdated && is_all_product}
+          title={s.isUpdated ? (is_all_product ? 'Sauvegardez les modifications' : 'Certaines Informations sont Incorrectes') : 'Aucune modification'}
+          required={!!s.isUpdated && is_all_product}
           onClick={() => saveRequired(product)} />
     }
 

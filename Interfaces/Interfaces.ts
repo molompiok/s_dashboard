@@ -66,32 +66,49 @@ export interface UserInterface {
   // s_type?: string;
 }
 
+export interface CommandItemInterface{
+  bind: Record<string,string>
+bind_name : Record<string,ValueInterface>
+created_at: string
+currency: string
+id: string
+order_id:string
+price_unit:number
+product_id:string
+quantity:number
+status:string
+store_id:string
+updated_at:string
+product?:ProductInterface,  
+}
 export interface CommandInterface{
     id: '1324389495',
-    store_id: '',
-    user_id: '',
-    reference: '6fa89c0',
-    delivery_status: 'encours',
-    payment_status: 'no',
-    payment_method: '',
-    currency: '',
-    total_price: '25699',
-    price_delivery: '',
-    price_return_delivery: '',
-    with_delivery: 'true',
-    phone_number_customer: '',
-    format_number_customer: '',
-    country_code_customer: '',
-    pickup_address: '',
-    pickup_date: '',
-    delivery_date: '',
-    delivery_address: '',
-    longitude_delivery: '',
-    latitude_delivery: '',
-    latitude_pickup: '',
-    longitude_pickup: '',
-    pickup_address_name: '',
-    delivery_address_name: '',
+    store_id: string,
+    user_id: string,
+    reference: string,
+    delivery_status: string,
+    payment_status: string,
+    payment_method: string,
+    currency: string,
+    total_price: number,
+    price_delivery: string,
+    price_return_delivery: number,
+    with_delivery: string,
+    phone_number_customer: string,
+    format_number_customer: string,
+    country_code_customer: string,
+    pickup_address: string,
+    pickup_date: string,
+    delivery_date: string,
+    delivery_address: string,
+    longitude_delivery: string,
+    latitude_delivery: string,
+    latitude_pickup: string,
+    longitude_pickup: string,
+    pickup_address_name: string,
+    delivery_address_name: string,
+    items?:CommandItemInterface[]
+    user?:UserInterface
 }
 
 export interface CategoryInterface{

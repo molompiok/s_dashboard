@@ -120,6 +120,11 @@
     background: var(--discret-10)
 }
 
+.value-icon-text [class^=icon]{
+    border-radius: 8px;
+    overflow: hidden;
+}
+
 /* ---------------------  text Value -----------------------*/
 .value-text{
     /* min-width: 80px; */

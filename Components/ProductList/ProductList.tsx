@@ -46,8 +46,8 @@ function ProductList({ baseFilter }: { baseFilter?: FilterType}) {
                     value={filter.search || ''}
                     onChange={(e) => {
                         const search = e.currentTarget.value;
-                        setFilter((prev) => ({ ...prev, search }));
                         s.isUpdated = true;
+                        setFilter((prev) => ({ ...prev, search }));
                     }}
                 />
                 <IoSearch/>

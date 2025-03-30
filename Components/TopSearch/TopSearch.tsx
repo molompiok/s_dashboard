@@ -5,7 +5,7 @@ import 'swiper/css/free-mode';
 
 import { useEffect, useState } from 'react'
 import { CategoryInterface, CommandInterface, FilterType, ProductClientInterface } from '../../Interfaces/Interfaces'
-import { useCategory } from '../CategoriesList/CategoryStore'
+import { useCategory } from '../../pages/category/CategoryStore'
 import { useStore } from '../../pages/stores/StoreStore'
 import { useApp, type GlobalSearchType } from '../../renderer/AppStore/UseApp'
 import { CategoryItem } from '../CategoryItem/CategoryItem'
