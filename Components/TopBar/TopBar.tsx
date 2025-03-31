@@ -23,7 +23,7 @@ function Topbar({ back, notif, search, onBack }: { onBack?: () => void, back?: b
             </div>
             <div className='right'>
                 {search != false && <IoSearch className='search-icon' onClick={()=>{
-                    openChild(<ChildViewer title='Recher global'>
+                    openChild(<ChildViewer title='Recherche global'>
                         <TopSearch/>
                     </ChildViewer>,{
                         background:'#3345'

@@ -69,7 +69,7 @@ function TopSearch({  onClientSelected,onProductSelected ,onCategorySelected,onC
             <>
                 <h3>Categories</h3>
                 <Swiper
-                    slidesPerView={n}
+                    slidesPerView={n*1.3}
                     spaceBetween={p}
                     freeMode={true}
                     pagination={{

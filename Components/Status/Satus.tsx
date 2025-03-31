@@ -41,9 +41,8 @@ const getStatusColor = (status: keyof typeof OrderStatus) => statusColors[status
 
 const OrderStatusElement = ({ status , color,background}: {background?:string|undefined,color?:string|undefined, status: keyof typeof OrderStatus }) => {
     const c =  color || getStatusColor(status);
-    console.log('status',status);
-    return (
+    return status && (
     <span className='order-status-element' style={{background: background || `${c}22`, color:c }} >
-        {getStatusIcon(status)} <span style={{color:c}}>{status.split('_').join(' ').toLowerCase()}</span>
+        {getStatusIcon(status)} <span style={{color:c}}>{status?.split('_').join(' ').toLowerCase()}</span>
     </span>
 )};

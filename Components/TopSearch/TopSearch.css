@@ -17,11 +17,16 @@
 .top-search .product-item {
     width: 144px;
 }
+.top-search .product-item {
+    aspect-ratio: 0 ;
+}
 
 @media (width < 550px) {
     .top-search {
         padding: 24px;
     }
+}
 
+@media (width < 360px) {
 }
 

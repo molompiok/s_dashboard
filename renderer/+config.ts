@@ -18,7 +18,7 @@ export default {
   hydrationCanBeAborted: true
 } satisfies Config
 
-const Host = `http://172.25.69.125:3000`
+const Host = `http://172.25.69.125:3005`
 const Server_Host = `http://172.25.69.125:5555`
 const Api_host = 'http://172.25.64.1:3334'
 export {Host, Server_Host,Api_host}

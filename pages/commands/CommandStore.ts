@@ -23,7 +23,19 @@ export { useCommandStore, type CommandFilterType }
 const useCommandStore = create(combine({
     commands: undefined as ListType<CommandInterface> | undefined,
 }, (set, get) => ({
-    async getCommand(filter: CommandFilterType) {
+    async getCommandById({command_id}:{command_id?:string}){
+        if (!command_id) return;
+        const cs = get().commands;
+        const localCommand = cs?.list.find((c) => c.id == command_id);
+        if (localCommand) {
+            return localCommand
+        } else {
+            const list = await useCommandStore.getState().getCommands({ command_id });
+            const l = list?.list?.[0];
+            return l;
+        }
+    },
+    async getCommands(filter: CommandFilterType) {
         const h = useAuthStore.getState().getHeaders()
 
         if (!h) return

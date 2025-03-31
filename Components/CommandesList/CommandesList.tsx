@@ -28,7 +28,7 @@ import { useStore } from '../../pages/stores/StoreStore'
 
 function CommandeList({ product_id }: { product_id?: string }) {
     const [filter, setFilter] = useState<CommandFilterType>({});
-    const { getCommand } = useCommandStore()
+    const { getCommands } = useCommandStore()
     const { currentStore } = useStore();
     const [commands, setCommands] = useState<CommandInterface[]>([])
 
@@ -38,7 +38,7 @@ function CommandeList({ product_id }: { product_id?: string }) {
 
     useEffect(() => {
         currentStore && s.isUpdated && filter && debounce(() => {
-            getCommand(filter).then(res => {
+            getCommands(filter).then(res => {
                 console.log({res});
                 
                 s.isUpdated = false;
@@ -64,7 +64,7 @@ function CommandeList({ product_id }: { product_id?: string }) {
                 commands.length == 0 && <div className="column-center"><div className="empty" style={{ background: getImg('/res/empty/search.png') }}></div>Aucune Command Trouve</div>
             }
             {commands.map((a, i) => (
-                <div key={i}>
+                <div key={a.id}>
                     {
                         i % 5 == 0 && <h2>{new Date().toLocaleDateString('fr', {
                             day: 'numeric',
@@ -72,8 +72,8 @@ function CommandeList({ product_id }: { product_id?: string }) {
                             year: 'numeric'
                         })}</h2>
                     }
-                    <a href={`/commands/${ClientCall(Math.random, 0)}`}>
-                        <CommandItem key={i} command={a} onClick={() => 0} />
+                    <a href={`/commands/${a.id}`}>
+                        <CommandItem key={a.id} command={a} onClick={() => 0} />
                     </a>
                 </div>
             ))}

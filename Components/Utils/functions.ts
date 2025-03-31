@@ -8,8 +8,12 @@ export {
   getAllCombinations,
   getOptions,
   debounce,
+  getId
 }
 
+function getId(id:string|undefined=''){
+  return id.substring(0,id.indexOf('-'))
+}
 
 function ClientCall(fn: Function, defaultValue?: any, ...params: any[]) {
   if (typeof window !== 'undefined')

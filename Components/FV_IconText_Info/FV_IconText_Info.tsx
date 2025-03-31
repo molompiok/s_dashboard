@@ -28,14 +28,17 @@ function FV_IconText_Info({ value, feature, onChange, onCancel }: { feature: Par
 
   function isValidValue(showError?: boolean) {
     let _v = true;
-    if (!v.text || v.text.length < 3) {
+    
+    if (!v.text || v.text.length < 1) {
       showError && setTextError('Le nom de la variante doit contenir au moins 3 carateres')
       showError && textRef.current?.focus()
       _v = false
     }
-    return v
+
+    return _v
   }
   const is_text_error = isValidValue()
+  console.log('is_text_error',is_text_error);
   const icon = v.icon?.[0];
   return (
     <div className="icon-text-info">
@@ -67,21 +70,22 @@ function FV_IconText_Info({ value, feature, onChange, onCancel }: { feature: Par
           choisissez l'Image</span>}
       </label>
       <h3>Nom de l'option <IoPencil /></h3>
-      <label htmlFor="icon-text-name-input">
+      <label  htmlFor="icon-text-name-input">
         <input
           className={"editor " + (textError ? 'error' : '')}
           placeholder="Nom de l'option"
           id="icon-text-name-input"
           type="text"
+          ref={textRef} 
           value={v.text || ''}
           onChange={(e) => {
             const text = e.currentTarget.value;
-            setValue((prev) => ({ ...prev, text }));
+            setValue((prev) => ({ ...prev, text:text.substring(0,16) }));
             setTextError('')
           }}
         />
       </label>
-      <div className="input-message"><span className='error-message'>{textError}</span><span className='right'>{(v.text?.trim()?.length || 0)} / 256</span></div>
+      <div className="input-message"><span className='error-message'>{textError}</span><span className='right'>{(v.text?.trim()?.length || 0)} / 16</span></div>
 
       <ValuePricing addToValue={(value)=>{
         setValue((current) => ({

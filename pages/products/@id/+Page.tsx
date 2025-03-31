@@ -239,9 +239,11 @@ export function Page() {
           values[index] = {
             views: localViews,
             id: NEW_VIEW,
+            text:'images '+index
           } as any as ValueInterface
         } else {
           values[index].views = localViews;
+          values[index].text ='images '+index;
           (values[index] as any)[EDITED_DATA] = EDITED_DATA
         }
         const vs = clearValues();

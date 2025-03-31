@@ -26,7 +26,7 @@ function ColorInfo({ value, feature, onChange, onCancel }: { feature: Partial<Fe
 
   function isValidValue(showError?: boolean) {
     let _v = true;
-    if (!v.text || v.text.length < 3) {
+    if (!v.text || v.text.length < 1) {
       showError && setTextError('Le nom de la variante doit contenir au moins 3 carateres')
       showError && textRef.current?.focus()
       _v = false
@@ -35,10 +35,9 @@ function ColorInfo({ value, feature, onChange, onCancel }: { feature: Partial<Fe
       showError && setKeyError('Vous devez choisir une couleur')
       _v = false
     }
-    return v
+    return _v
   }
   const is_text_error = isValidValue()
-  const icon = v.icon?.[0];
 
   return (
     <div className="color-info">
@@ -75,11 +74,12 @@ function ColorInfo({ value, feature, onChange, onCancel }: { feature: Partial<Fe
           value={v.text || ''}
           onChange={(e) => {
             const text = e.currentTarget.value;
-            setValue((prev) => ({ ...prev, text }));
+            setValue((prev) => ({ ...prev, text:text.substring(0,16) }));
             setTextError('')
           }}
         />
       </label>
+      <div className="input-message"><span className='error-message'>{textError}</span><span className='right'>{(v.text?.trim()?.length || 0)} / 16</span></div>
       <ValuePricing addToValue={(value)=>{
         setValue((current) => ({
           ...current,
@@ -89,7 +89,7 @@ function ColorInfo({ value, feature, onChange, onCancel }: { feature: Partial<Fe
       <Comfirm canConfirm={!is_text_error} onCancel={onCancel} confirm='Ok' onConfirm={() => {
         if (!isValidValue(true)) return
         onChange?.(v)
-      }} />
+      }}/>
     </div>
   );
 }
