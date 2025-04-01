@@ -248,8 +248,9 @@ h3 {
     --discret-7: hsl(210, 25%, 70%);
     --discret-8: hsl(210, 25%, 80%);
     --discret-9: hsl(210, 25%, 90%);
-    --discret-9-3: hsl(210, 27%, 93%);
+    --discret-9-4: hsl(210, 27%, 94%);
     --discret-9-6: hsl(210, 27%, 96%);
+    --discret-9-8: hsl(210, 27%, 98%);
     --discret-10: hsl(210, 25%, 100%);
   }
 }

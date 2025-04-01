@@ -8,6 +8,11 @@
     margin-top: 24px;
 }
 
+.command > h2 * b{
+    color: var(--discret-0);
+    opacity: 0.5;
+    font-size: 0.9em;
+}
 .command > h2 span{
     color: var(--discret-1);
 }
@@ -30,9 +35,11 @@
     flex-direction: column;
     gap: 4px;
 }
+
 .command-top .receipt:hover{
     scale: 1.02;
 }
+
 .command-top .receipt{
     text-decoration:underline;
     font-weight:normal;
@@ -43,6 +50,33 @@
     align-self: flex-start;
     padding: 4px 12px;
     cursor: pointer;
+}
+.command-top  .copie-link.anim{
+    animation: copie-anim 800ms normal;
+}
+
+@keyframes copie-anim{
+    0%{
+        opacity: 1;
+        transform: translateY(0);
+        scale: 1;
+    }
+    49%{
+        opacity: 0;
+        transform: translateY(-10px);
+        scale: 1.4;
+    }
+    
+    50%{
+        opacity: 0;
+        transform: translateY(10px);
+        scale: 1.4;
+    }
+    100%{
+        opacity: 1;
+        transform: translateY(0px);
+        scale: 1;
+    }
 }
 
 /*    client-info       */

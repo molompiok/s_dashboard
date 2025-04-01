@@ -17,9 +17,26 @@
     flex-direction: column;
 }
 
+.command-user .infos svg{
+    min-width: 25px;
+}
+
+.command-user .infos .logo{
+    min-width: 32px;
+    min-height: 32px;
+}
+
 .command-user .infos div {
     display: flex;
     gap: 12px;
+    align-items: center;
+}
+
+.command-user [class$=-mode] {
+    margin-bottom: 2px;    
+}
+.command-user [class$=-mode] span{
+    margin-left: auto;
 }
 
 @media (width<330px){

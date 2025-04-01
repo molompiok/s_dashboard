@@ -38,8 +38,9 @@
     color: var(--contrast-text-color-1);
 }
 .command-status .step svg{
-    min-width: 25px;
+    min-width: 24px;
     height: auto;
+    color: #fff;
     aspect-ratio: 1;
 }
 
