@@ -1,30 +1,66 @@
 import { create } from "zustand";
 import { combine } from "zustand/middleware";
 import { useAuthStore } from "../login/AuthStore";
-import { Server_Host } from "../../renderer/+config";
+import { Api_host, Server_Host } from "../../renderer/+config";
 import { ListType, StoreInterface } from "../../Interfaces/Interfaces";
 
+import { Transmit } from '@adonisjs/transmit-client'
+import { ClientCall } from "../../Components/Utils/functions";
 
-export { useStore }
+export { useStore, getTransmit }
 
+let transmit: Transmit | null = null;
+let baseUrl = '' 
+function getTransmit(url: string):Transmit|null {
+    if(baseUrl == url && transmit) return transmit;
+    transmit?.close();
+    baseUrl=url;
+    if(!url) return null
+    console.log(url);
+    
+    transmit = new Transmit({
+        baseUrl: url,
+        uidGenerator(){
+            return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
+              const r = (Math.random() * 16) | 0
+              const v = c === 'x' ? r : (r & 0x3) | 0x8
+              return v.toString(16)
+            })
+          }
+      })
+    
+    return transmit
+}
 const useStore = create(combine({
     stores: undefined as ListType<StoreInterface> | undefined,
-    currentStore:undefined as StoreInterface|undefined
+    currentStore: undefined as StoreInterface | undefined
 }, (set, get) => ({
-    async setCurrentStore(currentStore:StoreInterface|undefined){
-        if(currentStore)localStorage.setItem('current_store',JSON.stringify(currentStore));
-        else localStorage.removeItem('current_store');
-        set(()=>({currentStore}));
+    async testSSE(){
+        if(!useStore.getState().currentStore?.url){
+            console.log('-------useStore.getState().currentStore?.url----',useStore.getState().currentStore);
+            return
+        }
+        const response = await fetch(`${useStore.getState().currentStore?.url}/test_sse`)
+    
     },
-    async getCurrentStore(){
+    async setCurrentStore(currentStore: StoreInterface | undefined) {
+        set(() => ({ currentStore }));
+        if (currentStore)
+            localStorage.setItem('current_store', JSON.stringify(currentStore));
+        else {
+            localStorage.removeItem('current_store');
+            return;
+        }
+    },
+    async getCurrentStore() {
         let c = get().currentStore;
-        if(!c) {
+        if (!c) {
             try {
                 const a = localStorage.getItem('current_store');
                 c = a && JSON.parse(a);
-            } catch (error) {}
+            } catch (error) { }
         }
-        if(!c) {
+        if (!c) {
             const l = await useStore.getState().fetchOwnerStores({})
             c = l?.list[0];
         }
@@ -137,6 +173,7 @@ const useStore = create(combine({
         })
         const json = await response.json() as ListType<StoreInterface>
         if (!json?.list) return
+        json.list.forEach(s=>s.url = s?.url||Api_host)
         if (!filter.no_save) set(() => ({ stores: json }))
         return json
     }

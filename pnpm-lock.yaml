@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@adonisjs/transmit-client':
+        specifier: ^1.0.0
+        version: 1.0.0
       '@floating-ui/react':
         specifier: ^0.27.4
         version: 0.27.5(react-dom@19.0.0(react@19.0.0))(react@19.0.0)
@@ -116,6 +119,9 @@ importers:
       typescript:
         specifier: ^5.7.2
         version: 5.7.3
+      uuid:
+        specifier: ^11.1.0
+        version: 11.1.0
       vike:
         specifier: ^0.4.223
         version: 0.4.223(vite@6.1.0(@types/node@22.13.4)(jiti@2.4.2)(lightningcss@1.29.1))
@@ -127,6 +133,10 @@ importers:
         version: 5.0.3(@types/react@19.0.10)(react@19.0.0)
 
 packages:
+
+  '@adonisjs/transmit-client@1.0.0':
+    resolution: {integrity: sha512-S8P4ouxoDRpHA6iEu13OxzVuG9aV6eObxBYFlsAouIDmqoiUjcgDWUJrtI26nediV2nGvaAuK98ObIEy1UWGFg==}
+    engines: {node: '>=18.16.0'}
 
   '@ampproject/remapping@2.3.0':
     resolution: {integrity: sha512-30iZtAPgz+LTIYoeivqYo853f02jBYSd5uGnGpkFV0M3xOt9aN73erkgYAmZU43x4VfqcnLxW9Kpg3R5LC4YYw==}
@@ -1562,6 +1572,10 @@ packages:
     resolution: {integrity: sha512-pMZTvIkT1d+TFGvDOqodOclx0QWkkgi6Tdoa8gC8ffGAAqz9pzPTZWAybbsHHoED/ztMtkv/VoYTYyShUn81hA==}
     engines: {node: '>= 0.4.0'}
 
+  uuid@11.1.0:
+    resolution: {integrity: sha512-0/A9rDy9P7cJ+8w1c9WD9V//9Wj15Ce2MPz8Ri6032usz+NfePxx5AcN3bN+r6ZL6jEo066/yNYB3tn4pQEx+A==}
+    hasBin: true
+
   v8-compile-cache-lib@3.0.1:
     resolution: {integrity: sha512-wa7YjyUGfNZngI/vtK0UHAN+lgDCxBPCylVXGp0zu59Fz5aiGtNXaq3DhIov063MorB+VfufLh3JlF2KdTK3xg==}
 
@@ -1660,6 +1674,8 @@ packages:
         optional: true
 
 snapshots:
+
+  '@adonisjs/transmit-client@1.0.0': {}
 
   '@ampproject/remapping@2.3.0':
     dependencies:
@@ -3024,6 +3040,8 @@ snapshots:
       picocolors: 1.1.1
 
   utils-merge@1.0.1: {}
+
+  uuid@11.1.0: {}
 
   v8-compile-cache-lib@3.0.1: {}
 

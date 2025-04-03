@@ -156,8 +156,8 @@ export function Page() {
       showError && descriptionRef.current?.focus()
       v = false
     }
-    if ((!product.barred_price || (product.barred_price <= (product.price || 0))) && (!keys || (keys && keys.includes('barred_price')))) {
-      showError && setBarredError('le prix barre doit etre supperieur au prix du produit');
+    if ((product.barred_price && (product.barred_price <= (product.price || 0))) && (!keys || (keys && keys.includes('barred_price')))) {
+      !barredError && setBarredError('le prix barre doit etre supperieur au prix du produit');
       v = false
       barredPriceRef.current?.focus()
     }
@@ -167,8 +167,8 @@ export function Page() {
       priceRef.current?.focus()
     } else {
       if (((product.barred_price || 0) <= (product.price || 0)) && (!keys || (keys && keys.includes('price')))) {
-        !barredError && setBarredError('le prix du produit doit etre difinie ');
-        v = false
+        // !barredError && setBarredError('le prix du produit doit etre difinie ');
+        // v = false
       } else {
         barredError && setBarredError('');
       }
@@ -184,7 +184,7 @@ export function Page() {
         (f as any)[EDITED_DATA] = EDITED_DATA
         const l = metod == 'add' ? [...fs, f] : fs.map(_f => (_f == f || _f.id == f.id) ? f : _f);
 
-        s.isUpdated = 'change'
+        s.isUpdated = 'auto-save'
         updateLocalData((current) => ({
           ...current,
           features: l,
@@ -363,7 +363,7 @@ export function Page() {
               s.isUpdated = 'auto-save'
               updateLocalData((current) => ({
                 ...current,
-                categories_id: [c.id, ...(current.categories_id || [])]
+                categories_id: [c.id, ...(product.categories_id || [])]
               }))
             }} />
           </ChildViewer>, { background: '#3345' })
@@ -381,7 +381,7 @@ export function Page() {
                 s.isUpdated = 'auto-save'
                 updateLocalData((current) => ({
                   ...current,
-                  categories_id: current.categories_id?.filter(_c => d_c.id !== _c)
+                  categories_id:product.categories_id?.filter(_c => d_c.id !== _c)
                 }))
               }}
             />
@@ -409,7 +409,7 @@ export function Page() {
       {
         product.features?.map(((f, i) => (
           <Feature key={i} feature={f} setFeature={(cb) => {
-            s.isUpdated = 'change'
+            s.isUpdated = 'auto-save'
             updateLocalData((current) => ({
               ...current,
               features: product.features?.map(_f => _f.id == f.id ? cb(f) as any : _f)
@@ -417,7 +417,7 @@ export function Page() {
           }} onOpenRequired={(f) => {
             openFeatureOption(f as any, 'replace')
           }} onDelete={() => {
-            s.isUpdated = 'change'
+            s.isUpdated = 'auto-save'
             updateLocalData((current) => ({
               ...current,
               features: product.features?.filter(_f => _f.id !== f.id)

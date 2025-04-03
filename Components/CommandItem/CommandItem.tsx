@@ -16,13 +16,13 @@ function CommandItem({ command, onClick, preview }: { preview?: boolean, onClick
                 <div className="image-client" style={{ background: getImg('/res/delivery_moto.png') }}></div>
                 <div className="info">
                     <h2>{command.user?.full_name}</h2>
-                    <p>{command.items?.length} Products</p>
+                    <p>{command.items_count||0} Products</p>
                     <p>id : #{command.id.substring(0, command.id.indexOf('-'))}</p>
                 </div>
             </div>
             <div className="right">
                 <span className='status'>
-                    <OrderStatusElement status={(command.delivery_status || command.payment_status)?.toLocaleUpperCase() as any || ''} />
+                    <OrderStatusElement status={(command.status || command.payment_status)?.toLocaleUpperCase() as any || ''} />
                 </span>
                 <h3 className='price-command'>{command.total_price} {command.currency}</h3>
             </div>

@@ -8,10 +8,16 @@ export type ListType<T> = {
   list: T[],
   meta: {}
 }
-
+export type EventStatus = {
+  change_at:string,
+  status:string,
+  estimated_duration?:number,
+  message?:string,
+  user_role:'client'|'admin'|'owner'|'collaborator'|'supervisor',
+  user_provide_change_id:string
+}
 export type FilterType = {
   order_by?: "date_desc" | "date_asc" | "price_desc" | "price_asc" | undefined;
-  prices?: [number | undefined, number | undefined] | undefined;
   product_id?: string,
   slug?: string,
   categories_id?: string[],
@@ -25,7 +31,22 @@ export type FilterType = {
   search?: string
 };
 
-
+export type CommandFilterType = Partial<{
+  command_id: string,
+  user_id: string,
+  order_by?: "date_desc" | "date_asc" | "total_price_desc" | "total_price_asc" | undefined,
+  page: number,
+  product_id: string,
+  limit: number,
+  no_save: boolean,
+  status: string[],
+  min_price: number | undefined,
+  max_price: number | undefined,
+  min_date: string | undefined,
+  max_date: string | undefined,
+  with_items:boolean,
+  search?: string
+}>
 export type UpdateValue = {
   update: Partial<ValueInterface>[],
   create: Partial<ValueInterface>[],
@@ -82,7 +103,7 @@ export interface CommandItemInterface {
   product?: ProductInterface,
 }
 export interface CommandInterface {
-  id: '1324389495',
+  id: string,
   store_id: string,
   user_id: string,
   reference: string,
@@ -97,6 +118,8 @@ export interface CommandInterface {
   formatted_phone_number: string,
   country_code: string,
   delivery_price:number,
+  events_status:EventStatus[]
+  items_count:number,
   
   delivery_latitude: string,
   delivery_address: string,

@@ -40,7 +40,7 @@ const statusColors: Record<keyof typeof OrderStatus, string> = {
 const getStatusColor = (status: keyof typeof OrderStatus) => statusColors[status] || '#000000';  // Default color
 
 const OrderStatusElement = ({ status , color,background}: {background?:string|undefined,color?:string|undefined, status: keyof typeof OrderStatus }) => {
-    const c =  color || getStatusColor(status);
+    const c =  color || getStatusColor(status.toUpperCase() as any);
     return status && (
     <span className='order-status-element' style={{background: background || `${c}22`, color:c }} >
         {getStatusIcon(status)} <span style={{color:c}}>{status?.split('_').join(' ').toLowerCase()}</span>

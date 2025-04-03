@@ -20,13 +20,14 @@ function CategoriesList({
     title 
 }: { 
     title?: string }) {
-    const { fetchCategories ,categories} = useCategory();
+    const { fetchCategories} = useCategory();
     const { currentStore } = useStore()
     const { openChild } = useApp()
     const size = useWindowSize();
     const listRef = useRef<HTMLDivElement>(null);
     const [listWidth, setListWidth] = useState<number>(0)
-
+    const [categories, setCategories] = useState<Partial<CategoryInterface[]>>();
+    
     useEffect(() => {
         if (!listRef.current) return;
         const w = listRef.current.getBoundingClientRect().width
@@ -35,10 +36,12 @@ function CategoriesList({
 
     let limit = Math.trunc((listWidth + GAP) / (CATEGORY_SIZE + GAP)) * 2 - 1
     limit = Math.max(0,limit);
-    const seeMore = (categories?.list.length||0) > limit;
+    const seeMore = (categories?.length||0) > limit;
 
     useEffect(()=>{
-        fetchCategories({with_product_count:true});
+        fetchCategories({with_product_count:true}).then(res=>{
+            setCategories(res?.list);
+        })
     },[currentStore])
 
     console.log(categories);
@@ -47,9 +50,9 @@ function CategoriesList({
     return <div className="catefgories-list">
         <h1>{title || 'Liste des categories'}</h1>
         <div className="list" ref={listRef}>
-            <AddCategory isNew={(categories?.list.length||0) == 0 }/>
+            <AddCategory isNew={(categories?.length||0) == 0 }/>
             {
-                categories?.list.slice(0, limit - (seeMore ? 1 : 0)).map((c, i) =>
+                categories?.slice(0, limit - (seeMore ? 1 : 0)).map((c, i) =>
                     <CategoryItem key={i} category={c} openCategory/>
                 )
             }

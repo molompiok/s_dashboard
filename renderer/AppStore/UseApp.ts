@@ -6,6 +6,7 @@ import { ClientCall } from "../../Components/Utils/functions";
 import { useAuthStore } from "../../pages/login/AuthStore";
 import { CategoryInterface, CommandInterface, ProductInterface } from "../../Interfaces/Interfaces";
 
+
 export { useApp }
 interface ClientInterface{
 
@@ -58,7 +59,6 @@ const useApp = create(combine({
         if (!search?.products) return def
 
         return search as GlobalSearchType;
-    
     }
 })));
 

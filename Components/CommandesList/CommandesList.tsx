@@ -3,7 +3,7 @@ import { useApp } from '../../renderer/AppStore/UseApp'
 import { ChildViewer } from '../ChildViewer/ChildViewer'
 import './CommandesList.css'
 import { CommandItem } from '../CommandItem/CommandItem'
-import { CommandInterface, FilterType } from '../../Interfaces/Interfaces'
+import { CommandFilterType, CommandInterface, FilterType } from '../../Interfaces/Interfaces'
 import { useEffect, useState } from 'react'
 import { OrderStatusElement, statusColors, statusIcons } from '../Status/Satus'
 
@@ -13,11 +13,10 @@ import { ClientCall, debounce } from '../Utils/functions'
 export { CommandeList }
 import { FiMaximize } from 'react-icons/fi';
 import { getImg } from '../Utils/StringFormater'
-import { CommandFilterType, useCommandStore } from '../../pages/commands/CommandStore'
-import { useStore } from '../../pages/stores/StoreStore'
+import { useCommandStore } from '../../pages/commands/CommandStore'
+import {  getTransmit, useStore } from '../../pages/stores/StoreStore'
 
 /*
-
     const [dates,setDates] = useState< "date_desc" | "date_asc" | "price_desc" | "price_asc" | undefined>();
     const [order,setOrder] = useState<(keyof typeof statusIcons)[] | undefined>();
     const [status,setStatus] = useState<[string | undefined, string | undefined] | undefined>();
@@ -29,25 +28,64 @@ import { useStore } from '../../pages/stores/StoreStore'
 function CommandeList({ product_id }: { product_id?: string }) {
     const [filter, setFilter] = useState<CommandFilterType>({});
     const { getCommands } = useCommandStore()
-    const { currentStore } = useStore();
+    const { currentStore} = useStore();
     const [commands, setCommands] = useState<CommandInterface[]>([])
 
     const [s] = useState({
-        isUpdated: true
+        isUpdated: true,
     });
 
     useEffect(() => {
-        currentStore && s.isUpdated && filter && debounce(() => {
-            getCommands(filter).then(res => {
-                console.log({res});
-                
-                s.isUpdated = false;
-                if (!res?.list) return
-                setCommands(res.list);
-            });
-        }, 'filter-command', 1000)
+        const fechCmd = ()=>{
+            debounce(() => {
+                const d = filter.max_date ? new Date(filter.max_date) : undefined;
+                d?.setDate(d.getDate() + 1);
+                getCommands({
+                    ...filter,
+                    max_date: d && d.toISOString()
+                }).then(res => {
+                    s.isUpdated = false;
+                    if (!res?.list) return
+                    setCommands(res.list);
+                });
+            }, 'filter-command', 300)
+        }
+        currentStore && s.isUpdated && filter && fechCmd()
+
+        if (!currentStore) return
+
+        const transmit = getTransmit(currentStore.url)
+        console.log(currentStore.id);
+        
+        // const subscription = transmit?.subscription(`store/${currentStore.id}/new_command`)
+        const subscription = transmit?.subscription(`store/${'d3d8dfcf-b84b-49ed-976d-9889e79e6306'}/new_command`)
+
+        async function subscribe() {
+            if(!subscription) return
+            await subscription.create()
+            subscription.onMessage<{ update: string }>((data)=>{
+                console.log(`@@@@@@@@@@@@@@@@@@@  ${JSON.stringify(data)} @@@@@@@@@@@@@@@@@@@`);
+                fechCmd()
+            })
+        }
+
+        subscribe().catch(console.error)
+
+        return () => {
+            subscription?.delete() // 🔴 Ferme la connexion à l'ancien store lorsqu'on change
+        }
+
     }, [currentStore, filter])
 
+    const accuDate: string[] = []
+    const getDate = (date: string) => {
+        const d = new Date(date).toLocaleDateString('fr', {
+            day: 'numeric',
+            month: 'long',
+            year: 'numeric'
+        })
+        return d
+    }
 
     return <div className="commands-list">
         <div className="top">
@@ -57,46 +95,48 @@ function CommandeList({ product_id }: { product_id?: string }) {
                 }} />
             </a>}
         </div>
-        <CommandsFilters filter={filter} setFilter={setFilter} />
+        <CommandsFilters filter={filter} setFilter={(filter) => {
+            s.isUpdated = true;
+            setFilter(filter)
+        }} />
         <div className="list">
-
             {
                 commands.length == 0 && <div className="column-center"><div className="empty" style={{ background: getImg('/res/empty/search.png') }}></div>Aucune Command Trouve</div>
             }
-            {commands.map((a, i) => (
-                <div key={a.id}>
-                    {
-                        i % 5 == 0 && <h2>{new Date().toLocaleDateString('fr', {
-                            day: 'numeric',
-                            month: 'long',
-                            year: 'numeric'
-                        })}</h2>
-                    }
+            {commands.map((a, i) => {
+                const d = getDate(a.created_at);
+
+                const inner = accuDate.includes(d)
+                !inner && accuDate.push(d)
+                const h = !inner && <h2 className='date'>{d}</h2>
+                return <div key={a.id}>
+                    {!filter.order_by?.includes('price') && h}
                     <a href={`/commands/${a.id}`}>
                         <CommandItem key={a.id} command={a} onClick={() => 0} />
                     </a>
                 </div>
-            ))}
+            })}
         </div>
     </div>
 }
 
-function CommandsFilters({ filter, setFilter }: { filter: any, setFilter: (filter: any) => any }) {
+function CommandsFilters({ filter, setFilter }: { filter: CommandFilterType, setFilter: (filter: CommandFilterType) => any }) {
 
     const [currentFilter, setCurrentFilter] = useState('');
+    console.log('currentFilter', currentFilter);
 
     return <div className="filters no-selectable">
         <div className="onglet">
-            <div className={`status-filter ${currentFilter == 'status' ? 'active' : ''} ${filter.status ? 'filter' : ''}`} onClick={() => {
+            <div className={`status-filter ${currentFilter == 'status' ? 'active' : ''} ${filter.status ? 'collected' : ''}`} onClick={() => {
                 setCurrentFilter(currentFilter == 'status' ? '' : 'status');
             }}><span>Status</span> <IoChevronDown /></div>
-            <div className={`order-filter ${currentFilter == 'order' ? 'active' : ''} ${filter.order ? 'filter' : ''}`} onClick={() => {
+            <div className={`order-filter ${currentFilter == 'order' ? 'active' : ''} ${filter.order_by ? 'collected' : ''}`} onClick={() => {
                 setCurrentFilter(currentFilter == 'order' ? '' : 'order');
             }}><span>Ordre</span> <IoChevronDown /></div>
-            <div className={`price-filter ${currentFilter == 'price' ? 'active' : ''} ${filter.price ? 'filter' : ''}`} onClick={() => {
+            <div className={`price-filter ${currentFilter == 'price' ? 'active' : ''} ${filter.max_price || filter.min_price ? 'collected' : ''}`} onClick={() => {
                 setCurrentFilter(currentFilter == 'price' ? '' : 'price');
             }}><span>Prix</span> <IoChevronDown /></div>
-            <div className={`date-filter ${currentFilter == 'date' ? 'active' : ''} ${filter.date ? 'filter' : ''}`} onClick={() => {
+            <div className={`date-filter ${currentFilter == 'date' ? 'active' : ''} ${filter.min_date || filter.max_date ? 'collected' : ''}`} onClick={() => {
                 setCurrentFilter(currentFilter == 'date' ? '' : 'date');
             }}><span>Date</span> <IoChevronDown /></div>
         </div>
@@ -107,22 +147,24 @@ function CommandsFilters({ filter, setFilter }: { filter: any, setFilter: (filte
                     status
                 })
             }} />
-            <OrderFilterComponent active={currentFilter == 'order'} order={filter.order} setOrder={(order) => {
+            <OrderFilterComponent active={currentFilter == 'order'} order={filter.order_by} setOrder={(order_by) => {
                 setFilter({
                     ...filter,
-                    order
+                    order_by
                 })
             }} />
-            <PriceFilterComponent active={currentFilter == 'price'} prices={filter.prices} setPrice={(price) => {
+            <PriceFilterComponent active={currentFilter == 'price'} prices={[filter.min_price, filter.max_price]} setPrice={(price) => {
                 setFilter({
                     ...filter,
-                    price
+                    min_price: price?.[0],
+                    max_price: price?.[1],
                 })
             }} />
-            <DateFilterComponent date={filter.date} setDate={(date) => {
+            <DateFilterComponent date={[filter.min_date, filter.max_date]} setDate={(date) => {
                 setFilter({
                     ...filter,
-                    date
+                    min_date: date?.[0],
+                    max_date: date?.[1]
                 })
             }} active={currentFilter == 'date'} />
         </div>
@@ -146,18 +188,18 @@ function StatusFilterComponent({ status: _status, setStatus, active }: { active:
     </div>
 }
 
-export function OrderFilterComponent({ order: _order, setOrder, active }: { active: boolean, order: string | undefined, setOrder: (order: FilterType['order_by'] | undefined) => void }) {
+export function OrderFilterComponent({ order: _order, setOrder, active }: { active: boolean, order: string | undefined, setOrder: (order: CommandFilterType['order_by'] | undefined) => void }) {
     const order = _order
     const MapOder = {
         'date_desc': 'Plus Recent',
         'date_asc': 'Plus Ancien',
-        'price_desc': 'Prix Haut',
-        'price_asc': 'Prix Bas'
+        'total_price_desc': 'Prix Haut',
+        'total_price_asc': 'Prix Bas'
     }
 
     return <div className={`order-filter-component ${active ? 'active' : ''}`}>
         {
-            (["date_desc", "date_asc", "price_desc", "price_asc"] as const).map(o => (
+            (["date_desc", "date_asc", "total_price_desc", "total_price_asc"] as const).map(o => (
                 <span key={o} className={o == order ? 'order' : ''} onClick={() => {
                     setOrder(order == o ? undefined : o);
                 }}>
@@ -200,7 +242,7 @@ export function PriceFilterComponent({ prices, setPrice, active }: { active: boo
     </div>
 }
 
-export function DateFilterComponent({ date: date, setDate, active }: { active: boolean, date: (number | undefined)[] | undefined, setDate: (date: (number | undefined)[] | undefined) => void }) {
+export function DateFilterComponent({ date, setDate, active }: { active: boolean, date: [string | undefined, string | undefined,] | undefined, setDate: (date: [string | undefined, string | undefined,] | undefined) => void }) {
     const currentDate = ClientCall(Date.now, 0)
     const [selected, setSelected] = useState<DateRange | undefined>(date && { from: new Date(date[0] || date[1] || currentDate), to: new Date(date[1] || date[0] || currentDate) });
     const [marge, setMarge] = useState('')
@@ -213,9 +255,9 @@ export function DateFilterComponent({ date: date, setDate, active }: { active: b
         'all': 'Tout'
     }
     const MapMarge = {
-        '3_days': [currentDate - 3 * 24 * 60 * 60 * 1000, currentDate],
-        '7_days': [currentDate - 7 * 24 * 60 * 60 * 1000, currentDate],
-        '1_month': [currentDate - 30 * 24 * 60 * 60 * 1000, currentDate],
+        '3_days': [ClientCall(() => new Date(currentDate - 3 * 24 * 60 * 60 * 1000).toISOString()), ClientCall(() => new Date(currentDate).toISOString())],
+        '7_days': [ClientCall(() => new Date(currentDate - 7 * 24 * 60 * 60 * 1000).toISOString()), ClientCall(() => new Date(currentDate).toISOString())],
+        '1_month': [ClientCall(() => new Date(currentDate - 30 * 24 * 60 * 60 * 1000).toISOString()), ClientCall(() => new Date(currentDate).toISOString())],
         'all': undefined
     }
 
@@ -226,7 +268,7 @@ export function DateFilterComponent({ date: date, setDate, active }: { active: b
                     (['3_days', '7_days', '1_month', 'all'] as const).map(d => (
                         <span key={d} className={(d == marge || (date == undefined && d == 'all')) ? 'marge' : ''} onClick={() => {
                             setMarge(d == marge ? '' : d);
-                            setDate(MapMarge[d]);
+                            setDate(MapMarge[d] as any);
                             setSelected(d == 'all' ? undefined : { from: new Date(MapMarge[d]?.[0] || currentDate), to: new Date(MapMarge[d]?.[1] || currentDate) })
                         }}>{MapMargeName[d]}</span>
                     ))
@@ -235,13 +277,15 @@ export function DateFilterComponent({ date: date, setDate, active }: { active: b
             <DayPicker
                 captionLayout="dropdown"
                 defaultMonth={new Date()}
-                startMonth={new Date(2024, 6)}
+                startMonth={new Date(2025, 2)}
                 endMonth={new Date()}
                 animate
                 mode="range"
                 selected={selected}
                 onSelect={(d) => {
                     setSelected(d);
+                    console.log(d);
+                    setDate([d?.from?.toISOString(), d?.to?.toISOString()]);
                     setMarge('')
                 }}
                 styles={{
@@ -250,7 +294,6 @@ export function DateFilterComponent({ date: date, setDate, active }: { active: b
                     }
                 }}
             />
-            <div className="reset">Annuler les modifications</div>
         </div>
     );
 }

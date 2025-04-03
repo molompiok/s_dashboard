@@ -53,7 +53,7 @@ function CategoryItem({
         }}>{
                 onDelete ?
                     <IoClose /> :
-                    0
+                    category?.product_count
             }
 
         </div>

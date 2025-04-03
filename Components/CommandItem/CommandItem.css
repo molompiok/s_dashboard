@@ -7,9 +7,9 @@
 
 .command-item{
     /* background: rgba(var(--gray-rgb-4),0.4); */
-    box-shadow: 0px 0px 12px -10px var(--discret-0);
+    box-shadow: 0px 0px 12px -8px var(--discret-0);
     width: 100%;
-    border-radius: 24px;
+    border-radius: 12px;
     gap: 8px;
     display: flex;
     flex-direction: column;
@@ -17,7 +17,7 @@
 }
 .command-item .client-info{
     width: 100%;
-    border-radius: 16px;
+    border-radius: 12px;
     padding:4px  12px ;
     display: flex;
     align-items: center;
@@ -51,7 +51,7 @@
     gap: 12px;
 }
 .command-item .status {
-    width: 170px;
+    max-width: 170px;
     display: flex;
     justify-content: flex-end;
 }
