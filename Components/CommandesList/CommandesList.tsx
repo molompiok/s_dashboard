@@ -1,4 +1,4 @@
-import { IoChevronDown, IoChevronForward, IoFilterSharp } from 'react-icons/io5'
+import { IoChevronDown, IoChevronForward, IoFilterSharp, IoSearch } from 'react-icons/io5'
 import { useApp } from '../../renderer/AppStore/UseApp'
 import { ChildViewer } from '../ChildViewer/ChildViewer'
 import './CommandesList.css'
@@ -14,7 +14,7 @@ export { CommandeList }
 import { FiMaximize } from 'react-icons/fi';
 import { getImg } from '../Utils/StringFormater'
 import { useCommandStore } from '../../pages/commands/CommandStore'
-import {  getTransmit, useStore } from '../../pages/stores/StoreStore'
+import { getTransmit, useStore } from '../../pages/stores/StoreStore'
 
 /*
     const [dates,setDates] = useState< "date_desc" | "date_asc" | "price_desc" | "price_asc" | undefined>();
@@ -28,7 +28,7 @@ import {  getTransmit, useStore } from '../../pages/stores/StoreStore'
 function CommandeList({ product_id }: { product_id?: string }) {
     const [filter, setFilter] = useState<CommandFilterType>({});
     const { getCommands } = useCommandStore()
-    const { currentStore} = useStore();
+    const { currentStore } = useStore();
     const [commands, setCommands] = useState<CommandInterface[]>([])
 
     const [s] = useState({
@@ -36,13 +36,14 @@ function CommandeList({ product_id }: { product_id?: string }) {
     });
 
     useEffect(() => {
-        const fechCmd = ()=>{
+        const fechCmd = () => {
             debounce(() => {
                 const d = filter.max_date ? new Date(filter.max_date) : undefined;
                 d?.setDate(d.getDate() + 1);
                 getCommands({
                     ...filter,
-                    max_date: d && d.toISOString()
+                    max_date: d && d.toISOString(),
+                    product_id,
                 }).then(res => {
                     s.isUpdated = false;
                     if (!res?.list) return
@@ -56,14 +57,14 @@ function CommandeList({ product_id }: { product_id?: string }) {
 
         const transmit = getTransmit(currentStore.url)
         console.log(currentStore.id);
-        
+
         // const subscription = transmit?.subscription(`store/${currentStore.id}/new_command`)
         const subscription = transmit?.subscription(`store/${'d3d8dfcf-b84b-49ed-976d-9889e79e6306'}/new_command`)
 
         async function subscribe() {
-            if(!subscription) return
+            if (!subscription) return
             await subscription.create()
-            subscription.onMessage<{ update: string }>((data)=>{
+            subscription.onMessage<{ update: string }>((data) => {
                 console.log(`@@@@@@@@@@@@@@@@@@@  ${JSON.stringify(data)} @@@@@@@@@@@@@@@@@@@`);
                 fechCmd()
             })
@@ -89,8 +90,26 @@ function CommandeList({ product_id }: { product_id?: string }) {
 
     return <div className="commands-list">
         <div className="top">
-            <h2>List des Commandes</h2>
-            {!ClientCall(() => location, { pathname: '' }).pathname.startsWith('/commands') && <a className='filter' href='/commands'>
+
+            <div className="commands-search">
+                <h2>List des Commandes</h2>
+                <label htmlFor="commands-search-input" className='label-icon-right'>
+                    <input
+                        className={"editor "}
+                        placeholder="Nom, description, #id"
+                        id="commands-search-input"
+                        type="text"
+                        value={filter.search || ''}
+                        onChange={(e) => {
+                            const search = e.currentTarget.value;
+                            s.isUpdated = true;
+                            setFilter((prev) => ({ ...prev, search }));
+                        }}
+                    />
+                    <IoSearch />
+                </label>
+            </div>
+            {!ClientCall(() => location, { pathname: '' }).pathname.startsWith('/commands') && <a className='see-all' href='/commands'>
                 Tout voir <IoChevronForward className='filter-icon' onClick={() => {
                 }} />
             </a>}
@@ -101,7 +120,7 @@ function CommandeList({ product_id }: { product_id?: string }) {
         }} />
         <div className="list">
             {
-                commands.length == 0 && <div className="column-center"><div className="empty" style={{ background: getImg('/res/empty/search.png') }}></div>Aucune Command Trouve</div>
+                commands.length == 0 && <div className="column-center"><div className="icon-160" style={{ background: getImg('/res/empty/search.png') }}></div>Aucune commande trouvée</div>
             }
             {commands.map((a, i) => {
                 const d = getDate(a.created_at);
@@ -182,7 +201,7 @@ function StatusFilterComponent({ status: _status, setStatus, active }: { active:
                         [...status, s]
 
                     setStatus(list.length > 0 ? list : undefined)
-                }}><OrderStatusElement background={status.includes(s) ? undefined : 'var(--discret-9)'} color={status.includes(s) ? undefined : 'var(--discret-1)'} status={s as any} /></span>
+                }}><OrderStatusElement background={status.includes(s) ? undefined : 'transparent'} color={status.includes(s) ? undefined : 'var(--discret-1)'} status={s as any} /></span>
             ))
         }
     </div>

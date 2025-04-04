@@ -2,7 +2,7 @@ import { create } from "zustand";
 import { combine } from "zustand/middleware";
 import { useAuthStore } from "../login/AuthStore";
 import { Api_host, Server_Host } from "../../renderer/+config";
-import { ProductInterface, ListType, FeatureInterface, ValueInterface, UpdateFeature } from "../../Interfaces/Interfaces";
+import { ProductInterface, ListType, FeatureInterface, ValueInterface, UpdateFeature, FilterType } from "../../Interfaces/Interfaces";
 import { useStore } from "../stores/StoreStore";
 import { EDITED_DATA, NEW_ID_START } from "../../Components/Utils/constants";
 import { features } from "process";
@@ -149,20 +149,7 @@ const useProductStore = create(combine({
             return
         }
     },
-    async fetchProducts(filter: Partial<{
-        product_id: string,
-        slug: string,
-        categories_id: string[],
-        slug_cat: string,
-        slug_product: string,
-        order_by?: "date_desc" | "date_asc" | "price_desc" | "price_asc" | undefined,
-        page: number,
-        limit: number,
-        no_save: boolean,
-        min_price: number | undefined,
-        max_price: number | undefined,
-        search?: string
-    }>) {
+    async fetchProducts(filter: Partial<FilterType>) {
         const h = useAuthStore.getState().getHeaders()
 
         if (filter.categories_id) {

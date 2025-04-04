@@ -103,7 +103,7 @@
 @media (width<760px){
     .command-item .right{
         display: flex;
-        flex-wrap: wrap-reverse;
+        flex-direction: column-reverse;
         gap: 12px;
     }
 

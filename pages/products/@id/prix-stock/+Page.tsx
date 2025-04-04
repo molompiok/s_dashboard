@@ -43,7 +43,7 @@ function Page() {
   const saveRequired = async () => {
     try {
       if (!product) return;
-      const res = await updateProduct(product, s?.features || [])
+      const res = await updateProduct(product,product, s?.features || [])
       setTimeout(() => {
         console.log('Save Value Button ', res);
         if (!res?.id) return;

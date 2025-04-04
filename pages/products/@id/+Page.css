@@ -155,8 +155,32 @@ input.price {
     transition: 200ms;
 }
 
+/* settings */
+.product .settings{
+    margin-top: 32px;
+}
 
-
+.product .settings .swiper-slide{
+    display: flex;
+    justify-content: flex-end;
+    align-items: 'center';
+}
+.product .settings .setting{
+    border-radius: 12px;
+    padding: 12px;
+    width: 124px;
+    height: 124px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    cursor: pointer;
+}
+.product .settings{
+    overflow: visible;
+}
+.product .settings .swiper-pagination{
+    bottom: -8px;
+}
 @media (width<350px) {
 
     .product input:focus,

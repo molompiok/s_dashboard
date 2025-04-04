@@ -22,7 +22,8 @@
     width: 100%;
     display: flex;
     flex-wrap: wrap;
-    gap: 24px;
+    row-gap: 6px;
+    column-gap: 24px;
     align-items: flex-start;
 }
 .command-top h3{
@@ -35,57 +36,32 @@
     flex-direction: column;
     gap: 4px;
 }
-
 .command-top .receipt:hover{
     scale: 1.02;
 }
 
+.command-top [class$=mode]{
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+.command-top .logo{
+    min-width: 25px;
+    min-height: 25px;
+    color: var(--discret-4);
+}
+
 .command-top .receipt{
     text-decoration:underline;
-    font-weight:normal;
-    background: var(--contrast-3);
-    color: var(--contrast-text-color-1);
+    font-weight:normal;;
     border-radius: 12px;
     display: inline-flex;
     align-self: flex-start;
     padding: 4px 12px;
     cursor: pointer;
 }
-.command-top  .copie-link.anim{
-    animation: copie-anim 800ms normal;
-}
 
-@keyframes copie-anim{
-    0%{
-        opacity: 1;
-        transform: translateY(0);
-        scale: 1;
-    }
-    49%{
-        opacity: 0;
-        transform: translateY(-10px);
-        scale: 1.4;
-    }
-    
-    50%{
-        opacity: 0;
-        transform: translateY(10px);
-        scale: 1.4;
-    }
-    100%{
-        opacity: 1;
-        transform: translateY(0px);
-        scale: 1;
-    }
-}
 
-/*    client-info       */
-.command .client-info{
-    width: 100%;
-    background: var(--discret-3);
-    margin: 12px 0;
-    border-radius: 12px;
-}   
 
 /*    products-list     */
 .command .products-list{
@@ -102,15 +78,6 @@
 }   
 
 
-/* social-popup */
-.social-popup{
-    display: flex;
-    justify-content: center;
-    padding: 12px 12px 48px 12px;
-    flex-direction: column;
-    align-items: center;
-    gap: 12px;
-}
 
 
 .social-popup button{

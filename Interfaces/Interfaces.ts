@@ -8,6 +8,18 @@ export type ListType<T> = {
   list: T[],
   meta: {}
 }
+
+export interface DetailInterface {
+  id: string,
+  product_id: string,
+  title?: string,
+  description?: string,
+  view?: (string | Blob)[],
+  index: number
+  type?:string,
+}
+
+
 export type EventStatus = {
   change_at:string,
   status:string,
@@ -17,7 +29,7 @@ export type EventStatus = {
   user_provide_change_id:string
 }
 export type FilterType = {
-  order_by?: "date_desc" | "date_asc" | "price_desc" | "price_asc" | undefined;
+  order_by?: "date_desc" | "date_asc" | "total_price_desc" | "total_price_asc"| undefined;
   product_id?: string,
   slug?: string,
   categories_id?: string[],

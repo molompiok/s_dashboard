@@ -14,32 +14,32 @@ export { Topbar }
 function Topbar({ back, notif, search, onBack }: { onBack?: () => void, back?: boolean, search?: boolean, notif?: boolean }) {
     const  {testSSE,currentStore} = useStore();
     const { openChild } = useApp()
-    const [test, setTest] = useState(0)
-    useEffect(() => {
-        if (!currentStore ) return
-        const transmit = getTransmit(currentStore.url)
-        const subscription = transmit?.subscription(`test:sse`)
+    // const [test, setTest] = useState(0)
+    // useEffect(() => {
+    //     if (!currentStore ) return
+    //     const transmit = getTransmit(currentStore.url)
+    //     const subscription = transmit?.subscription(`test:sse`)
         
-        async function subscribe() {
-            if(!subscription) return
-            await subscription.create()
+    //     async function subscribe() {
+    //         if(!subscription) return
+    //         await subscription.create()
            
-            subscription.onMessage<{ test?: number }>((data)=>{
-                  setTest(data.test||0)
-               if(data.test){
-               }
-            })
-        }
+    //         subscription.onMessage<{ test?: number }>((data)=>{
+    //               setTest(data.test||0)
+    //            if(data.test){
+    //            }
+    //         })
+    //     }
 
-        subscribe().catch(console.log)
+    //     subscribe().catch(console.log)
     
-        return () => {
-            subscription?.delete() // 🔴 Ferme la connexion à l'ancien store lorsqu'on change
-        }
+    //     return () => {
+    //         subscription?.delete() // 🔴 Ferme la connexion à l'ancien store lorsqu'on change
+    //     }
 
-    }, [currentStore])
+    // }, [currentStore])
 
-    console.log(test);
+    // console.log(test);
     
     return (
         <div className='top-bar'>
@@ -50,11 +50,9 @@ function Topbar({ back, notif, search, onBack }: { onBack?: () => void, back?: b
                     history.back(); // Sinon, retourner à la page précédente correctement
                 }
             }} />}
-            <div className='left' onClick={()=>{
-                testSSE();
-            }}>
+            <div className='left'>
                 <h3>Bienvenu !!</h3>
-                <h2>Kouassi Noga {test}</h2>
+                <h2>Kouassi Noga</h2>
             </div>
             <div className='right'>
                 {search != false && <IoSearch className='search-icon' onClick={()=>{

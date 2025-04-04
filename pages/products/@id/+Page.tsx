@@ -28,6 +28,14 @@ import { FeatureInfo } from '../../../Components/FeatureInfo/FeatureInfo'
 import { MarkdownEditor2 } from '../../../Components/MackdownEditor/MarkdownEditor'
 import { HoriszontalSwiper } from '../../../Components/HorizontalSwiper/HorizontalSwiper'
 
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Grid, Pagination } from 'swiper/modules';
+
+import 'swiper/css';
+import 'swiper/css/pagination';
+import 'swiper/css/grid';
+import { useWindowSize } from '../../../Hooks/useWindowSize'
+
 
 function getNewFeature() {
   return {
@@ -95,14 +103,14 @@ export function Page() {
     init: false,
     features: undefined as Partial<FeatureInterface>[] | undefined,
     collected: {} as Partial<ProductInterface>,
-    isUpdated : '' as '' | 'auto-save' | 'change'
+    isUpdated: '' as '' | 'auto-save' | 'change'
   });
-  
-  const updateViews = (values: ValueInterface[],p?:Partial<ProductInterface>) => {
+
+  const updateViews = (values: ValueInterface[], p?: Partial<ProductInterface>) => {
     updateLocalData((current) => ({
       ...current,
-      features:(p|| product).features?.map(f => {
-        if (f.id !== (p||product).default_feature_id) return f;
+      features: (p || product).features?.map(f => {
+        if (f.id !== (p || product).default_feature_id) return f;
         return { ...f, values }
       })
     }))
@@ -118,7 +126,7 @@ export function Page() {
       s.isUpdated = ''
       s.features = p.features;
       setProduct(p);
-      updateViews(p.features?.find(f => f.id == p.default_feature_id)?.values || [],p)
+      updateViews(p.features?.find(f => f.id == p.default_feature_id)?.values || [], p)
     });
   }
   const saveRequired = async (product: Partial<ProductInterface>) => {
@@ -126,22 +134,22 @@ export function Page() {
     if (loading) return console.log('onLoading');
     if (!isAllProduct(product, true)) return console.log('informations incomplete');
     if (s.isUpdated != 'auto-save') {
-        s.isUpdated = ''
-      }
+      s.isUpdated = ''
+    }
     setLoading(true);
     try {
       s.collected.id = product.id
-      const res = await updateProduct(s.collected,product, s.features || [])
+      const res = await updateProduct(s.collected, product, s.features || [])
       setLoading(false)
       console.log('---------------', res);
-      
+
       if (!res?.id) return;
       s.collected = {};
       s.features = res.features;
       setProduct(res);
-      updateViews(res.features?.find(f => f.id == res.default_feature_id)?.values || [],res)
-      
-    } catch (error) {}
+      updateViews(res.features?.find(f => f.id == res.default_feature_id)?.values || [], res)
+
+    } catch (error) { }
   }
 
   function isAllProduct(product: Partial<ProductInterface>, showError?: boolean, keys?: string[]) {
@@ -228,8 +236,8 @@ export function Page() {
 
   const is_all_product = isAllProduct(product);
   const is_feature_max = (product.features?.length || 0) >= FEATURE_LIMIT;
-  console.log('product',product);
-  
+  console.log('product', product);
+
   return <div className="product">
     <Topbar back={true} />
     <div className="views no-selectable">
@@ -239,11 +247,11 @@ export function Page() {
           values[index] = {
             views: localViews,
             id: NEW_VIEW,
-            text:'images '+index
+            text: 'images ' + index
           } as any as ValueInterface
         } else {
           values[index].views = localViews;
-          values[index].text ='images '+index;
+          values[index].text = 'images ' + index;
           (values[index] as any)[EDITED_DATA] = EDITED_DATA
         }
         const vs = clearValues();
@@ -286,14 +294,14 @@ export function Page() {
         setNameError('')
       }} onKeyUp={(e) => {
         if (e.code == 'Enter') {
-          const p = document.querySelector('#input-product-description') as HTMLTextAreaElement | null;
+          const p = document.querySelector('.ProseMirror.toastui-editor-contents') as HTMLTextAreaElement | null;
           p && p.focus()
         }
       }} onKeyDown={(e) => {
         if (e.code == 'Tab') {
           e.stopPropagation();
           e.preventDefault();
-          const p = document.querySelector('#input-product-description') as HTMLTextAreaElement | null;
+          const p = document.querySelector('.ProseMirror.toastui-editor-contents') as HTMLTextAreaElement | null;
           p && p.focus()
         }
       }} />
@@ -301,7 +309,7 @@ export function Page() {
       <label className='editor' htmlFor='input-product-description'>Description <IoPencil /></label>
 
       {(is_newProduct || (!is_newProduct && s.init)) && <MarkdownEditor2 error={!!descriptionError} value={product.description || ''} setValue={(value) => {
-        (value.length>3) && (s.isUpdated = 'auto-save')
+        (value.length > 3) && (s.isUpdated = 'auto-save')
         updateLocalData((current) => ({
           ...current,
           description: value.substring(0, 1024)
@@ -381,7 +389,7 @@ export function Page() {
                 s.isUpdated = 'auto-save'
                 updateLocalData((current) => ({
                   ...current,
-                  categories_id:product.categories_id?.filter(_c => d_c.id !== _c)
+                  categories_id: product.categories_id?.filter(_c => d_c.id !== _c)
                 }))
               }}
             />
@@ -454,21 +462,11 @@ export function Page() {
           onClick={() => saveRequired(product)} />
     }
 
-    <div className="setting-product">
-      {
-        !is_newProduct && <>
-          <Button title='Prix et stock avanceé' icon={<IoPricetagsSharp />} onClick={() => {
-            (async () => {
-              await saveRequired(product)
-              window.location.assign(`/products/${product.id}/prix-stock`)
-            })()
-          }
-          } />
-          <Button title='Promo' icon={<IoPricetagsSharp />} />
-          <Button title='Point de vente' icon={<IoPricetagsSharp />} />
-          <Button title='Affiliation' icon={<IoPricetagsSharp />} />
-          <Button title='Voir les stats' icon={<IoLayers />} />
-          <Button title='Supprimer' icon={<IoTrash />} onClick={() => {
+    {
+      !is_newProduct && <ProductSettings onSelected={(name) => {
+        console.log({ name });
+        switch (name) {
+          case 'delete':
             openChild(<ChildViewer>
               <ConfirmDelete title={`Etes vous sur de vouloir suprimer le produit "${product.name}"`} onCancel={() => {
                 openChild(null);
@@ -479,12 +477,42 @@ export function Page() {
             </ChildViewer>, {
               background: '#3455',
             })
-          }} />
-        </>
-      }
-    </div>
+            break;
+          case 'price-stock':
+            saveRequired(product)
+            window.location.assign(`/products/${product.id}/prix-stock`)
+            break;
+          case 'promo':
+            saveRequired(product)
+            window.location.assign(`/products/${product.id}/prix-stock`)
+            break;
+          case 'inventory':
+            saveRequired(product)
+            window.location.assign(`/products/${product.id}/prix-stock`)
+            break;
+          case 'affiliation':
+            saveRequired(product)
+            window.location.assign(`/products/${product.id}/prix-stock`)
+            break;
+          case 'show-stats':
+            saveRequired(product)
+            window.location.assign(`/products/${product.id}/prix-stock`)
+            break;
+          case 'comments':
+            saveRequired(product)
+            window.location.assign(`/products/${product.id}/prix-stock`)
+            break;
+          case 'details':
+            saveRequired(product)
+            window.location.assign(`/products/${product.id}/details`)
+            break;
+          default:
+            break;
+        }
+      }} />
+    }
     {
-      !is_newProduct && <CommandeList product_id={undefined} />}
+      !is_newProduct && product.id && <CommandeList product_id={product.id} />}
   </div>
 }
 // TODO ajouter peference d'affichage des values des produits. dans la feature preference:'select'|'vertical-list' ..etc
@@ -526,6 +554,126 @@ function NotVariantHere() {
   </div>
 }
 
+const Settings = [
+  {
+    name: 'price-stock',
+    show: 'Prix et stock avancé',
+    url: '/res/success_wave-yes.webp',
+    getPage() {
+      return '';
+    },
+    color: '#4CAF50', // Vert (indique la gestion du stock et des prix)
+    shadow: '#388E3C'
+  },
+  {
+    name: 'details',
+    show: 'Détails',
+    url: '/res/success_wave-yes.webp',
+    getPage() {
+      return '';
+    },
+    color: '#607D8B', // Gris bleu (informatif, neutre)
+    shadow: '#455A64'
+  },
+  {
+    name: 'promo',
+    show: 'Promo',
+    url: '/res/success_wave-yes.webp',
+    getPage() {
+      return '';
+    },
+    color: '#FF9800', // Orange (souvent utilisé pour les promotions)
+    shadow: '#F57C00'
+  },
+  {
+    name: 'inventory',
+    show: 'Point de vente',
+    url: '/res/success_wave-yes.webp',
+    getPage() {
+      return '';
+    },
+    color: '#3F51B5', // Bleu foncé (suggère fiabilité et gestion)
+    shadow: '#303F9F'
+  },
+  {
+    name: 'affiliation',
+    show: 'Affiliation',
+    url: '/res/success_wave-yes.webp',
+    getPage() {
+      return '';
+    },
+    color: '#9C27B0', // Violet (utilisé pour l'affiliation et les programmes partenaires)
+    shadow: '#7B1FA2'
+  },
+  {
+    name: 'show-stats',
+    show: 'Voir les stats',
+    url: '/res/success_wave-yes.webp',
+    getPage() {
+      return '';
+    },
+    color: '#2196F3', // Bleu clair (souvent utilisé pour les statistiques et graphiques)
+    shadow: '#1976D2'
+  },
+  {
+    name: 'delete',
+    show: 'Supprimer',
+    url: '/res/success_wave-yes.webp',
+    getPage() {
+      return '';
+    },
+    color: '#F44336', // Rouge (danger, suppression)
+    shadow: '#D32F2F'
+  },
+  {
+    name: 'comments',
+    show: 'Commentaires',
+    url: '/res/success_wave-yes.webp',
+    getPage() {
+      return '';
+    },
+    color: '#FFC107', // Jaune (attention, interactions utilisateur)
+    shadow: '#FFA000'
+  }
+];
 
 
+function ProductSettings({ onSelected }: { onSelected: (type: string) => void }) {
+
+
+  const s = useWindowSize().width;
+  const n = s < 550 ? ((s - 260) / 290) * 1.8 + 1.8
+    : s < 650 ? ((s - 550) / 100) * 0.6 + 2.7
+      : s < 900 ? ((s - 650) / 250) * 1.3 + 3.3 : 4.6;
+
+  return <Swiper
+    slidesPerView={n}
+    grid={{
+      rows: 2,
+      // fill: 'row'
+    }}
+    spaceBetween={0}
+    pagination={{
+      clickable: true,
+    }}
+    modules={[Grid, Pagination]}
+    className={'settings'}
+    style={{ height: '290px' }}
+  >
+    {
+      Settings.map(s => (
+        <SwiperSlide key={s.name} >
+          <div className={`no-selectable setting`} onClick={() => {
+            onSelected(s.name);
+          }} style={{ boxShadow: `0px 2px 2px -1px  ${s.color},0px 2px 18px -8px  ${s.color}` }}>
+            <div className="icon-60 preview-type" style={{ background: getImg(s.url) }}></div>
+            <div className="name">{s.show}</div>
+          </div>
+        </SwiperSlide>
+      ))
+    }
+    <SwiperSlide />
+    <SwiperSlide />
+  </Swiper>
+}
 

@@ -69,6 +69,10 @@
     align-items: center;
 }
 
+.product-list .product-top-search label svg{
+    opacity: 0.8;
+    scale: 0.8;
+}
 .product-list .product-top-search label {
     max-width: 50%;
     width: 50vw;
@@ -80,6 +84,8 @@
     width:100%;
     padding-right: 40px;
 }
+
+
 
 @media (width<480px) {
     .product-list .list {

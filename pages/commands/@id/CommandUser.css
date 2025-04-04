@@ -21,22 +21,20 @@
     min-width: 25px;
 }
 
-.command-user .infos .logo{
-    min-width: 32px;
-    min-height: 32px;
-}
 
-.command-user .infos div {
+.command-user .infos > div {
     display: flex;
-    gap: 12px;
+    flex-direction: column;
+}   
+.command .infos > div > .foot {
+    display: flex;
     align-items: center;
+    padding: 8px;
+    gap: 12px;
 }
-
-.command-user [class$=-mode] {
-    margin-bottom: 2px;    
-}
-.command-user [class$=-mode] span{
-    margin-left: auto;
+.command .infos > div > .head {
+    display: flex;
+    align-items: center;
 }
 
 @media (width<330px){

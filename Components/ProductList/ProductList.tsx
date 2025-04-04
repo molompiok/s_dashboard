@@ -22,12 +22,11 @@ function ProductList({ baseFilter }: { baseFilter?: FilterType}) {
     useEffect(() => {
         s.isUpdated && fetchProducts({
             ...baseFilter,
-            min_price: filter.prices?.[0]||baseFilter?.prices?.[0],
-            max_price: filter.prices?.[1]||baseFilter?.prices?.[1],
+            min_price: filter.min_price||baseFilter?.min_price,
+            max_price: filter.max_price||baseFilter?.max_price,
             search: filter.search||baseFilter?.search,
             order_by: filter.order_by||baseFilter?.order_by,
             no_save:true,
-            
         }).then(res=>{
             if(!res?.list) return 
             s.isUpdated = false;
@@ -37,11 +36,11 @@ function ProductList({ baseFilter }: { baseFilter?: FilterType}) {
     return <div className="product-list">
         <div className="product-top-search">
             <h1>List des Produits</h1>
-            <label htmlFor="icon-text-name-input" className='label-icon-right'>
+            <label htmlFor="product-search-input" className='label-icon-right'>
                 <input
                     className={"editor "}
                     placeholder="Nom, description, #id"
-                    id="icon-text-name-input"
+                    id="product-search-input"
                     type="text"
                     value={filter.search || ''}
                     onChange={(e) => {
@@ -83,10 +82,10 @@ function ProductsFilters({ filter, setCollected }: { filter: FilterType, setColl
 
     return <div className="filters no-selectable">
         <div className="onglet">
-            <div className={`order-filter ${currentFilter == 'order' ? 'active' : ''} ${filter.order_by ? 'filter' : ''}`} onClick={() => {
+            <div className={`order-filter ${currentFilter == 'order' ? 'active' : ''} ${filter.order_by ? 'collected' : ''}`} onClick={() => {
                 setCurrentFilter(currentFilter == 'order' ? '' : 'order');
             }}><span>Ordre</span> <IoChevronDown /></div>
-            <div className={`price-filter ${currentFilter == 'price' ? 'active' : ''} ${filter.prices?.[0]||filter.prices?.[1] ? 'filter' : ''}`} onClick={() => {
+            <div className={`price-filter ${currentFilter == 'price' ? 'active' : ''} ${filter.min_price||filter.max_price ? 'collected' : ''}`} onClick={() => {
                 setCurrentFilter(currentFilter == 'price' ? '' : 'price');
             }}><span>Prix</span> <IoChevronDown /></div>
 
@@ -95,13 +94,14 @@ function ProductsFilters({ filter, setCollected }: { filter: FilterType, setColl
             <OrderFilterComponent active={currentFilter == 'order'} order={filter.order_by} setOrder={(order_by) => {
                 setCollected({
                     ...filter,
-                    order_by
+                    order_by,
                 })
             }} />
-            <PriceFilterComponent active={currentFilter == 'price'} prices={filter.prices} setPrice={(prices) => {
+            <PriceFilterComponent active={currentFilter == 'price'} prices={[filter.min_price,filter.max_price]} setPrice={(prices) => {
                 setCollected({
                     ...filter,
-                    prices
+                    min_price: prices?.[0],
+                    max_price: prices?.[1]
                 })
             }} />
         </div>

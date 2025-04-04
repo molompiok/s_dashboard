@@ -8,11 +8,16 @@ export {
   getAllCombinations,
   getOptions,
   debounce,
-  getId
+  getId,
+  copyToClipboard,
+  limit
 }
 
 function getId(id:string|undefined=''){
-  return id.substring(0,id.indexOf('-'))
+  return '#'+id.substring(0,id.indexOf('-'))
+}
+const limit = (l?: string | undefined | null, m: number = 16) => {
+  return ((l?.length || 0) > m ? l?.substring(0, m) + '..' : l) || ''
 }
 
 function ClientCall(fn: Function, defaultValue?: any, ...params: any[]) {
@@ -155,6 +160,7 @@ function getOptions(bind: Record<string, string>, product: Partial<ProductInterf
   };
 }
 
+
 function getAllCombinations(product: Partial<ProductInterface>) {
   const features = product.features;
   console.log({ features });
@@ -220,5 +226,31 @@ function debounce(fn: () => void, id: string, out = 300) {
       MapCallId[id].next && debounce(MapCallId[id].next, id, MapCallId[id].out);
       MapCallId[id].next = null;
     }, out);
+  }
+}
+
+async function copyToClipboard(text: string, onSuccess?: () => void, onError?: (err: Error) => void) {
+  try {
+    if (!navigator.clipboard || !navigator.clipboard.writeText) {
+      throw new Error('Clipboard API not supported');
+    }
+    await navigator.clipboard.writeText(text);
+    console.log('Texte copié dans le presse-papiers avec succès !');
+    onSuccess?.();
+  } catch (err) {
+    console.error('Erreur lors de la copie dans le presse-papiers :', err);
+    try {
+      const textarea = document.createElement('textarea');
+      textarea.value = text;
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+      console.log('Texte copié via la méthode de secours !');
+      onSuccess?.();
+    } catch (fallbackErr) {
+      console.error('Échec de la méthode de secours :', fallbackErr);
+      onError?.(fallbackErr as Error);
+    }
   }
 }

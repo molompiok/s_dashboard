@@ -7,7 +7,7 @@ import { QRCodeCanvas } from 'qrcode.react';
 import { Image_1, OrderStatus } from '../../../Components/Utils/constants';
 import { OrderStatusElement, statusColors } from '../../../Components/Status/Satus';
 import { Topbar } from '../../../Components/TopBar/TopBar';
-import { getId } from '../../../Components/Utils/functions';
+import { copyToClipboard, getId, limit } from '../../../Components/Utils/functions';
 import { CommandInterface, CommandItemInterface, ProductInterface, UserInterface } from '../../../Interfaces/Interfaces';
 import { FaTruck } from 'react-icons/fa';
 import { Separator } from '../../../Components/Separator/Separator';
@@ -23,11 +23,10 @@ import { markdownToPlainText } from '../../../Components/MarkdownViewer/Markdown
 import { getImg } from '../../../Components/Utils/StringFormater';
 import IMask from "imask";
 import { getDefaultValues } from '../../../Components/Utils/parseData';
+
 export { Page, CommandTop, CommandProduct }
 
-const limit = (l?: string | undefined | null, m: number = 16) => {
-  return ((l?.length || 0) > 16 ? l?.substring(0, m) + '..' : l) || ''
-}
+
 
 function Page() {
   const [command, setCommand] = useState<Partial<CommandInterface>>()
@@ -171,44 +170,44 @@ function CommandUser({ user, command }: { command: Partial<CommandInterface>, us
     <div className="photo" style={{ background: `no-repeat center/cover url(${Image_1})` }}></div>
     <div className="infos">
       <h2 className="name" >{user.full_name}</h2>
-      <div className="phone" onClick={() => {
-        openChild(<ChildViewer title='contacts'><div className='social-popup'>
-          {/* Bouton pour appeler */}
-          <button onClick={() => window.open(`tel:${command.phone_number}`)}>
-            <IoCall /> Appeler <IoChevronForward className='forward' />
-          </button>
+      <div className="phone">
+        <div className="head">
+          <IoCall />{command.phone_number && IMask.pipe(command.phone_number, { mask: command.formatted_phone_number || '' })}
+        </div>
 
-          {/* Bouton pour ouvrir WhatsApp */}
-          <button onClick={() => window.open(`https://wa.me/${command.phone_number}`)}>
-            <IoLogoWhatsapp /> WhatsApp <IoChevronForward className='forward' />
-          </button>
-
-          {/* Bouton pour ouvrir Telegram */}
-          <button onClick={() => window.open(`https://t.me/${command.phone_number}`)}>
-            <IoPaperPlane /> Telegram <IoChevronForward className='forward' />
-          </button>
-        </div></ChildViewer>, {
-          background: '#3345'
-        })
-      }}><IoCall />{command.phone_number && IMask.pipe(command.phone_number, { mask: command.formatted_phone_number || '' })}</div>
-      <div className="email" onClick={() =>
-        window.open(`mailto:${user.email}?subject=Contact&body=Bonjour`)
-      }><IoMail />{user.email}</div>
-      <div className="address"><IoLocationSharp /> {command.pickup_address || command.delivery_address}</div>
-      <Separator />
-      <div className="delivery-mode" onClick={() =>
-        window.open(
-          `https://www.google.com/maps/search/?api=1&query=${(command.delivery_latitude || command.pickup_latitude)},${command.delivery_latitude || command.pickup_latitude}`
-        )
-      }>
-        {command.with_delivery ? <FaTruck className='logo' /> : <IoStorefront className='logo' />}
-        {command.with_delivery ? 'A Domicile' : 'En boutique'}
-        <span><OrderStatusElement status={(command?.delivery_status || 'pending') as any} /></span>
+        <div className="foot">
+          <span className='icon-25'
+            style={{ background: getImg('/res/social/telephone.png') }}
+            onClick={() => window.open(`tel:${command.phone_number}`)}
+          ></span>
+          <span className='icon-25'
+            style={{ background: getImg('/res/social/social.png') }}
+            onClick={() => window.open(`https://wa.me/${command.phone_number}`)}
+          ></span>
+          <span className='icon-25'
+            style={{ background: getImg('/res/social/telegram.png') }}
+            onClick={() => window.open(`https://t.me/${command.phone_number}`)}
+          ></span>
+        </div>
       </div>
-      <div className="payment-mode">
-        {command.payment_method == 'cash' ? <IoCash className='logo' /> : <IoCard className='logo' />}
-        {command.payment_method == 'cash' ? 'En Cash' : command.payment_method}
-        <span><OrderStatusElement status={(command?.delivery_status || 'pending') as any} /></span>
+      <div className="email">
+        <div className="head"><IoMail />{user.email}</div>
+        <div className="foot">
+          <div className="icon-25" style={{ background: getImg('/res/social/gmail.png') }} onClick={() =>
+            window.open(`mailto:${user.email}?subject=Contact&body=Bonjour`)
+          }></div>
+        </div>
+      </div>
+      <div className="address">
+        <div className="head"><IoLocationSharp /> {command.pickup_address || command.delivery_address}</div>
+        <div className="foot">
+          <div className="icon-25" style={{ background: getImg('/res/social/maps.png') }} onClick={() =>
+            window.open(
+              `https://www.google.com/maps/search/?api=1&query=${(command.delivery_latitude || command.pickup_latitude)},${command.delivery_latitude || command.pickup_latitude}`
+            )
+          }>
+          </div>
+        </div>
       </div>
     </div>
   </div>
@@ -239,7 +238,20 @@ function CommandProduct({ item }: { item: CommandItemInterface }) {
             <div style={{ marginBottom: '12px' }}>
               <h2 className='ellipsis'>{item.product?.name}</h2>
               <p className='ellipsis description'>{markdownToPlainText(item.product?.description || '')}</p>
-              <p>Id: #{getId(item.id)}</p>
+              <p style={{ color: 'var(--discret-5)' }} onClick={() => {
+                copyToClipboard(
+                  getId(item?.product_id),
+                  () =>/** alert(getId(item?.product_id) + ' Copied successfully!') */0,
+                  (err) => /**alert(`Failed to copy: ${err.message}`) */0
+                );
+              }}>Id : {getId(item.product_id)}
+                <IoCopyOutline className={'copie-link'} style={{ opacity: 0.6 }} onClick={(e) => {
+                  const element = e.currentTarget;
+                  element.classList.add('anim');
+                  setTimeout(() => {
+                    element.classList.remove('anim')
+                  }, 800);
+                }} /></p>
             </div>
             <div className="prices">
 
@@ -285,10 +297,16 @@ function CommandTop({ showReceipt, command }: { command?: Partial<CommandInterfa
       level="H" // Niveau de correction d'erreur (L, M, Q, H)
     /> */}
     <div className="data">
-      <h2 className='stats-command' style={{ fontSize: '1em' }}>
+      <h2 className='stats-command' style={{ fontSize: '1em' }} onClick={() => {
+        copyToClipboard(
+          getId(command?.id),
+          () =>/** alert(getId(command.id) + ' Copied successfully!') */0,
+          (err) => /**alert(`Failed to copy: ${err.message}`) */0
+        );
+      }}>
         <IoQrCode style={{ opacity: 0.6 }} />
         <b style={{ opacity: 0.6 }}> Id :</b>
-        <span style={{ opacity: 0.9, fontSize: '0.9em' }}>#{getId(command?.id)}</span>
+        <span style={{ opacity: 0.9, fontSize: '0.9em' }}>{getId(command?.id)}</span>
         <IoCopyOutline className={'copie-link'} style={{ opacity: 0.6 }} onClick={(e) => {
           const element = e.currentTarget;
           element.classList.add('anim');
@@ -298,5 +316,16 @@ function CommandTop({ showReceipt, command }: { command?: Partial<CommandInterfa
         }} />
       </h2>
     </div>
+    <div className="delivery-mode">
+      {command?.with_delivery ? <FaTruck className='logo' /> : <IoStorefront className='logo' />}
+      {command?.with_delivery ? 'A Domicile' : 'En boutique'}
+      <OrderStatusElement status={(command?.delivery_status || 'pending') as any} />
+    </div>
+    <div className="payment-mode">
+      {command?.payment_method == 'cash' ? <IoCash className='logo' /> : <IoCard className='logo' />}
+      {command?.payment_method == 'cash' ? 'En Cash' : command?.payment_method}
+      <OrderStatusElement status={(command?.delivery_status || 'pending') as any} />
+    </div>
   </div>
 }
+

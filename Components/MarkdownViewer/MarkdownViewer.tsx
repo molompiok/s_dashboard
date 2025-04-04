@@ -1,10 +1,18 @@
-// import '@toast-ui/editor/dist/toastui-editor-viewer.css';
-// import { Viewer } from '@toast-ui/react-editor';
+import '@toast-ui/editor/dist/toastui-editor-viewer.css';
+import { useEffect, useState } from 'react';
 
-export {markdownToPlainText }
-//  function MarkdownViewer({ markdown }: { markdown: string }) {
-//     return <Viewer initialValue={markdown || "Aucun contenu"} />;
-// }
+export {markdownToPlainText,MarkdownViewer }
+ function MarkdownViewer({ markdown }: { markdown: string }) {
+    const [Viewer, setViewer] = useState<any>()
+    useEffect(()=>{
+        (async()=>{
+            const {Viewer} = await import('@toast-ui/react-editor')  
+            const v = <Viewer initialValue={markdown || "Aucun contenu"} />
+            setViewer(v);
+        })()
+    },[markdown])
+    return Viewer??'..';
+}
 
 function markdownToPlainText(markdown: string): string {
     return markdown
