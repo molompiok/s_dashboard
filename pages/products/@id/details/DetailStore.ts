@@ -32,8 +32,8 @@ const useDetailStore = create(combine({
                 i != undefined && formData.append(k, i.toString());
             }
         })
-        formData.append('detail_id', collected.id);
-        formData.append('with_list', with_list ? 'true' : 'false');
+        // formData.append('detail_id', collected.id);
+        // formData.append('with_list', with_list ? 'true' : 'false');
         try {
             const response = await fetch(`${h.store.url}/update_detail`, {
                 method: 'PUT',
@@ -56,7 +56,7 @@ const useDetailStore = create(combine({
         try {
 
             console.log({ colleted });
-
+            if(!colleted.product_id) return console.error('product_id required');
             const h = useAuthStore.getState().getHeaders()
             if (!h) return
 
@@ -114,6 +114,7 @@ const useDetailStore = create(combine({
     async deleteDetail({ detail_id }: { detail_id: string }) {
         const h = useAuthStore.getState().getHeaders();
         if (!h) return
+        if(!detail_id) return console.error('detail_id required');
         const response = await fetch(`${h.store.url}/delete_detail/${detail_id}`, {
             method: 'DELETE',
             headers: h.headers

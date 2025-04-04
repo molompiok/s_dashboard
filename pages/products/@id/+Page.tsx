@@ -61,7 +61,7 @@ function getNewFeature() {
 }
 
 
-const FEATURE_LIMIT = 20
+const FEATURE_LIMIT = 5
 
 //TODO add markdon dans la description du produit?
 // TODO correcteur d'ortograph
@@ -405,7 +405,7 @@ export function Page() {
             description={!is_feature_max ? `Vous pouvez ajoueter jusqu\'a ${FEATURE_LIMIT} variantes par produit` : `Vous avez atteint la limit ${FEATURE_LIMIT} variantes par produit`}
           />
         </h2>
-        {<span className={is_feature_max ? 'max' : ''} onClick={() => {
+        {<span className={is_feature_max ? 'max' : ''} style={{display:is_feature_max?'none':''}} onClick={() => {
           if (is_feature_max) return
           openFeatureOption(undefined, 'add')
         }}>Ajoutez</span>}

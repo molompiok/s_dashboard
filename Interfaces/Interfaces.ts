@@ -36,6 +36,7 @@ export type FilterType = {
   slug_cat?: string,
   slug_product?: string,
   page?: number,
+  with_feature?: boolean,
   limit?: number,
   no_save?: boolean,
   min_price?: number | undefined,

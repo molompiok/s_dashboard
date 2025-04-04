@@ -13,10 +13,11 @@ export {
     EDITED_DATA,
     NEW_ID_START,
     MAX_STOCK,
-    MAX_PRICE
+    MAX_PRICE,
+    DETAIL_LIMIT,
 }
 
-
+const DETAIL_LIMIT = 5;
 const MAX_STOCK = 1_000_000_000
 const MAX_PRICE = 1_000_000_000
 const NEW_ID_START = 'new_'

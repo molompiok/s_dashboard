@@ -32,7 +32,7 @@ function Comfirm({
         {cancel}
         {iconCancelRight}
       </div>
-      <div className={"ok " + (canConfirm ? 'no-confirm' : '')} onClick={onConfirm}>
+      <div className={"ok " + (canConfirm ? '' : 'no-confirm')} onClick={onConfirm}>
         {iconConfirmLeft}
         {confirm}
         {iconConfirmRight}</div>

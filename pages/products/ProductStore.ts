@@ -159,7 +159,7 @@ const useProductStore = create(combine({
             }
         }
         filter.slug_product = filter.slug_product || filter.slug;
-
+        filter.with_feature =true
         if (!h) return
         const searchParams = new URLSearchParams({});
         for (const key in filter) {
