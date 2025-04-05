@@ -9,6 +9,21 @@ export type ListType<T> = {
   meta: {}
 }
 
+export  interface CommentInterface {
+  id: string
+  user_id: string
+  product_id: string
+  bind_name: Record<string, ValueInterface>
+  order_id: string
+  title: string
+  description: string
+  rating: number
+  views: string[]
+  created_at: string
+  updated_at: string
+  user?: UserInterface
+}
+
 export interface DetailInterface {
   id: string,
   product_id: string,
@@ -92,7 +107,7 @@ export interface UserInterface {
   email: string,
   phone?: string,
   password: string,
-  photos: string[],
+  photo: string[],
   // roles?: Role[],
   token: string;
   created_at: string,

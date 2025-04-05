@@ -145,6 +145,9 @@ h3 {
   height: auto;
   aspect-ratio: 1;
 }
+[class^=icon-16]{
+  width: 16px;
+}
 [class^=icon-20]{
   width: 20px;
 }

@@ -1,4 +1,4 @@
-import { IoChevronDown, IoChevronUp, IoEllipsisHorizontal, IoPencil, IoPeopleSharp, IoPricetag, IoStarHalf, IoTrash } from 'react-icons/io5'
+import { IoChevronDown, IoChevronForward, IoChevronUp, IoEllipsisHorizontal, IoPencil, IoPeopleSharp, IoPricetag, IoStarHalf, IoTrash } from 'react-icons/io5'
 import { MarkdownEditor2 } from '../../../../Components/MackdownEditor/MarkdownEditor'
 import { Topbar } from '../../../../Components/TopBar/TopBar'
 import { getImg } from '../../../../Components/Utils/StringFormater'
@@ -18,7 +18,10 @@ import { useApp } from '../../../../renderer/AppStore/UseApp'
 import { ChildViewer } from '../../../../Components/ChildViewer/ChildViewer'
 import { Comfirm } from '../../../../Components/Confirm/Confirm'
 import { ConfirmDelete } from '../../../../Components/Confirm/ConfirmDelete'
-
+import { motion, AnimatePresence } from 'framer-motion'
+import { ProductPreview } from '../../../../Components/ProductPreview/ProductPreview'
+import { PageNotFound } from '../../../../Components/PageNotFound/PageNotFound'
+import { Server_Host } from '../../../../renderer/+config'
 export { Page }
 const details: DetailInterface[] = [
   {
@@ -126,7 +129,7 @@ function Page() {
 
   const [details, setDetails] = useState<ListType<DetailInterface>>()
   const saveRequired = async (c: Partial<DetailInterface> & { id: string }) => {
-     return await updateDetail(c, false).then(res => {
+    return await updateDetail(c, false).then(res => {
       openChild(null)
       if (!res?.id) return
       (res as any).update = true;
@@ -142,7 +145,7 @@ function Page() {
       <DetailInfo detail={d || {} as any} setDetail={(_d) => {
         // const id =  detail?.id || d.id;
         //  id  && saveRequired({...d, id});
-        
+
 
         if (mode == 'add') {
           product?.id && createDetail({ ..._d, product_id: product.id }).then(res => {
@@ -153,8 +156,8 @@ function Page() {
               list: [res, ...(current.list || [])]
             }))
           })
-        }else if(mode == 'edit') {
-          d?.id &&  saveRequired({..._d, id:d.id} as any)
+        } else if (mode == 'edit') {
+          d?.id && saveRequired({ ..._d, id: d.id } as any)
         }
       }} onCancel={() => {
         openChild(null)
@@ -164,7 +167,7 @@ function Page() {
     })
   }
 
-  const resetDetails = ()=>{
+  const resetDetails = () => {
     fetchDetails({ product_id: routeParams.id }).then(res => {
       setDetails(res)
     })
@@ -178,7 +181,7 @@ function Page() {
   }, [currentStore])
 
   console.log(details);
-  
+
   const is_detail_max = (details?.list?.length || 0) >= DETAIL_LIMIT;
   return <div className="page-detail">
     <Topbar />
@@ -195,79 +198,80 @@ function Page() {
       }}>Ajoutez</span>}
     </div>
     <div className="details">
+
+      <AnimatePresence>
+        {
+          details?.list.map((d, i) => (
+            <motion.div
+              key={d.id}
+              layout // ← magie ici pour les animations d'ordre
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              transition={{ duration: 0.3 }}
+            >
+
+              <Detail key={d.id + ((d as any).update ? ClientCall(Math.random, 0) : '')} detail={d}
+                canUp={d.index+1<details.list.length}
+                canDown={d.index>0}
+                onDelete={() => {
+                  openChild(<ChildViewer>
+                    <ConfirmDelete title='Etez vous sur de vouloir supprimer cet detail du produit ' onCancel={() => {
+                      openChild(null);
+                    }} onDelete={() => {
+                      if (loading) return;
+                      openChild(null);
+                      setLoading(false);
+                      deleteDetail({ detail_id: d.id }).then(res => {
+                        setLoading(false)
+                        if (res) {
+                          setDetails((current) => current && ({
+                            ...current,
+                            list: current.list.filter(_d => _d.id != d.id)
+                          }))
+                        }
+                      }
+                      )
+                    }} />
+                  </ChildViewer>, {
+                    background: '#3455'
+                  })
+                }} onOption={() => {
+                  openDetailOption(d, 'edit')
+                }} onDown={() => {
+                  const index = d.index - 1;
+                  if (index < 0) return
+                  saveRequired({ index: d.index - 1, id: d.id }).then((res) => {
+                    resetDetails();
+                  })
+                }} onUp={() => {
+                  const index = d.index + 1;
+                  if (index >= (details?.list.length || 0)) return
+                  saveRequired({ index: d.index + 1, id: d.id }).then((res) => {
+                    resetDetails();
+                  })
+                }}/>
+            </motion.div>
+          ))
+        }
+      </AnimatePresence>
       {
-        details?.list.map((d, i) => (
-          <Detail key={d.id+((d as any).update?ClientCall(Math.random,0):'')} detail={d} 
-          onDelete={()=>{
-            openChild(<ChildViewer>
-              <ConfirmDelete title='Etez vous sur de vouloir supprimer cet detail du produit ' onCancel={() => {
-                openChild(null);
-              }} onDelete={()=>{
-                if(loading) return;
-                openChild(null);
-                setLoading(false);
-                deleteDetail({detail_id: d.id}).then(res => {
-                  setLoading(false)
-                  if(res){
-                    setDetails((current) => current && ({
-                      ...current,
-                      list: current.list.filter(_d => _d.id != d.id)
-                    }))
-                  }
-                }
-              )
-              }} />
-            </ChildViewer>, {
-              background:'#3455'
-            })
-          }} onOption={()=>{
-            openDetailOption(d, 'edit')
-          }} onDown={()=>{
-            saveRequired({index:d.index-1, id:d.id}).then((res)=>{
-              resetDetails();
-            })
-          }} onUp={()=>{
-            saveRequired({index:d.index+1, id:d.id}).then((res)=>{
-              resetDetails();
-            })
-          }}/>
-        ))
+        (details?.list.length||0)==0 && <PageNotFound  
+        url={Server_Host+'/demo/details'} 
+        image='/res/font.png' 
+        description={`Les details du produit sont compsee d'un titre, une description, et une image de haite qualite`} 
+        title={`Ajoutez un detail a ce produit`} 
+        forward='Voir comment ajouter detail'
+        iconForwardBefore={null}
+        iconForwardAfter={<IoChevronForward/>}
+        />
       }
     </div>
   </div>
 }
 
-function ProductPreview({ product }: { product: Partial<ProductInterface> }) {
-  const { currentStore } = useStore()
-  const values = getDefaultValues(product);
-  const view = values[0]?.views?.[0];
 
-  return <a href={`/products/${product.id}`} className="product-preview">
-    <div className="icon-80 view" style={{
-      background:
-        view ? getImg(
-          view,
-          undefined, currentStore?.url
-        ) : getImg('/res/empty/', '160%')
-    }}></div>
-    <div className="product-info">
-      <h2 className='ellipsis'>{limit(product?.name, 56)}</h2>
-      <span>{limit(markdownToPlainText(product?.description || ''), 56)}</span>
-    </div>
-    <div className="right">
-      <h3 className="price"><IoPricetag />1 000 000 000 {product.currency}</h3>
-      <div className="rating">
-        <span>
-          <IoStarHalf />
-          {4.5}
-        </span>
-        <span style={{ whiteSpace: 'nowrap' }}><IoPeopleSharp />
-          {shortNumber(12345)}</span>
-      </div>
-    </div>
-  </a>
-}
-function Detail({ detail, onDelete, onOption, onUp, onDown}: {onDown:()=>void,onUp:()=>void,onOption:()=>void,onDelete:()=>void, detail: Partial<DetailInterface & { prevView?: string }> }) {
+function Detail({ detail, onDelete, onOption, onUp, onDown,canDown,canUp }: {canDown?:boolean,canUp?:boolean, onDown: () => void, onUp: () => void, onOption: () => void, onDelete: () => void, detail: Partial<DetailInterface & { prevView?: string }> }) {
   const view = detail?.view?.[0];
   const { currentStore } = useStore()
   return <div className="detail">
@@ -283,10 +287,10 @@ function Detail({ detail, onDelete, onOption, onUp, onDown}: {onDown:()=>void,on
       }}></div>
       <div className="right">
         <div className="options">
-        <IoChevronUp onClick={onUp}/>
-        <IoChevronDown onClick={onDown} />
-        <IoTrash onClick={onDelete}/>
-        <IoEllipsisHorizontal onClick={onOption} />
+          <IoChevronUp onClick={onUp} style={{opacity:canUp?1:0, visibility:canUp?'visible':'hidden'}}/>
+          <IoChevronDown onClick={onDown} style={{opacity:canDown?1:0, visibility:canDown?'visible':'hidden'}}/>
+          <IoTrash onClick={onDelete} />
+          <IoEllipsisHorizontal onClick={onOption} />
         </div>
         <h2 className={!detail.title ? 'empty' : ''}>{limit(detail.title, 124)}</h2>
       </div>
@@ -298,11 +302,11 @@ function Detail({ detail, onDelete, onOption, onUp, onDown}: {onDown:()=>void,on
 
 function DetailInfo({ detail, setDetail, onCancel }: { onCancel: () => void, detail: Partial<DetailInterface & { prevView?: string }>, setDetail: (detail: Partial<DetailInterface & { prevView?: string }>) => void }) {
   const { currentStore } = useStore()
-  const [collected, setCollected] = useState<Partial<DetailInterface & { prevView?: string }>>(detail||{})
+  const [collected, setCollected] = useState<Partial<DetailInterface & { prevView?: string }>>(detail || {})
   const view = collected?.view?.[0];
   const [accu, setAccu] = useState<Partial<DetailInterface & { prevView?: string }>>({})
-  
-  const  setBoth = (cb:(b:Partial<DetailInterface & { prevView?: string }>)=>Partial<DetailInterface & { prevView?: string }>) => {
+
+  const setBoth = (cb: (b: Partial<DetailInterface & { prevView?: string }>) => Partial<DetailInterface & { prevView?: string }>) => {
     const b = cb({});
     setCollected((current) => ({
       ...current,
@@ -313,7 +317,7 @@ function DetailInfo({ detail, setDetail, onCancel }: { onCancel: () => void, det
       ...b
     }))
   }
-  
+
   const [loading, setLoading] = useState(false)
   return <div className="detail-info">
     <div className="top">
@@ -372,9 +376,9 @@ function DetailInfo({ detail, setDetail, onCancel }: { onCancel: () => void, det
     <Comfirm canConfirm={!!(collected.title || collected.description || collected.prevView) && !loading} onCancel={onCancel} confirm='Ok' onConfirm={() => {
       setDetail(accu);
       console.log({ accu });
-      
+
       setLoading(true)
-    }} iconConfirmLeft={loading?<div className='icon-25' style={{background:getImg('/res/loading.gif')}}></div>:undefined}
+    }} iconConfirmLeft={loading ? <div className='icon-25' style={{ background: getImg('/res/loading.gif') }}></div> : undefined}
     />
   </div >
 }

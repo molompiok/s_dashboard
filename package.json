@@ -28,6 +28,7 @@
     "cross-env": "^7.0.3",
     "easymde": "^2.20.0",
     "express": "^4.21.2",
+    "framer-motion": "^12.6.3",
     "gsap": "^3.12.7",
     "imask": "^7.6.1",
     "node-fetch": "^3.3.2",

@@ -16,19 +16,19 @@ function ProductItem({ product, onClick, openProduct =true}: { openProduct?:bool
     const v = values[0]?.views?.[0];
     return <a href={openProduct?`/products/${product.id}`:undefined} className="product-item" onClick={onClick}>
         <div className="views">
-            {v && (getFileType(v) == 'image' ?
+            {(getFileType(v) == 'image' ?
                 <div className="view" style={{
                     width: '100%',
                     height: '100%',
                     background: getImg(
                         typeof v == 'string' ? v
-                            : URL.createObjectURL(v),
+                            :v===undefined?'/res/empty/empty-image.jpg' : URL.createObjectURL(v),
                         undefined, typeof v == 'string' ?
                         currentStore?.url : undefined
                     )
                 }}></div>
                 : <video muted={true} autoPlay loop className="view" src={
-                    typeof v == 'string' ? `${currentStore?.url}${v.startsWith('/') ? v : '/' + v}` : URL.createObjectURL(v)} />
+                    typeof v == 'string' ? `${currentStore?.url}${v.startsWith('/') ? v : '/' + v}`:v===undefined?'/res/empty/empty-image.jpg' : URL.createObjectURL(v)} />
             )
             }
         </div>

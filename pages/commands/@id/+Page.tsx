@@ -262,7 +262,7 @@ function CommandProduct({ item }: { item: CommandItemInterface }) {
           <ul className="values">{
             Object.entries(item.bind_name).map(([key, value]) => (
               <li key={key}>
-                <span className='key'>{limit(key?.split(':')[0] + 'jhfrg trth rthbr  yh tyhnty ty ')}</span>
+                <span className='key'>{limit(key?.split(':')[0])}</span>
                 {
                   value.icon?.[0]
                     ? <span className='icon-32' style={{ background: getImg(value.icon?.[0]) }}></span>

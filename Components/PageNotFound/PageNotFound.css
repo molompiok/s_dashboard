@@ -1,7 +1,6 @@
 .page-not-found{
     display: flex;
     width: 100%;
-    height:calc( 100vh - 100px);
     align-items: center;
     justify-content: center;
     flex-direction: column;
@@ -10,11 +9,18 @@
 
 .page-not-found h2{
     padding: 12px;
+    max-width: 360px;
+    text-align: center;
 }
 .page-not-found .bottom{
     display: flex;
     align-items: center;
     gap: 24px;
+    margin-top: 12px;
+}
+.page-not-found p{
+    max-width: 360px;
+    text-align: center;
 }
 .page-not-found .home{
     display: flex;

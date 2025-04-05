@@ -35,6 +35,8 @@ import 'swiper/css';
 import 'swiper/css/pagination';
 import 'swiper/css/grid';
 import { useWindowSize } from '../../../Hooks/useWindowSize'
+import { PageNotFound } from '../../../Components/PageNotFound/PageNotFound'
+import { Server_Host } from '../../../renderer/+config'
 
 
 function getNewFeature() {
@@ -412,7 +414,7 @@ export function Page() {
       </div>
       <Separator style={{ marginTop: '8px' }} color='#3455' />
       {
-        !is_features_here && <NotVariantHere />
+        !is_features_here && <PageNotFound  url={Server_Host+'/demo/variants'} image='/res/font.png' title={`Ajoutez une variant a ce produit s'il en a`}  />
       }
       {
         product.features?.map(((f, i) => (
@@ -500,7 +502,7 @@ export function Page() {
             break;
           case 'comments':
             saveRequired(product)
-            window.location.assign(`/products/${product.id}/prix-stock`)
+            window.location.assign(`/products/${product.id}/comments`)
             break;
           case 'details':
             saveRequired(product)
@@ -544,15 +546,6 @@ export function Page() {
 // </label>
 // <p className="explanation">⚠️ Si activé, les clients peuvent commander même en **rupture de stock**, ce qui peut générer des délais.</p>
 
-
-function NotVariantHere() {
-
-  return <div className="not-feature-here">
-    <div className="exemple" style={{ background: getImg('/res/font.png') }}></div>
-    <p>Ajoutez une variant a ce produit s'il en a</p>
-    <a href="/demo/variants"> Voir Video Demo <IoChevronForward /></a>
-  </div>
-}
 
 const Settings = [
   {
