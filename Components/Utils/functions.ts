@@ -58,6 +58,8 @@ function getFileType(file: string | Blob | undefined) {
       return 'image'
     } else if (file.startsWith('data:video')) {
       return 'video'
+    }else{
+      return 'image'
     }
   } else {
     if (file?.type.split('/')[0] == 'image') {

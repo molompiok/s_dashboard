@@ -74,19 +74,19 @@ function ColorInfo({ value, feature, onChange, onCancel }: { feature: Partial<Fe
           value={v.text || ''}
           onChange={(e) => {
             const text = e.currentTarget.value;
-            setValue((prev) => ({ ...prev, text:text.substring(0,16) }));
+            setValue((prev) => ({ ...prev, text:text.substring(0,32) }));
             setTextError('')
           }}
         />
       </label>
-      <div className="input-message"><span className='error-message'>{textError}</span><span className='right'>{(v.text?.trim()?.length || 0)} / 16</span></div>
+      <div className="input-message"><span className='error-message'>{textError}</span><span className='right'>{(v.text?.trim()?.length || 0)} / 32</span></div>
       <ValuePricing addToValue={(value)=>{
         setValue((current) => ({
           ...current,
           ...value
         }))
       }} value={v}/>
-      <Comfirm canConfirm={!is_text_error} onCancel={onCancel} confirm='Ok' onConfirm={() => {
+      <Comfirm canConfirm={!!(v.key && v.text)} onCancel={onCancel} confirm='Ok' onConfirm={() => {
         if (!isValidValue(true)) return
         onChange?.(v)
       }}/>

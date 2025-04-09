@@ -225,7 +225,8 @@ function CommandProduct({ item }: { item: CommandItemInterface }) {
       <div style={{
         display: 'flex',
         alignItems: 'flex-start',
-        gap: '8px'
+        gap: '8px',
+        width:'100%'
       }}>
         <div className="image" style={{ background: getImg(defultValue?.views?.[0], undefined, currentStore?.url) }}></div>
         <div className="info">
@@ -267,21 +268,21 @@ function CommandProduct({ item }: { item: CommandItemInterface }) {
                   value.icon?.[0]
                     ? <span className='icon-32' style={{ background: getImg(value.icon?.[0]) }}></span>
                     : value.key && (!key?.split(':')[1] || key?.split(':')[1] == 'color') && <span className='icon-25' style={{ borderRadius: '50px', background: value.key }}></span>
-
-
                 }
                 <span className='value'>{limit((typeof value == 'string' ? value : value.text || value.key) + 'eg rt trb rt bnry ney', 16)}</span>
               </li>
             ))
           }</ul>
         </div>
-
       </div>
       <span className='status'>{
         (() => {
           return isReturn && <OrderStatusElement status={item.status.toLocaleUpperCase() as any} />
         })()
       }</span>
+      <div className="command-product-see-product" onClick={()=>{
+         window.location.assign(`/products/${item.product_id}`)
+      }}>Voir le produit <IoChevronForward/> </div>
     </div>
   )
 }

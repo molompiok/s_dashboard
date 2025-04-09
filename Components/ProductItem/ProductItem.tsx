@@ -39,10 +39,10 @@ function ProductItem({ product, onClick, openProduct =true}: { openProduct?:bool
             <div className="rating">
                 <span>
                     <IoStarHalf />
-                    {rating}
+                    {product.rating}
                 </span>
                 <span style={{ whiteSpace: 'nowrap' }}><IoPeopleSharp />
-                    {shortNumber(n)}</span>
+                    {shortNumber(product.comment_count)}</span>
             </div>
         </div>
     </a>

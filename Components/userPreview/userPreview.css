@@ -1,0 +1,65 @@
+.user-preview {
+    padding: 20px;
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+.user-preview-header {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.user-avatar {
+    min-width: 80px;
+    min-height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+
+.user-avatar-default {
+    width: 80px;
+    height: 80px;
+    color: #666;
+}
+
+.user-info {
+    flex: 1;
+}
+
+.user-name {
+    margin: 0;
+    font-size: 24px;
+    color: #333;
+}
+
+.user-email {
+    margin: 5px 0;
+    color: #666;
+    font-size: 14px;
+}
+
+.user-joined {
+    margin: 5px 0;
+    color: #888;
+    font-size: 12px;
+}
+
+.user-bio {
+    margin-top: 20px;
+}
+
+.user-bio h3 {
+    margin: 0 0 10px 0;
+    font-size: 16px;
+    color: #444;
+}
+
+.user-bio p {
+    margin: 0;
+    color: #666;
+    font-size: 14px;
+    line-height: 1.5;
+}

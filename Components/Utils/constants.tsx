@@ -24,6 +24,18 @@ const NEW_ID_START = 'new_'
 const EDITED_DATA = 'edited'
 const NEW_VIEW = 'new_view'
 
+export enum ClientStatus {
+  BANNED = 'BANNED',
+  PREMIUM = 'PREMIUM',
+  NEW = 'NEW',
+  CLIENT = 'CLIENT',
+}
+export const ClientStatusColor: Record<ClientStatus, string> = {
+  [ClientStatus.BANNED]: '#f87171',   // Rouge clair
+  [ClientStatus.PREMIUM]: '#facc15',  // Jaune doré
+  [ClientStatus.NEW]: '#60a5fa',      // Bleu clair
+  [ClientStatus.CLIENT]: '#34d399',   // Vert émeraude
+}
 const Icons = {
     category: <IoCart />,
     category_outline: <IoHome />,

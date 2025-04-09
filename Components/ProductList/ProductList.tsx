@@ -91,10 +91,10 @@ function ProductsFilters({ filter, setCollected }: { filter: FilterType, setColl
 
         </div>
         <div className="chose">
-            <OrderFilterComponent active={currentFilter == 'order'} order={filter.order_by} setOrder={(order_by) => {
+            <OrderFilterComponent active={currentFilter == 'order'} order={filter.order_by=='price_asc'?'total_price_asc':filter.order_by=='price_desc'?'total_price_desc':filter.order_by} setOrder={(order_by) => {
                 setCollected({
                     ...filter,
-                    order_by,
+                    order_by:order_by=='total_price_asc'?'price_asc':order_by=='total_price_desc'?'price_desc':order_by,
                 })
             }} />
             <PriceFilterComponent active={currentFilter == 'price'} prices={[filter.min_price,filter.max_price]} setPrice={(prices) => {

@@ -8,7 +8,7 @@ function Page() {
   return (
     <div className="commands">
       <Topbar/>
-      <CommandeList/>
+      <CommandeList />
     </div>
   )
 }

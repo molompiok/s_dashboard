@@ -25,7 +25,7 @@ import { getTransmit, useStore } from '../../pages/stores/StoreStore'
 */
 
 
-function CommandeList({ product_id }: { product_id?: string }) {
+function CommandeList({ product_id ,user_id}: {user_id?:string, product_id?: string }) {
     const [filter, setFilter] = useState<CommandFilterType>({});
     const { getCommands } = useCommandStore()
     const { currentStore } = useStore();
@@ -36,7 +36,7 @@ function CommandeList({ product_id }: { product_id?: string }) {
     });
 
     useEffect(() => {
-        const fechCmd = () => {
+        const fetchCmd = () => {
             debounce(() => {
                 const d = filter.max_date ? new Date(filter.max_date) : undefined;
                 d?.setDate(d.getDate() + 1);
@@ -44,6 +44,7 @@ function CommandeList({ product_id }: { product_id?: string }) {
                     ...filter,
                     max_date: d && d.toISOString(),
                     product_id,
+                    user_id
                 }).then(res => {
                     s.isUpdated = false;
                     if (!res?.list) return
@@ -51,7 +52,7 @@ function CommandeList({ product_id }: { product_id?: string }) {
                 });
             }, 'filter-command', 300)
         }
-        currentStore && s.isUpdated && filter && fechCmd()
+        currentStore && s.isUpdated && filter && fetchCmd()
 
         if (!currentStore) return
 
@@ -65,8 +66,8 @@ function CommandeList({ product_id }: { product_id?: string }) {
             if (!subscription) return
             await subscription.create()
             subscription.onMessage<{ update: string }>((data) => {
-                console.log(`@@@@@@@@@@@@@@@@@@@  ${JSON.stringify(data)} @@@@@@@@@@@@@@@@@@@`);
-                fechCmd()
+                console.log(`@@@@@@@  command  @@@@@@@@@@@@  ${JSON.stringify(data)} @@@@@@@@@@@@@@@@@@@`);
+                fetchCmd()
             })
         }
 

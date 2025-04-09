@@ -31,6 +31,8 @@
     "framer-motion": "^12.6.3",
     "gsap": "^3.12.7",
     "imask": "^7.6.1",
+    "lucide-react": "^0.487.0",
+    "luxon": "^3.6.1",
     "node-fetch": "^3.3.2",
     "qrcode.react": "^4.2.0",
     "react": "^19.0.0",
@@ -39,6 +41,7 @@
     "react-dom": "^19.0.0",
     "react-icons": "^5.5.0",
     "react-imask": "^7.6.1",
+    "react-infinite-scroll-component": "^6.1.0",
     "sirv": "^3.0.0",
     "swiper": "^11.2.4",
     "tailwind-merge": "^3.0.1",
@@ -51,5 +54,8 @@
     "vite": "^6.0.5",
     "zustand": "^5.0.3"
   },
-  "type": "module"
+  "type": "module",
+  "devDependencies": {
+    "@types/luxon": "^3.6.2"
+  }
 }

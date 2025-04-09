@@ -1,0 +1,10 @@
+.stats-chart-container {
+    padding: 10px;
+    cursor: grab;
+    user-select: none;
+    touch-action: none; /* Désactive le scroll natif sur mobile */
+  }
+  
+  .stats-chart-container:active {
+    cursor: grabbing;
+  }

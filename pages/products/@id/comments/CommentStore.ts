@@ -8,7 +8,29 @@ export { useCommentStore }
 const useCommentStore = create(combine({
     comments: undefined as ListType<CommentInterface> | undefined,
 }, (set, get) => ({
-    async fetchComments({ product_id, comment_id,with_users }: {with_users?:boolean, product_id: string, comment_id?: string }) {
+    async fetchClientComments({user_id,with_products,comment_id }: {user_id?:string,with_products?:boolean,comment_id?: string }) {
+        try {
+            const h = useAuthStore.getState().getHeaders()
+            if (!h) return;
+
+            const searchParams = new URLSearchParams({});
+            if (user_id) searchParams.append('user_id', user_id);
+            if (comment_id) searchParams.append('comment_id', comment_id);
+            with_products !== undefined &&  searchParams.append('with_products', 'true')
+            
+            const response = await fetch(`${h.store.url}/get_comments/?${searchParams}`, {
+                headers: h?.headers
+            })
+            const comments = await response.json();
+            // console.log({comments});
+            if (!comments?.list) return
+            set(() => ({ comments: comments }));
+            return comments as ListType<CommentInterface> | undefined
+        } catch (error) {
+            console.log(error);
+        }
+    },
+    async fetchProductComments({ product_id, comment_id,with_users }: {with_users?:boolean, product_id: string, comment_id?: string }) {
         try {
             const h = useAuthStore.getState().getHeaders()
             if (!h) return;

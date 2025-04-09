@@ -29,15 +29,16 @@ function ProductPreview({ product }: { product: Partial<ProductInterface> }) {
       <span>{limit(markdownToPlainText(product?.description || ''), 56)}</span>
     </div>
     <div className="right">
-      <h3 className="price"><IoPricetag />1 000 000 000 {product.currency}</h3>
+      <h3 className="price"><IoPricetag />{product.price?.toLocaleString('fr')} {product.currency}</h3>
       <div className="rating">
         <span>
           <IoStarHalf />
-          {4.5}
+          {product.rating||0}
         </span>
         <span style={{ whiteSpace: 'nowrap' }}><IoPeopleSharp />
-          {shortNumber(12345)}</span>
+          {shortNumber(product.comment_count||0)}</span>
       </div>
     </div>
   </a>
 }
+

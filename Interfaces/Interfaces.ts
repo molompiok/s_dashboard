@@ -9,7 +9,52 @@ export type ListType<T> = {
   meta: {}
 }
 
-export  interface CommentInterface {
+export type PeriodType = 'day' | 'week' | 'month';
+
+export type StatParamType = Partial<{
+  period:PeriodType,
+  stats:('visits_stats'|'order_stats')[],
+  product_id:string
+  user_id:string,
+  device:true|undefined,
+  os:true|undefined,
+  page_url:true|undefined,
+  referrer:true|undefined,
+  browser:true|undefined,
+  status:true|undefined,
+  payment_method:true|undefined,
+  payment_status:true|undefined,
+  with_delivery:true|undefined
+}
+>
+export interface StatsData {
+  visits_stats?: Array<{
+    date: string;
+    visits: number;
+    users_count: number;
+    browser?: Record<string, number>;
+    os?: Record<string, number>;
+    device?: Record<string, number>;
+    pageUrl?: Record<string, number>;
+    [key: string]: any;
+  }>;
+  order_stats?: Array<{
+    date: string;
+    users_count: number;
+    orders_count: number;
+    total_price: number;
+    items_count: number;
+    return_delivery_price: number;
+    status?: Record<string, number>;
+    payment_status?: Record<string, number>;
+    payment_method?: Record<string, number>;
+    with_delivery?: Record<string, number>;
+    [key: string]: any;
+  }>;
+}
+
+
+export interface CommentInterface {
   id: string
   user_id: string
   product_id: string
@@ -22,6 +67,7 @@ export  interface CommentInterface {
   created_at: string
   updated_at: string
   user?: UserInterface
+  product?:ProductInterface
 }
 
 export interface DetailInterface {
@@ -31,20 +77,20 @@ export interface DetailInterface {
   description?: string,
   view?: (string | Blob)[],
   index: number
-  type?:string,
+  type?: string,
 }
 
 
 export type EventStatus = {
-  change_at:string,
-  status:string,
-  estimated_duration?:number,
-  message?:string,
-  user_role:'client'|'admin'|'owner'|'collaborator'|'supervisor',
-  user_provide_change_id:string
+  change_at: string,
+  status: string,
+  estimated_duration?: number,
+  message?: string,
+  user_role: 'client' | 'admin' | 'owner' | 'collaborator' | 'supervisor',
+  user_provide_change_id: string
 }
 export type FilterType = {
-  order_by?: "date_desc" | "date_asc" | "total_price_desc" | "total_price_asc"| undefined;
+  order_by?: "date_desc" | "date_asc" | "price_desc" | "price_asc" | undefined;
   product_id?: string,
   slug?: string,
   categories_id?: string[],
@@ -58,7 +104,7 @@ export type FilterType = {
   max_price?: number | undefined,
   search?: string
 };
-
+  
 export type CommandFilterType = Partial<{
   command_id: string,
   user_id: string,
@@ -72,7 +118,20 @@ export type CommandFilterType = Partial<{
   max_price: number | undefined,
   min_date: string | undefined,
   max_date: string | undefined,
-  with_items:boolean,
+  with_items: boolean,
+  search?: string
+}>
+export type UserFilterType = Partial<{
+  user_id: string,
+  order_by?: "date_desc" | "date_asc" | "full_name_desc" | "full_name_asc" | undefined,
+  page: number,
+  limit: number,
+  no_save: boolean,
+  status: string[],
+  min_date: string | undefined,
+  max_date: string | undefined,
+  with_addresses: boolean,
+  with_phones: boolean,
   search?: string
 }>
 export type UpdateValue = {
@@ -84,6 +143,13 @@ export type UpdateFeature = {
   update: Partial<FeatureInterface>[],
   create: Partial<FeatureInterface>[],
   delete: string[],
+}
+
+export interface VisiteInterface {
+  user_id: string
+  created_at?: string
+  is_month: boolean
+  is_authenticate?: boolean // si tu veux le passer temporairement côté front / debug
 }
 
 export interface StoreInterface {
@@ -107,12 +173,26 @@ export interface UserInterface {
   email: string,
   phone?: string,
   password: string,
-  photo: string[],
-  // roles?: Role[],
+  photo?: string[] | null,
+  roles?: Role[],
   token: string;
   created_at: string,
-  // status: Status | 'NEW'
-  // s_type?: string;
+  status: 'BANNED' | 'PREMIUM' | 'NEW' | 'CLIENT'
+  s_type?: string;
+  stats?: UserStats
+}
+interface UserStats {
+  avgRating: number
+  commentsCount: number
+  productsBought: number
+  ordersCount: number
+  lastVisit: string
+  totalSpent: number
+}
+export interface Role {
+  id: string,
+  name: string,
+  access: 'store' | 'system' | 'none',
 }
 
 export interface CommandItemInterface {
@@ -145,28 +225,28 @@ export interface CommandInterface {
   phone_number: string,
   formatted_phone_number: string,
   country_code: string,
-  delivery_price:number,
-  events_status:EventStatus[]
-  items_count:number,
-  
+  delivery_price: number,
+  events_status: EventStatus[]
+  items_count: number,
+
   delivery_latitude: string,
   delivery_address: string,
   delivery_address_name: string,
   delivery_longitude: string,
-  
+
   pickup_address: string,
   pickup_date: string,
   pickup_address_name: string,
   delivery_date: string,
-  
+
   pickup_latitude: string,
   pickup_longitude: string,
 
-  status:string,
+  status: string,
 
   items?: CommandItemInterface[]
   user?: UserInterface
-  created_at:string
+  created_at: string
 }
 
 export interface CategoryInterface {
@@ -192,6 +272,8 @@ export interface ProductInterface {
   description: string;
   barred_price: number;
   price: number;
+  rating: number,
+  comment_count: number,
   is_visible: boolean,// TODO
   currency: string;
   created_at: Date;

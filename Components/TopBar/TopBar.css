@@ -44,12 +44,12 @@
     display: flex;
 }
 
-.search-icon:hover{
+.search-icon-2:hover{
     background: var(--discret-9);
     scale: 1.1;
     transition: 100ms;
 }
-.search-icon{
+.search-icon-2{
     width: 30px;
     height: 30px;
     max-width: 30px;

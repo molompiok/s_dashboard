@@ -55,7 +55,7 @@ function Topbar({ back, notif, search, onBack }: { onBack?: () => void, back?: b
                 <h2>Kouassi Noga</h2>
             </div>
             <div className='right'>
-                {search != false && <IoSearch className='search-icon' onClick={()=>{
+                {search != false && <IoSearch className='search-icon-2' onClick={()=>{
                     openChild(<ChildViewer title='Recherche global'>
                         <TopSearch/>
                     </ChildViewer>,{

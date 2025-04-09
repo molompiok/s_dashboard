@@ -353,7 +353,7 @@ function Page() {
             required={!!isUpdated && is_all_collected}
             onClick={() => saveRequired(category)} />
       }
-      {/* {!is_newCategory && <ProductList key={searchPared['id']} baseFilter={{categories_id:[searchPared['id']]}}/>} */}
+      {!is_newCategory && <ProductList key={searchPared['id']} baseFilter={{categories_id:[searchPared['id']]}}/>}
     </div>
   )
 }

@@ -109,7 +109,7 @@ function FeatureInfo({ feature, onChange, onCancel }: { onCancel?: () => void, f
         />
         <span style={{ fontSize: '0.9em' }}> Oui, cette variante est obligatoire pour passer commande. Le client doit choisir cette variante avant d'ajouter le produit au panier</span>
       </label>
-      <Comfirm canConfirm={!is_name_error} onCancel={onCancel} confirm='Ok' onConfirm={() => {
+      <Comfirm canConfirm={(!!(f.name && f.type))} onCancel={onCancel} confirm='Ok' onConfirm={() => {
         if (!isValidFeature(true)) return
         onChange?.(f)
       }} />
