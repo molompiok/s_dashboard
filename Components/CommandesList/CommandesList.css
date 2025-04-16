@@ -149,7 +149,7 @@
 
 .filters .chose .order-filter-component span {
     padding: 2px 8px;
-    background: var(--discret-9);
+    border: 1px solid var(--discret-8);
     color: var(--discret-1);
     border-radius: 8px;
     font-size: 0.9em;
@@ -183,7 +183,7 @@
 
 .filters .chose .date-filter-component .dates  span {
     padding: 2px 8px;
-    background: var(--discret-9);
+    border: 1px solid var(--discret-8);
     color: var(--discret-1);
     border-radius: 8px;
 }
@@ -195,7 +195,7 @@
 
 
 .filters .chose .reset span{
-    background: var(--discret-9);
+    border: 1px solid var(--discret-8);
     cursor: default;
     padding: 4px 12px;
     border-radius: 8px;

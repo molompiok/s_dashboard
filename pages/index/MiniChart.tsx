@@ -1,6 +1,7 @@
 import React from 'react';
 import { Line } from 'react-chartjs-2';
 import { Chart as ChartJS, CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend} from 'chart.js';
+import { StatsData } from '../../Interfaces/Interfaces';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend);
 
@@ -17,7 +18,7 @@ const labels = [];
 for (let i = 0; i < DATA_COUNT; ++i) {
   labels.push('');
 }
-const datapoints = [0, 5, 3, 4, 5, 6, 10, 11,5, 6, , 10, 10, 0, 20, 20];
+
 
 const options = {
   responsive: false,
@@ -39,20 +40,21 @@ const options = {
   }
 };
 
-function MyChart({color,height,width}:{color?: keyof typeof CHART_COLORS, width?: number, height?: number}) {
-  return <Line  ref={(ref)=>{
+function MyChart({color,height,width,datasets}:{datasets?:number[],color?: keyof typeof CHART_COLORS, width?: number, height?: number}) {
+  // data = data || [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
+  console.log('data',datasets);
+  
+  return datasets && <Line  ref={(ref)=>{
     ref?.canvas && setTimeout(() => {
       ref.canvas && (ref.canvas.style.display = '');
-     console.log(ref);
-     
-    });
+     });
 
   }} className='min-line-chart no-selectable' style={{ padding:'0px', display:''}} width={width||110} height={height||60} data={{
     labels: Array.from({ length: 12}, (_, i) => ''),
     datasets: [
       {
          borderColor: CHART_COLORS[color||'blue'],
-         data: datapoints,
+         data:datasets,
         fill: false,
         cubicInterpolationMode: 'monotone',
         tension: 0.1,

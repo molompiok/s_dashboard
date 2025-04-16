@@ -12,7 +12,7 @@ export {ThemeItem}
 function ThemeItem({ theme }: { theme: any }) {
 
   return <div className="theme-item">
-    <div className="image" style={{ background: getImg('/res/store_img_5.jpg', 'cover', false) }}>
+    <div className="image" style={{ background: getImg('/res/store_img_5.png') }}>
       {
         ClientCall(Math.random, 0) < 0.5 ? <div className="price">< IoDiamond />{'12 300F'}</div>
           : <div className="free">{'Gratuit'}</div>

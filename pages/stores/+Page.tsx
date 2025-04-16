@@ -74,18 +74,18 @@ function Page() {
         setManagedIndex(index);
         ClientCall(()=>localStorage.setItem('store.manage',index.toString()));
       }} />
-      {stores?.list[index] && <ThemeList store={0} />}
+<CurrentTheme />
+<RecentThemes store={0} />
+      {/* {stores?.list[index] && <ThemeList store={0} />} */}
     </div>
   )
 }
-
 
 
 function StoreDetail({ store, postion, isActive, onActiveRequired }: { onActiveRequired: () => void, postion: string, isActive?: boolean, store?: StoreInterface | null }) {
 
 
   return <div className={postion}>
-    <CurrentTheme />
     <div className={`manages-stores ${isActive ? 'active' : ''}`}>
 
       <div className="manage-side">
@@ -147,7 +147,7 @@ function StoreDetail({ store, postion, isActive, onActiveRequired }: { onActiveR
       </div>
     </div>
 
-    <RecentThemes store={0} />
+    
   </div>
 }
 
@@ -160,7 +160,7 @@ function CurrentTheme() {
   const p = s < 550 ? 20 : 30
   return <div className="current-theme" >
     <div className="detail-current-theme">
-      <div className="image" style={{ background: getImg('/res/store_img_5.jpg', 'cover') }}></div>
+      <div className="image" style={{ background: getImg('/res/store_img_5.png', 'cover') }}></div>
       <div className="general">
         <h2>Theme Nane Sublymus</h2>
         <p className='theme-specialities'>{
@@ -213,4 +213,40 @@ function CurrentTheme() {
 
 }
 
+/*
 
+[En-tête]
+
+--------------  recherche  discrete -------------
+|  filter (inactif) (active) (le store courrant)  
+|  [recherche par nom]   voir tout >
+-------------------------------------------------
+--------------   list horizontal   ---------------
+| list des store en petite card (icon, name , debut description )
+| et la cover image en background
+-------------------------------------------------
+
+[section store info]
+-------------------------------------------
+| | Modifier | Paramètres | Stopper | 
+| [Carte Statistiques]                   |
+| Commandes: 38 (icône)                  |
+| Visites: 38 (icône)                    |
+| Points de ventes: 20/99 (icône)        |
+| ...                                    |
+-----------------------------------------
+
+-------------------------------------------------
+|[           ] Theme Nane Sublymus          [changer de theme]           
+|[ theme img ] multi category 3D AR 3D seulement...
+|[           ] [Badge ACTIF]     
+|      (color) (text) ( disposition ) (pub) (faq ) (blog) [horisontal]                
+-------------------------------------------------
+
+[Section Thèmes]
+-------------------------------------------------
+Liste des Thèmes Récemment Utilisés
+| [Thème 1] | [Thème 2] | [Thème 3] [horisontal]
+-------------------------------------------------
+
+*/

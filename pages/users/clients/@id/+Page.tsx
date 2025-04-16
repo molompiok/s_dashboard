@@ -38,7 +38,14 @@ export function Page() {
 
     const fetchU = () => {
         try {
-            fetchClients({ user_id: routeParams.id }).then(res => {
+            fetchClients({ user_id: routeParams.id, 
+                with_avg_rating:true,
+                with_comments_count:true,
+                with_orders_count:true,
+                with_products_bought:true,
+                with_total_spent:true,
+                with_last_visit:true
+             }).then(res => {
                 if (!res?.list?.[0]) return
                 setUser(res.list[0])
             })
@@ -49,7 +56,7 @@ export function Page() {
             fetchStats({
                 user_id: routeParams.id,
                 stats: ['visits_stats'],
-                period
+                period,
             }).then(s => {
                 setUserStats(s)
             })
@@ -68,7 +75,6 @@ export function Page() {
     useEffect(() => {
         if (!currentStore) return
         fetchU()
-        fetchS()
         const transmit = getTransmit(currentStore.url)
 
         // const subscription = transmit?.subscription(`store/${currentStore.id}/new_command`)
@@ -165,7 +171,7 @@ export function Page() {
                 </StatCard>
                 <StatCard icon={<CalendarClock className="rose" />} label="Dernière visite">
                     <>
-                        {stats?.lastVisit && new Date(stats?.lastVisit).toLocaleDateString('fr', {
+                        {stats?.lastVisit && new Date(stats?.lastVisit||'').toLocaleDateString('fr', {
                             day: 'numeric',
                             month: 'long',
                             year: 'numeric',
@@ -182,7 +188,7 @@ export function Page() {
                     </>
                 </StatCard>
                 <StatCard icon={<CreditCard className="emerald" />} label="Total dépensé">
-                    {stats?.totalSpent.toFixed(2)} {(currentStore as any)?.currency || 'cfa'}
+                    {stats?.totalSpent?.toFixed(2)} {(currentStore as any)?.currency || 'cfa'}
                 </StatCard>
             </div>
             <div className="periods">

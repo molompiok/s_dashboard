@@ -24,7 +24,7 @@ function Layout({ children, pageContext }: { children: React.ReactNode; pageCont
             <Link href="/" activeIcon={Icons.home} defaultIcon={Icons.home_outline}>Accueil</Link>
             <Link href="/products" activeIcon={Icons.products} defaultIcon={Icons.products_outline}>Produits</Link>
             <Link href="/users" activeIcon={Icons.teams} defaultIcon={Icons.teams_outline}>Equipes</Link>
-            <Link href="/stats" activeIcon={Icons.stats} defaultIcon={Icons.stats_outline}>Statistique</Link>
+            {/* <Link href="/stats" activeIcon={Icons.stats} defaultIcon={Icons.stats_outline}>Statistique</Link> */}
             <Link href="/commands" activeIcon={Icons.commands} defaultIcon={Icons.commands_outline}>Commandes</Link>
             <Link href="/stores" activeIcon={Icons.stores} defaultIcon={Icons.stores_outline}>Boutiques</Link>
           </Sidebar>

@@ -12,19 +12,19 @@ export type ListType<T> = {
 export type PeriodType = 'day' | 'week' | 'month';
 
 export type StatParamType = Partial<{
-  period:PeriodType,
-  stats:('visits_stats'|'order_stats')[],
-  product_id:string
-  user_id:string,
-  device:true|undefined,
-  os:true|undefined,
-  page_url:true|undefined,
-  referrer:true|undefined,
-  browser:true|undefined,
-  status:true|undefined,
-  payment_method:true|undefined,
-  payment_status:true|undefined,
-  with_delivery:true|undefined
+  period: PeriodType,
+  stats: ('visits_stats' | 'order_stats')[],
+  product_id: string
+  user_id: string,
+  device: true | undefined,
+  os: true | undefined,
+  page_url: true | undefined,
+  referrer: true | undefined,
+  browser: true | undefined,
+  status: true | undefined,
+  payment_method: true | undefined,
+  payment_status: true | undefined,
+  with_delivery: true | undefined
 }
 >
 export interface StatsData {
@@ -67,7 +67,7 @@ export interface CommentInterface {
   created_at: string
   updated_at: string
   user?: UserInterface
-  product?:ProductInterface
+  product?: ProductInterface
 }
 
 export interface DetailInterface {
@@ -104,7 +104,7 @@ export type FilterType = {
   max_price?: number | undefined,
   search?: string
 };
-  
+
 export type CommandFilterType = Partial<{
   command_id: string,
   user_id: string,
@@ -132,6 +132,12 @@ export type UserFilterType = Partial<{
   max_date: string | undefined,
   with_addresses: boolean,
   with_phones: boolean,
+  with_avg_rating:boolean,
+  with_comments_count:boolean,
+  with_products_bought:boolean,
+  with_orders_count:boolean,
+  with_total_spent:boolean,
+  with_last_visit:boolean,
   search?: string
 }>
 export type UpdateValue = {
@@ -182,12 +188,12 @@ export interface UserInterface {
   stats?: UserStats
 }
 interface UserStats {
-  avgRating: number
-  commentsCount: number
-  productsBought: number
-  ordersCount: number
-  lastVisit: string
-  totalSpent: number
+  avgRating?: number,
+  commentsCount?: number,
+  productsBought?: number,
+  totalSpent?: number,
+  ordersCount?: number,
+  lastVisit?: string | null
 }
 export interface Role {
   id: string,

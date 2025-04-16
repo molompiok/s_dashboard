@@ -13,40 +13,35 @@ import { getTransmit, useStore } from '../../pages/stores/StoreStore'
 import { useClientStore } from '../../pages/users/clients/ClientStore'
 import { ClientStatusColor } from '../Utils/constants'
 
-/*
-const [dates,setDates] = useState< "date_desc" | "date_asc" | "price_desc" | "price_asc" | undefined>();
-const [order,setOrder] = useState<(keyof typeof statusIcons)[] | undefined>();
-const [status,setStatus] = useState<[string | undefined, string | undefined] | undefined>();
-    const [prices,setPrices] = useState< [number | undefined, number | undefined] | undefined>();
-    */
-   
 
 function ClientList({ product_id, user_id }: { user_id?: string, product_id?: string }) {
   const [filter, setFilter] = useState<UserFilterType>({});
   const { fetchClients } = useClientStore()
   const { currentStore } = useStore();
-  const [clients, setCleints] = useState<UserInterface[]>([])
+  const [clients, setClients] = useState<UserInterface[]>([])
 
   const [s] = useState({
-    isUpdated: true,
+    isUpdated: false,
   });
+  const fetchCmd = () => {
+    debounce(() => {
+      const d = filter.max_date ? new Date(filter.max_date) : undefined;
+      if(d) d.setDate(d.getDate() + 1);
+      fetchClients({
+        ...filter,
+        max_date: d && (d.toISOString())
+      }).then(res => {
+        s.isUpdated = false;
+        if (!res?.list) return
+        setClients(res.list);
+      });
+    }, 'filter-command', 300)
+  }
 
+  useEffect(()=>{
+    fetchCmd()
+  },[currentStore, filter])
   useEffect(() => {
-    const fetchCmd = () => {
-      debounce(() => {
-        const d = filter.max_date ? new Date(filter.max_date) : undefined;
-        d?.setDate(d.getDate() + 1);
-        fetchClients({
-          ...filter
-        }).then(res => {
-          s.isUpdated = false;
-          if (!res?.list) return
-          setCleints(res.list);
-        });
-      }, 'filter-command', 300)
-    }
-    currentStore && s.isUpdated && filter && fetchCmd()
-
     if (!currentStore) return
 
     const transmit = getTransmit(currentStore.url)
@@ -69,8 +64,7 @@ function ClientList({ product_id, user_id }: { user_id?: string, product_id?: st
     return () => {
       subscription?.delete() // 🔴 Ferme la connexion à l'ancien store lorsqu'on change
     }
-
-  }, [currentStore, filter])
+  }, [currentStore])
 
   const accuDate: string[] = []
   const getDate = (date: string) => {
@@ -90,7 +84,7 @@ function ClientList({ product_id, user_id }: { user_id?: string, product_id?: st
         <label htmlFor="client-search-input" className='label-icon-right'>
           <input
             className={"editor "}
-            placeholder="Nom, description, #id"
+            placeholder="Nom, Email, #id"
             id="client-search-input"
             type="text"
             value={filter.search || ''}
@@ -104,7 +98,7 @@ function ClientList({ product_id, user_id }: { user_id?: string, product_id?: st
         </label>
       </div>
     </div>
-    <CleintsFilters filter={filter} setFilter={(filter) => {
+    <ClientsFilters filter={filter} setFilter={(filter) => {
       s.isUpdated = true;
       setFilter(filter)
     }} />
@@ -115,15 +109,14 @@ function ClientList({ product_id, user_id }: { user_id?: string, product_id?: st
       {clients.map((a, i) => {
         const d = getDate(a.created_at);
 
-        const inner = accuDate.includes(d)
+        const inner = accuDate.includes(d) 
         !inner && accuDate.push(d)
-        const h = !inner && <h2 className='date'>{d}</h2>
+        const h = !inner && <h3 className='date'>{d}</h3>
         return <div key={a.id}>
           {!filter.order_by?.includes('price') && h}
-          <a href={`/clients/${a.id}`}>
-            <div key={a.id} className="client-item" onClick={() => {
-              window.location.assign(`/users/clients/${a.id}`)
-            }}>
+          <a href={`/users/clients/${a.id}`}>
+            <div key={a.id} className="client-item">
+              <div className="row">
               <div
                 className="client-photo"
                 style={{
@@ -134,11 +127,14 @@ function ClientList({ product_id, user_id }: { user_id?: string, product_id?: st
               <div className="client-info">
                 <p className="client-full_name">{a.full_name}</p>
                 <p className="client-email">{a.email}</p>
-                <p className="client-phone">{a.phone}</p>
+                <p className="client-phone">{a.phone||('+7 (999) 862-74-41')}</p>
               </div>
-              <span>{new Date(a.created_at).toLocaleDateString('fr',{month:'short','day':'numeric', year:'2-digit'})}</span>
+              </div>
+              <div className="row" style={{width:'100%'}}>
+              <span className='client-date ' style={{margin:'auto'}}>{new Date(a.created_at).toLocaleDateString('fr',{month:'short','day':'numeric', year:'2-digit'})}</span>
               <div className="client-status" style={{ backgroundColor: '#4CAF5033', color:'#4CAF50' }}>
                 {a.status||'CLIENT'}
+              </div>
               </div>
             </div>
           </a>
@@ -148,7 +144,7 @@ function ClientList({ product_id, user_id }: { user_id?: string, product_id?: st
   </div>
 }
 
-function CleintsFilters({ filter, setFilter }: { filter: UserFilterType, setFilter: (filter: UserFilterType) => any }) {
+function ClientsFilters({ filter, setFilter }: { filter: UserFilterType, setFilter: (filter: UserFilterType) => any }) {
 
   const [currentFilter, setCurrentFilter] = useState('');
   console.log('currentFilter', currentFilter);
@@ -211,8 +207,8 @@ export function OrderFilterComponent({ order: _order, setOrder, active }: { acti
   const MapOder = {
     'date_desc': 'Plus Recent',
     'date_asc': 'Plus Ancien',
-    'full_name_desc': 'Prix Haut',
-    'full_name_asc': 'Prix Bas'
+    'full_name_desc': 'Nom croissant',
+    'full_name_asc': 'Nom decroissant'
   }
 
   return <div className={`order-filter-component ${active ? 'active' : ''}`}>

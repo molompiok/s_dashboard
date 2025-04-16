@@ -21,10 +21,10 @@ const useClientStore = create(combine({
                     }
                 }
                 else{
-                    searchParams.append( k , v.toString() );
+                    (v?? undefined) && searchParams.append( k , v.toString() );
                 }
             }
-            
+        
             searchParams.append('role','client');
             const response = await fetch(`${h.store.url}/get_users/?${searchParams}`, {
                 headers: h?.headers
