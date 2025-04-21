@@ -1,3 +1,4 @@
+//renderer/AppStore/UseApp.ts
 import React, { JSX, StyleHTMLAttributes } from "react";
 import { create } from "zustand";
 import { combine } from "zustand/middleware";

@@ -4,7 +4,7 @@ import 'swiper/css';
 import 'swiper/css/free-mode';
 
 import { useEffect, useState } from 'react'
-import { CategoryInterface, CommandInterface, FilterType, ProductClientInterface } from '../../Interfaces/Interfaces'
+import { CategoryInterface, CommandInterface, FilterType, ProductInterface } from '../../Interfaces/Interfaces'
 import { useCategory } from '../../pages/category/CategoryStore'
 import { useStore } from '../../pages/stores/StoreStore'
 import { useApp, type GlobalSearchType } from '../../renderer/AppStore/UseApp'
@@ -18,7 +18,7 @@ import { useWindowSize } from '../../Hooks/useWindowSize';
 
 export { TopSearch }
 
-function TopSearch({  onClientSelected,onProductSelected ,onCategorySelected,onCommandSelected }: {onCommandSelected?: (cammand:CommandInterface) => void,onCategorySelected?: (category:CategoryInterface) => void,onProductSelected?: (product:ProductClientInterface) => void,onClientSelected?: (client:any) => void }) {
+function TopSearch({  onClientSelected,onProductSelected ,onCategorySelected,onCommandSelected }: {onCommandSelected?: (cammand:CommandInterface) => void,onCategorySelected?: (category:CategoryInterface) => void,onProductSelected?: (product:ProductInterface) => void,onClientSelected?: (client:any) => void }) {
     const { openChild, gobalSearch } = useApp()
     const { currentStore } = useStore()
     const [filter, setFilter] = useState<FilterType>({});

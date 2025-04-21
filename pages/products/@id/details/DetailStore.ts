@@ -1,3 +1,4 @@
+//pages/products/@id/details/DetailStore.ts
 import { create } from "zustand";
 import { combine } from "zustand/middleware";
 import { DetailInterface, ListType } from "../../../../Interfaces/Interfaces";

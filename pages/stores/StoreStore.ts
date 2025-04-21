@@ -1,3 +1,4 @@
+//pages/stores/StoreStore.ts
 import { create } from "zustand";
 import { combine } from "zustand/middleware";
 import { useAuthStore } from "../login/AuthStore";

@@ -1,4 +1,4 @@
-//AuthStore
+//pages/login/AuthStore.ts
 import { create } from "zustand";
 import { UserInterface } from "../../Interfaces/Interfaces";
 import { Api_host, Host } from "../../renderer/+config";
@@ -104,7 +104,7 @@ export const useAuthStore = create(combine({
     },
     getHeaders() {
         let user = useAuthStore.getState().user as UserInterface;
-        // if (!user) return
+        if (!user) return
         
         const store = useStore.getState().currentStore;
         console.log({store});
@@ -114,7 +114,7 @@ export const useAuthStore = create(combine({
         
         const headers = new Headers();
         headers.append("Authorization", `Bearer ${
-            'oat_MQ.OEt4d1ZlWFNKZndjb0xHV2EtUkd2SXByQ01PTTRVVVp3RjkwaVJDczIzMDM0MDE5MjU'//user.token
+            'oat_MQ.OEt4d1ZlWFNKZndjb0xHV2EtUkd2SXByQ01PTTRVVVp3RjkwaVJDczIzMDM0MDE5MjU'// a recuperer dynamiquement
         }`);
         return {headers ,user,store}
     }

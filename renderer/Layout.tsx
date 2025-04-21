@@ -7,12 +7,14 @@ import { Link } from './Link'
 import type { PageContext } from 'vike/types'
 import './css/index.css'
 import './Layout.css'
+import '../Lib/i18n';
 import { useApp } from './AppStore/UseApp'
 import { Icons } from '../Components/Utils/constants'
 import { StoreCreate } from '../pages/StoreCreate/StoreCreate'
 import { ClientCall } from '../Components/Utils/functions'
 import { useHashWatcher } from '../Hooks/useHashWatcher'
 import { useStore } from '../pages/stores/StoreStore'
+import { useTranslation } from 'react-i18next'
 
 function Layout({ children, pageContext }: { children: React.ReactNode; pageContext: PageContext }) {
   return (
@@ -27,6 +29,7 @@ function Layout({ children, pageContext }: { children: React.ReactNode; pageCont
             {/* <Link href="/stats" activeIcon={Icons.stats} defaultIcon={Icons.stats_outline}>Statistique</Link> */}
             <Link href="/commands" activeIcon={Icons.commands} defaultIcon={Icons.commands_outline}>Commandes</Link>
             <Link href="/stores" activeIcon={Icons.stores} defaultIcon={Icons.stores_outline}>Boutiques</Link>
+            <SomeComponent/>
           </Sidebar>
           <Content>{children}</Content>
         </Frame>
@@ -42,6 +45,26 @@ function Layout({ children, pageContext }: { children: React.ReactNode; pageCont
   )
 }
 
+
+function SomeComponent() {
+  const { t, i18n } = useTranslation(); // ✅ Utiliser le hook
+
+  const changeLanguage = (lng: string) => {
+    i18n.changeLanguage(lng); // Change la langue
+    // Met à jour localStorage et cookie (géré par LanguageDetector si configuré)
+  };
+
+  return (
+    <div>
+      {/* Utiliser la fonction t() */}
+      <h2>{t('welcomeMessageKey')}</h2>
+      <p>{t('someOtherTextKey', { variable: 'valeur' })}</p>
+      <button onClick={() => changeLanguage('fr')}>Français</button>
+      <button onClick={() => changeLanguage('en')}>English</button>
+      <p>{t('currentLanguageLabel')}: {i18n.language}</p>
+    </div>
+  );
+}
 function OpenChild() {
   const { currentChild, alignItems, background, justifyContent, openChild,back } = useApp();
   

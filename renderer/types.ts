@@ -1,4 +1,15 @@
-// https://vike.dev/pageContext#typescript
+import type { i18n as I18nInstanceType } from 'i18next'; // ✅ Importer le type
+
+// Type pour les données d'hydratation du store i18next
+// C'est une structure imbriquée: { langue: { namespace: { clé: valeur } } }
+type InitialI18nStoreData = {
+  [lang: string]: {
+    [ns: string]: {
+      [key: string]: string;
+    };
+  };
+};
+
 declare global {
   namespace Vike {
     interface PageContext {
@@ -17,6 +28,18 @@ declare global {
       }
       /** https://vike.dev/render */
       abortReason?: string
+      i18nInstance?: I18nInstanceType; // ✅ Type de l'instance
+
+      /**
+       * Les traductions chargées côté serveur pour l'hydratation client.
+       */
+      initialI18nStore?: InitialI18nStoreData; // ✅ Type pour les données du store
+
+      /**
+       * La langue détectée et utilisée pour le rendu SSR.
+       */
+      initialLanguage?: string; // ✅ Type pour la langue initiale
+
     }
   }
 }

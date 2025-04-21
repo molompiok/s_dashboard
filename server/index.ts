@@ -1,71 +1,113 @@
-// This file isn't processed by Vite, see https://github.com/vikejs/vike/issues/562
-// Consequently:
-//  - When changing this file, you needed to manually restart your server for your changes to take effect.
-//  - To use your environment variables defined in your .env files, you need to install dotenv, see https://vike.dev/env
-//  - To use your path aliases defined in your vite.config.js, you need to tell Node.js about them, see https://vike.dev/path-aliases
+// server/index.ts
+import express from 'express';
+import compression from 'compression';
+import cookieParser from 'cookie-parser'; // ✅ Importer cookie-parser
+import { renderPage, createDevMiddleware } from 'vike/server';
+import { localDir, root } from './root.js';
+import { DEFAULT_LANG } from "../Lib/constants.js";
+import { handle } from 'i18next-http-middleware'; // ✅ Importer le middleware i18next
+import i18next, { supportedLngs, defaultLng } from '../Lib/i18n.js'; // ✅ Importer les langues supportées
 
-// If you want Vite to process your server code then use one of these:
-//  - vike-node (https://github.com/vikejs/vike-node)
-//  - vavite (https://github.com/cyco130/vavite)
-//     - See vavite + Vike examples at https://github.com/cyco130/vavite/tree/main/examples
-//  - vite-node (https://github.com/antfu/vite-node)
-//  - HatTip (https://github.com/hattipjs/hattip)
-//    - You can use Bati (https://batijs.dev/) to scaffold a Vike + HatTip app. Note that Bati generates apps that use the V1 design (https://vike.dev/migration/v1-design) and Vike packages (https://vike.dev/vike-packages)
+const isProduction = process.env.NODE_ENV === 'production';
 
-import express from 'express'
-import compression from 'compression'
-import { renderPage, createDevMiddleware } from 'vike/server'
-import { localDir, root } from './root.js'
-const isProduction = process.env.NODE_ENV === 'production'
-
-startServer()
+startServer();
 
 async function startServer() {
-  const app = express()
+  const app = express();
 
-  app.use(compression())
+  app.use(compression());
+  app.use(cookieParser()); // ✅ Utiliser cookie-parser AVANT le middleware i18next
 
-  // Vite integration
+  // Middleware i18next pour la détection de langue côté serveur
+  // Il va lire 'Accept-Language' et le cookie ('user_lang' ici)
+  app.use((req, res, next) => {
+    req.cookies = req.cookies||{}
+    req.cookies['user_lang'] = req.cookies['user_lang']|| DEFAULT_LANG
+    next();
+  });
+
+  app.use(handle(i18next, {
+    // Optionnel: Ignorer certaines routes (ex: /assets)
+    // ignoreRoutes: ["/favicon.ico", "/assets/"],
+    // Optionnel: Forcer la suppression du q-factor des langues
+    // removeLngFromUrl: false // Garder à false par défaut
+  }));
+
+
+  // Vite integration (inchangé)
   if (isProduction) {
-    // In production, we need to serve our static assets ourselves.
-    // (In dev, Vite's middleware serves our static assets.)
-    const sirv = (await import('sirv')).default
-    app.use(sirv(`${root}/dist/client`))
+    const sirv = (await import('sirv')).default;
+    // Servir les locales statiquement pour le client
+    app.use(sirv(`${root}/dist/client`)); // Assurez-vous que 'public/locales' est copié dans 'dist/client/locales'
   } else {
-    const { devMiddleware } = await createDevMiddleware({ root })
-    app.use(devMiddleware)
+    const { devMiddleware } = await createDevMiddleware({ root });
+    app.use(devMiddleware);
+    // Servir les locales depuis public en dev
+    const sirv = (await import('sirv')).default;
+    app.use(sirv(`${root}/public`));
   }
 
-  // ...
-  // Other middlewares (e.g. some RPC middleware such as Telefunc)
-  // ...
 
-  // Vike middleware. It should always be our last middleware (because it's a
-  // catch-all middleware superseding any middleware placed after it).
+  // Route pour les assets statiques (inchangée)
   app.get("/res/*", async (req, res) => {
     const url = localDir + "/public" + req.originalUrl;
-    console.log({url});
-    
-    return res.sendFile(url);
+    res.sendFile(url);
   });
-  app.get('*', async (req, res) => {
+
+  // Middleware Vike (catch-all)
+  app.get('*', async (req, res, next) => { // Ajout de next
+    // req.i18n est maintenant disponible grâce au middleware i18next
+    // Il contient l'instance i18n initialisée avec la langue détectée pour CETTE requête
+    const currentI18nInstance = req.i18n;
+
+    // S'assurer que la langue détectée est supportée, sinon fallback
+    let detectedLng = currentI18nInstance.language || defaultLng;
+    if (!supportedLngs.includes(detectedLng)) {
+      detectedLng = defaultLng;
+      // Changer la langue DANS l'instance de la requête actuelle
+      await currentI18nInstance.changeLanguage(detectedLng);
+    }
+    console.log(`[SSR] Detected/Using language: ${detectedLng}`);
+
+
     const pageContextInit = {
       urlOriginal: req.originalUrl,
-      headersOriginal: req.headers
-    }
-    const pageContext = await renderPage(pageContextInit)
-    if (pageContext.errorWhileRendering) {
-      // Install error tracking here, see https://vike.dev/error-tracking
-    }
-    const { httpResponse } = pageContext
-    if (res.writeEarlyHints) res.writeEarlyHints({ link: httpResponse.earlyHints.map((e) => e.earlyHintLink) })
-    httpResponse.headers.forEach(([name, value]) => res.setHeader(name, value))
-    res.status(httpResponse.statusCode)
-    // For HTTP streams use pageContext.httpResponse.pipe() instead, see https://vike.dev/streaming
-    res.send(httpResponse.body)
-  })
+      headersOriginal: req.headers,
+      // ✅ Passer l'instance i18n et les données initiales au contexte Vike
+      i18nInstance: currentI18nInstance,
+      initialI18nStore: currentI18nInstance.store.data, // Les traductions chargées
+      initialLanguage: detectedLng, // La langue utilisée pour le rendu
+    };
 
-  const port = process.env.PORT || 3005
-  app.listen(port)
-  console.log(`Server running at http://localhost:${port}`)
+    let pageContext;
+    try {
+      pageContext = await renderPage(pageContextInit);
+    } catch (err) {
+      // Gérer les erreurs de rendu Vike
+      console.error("Vike renderPage error:", err);
+      return next(err); // Passer à un gestionnaire d'erreurs Express si configuré
+    }
+
+
+    if (pageContext.errorWhileRendering) {
+      console.error("Vike errorWhileRendering:", pageContext.errorWhileRendering);
+      // Install error tracking here
+    }
+
+    const { httpResponse } = pageContext;
+    if (!httpResponse) {
+      // Si Vike ne gère pas la route, passer au middleware suivant (ou 404)
+      return next();
+    }
+
+    // Envoyer la réponse (inchangé)
+    if (res.writeEarlyHints) res.writeEarlyHints({ link: httpResponse.earlyHints.map((e) => e.earlyHintLink) });
+    httpResponse.headers.forEach(([name, value]) => res.setHeader(name, value));
+    res.status(httpResponse.statusCode);
+    res.send(httpResponse.body);
+  });
+
+  const port = process.env.PORT || 3005;
+  app.listen(port);
+  console.log(`Server running at http://localhost:${port}`);
 }

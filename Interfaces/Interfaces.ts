@@ -27,6 +27,7 @@ export type StatParamType = Partial<{
   with_delivery: true | undefined
 }
 >
+
 export interface StatsData {
   visits_stats?: Array<{
     date: string;
@@ -38,6 +39,7 @@ export interface StatsData {
     pageUrl?: Record<string, number>;
     [key: string]: any;
   }>;
+
   order_stats?: Array<{
     date: string;
     users_count: number;
@@ -89,6 +91,7 @@ export type EventStatus = {
   user_role: 'client' | 'admin' | 'owner' | 'collaborator' | 'supervisor',
   user_provide_change_id: string
 }
+
 export type FilterType = {
   order_by?: "date_desc" | "date_asc" | "price_desc" | "price_asc" | undefined;
   product_id?: string,
@@ -140,11 +143,13 @@ export type UserFilterType = Partial<{
   with_last_visit:boolean,
   search?: string
 }>
+
 export type UpdateValue = {
   update: Partial<ValueInterface>[],
   create: Partial<ValueInterface>[],
   delete: string[],
 }
+
 export type UpdateFeature = {
   update: Partial<FeatureInterface>[],
   create: Partial<FeatureInterface>[],
@@ -187,6 +192,7 @@ export interface UserInterface {
   s_type?: string;
   stats?: UserStats
 }
+
 interface UserStats {
   avgRating?: number,
   commentsCount?: number,
@@ -195,10 +201,10 @@ interface UserStats {
   ordersCount?: number,
   lastVisit?: string | null
 }
+
 export interface Role {
   id: string,
-  name: string,
-  access: 'store' | 'system' | 'none',
+  //...
 }
 
 export interface CommandItemInterface {
@@ -216,6 +222,7 @@ export interface CommandItemInterface {
   updated_at: string
   product?: ProductInterface,
 }
+
 export interface CommandInterface {
   id: string,
   store_id: string,
@@ -268,6 +275,7 @@ export interface CategoryInterface {
   created_at: string,
   updated_at: string
 }
+
 export interface ProductInterface {
   id: string;
   store_id: string;
@@ -287,22 +295,6 @@ export interface ProductInterface {
   features?: FeatureInterface[]
 };
 
-export interface ProductFavoriteInterface {
-  id: string;
-  store_id: string;
-  category_id: string | null;
-  name: string;
-  default_feature_id: string;
-  description: string;
-  barred_price: number | null;
-  price: number;
-  currency: string;
-  created_at: string;
-  updated_at: string;
-  user_id: string;
-  label: string;
-  product_id: string;
-};
 
 export interface ValueInterface {
   id: string;
@@ -340,31 +332,68 @@ export interface FeatureInterface {
   updated_at: string,
   values?: ValueInterface[];
 };
+// src/Interfaces/Interfaces.ts (ou un fichier similaire)
 
-export interface FeaturesResponseInterface {
-  features: FeatureInterface[]; // Tableau de Feature
-};
-export interface GroupFeatureInterface {
-  id: string,
-  product_id: string,
-  stock: number,
-  bind: object,
-  created_at: string,
-  updated_at: string
+// --- Interface pour Favorite ---
+// Basée sur le modèle Favorite.ts et les données retournées par get_favorites
+export interface Favorite {
+  id: string;
+  user_id: string;
+  label: string; // Le label/tag donné par l'utilisateur
+  product_id: string;
+  created_at: string; // Format ISO String
+  updated_at: string; // Format ISO String
+
+  // Optionnel: Si préchargé via la relation dans le hook useGetFavorites
+  product?: ProductInterface;
+}
+
+// --- Interface pour Inventory ---
+// Basée sur le modèle Inventory.ts
+export interface Inventory {
+  id: string;
+  address_name: string; // Nom du point de vente/stock
+  views: string[];       // URLs des images (retournées par l'API après upload)
+  email: string | null;  // Email de contact (peut être null)
+  latitude: number;      // Coordonnée géographique
+  longitude: number;     // Coordonnée géographique
+  created_at: string;    // Format ISO String
+  updated_at: string;    // Format ISO String
+
+  // --- Relations potentielles (non incluses par défaut dans le contrôleur actuel) ---
+  // phones?: InventoryPhone[];   // Si on ajoute la relation dans le modèle/contrôleur
+  // socials?: InventorySocial[]; // Si on ajoute la relation dans le modèle/contrôleur
+}
+
+// --- Interfaces pour les relations d'Inventory (si nécessaires) ---
+export interface InventoryPhone {
+  id: string;
+  inventory_id: string;
+  phone_number: string;
+  format: string | null;
+  country_code: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface InventorySocial {
+  id: string;
+  inventory_id: string;
+  name: string;          // Nom du réseau social (ex: 'Facebook', 'Instagram')
+  icon: string[] | null; // Icône (URL)
+  url: string;           // URL du profil social
+  created_at: string;
+  updated_at: string;
 }
 
 
-export interface MetaPaginationInterface {
-  "total": number,
-  "perPage": number,
-  "currentPage": number,
-  "lastPage": number,
-  "firstPage": number,
-  "firstPageUrl": string,
-  "lastPageUrl": string,
-  "nextPageUrl": null,
-  "previousPageUrl": null
+// --- Interface pour GlobalSearchType ---
+// Basée sur la structure de retour de GlobaleServicesController.global_search
+export interface GlobalSearchType {
+  // Note: L'API retourne un objet unique ou un tableau selon la recherche (#id ou texte).
+  // L'implémentation de l'API normalise maintenant pour toujours retourner des tableaux.
+  products: ProductInterface[];
+  categories: CategoryInterface[];
+  clients: UserInterface[];       // Résultats de recherche pour les utilisateurs (clients)
+  commands: CommandInterface[];   // Résultats de recherche pour les commandes
 }
-type ProductPick = 'barred_price' | 'description' | 'name' | 'id' | 'price' | 'currency' | 'default_feature_id';
-
-export type ProductClientInterface = Pick<ProductInterface, ProductPick> 
