@@ -1,5 +1,5 @@
 import { JSX } from 'react'
-import './Button.css'
+// import './Button.css'
 import { IoChevronForward } from 'react-icons/io5'
 
 export {Button}

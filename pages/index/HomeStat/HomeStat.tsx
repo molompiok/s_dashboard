@@ -1,97 +1,165 @@
-// HomeStat.tsx
-import { useEffect, useRef, useState } from "react";
-import { IoBagHandle, IoCart, IoEllipsisHorizontalSharp, IoEyeOff, IoEyeSharp, IoPeopleSharp } from "react-icons/io5";
-import { Nuage } from "../Nuage";
-import MyChart from "../MiniChart";
-import './HomeStat.css'
-import { useApp } from "../../../renderer/AppStore/UseApp";
+// pages/index/HomeStat/HomeStat.tsx
+// import './HomeStat.css'; // ❌ Supprimer l'import CSS
+
+import { useEffect, useMemo, useRef, useState } from "react";
+import { IoPeopleSharp, IoCart, IoEllipsisHorizontalSharp, IoEyeOff, IoEyeSharp } from "react-icons/io5";
+import { Nuage } from "../Nuage"; // Garder Nuage
+import MyChart from "../MiniChart"; // Garder MiniChart
+import { useApp } from "../../../renderer/AppStore/UseApp"; // Sera remplacé par useGetStats
+import { useGetStats } from "../../../api/ReactSublymusApi"; // ✅ Importer le hook
 import { PeriodType, StatsData } from "../../../Interfaces/Interfaces";
 import { useStore } from "../../stores/StoreStore";
+import { useTranslation } from "react-i18next"; // ✅ Importer useTranslation
 
 export function HomeStat() {
+    const { t } = useTranslation(); // ✅ Initialiser la traduction
     const [eye, setEye] = useState(false);
-    const comptref = useRef<HTMLSpanElement | null>(null);
+    const compteRef = useRef<HTMLSpanElement | null>(null); // Renommer pour clarté
     const [nuageW, setNuageW] = useState(100);
-    const { currentStore } = useStore()
-    const { fetchStats } = useApp()
-    const [period, setPeriod] = useState<PeriodType>('month')
-    const [userStats, setUserStats] = useState<StatsData>()
-    const [openPeriod, setOpenPerod] = useState(false)
-    const fetchS = () => {
-        try {
-            fetchStats({
-                stats: ['visits_stats', 'order_stats'],
-                period
-            }).then(s => {
-                setUserStats(s)
-            })
-        } catch (error) { }
-    }
-    useEffect(() => {
-        currentStore && fetchS();
-    }, [currentStore,period]);
+    const { currentStore } = useStore();
+    // const { fetchStats } = useApp(); // Supprimer l'appel Zustand
+    const [period, setPeriod] = useState<PeriodType>('month');
+    // const [userStats, setUserStats] = useState<StatsData>(); // Géré par React Query
+    const [openPeriod, setOpenPeriod] = useState(false);
 
-    console.log({ userStats });
+    // ✅ Utiliser le hook React Query pour fetch les stats
+    const { data: statsData, isLoading, isError, error } = useGetStats(
+        { period, stats: ['visits_stats', 'order_stats'] },
+        { enabled: !!currentStore } // N'activer que si currentStore existe
+    );
+
+    // Calculer les totaux à partir des données de React Query
+    const totalVisits = useMemo(() =>
+        statsData?.visits_stats?.reduce((sum: any, day: any) => sum + (day.visits || 0), 0) ?? 0,
+        [statsData?.visits_stats]
+    );
+    const totalOrders = useMemo(() =>
+        statsData?.order_stats?.reduce((sum: any, day: any) => sum + (day.orders_count || 0), 0) ?? 0,
+        [statsData?.order_stats]
+    );
+    // TODO: Ajouter la récupération du total du compte si nécessaire via une autre query/mutation
+
+    // Gérer la largeur du nuage quand on cache/montre le montant
+    const toggleEye = () => {
+        const w = compteRef.current?.getBoundingClientRect().width || 100;
+        setNuageW(w);
+        setEye(!eye);
+    };
+
+    // Fermer la liste des périodes si on clique ailleurs
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            // Logique pour fermer si on clique hors du bouton et de la liste...
+            // C'est souvent géré par une librairie UI (Headless UI, Radix) ou un hook personnalisé
+            if (openPeriod /* && ne clique pas sur le bouton ou la liste */) {
+                // setOpenPeriod(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => document.removeEventListener('mousedown', handleClickOutside);
+    }, [openPeriod]);
+
 
     return (
-        <div className="home-stat-container">
-            {/* Account Total Card */}
-            <div className={"stat-card account-card "+(openPeriod?'no':'')}>
-                <div className="card-header">
-                    <h3>Total du compte</h3>
-                    <span className="period-option no-selectable" onClick={() => setOpenPerod(!openPeriod)}>
-                        <span className="period">{period}</span>
-                        <IoEllipsisHorizontalSharp className='option' />
-                        <div className={"period-list "+(openPeriod?'visible':'')}>
-                            {
-                                (['day', 'week', 'month'] as const).map(p => (
-                                    <b onClick={()=>setPeriod(p)}>{p}</b>
-                                ))
-                            }
+        // Conteneur principal avec grid et breakpoints Tailwind
+        <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-5 p-5 bg-gradient-to-br from-gray-50 to-slate-200/25 rounded-2xl">
+
+            {/* Account Total Card - md:col-span-2 pour occuper toute la largeur sur md+ */}
+            <div className={`relative bg-white/95 shadow-md rounded-xl p-5 transition duration-100 ease-in-out ${openPeriod ? '' : 'hover:scale-99'} sm:col-span-2`}>
+                <div className="flex justify-between items-center mb-4">
+                    {/* 🌍 i18n */}
+                    <h3 className="text-slate-600 text-sm font-semibold flex items-center gap-1">
+                        {t('dashboard.accountTotal')}
+                    </h3>
+                    <div className="relative"> {/* Conteneur relatif pour la liste absolue */}
+                        <span
+                            className="flex items-center gap-3 cursor-pointer text-sm no-select"
+                            onClick={() => setOpenPeriod(!openPeriod)}
+                            role="button" // Accessibilité
+                            tabIndex={0} // Accessibilité
+                            onKeyDown={(e) => e.key === 'Enter' && setOpenPeriod(!openPeriod)} // Accessibilité
+                        >
+                            {/* 🌍 i18n */}
+                            <span className="period capitalize">{t(`dashboard.periods.${period}`, period)}</span> {/* Clé dynamique */}
+                            <IoEllipsisHorizontalSharp className='text-lg text-slate-500 hover:text-slate-600 hover:scale-110 transition-transform' />
+                        </span>
+                        {/* Liste déroulante pour la période */}
+                        <div
+                            className={`absolute right-0 mt-2 w-28 bg-white shadow-lg rounded-xl p-3 z-50 flex flex-col gap-2 transition-all duration-200 ease-in-out ${openPeriod ? 'opacity-100 visible scale-100' : 'opacity-0 invisible scale-95'
+                                }`}
+                        // aria-hidden={!openPeriod}
+                        >
+                            {(['day', 'week', 'month'] as const).map(p => (
+                                <button // Utiliser des boutons pour l'accessibilité
+                                    key={p}
+                                    onClick={() => { setPeriod(p); setOpenPeriod(false); }}
+                                    // 🌍 i18n
+                                    className={`capitalize font-normal text-sm text-left px-2 py-1 rounded hover:bg-gray-100 ${period === p ? 'text-blue-600 font-medium' : 'text-gray-700'}`}
+                                >
+                                    {t(`dashboard.periods.${p}`, p)} {/* Clé dynamique */}
+                                </button>
+                            ))}
                         </div>
-                    </span>
+                    </div>
                 </div>
-                <div className="card-content">
-                    <h1 className='compte'>
+                <div className="flex flex-col gap-2.5">
+                    <h1 className='text-2xl flex items-center gap-2.5 text-slate-800'>
                         {!eye ?
-                            <span ref={comptref}>{Number(295000).toLocaleString()} FCFA</span> :
+                            // TODO: Remplacer 295000 par la vraie valeur du compte
+                            <span ref={compteRef}>{Number(295000).toLocaleString()} FCFA</span> :
                             <Nuage color='#3455' density={1} height={20} width={nuageW} speed={1} />}
-                        <span className="eye-toggle" onClick={() => {
-                            const w = comptref.current?.getBoundingClientRect().width || 100;
-                            setNuageW(w);
-                            setEye(!eye);
-                        }}>
-                            {eye ? <IoEyeSharp /> : <IoEyeOff />}
+                        <span className="cursor-pointer text-slate-500 hover:text-slate-600" onClick={toggleEye}>
+                            {eye ? <IoEyeSharp size={20} /> : <IoEyeOff size={20} />}
                         </span>
                     </h1>
                 </div>
+                {/* Lien Voir plus (optionnel pour cette carte) */}
+                {/* <a href="/billing" className="absolute bottom-2.5 right-5 text-sm text-blue-500 hover:text-blue-700 hover:underline no-underline">Détails</a> */}
             </div>
 
             {/* Visits Card */}
-            <div className="stat-card visits-card">
-                <div className="card-header">
-                    <h3><IoPeopleSharp className='icon' /> Visites</h3>
+            <div className="relative bg-white/95 shadow-md rounded-xl p-5 transition duration-100 ease-in-out hover:scale-99">
+                <div className="flex justify-between items-center mb-4">
+                    {/* 🌍 i18n */}
+                    <h3 className="text-slate-600 text-sm font-semibold flex items-center gap-1">
+                        <IoPeopleSharp className='w-5 h-5' /> {t('dashboard.visits')}
+                    </h3>
+                    {/* Optionnel: Bouton options si besoin */}
                 </div>
-                <div className="card-content">
-                    <div className="stats-content">
-                        <h2>{userStats?.visits_stats?.slice(0, 30).map(v => v.visits).reduce((p, c) => p + c, 0)}</h2>
-                        {userStats?.visits_stats && <MyChart datasets={userStats.visits_stats.slice(0, 20).map(v => v.visits)} />}
+                <div className="flex flex-col gap-2.5">
+                    <div className="flex items-start justify-between gap-4">
+                        {isLoading && <span className="text-lg text-gray-500">{t('common.loading')}</span>}
+                        {isError && <span className="text-lg text-red-500">{t('common.error')}</span>}
+                        {!isLoading && !isError && <h2 className="text-lg font-semibold text-blue-700">{totalVisits}</h2>}
+                        {/* Afficher le graphique seulement si données disponibles */}
+                        {statsData?.visits_stats && statsData.visits_stats.length > 0 &&
+                            <MyChart datasets={statsData.visits_stats.slice(-12).map(v => v.visits || 0)} />} {/* Prendre les 12 dernières? */}
                     </div>
-                    <a href="/stats" className="card-link">Voir plus</a>
+                    {/* 🌍 i18n */}
+                    <a href="/stats" className="absolute bottom-2.5 left-5 text-sm text-blue-500 hover:text-blue-700 hover:underline no-underline">{t('common.seeMore')}</a>
                 </div>
             </div>
 
             {/* Orders Card */}
-            <div className="stat-card orders-card">
-                <div className="card-header">
-                    <h3><IoCart className='icon' /> Commandes</h3>
+            <div className="relative bg-white/95 shadow-md rounded-xl p-5 transition duration-100 ease-in-out hover:scale-99">
+                <div className="flex justify-between items-center mb-4">
+                    {/* 🌍 i18n */}
+                    <h3 className="text-slate-600 text-sm font-semibold flex items-center gap-1">
+                        <IoCart className='w-5 h-5' /> {t('dashboard.totalOrders')}
+                    </h3>
+                    {/* Optionnel: Bouton options si besoin */}
                 </div>
-                <div className="card-content">
-                    <div className="stats-content">
-                        <h2>{userStats?.order_stats?.slice(0, 30).map(v => v.orders_count).reduce((p, c) => p + c, 0)}</h2>
-                        {userStats?.order_stats && <MyChart datasets={userStats.order_stats.slice(0, 20).map(v => v.orders_count)} color='green' />}
+                <div className="flex flex-col gap-2.5">
+                    <div className="flex items-start justify-between gap-4">
+                        {isLoading && <span className="text-lg text-gray-500">{t('common.loading')}</span>}
+                        {isError && <span className="text-lg text-red-500">{t('common.error')}</span>}
+                        {!isLoading && !isError && <h2 className="text-lg font-semibold text-green-700">{totalOrders}</h2>}
+                        {/* Afficher le graphique seulement si données disponibles */}
+                        {statsData?.order_stats && statsData.order_stats.length > 0 &&
+                            <MyChart datasets={statsData.order_stats.slice(-12).map(v => v.orders_count || 0)} color='green' />} {/* Prendre les 12 dernières? */}
                     </div>
-                    <a href="/stats" className="card-link">Voir plus</a>
+                    {/* 🌍 i18n */}
+                    <a href="/stats" className="absolute bottom-2.5 left-5 text-sm text-blue-500 hover:text-blue-700 hover:underline no-underline">{t('common.seeMore')}</a>
                 </div>
             </div>
         </div>

@@ -1,11 +1,15 @@
-// src/api/SublymusApi.ts (ou chemin similaire)
-import { t } from '#utils/functions'; // Assumons que t() est accessible globalement ou importé
+// src/api/SublymusApi.ts (ou chemin 
+import { OrderStatus } from '../Components/Utils/constants';
 import type {
     ListType, ProductInterface, CategoryInterface, UserInterface, StoreInterface,
     CommandInterface, CommentInterface, DetailInterface, Inventory, Role, Favorite,
     FilterType, CommandFilterType, UserFilterType, /* ... autres types d'input/output ... */
-    GlobalSearchType, StatsData, StatParamType, EventStatus
+    GlobalSearchType, StatsData, StatParamType, EventStatus,
+    FeatureInterface,
+    TypeJsonRole
 } from '../Interfaces/Interfaces'; // Adapter le chemin
+
+import logger from './Logger';
 
 // Type pour les options de requête internes
 type RequestOptions = {
@@ -32,11 +36,12 @@ export class ApiError extends Error {
 export class SublymusApi {
     private apiUrl: string;
     private getAuthToken: () => string | null;
-
-    constructor(apiUrl: string, getAuthToken: () => string | null) {
+    private t:(target:string,data?:any) => string;
+    constructor(apiUrl: string, getAuthToken: () => string | null,t:(target:string,data?:any) => string) {
         if (!apiUrl) {
             throw new Error(t('api.apiUrlRequired'));
         }
+        this.t = t;
         this.apiUrl = apiUrl.replace(/\/$/, ''); // Supprimer le slash final si présent
         this.getAuthToken = getAuthToken;
         logger.info(`SublymusApi initialized with URL: ${this.apiUrl}`);
@@ -53,7 +58,7 @@ export class SublymusApi {
 
         const token = this.getAuthToken();
         const requestHeaders = new Headers(headers);
-
+        console.log(`###########${token}##############`)
         // Ajouter le token d'authentification si disponible
         if (token) {
             requestHeaders.set('Authorization', `Bearer ${token}`);
@@ -126,7 +131,7 @@ export class SublymusApi {
                 // Si le parsing échoue même pour une réponse OK, c'est une erreur serveur
                 if (response.ok) {
                      logger.error({ status: response.status, url, error: jsonError }, "Failed to parse JSON response for OK status");
-                     throw new ApiError(t('api.parseError'), response.status);
+                     throw new ApiError(this.t('api.parseError'), response.status);
                 }
                 // Garder responseBody à null si le parsing échoue sur une erreur HTTP
             }
@@ -135,7 +140,7 @@ export class SublymusApi {
 
             if (!response.ok) {
                 // Utiliser le message du corps si disponible, sinon un message générique
-                const errorMessage = responseBody?.message || t(`api.httpError.${response.status}`, { defaultValue: response.statusText });
+                const errorMessage = responseBody?.message || this.t(`api.httpError.${response.status}`, { defaultValue: response.statusText });
                 throw new ApiError(errorMessage, response.status, responseBody);
             }
 
@@ -149,10 +154,10 @@ export class SublymusApi {
             } else if (error instanceof Error) {
                  logger.error({ method, url, error: error.message, stack: error.stack }, "API request failed (Network/Fetch Error)");
                  // 🌍 i18n
-                 throw new ApiError(t('api.networkError'), 0, { originalError: error.message }); // Status 0 pour erreur réseau
+                 throw new ApiError(this.t('api.networkError'), 0, { originalError: error.message }); // Status 0 pour erreur réseau
             } else {
                  logger.error({ method, url, error }, "API request failed (Unknown Error)");
-                 throw new ApiError(t('api.unknownError'), 0);
+                 throw new ApiError(this.t('api.unknownError'), 0);
             }
         }
     }

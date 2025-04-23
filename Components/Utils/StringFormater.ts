@@ -1,3 +1,4 @@
+//Components/Utils/StringFormater.ts
 import { Host } from "../../renderer/+config";
 
 

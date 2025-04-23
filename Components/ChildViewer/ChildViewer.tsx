@@ -1,3 +1,4 @@
+//Components/ChildViewer/ChildViewer.tsx
 import { JSX } from 'react';
 import { useApp } from '../../renderer/AppStore/UseApp';
 import './ChildViewer.css'

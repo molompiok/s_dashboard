@@ -1,3 +1,4 @@
+//pages/index/Nuage.tsx
 import { useEffect, useState } from "react";
 import { ClientCall } from "../../Components/Utils/functions";
 export {Nuage}

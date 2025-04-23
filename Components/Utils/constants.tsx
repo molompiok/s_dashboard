@@ -17,6 +17,7 @@ export {
     DETAIL_LIMIT,
 }
 
+export const NO_PICTURE = '/res/empty/image.png' 
 const DETAIL_LIMIT = 5;
 const MAX_STOCK = 1_000_000_000
 const MAX_PRICE = 1_000_000_000

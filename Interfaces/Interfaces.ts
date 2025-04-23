@@ -1,3 +1,24 @@
+export const JsonRole = {
+  filter_client: '',
+  ban_client: '',
+  filter_collaborator: '',
+  ban_collaborator: '',
+  create_delete_collaborator: '',
+  manage_interface: '',
+  filter_product: '',
+  edit_product: '',
+  create_delete_product: '',
+  manage_scene_product: '',
+  chat_client: '',
+  filter_command: '',
+  manage_command: '',
+} as const
+
+
+export type TypeJsonRole = {
+  [k in keyof typeof JsonRole]: (typeof JsonRole)[k] extends '' ? boolean : string;
+}
+
 export type AnnimationType = {
   slidesGrid: number[];
   translate: number;
@@ -6,9 +27,49 @@ export type AnnimationType = {
 }
 export type ListType<T> = {
   list: T[],
-  meta: {}
+  meta: {
+    total: number,
+    per_page: number,
+    current_page: number,
+    last_page: number,
+    first_page: number,
+    first_page_url: string|null,
+    last_page_url: string|null,
+    next_page_url: string|null,
+    previous_page_url: string|null
+  }
 }
 
+export type CategorySortOptions =
+    | 'name_asc'
+    | 'name_desc'
+    | 'created_at_desc'
+    | 'created_at_asc'
+    | 'product_count_desc' // Si le compte produit est disponible et triable
+    | 'product_count_asc'; // Si le compte produit est disponible et triable
+
+// Interface pour les filtres de la liste des catégories
+export interface CategoryFilterType {
+    // Filtres de recherche/identification
+    search?: string;           // Recherche textuelle (nom, description)
+    category_id?: string;      // Filtrer par un ID spécifique (pourrait être utilisé par getCategoryById mais inclus ici pour la complétude)
+    slug?: string;             // Filtrer par slug spécifique
+    parent_id?: string | null; // Filtrer par catégorie parente (null pour les catégories racines)
+
+    // Filtres d'affichage
+    with_product_count?: boolean; // Inclure le nombre de produits associés
+    is_visible?: boolean;         // Filtrer par statut de visibilité (si applicable)
+
+    // Tri
+    order_by?: CategorySortOptions; // Option de tri
+
+    // Pagination
+    page?: number;
+    limit?: number;
+
+    // Technique (optionnel, si utilisé dans le hook useGetCategories)
+    no_save?: boolean; // Pourrait indiquer de ne pas mettre à jour un store Zustand (si encore utilisé)
+}
 export type PeriodType = 'day' | 'week' | 'month';
 
 export type StatParamType = Partial<{
@@ -60,6 +121,7 @@ export interface CommentInterface {
   id: string
   user_id: string
   product_id: string
+  order_item_id: string
   bind_name: Record<string, ValueInterface>
   order_id: string
   title: string
@@ -135,12 +197,12 @@ export type UserFilterType = Partial<{
   max_date: string | undefined,
   with_addresses: boolean,
   with_phones: boolean,
-  with_avg_rating:boolean,
-  with_comments_count:boolean,
-  with_products_bought:boolean,
-  with_orders_count:boolean,
-  with_total_spent:boolean,
-  with_last_visit:boolean,
+  with_avg_rating: boolean,
+  with_comments_count: boolean,
+  with_products_bought: boolean,
+  with_orders_count: boolean,
+  with_total_spent: boolean,
+  with_last_visit: boolean,
   search?: string
 }>
 
@@ -170,7 +232,7 @@ export interface StoreInterface {
   title: string
   description: string,
   cover_image: (string | Blob)[],
-  domaines: string[],
+  domain_names: string[],
   logo: (string | File)[],
   disk_storage_limit_gb: number,
   url: string,
@@ -274,6 +336,7 @@ export interface CategoryInterface {
   icon: (string | Blob)[],
   created_at: string,
   updated_at: string
+  is_visible?:boolean
 }
 
 export interface ProductInterface {
@@ -293,6 +356,7 @@ export interface ProductInterface {
   created_at: Date;
   updated_at: Date;
   features?: FeatureInterface[]
+  categories?:CategoryInterface[]
 };
 
 
@@ -328,6 +392,7 @@ export interface FeatureInterface {
   multiple?: false,
   is_double?: false,
   default?: string,
+  is_default:string,
   created_at: string,
   updated_at: string,
   values?: ValueInterface[];

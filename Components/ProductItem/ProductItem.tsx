@@ -1,3 +1,4 @@
+//Components/ProductItem/ProductItem.tsx
 import { IoPeopleSharp, IoStarHalf } from 'react-icons/io5';
 import { ProductInterface } from '../../Interfaces/Interfaces'
 import { getFileType, shortNumber } from '../Utils/functions';

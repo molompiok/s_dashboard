@@ -5,8 +5,9 @@ import logoUrl from './logo.svg'
 import { PageContextProvider, usePageContext } from './usePageContext'
 import { Link } from './Link'
 import type { PageContext } from 'vike/types'
-import './css/index.css'
-import './Layout.css'
+
+// import './css/index.css'
+// import './Layout.css'
 import '../Lib/i18n';
 import { useApp } from './AppStore/UseApp'
 import { Icons } from '../Components/Utils/constants'
@@ -113,14 +114,6 @@ function Frame({ children }: { children: React.ReactNode }) {
   )
 }
 
-function Row({ children, style, id, className }: { id?: string, className?: string, style?: React.CSSProperties | undefined, children: React.ReactNode }) {
-  return (
-    <div className={`row ${className}`} id={id} style={style}>
-      {children}
-    </div>
-  )
-}
-
 function Sidebar({ children }: { children: React.ReactNode }) {
   return (
     <div
@@ -146,13 +139,6 @@ function Bottombar({ children }: { children: React.ReactNode }) {
   )
 }
 
-function Page({ children }: { children: React.ReactNode }) {
-  return (
-    <div id="page">
-      {children}
-    </div>
-  )
-}
 
 function Content({ children }: { children: React.ReactNode }) {
   const { fetchOwnerStores,setCurrentStore } = useStore()

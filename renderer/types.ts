@@ -39,6 +39,7 @@ declare global {
        * La langue détectée et utilisée pour le rendu SSR.
        */
       initialLanguage?: string; // ✅ Type pour la langue initiale
+      lang:string,
 
     }
   }

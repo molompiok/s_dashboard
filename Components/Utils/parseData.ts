@@ -1,5 +1,5 @@
+//Components/Utils/parseData.ts
 import { FeatureInterface, ProductInterface } from "../../Interfaces/Interfaces";
-
 export { getDefaultFeature, getDefaultValues,IsFeaturesHere }
 
 function IsFeaturesHere(product:Partial<ProductInterface>) {

@@ -1,3 +1,4 @@
+//Components/Utils/functions.ts
 import { ProductInterface, ValueInterface } from "../../Interfaces/Interfaces";
 
 export {
@@ -13,9 +14,10 @@ export {
   limit
 }
 
-function getId(id:string|undefined=''){
-  return '#'+id.substring(0,id.indexOf('-'))
+function getId(id: string | undefined = '') {
+  return '#' + id.substring(0, id.indexOf('-'))
 }
+
 const limit = (l?: string | undefined | null, m: number = 16) => {
   return ((l?.length || 0) > m ? l?.substring(0, m) + '..' : l) || ''
 }
@@ -58,7 +60,7 @@ function getFileType(file: string | Blob | undefined) {
       return 'image'
     } else if (file.startsWith('data:video')) {
       return 'video'
-    }else{
+    } else {
       return 'image'
     }
   } else {
@@ -81,7 +83,7 @@ function shortNumber(n: number) {
 }
 
 
-export enum FeaturType {
+export enum FeatureType {
 
   ICON_TEXT = 'icon_text',
   COLOR = 'color',
@@ -108,10 +110,10 @@ function getOptions(bind: Record<string, string>, product: Partial<ProductInterf
     let featureId = feature.id;
 
     if ([
-      FeaturType.TEXT,
-      FeaturType.COLOR,
-      FeaturType.ICON,
-      FeaturType.ICON_TEXT
+      FeatureType.TEXT,
+      FeatureType.COLOR,
+      FeatureType.ICON,
+      FeatureType.ICON_TEXT
     ].includes(feature.type as any)) {
       let valueId = bind[featureId];
       if (!valueId) continue; // Si la feature n'est pas dans le bind, on passe
@@ -218,13 +220,13 @@ function debounce(fn: () => void, id: string, out = 300) {
     MapCallId[id].out = out
   } else {
     MapCallId[id].isRuning = true;
-    console.log('isRuning',true);
-    
+    console.log('isRuning', true);
+
     fn()
-    
+
     setTimeout(() => {
       MapCallId[id].isRuning = false;
-      console.log('isRuning',false);
+      console.log('isRuning', false);
       MapCallId[id].next && debounce(MapCallId[id].next, id, MapCallId[id].out);
       MapCallId[id].next = null;
     }, out);

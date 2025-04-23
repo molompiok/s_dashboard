@@ -1,9 +1,10 @@
+//Components/CategoryItem/CategoryItem.tsx
 import { useEffect, useState } from "react"
 import { CategoryInterface } from "../../Interfaces/Interfaces"
 import { Image_1 } from "../Utils/constants"
 import { ClientCall } from "../Utils/functions"
 import { getImg } from "../Utils/StringFormater"
-import './CategoryItem.css'
+// import './CategoryItem.css'
 import { useCategory } from "../../pages/category/CategoryStore"
 import { Api_host } from "../../renderer/+config"
 import { useStore } from "../../pages/stores/StoreStore"
