@@ -16,6 +16,7 @@ import { ClientCall } from '../Components/Utils/functions'
 import { useHashWatcher } from '../Hooks/useHashWatcher'
 import { useStore } from '../pages/stores/StoreStore'
 import { useTranslation } from 'react-i18next'
+import { useChildViewer } from '../Components/ChildViewer/useChildViewer'
 
 function Layout({ children, pageContext }: { children: React.ReactNode; pageContext: PageContext }) {
   return (
@@ -67,7 +68,7 @@ function SomeComponent() {
   );
 }
 function OpenChild() {
-  const { currentChild, alignItems, background, justifyContent, openChild,back } = useApp();
+  const { currentChild, alignItems, background, justifyContent, openChild,back } = useChildViewer();
   
 
   const child = currentChild || null;

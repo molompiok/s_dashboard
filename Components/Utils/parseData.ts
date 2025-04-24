@@ -1,6 +1,31 @@
 //Components/Utils/parseData.ts
 import { FeatureInterface, ProductInterface } from "../../Interfaces/Interfaces";
-export { getDefaultFeature, getDefaultValues,IsFeaturesHere }
+import { NEW_ID_START } from "./constants";
+import { ClientCall } from "./functions";
+export { getNewFeature ,getDefaultFeature, getDefaultValues,IsFeaturesHere }
+function getNewFeature() {
+    return {
+      id: NEW_ID_START + ClientCall(Math.random, 0).toString(),
+      created_at: '',
+      name: '',
+      product_id: '',
+      required: false,
+      type: '',
+      updated_at: '',
+      default: '',
+      icon: [],
+      index: 1,
+      is_double: false,
+      max: 0,
+      max_size: 0,
+      min: 0,
+      min_size: 0,
+      multiple: false,
+      regex: '',
+      values: [],
+      is_default:false
+    } satisfies FeatureInterface
+  }
 
 function IsFeaturesHere(product:Partial<ProductInterface>) {
     return product?.features && product.features.length>0

@@ -150,7 +150,7 @@ function CommandeList({ product_id, user_id }: { user_id?: string; product_id?: 
                 {!isLoading && !isError && commands.length === 0 && (
                      // Message "Aucun résultat"
                      <div className="flex flex-col items-center justify-center p-10 text-center text-gray-500">
-                         <div className="w-40 h-40 bg-contain bg-center bg-no-repeat mb-4" style={{ backgroundImage: getImg('/res/empty/search.png') }}></div>
+                         <div className="w-40 h-40 bg-contain bg-center bg-no-repeat mb-4" style={{ background: getImg('/res/empty/search.png') }}></div>
                          {t('common.noResults')}
                      </div>
                 )}

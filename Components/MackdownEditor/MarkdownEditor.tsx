@@ -107,6 +107,8 @@ export function MarkdownEditor2({ value, setValue,error }: { value: string, setV
   useEffect(() => {
     if (editorRef.current) {
       const editor = editorRef.current.getInstance();
+      console.log(editor.getMarkdown() !== value, editor.getMarkdown(), value);
+      
       if (editor && editor.getMarkdown() !== value) {
         editor.setMarkdown(value || "");
         adjustHeight(); // 🔥 Ajuster la hauteur au chargement

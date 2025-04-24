@@ -4,7 +4,7 @@
 
 import { ProductItemCard } from '../ProductItem/ProductItemCard'; // Renommé/Créé
 import { ProductRowItem } from '../ProductItem/ProductRowItem'; // Nouveau composant
-import { getImg } from '../Utils/StringFormater';
+
 // import { useProductStore } from '../../pages/products/ProductStore'; // Remplacé
 import { useGetProducts } from '../../api/ReactSublymusApi'; // ✅ Importer hook API
 import { useEffect, useState } from 'react';
@@ -14,7 +14,7 @@ import { OrderFilterComponent, PriceFilterComponent } from '../CommandesList/Com
 import { CategoryInterface, FilterType, ProductInterface } from '../../Interfaces/Interfaces';
 import { useTranslation } from 'react-i18next'; // ✅ i18n
 import { debounce } from '../Utils/functions'; // Garder debounce
-import logger from '../../api/Logger'; // Logger
+
 
 export { ProductList };
 
@@ -137,7 +137,7 @@ function AddProductCard() {
         // Utiliser flex, flex-col, items-center, justify-center, gap-5, etc.
         <a href='/products/new' className="aspect-[65/100] rounded-xl overflow-hidden border-2 border-dashed border-gray-300 hover:border-blue-400 hover:bg-blue-50/50 transition duration-200 cursor-pointer flex flex-col items-center justify-center text-center p-4 text-gray-500 hover:text-blue-600">
             <div className="w-24 h-24 mb-4"> {/* Ajuster taille image */}
-                <img src={getImg('/res/empty/Empty_bag.png')} alt={t('productList.addProduct')} className='w-full h-full object-contain opacity-70' />
+                <img src={'/res/empty/Empty_bag.png'} alt={t('productList.addProduct')} className='w-full h-full object-contain opacity-70' />
             </div>
             {/* Utiliser text-sm, font-medium */}
             <span className="text-sm font-medium">{t('productList.addProduct')}</span>

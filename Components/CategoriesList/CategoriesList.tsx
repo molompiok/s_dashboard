@@ -68,13 +68,13 @@ function CategoriesList({ title }: { title?: string }) {
     return (
         // Utiliser flex flex-col
         <div className="w-full flex flex-col">
-             {/* Titre */}
-             {/* Utiliser text-lg font-semibold mb-3 */}
+            {/* Titre */}
+            {/* Utiliser text-lg font-semibold mb-3 */}
             <h1 className="text-lg font-semibold text-gray-800 mb-3">
                 {title || t('dashboard.categories')} {/* 🌍 i18n */}
             </h1>
-             {/* Conteneur de la liste avec flex-wrap et gap */}
-             {/* Utiliser min-h-[...] pour éviter le saut de layout pendant le chargement */}
+            {/* Conteneur de la liste avec flex-wrap et gap */}
+            {/* Utiliser min-h-[...] pour éviter le saut de layout pendant le chargement */}
             <div
                 className="w-full flex flex-wrap items-start gap-2 min-h-[180px]" /* gap-2 (8px), min-h pour 2 lignes approx */
                 ref={listRef}
@@ -83,18 +83,18 @@ function CategoriesList({ title }: { title?: string }) {
                 <AddCategory isNew={allCategories.length === 0} />
 
                 {/* Affichage pendant le chargement */}
-                 {isLoading && Array.from({ length: 5 }).map((_, i) => <CategoryItemSkeleton key={`skel-${i}`} />)}
+                {isLoading && Array.from({ length: 5 }).map((_, i) => <CategoryItemSkeleton key={`skel-${i}`} />)}
 
-                 {/* Affichage des catégories chargées */}
-                 {!isLoading && !isError && displayCategories.map((c) =>
+                {/* Affichage des catégories chargées */}
+                {!isLoading && !isError && displayCategories.map((c) =>
                     <CategoryItemMini key={c.id} category={c} openCategory />
-                 )}
+                )}
 
-                 {/* Affichage erreur */}
-                 {isError && <p className='text-red-500 text-sm'>{t('category.fetchFailed')}</p>}
+                {/* Affichage erreur */}
+                {isError && <p className='text-red-500 text-sm'>{t('category.fetchFailed')}</p>}
 
-                 {/* Lien "Tout Voir" si nécessaire */}
-                 {!isLoading && !isError && canSeeMore && <SeeMoreLink />}
+                {/* Lien "Tout Voir" si nécessaire */}
+                {!isLoading && !isError && canSeeMore && <SeeMoreLink />}
 
             </div>
         </div>
@@ -140,10 +140,10 @@ function CategoryItemMini({
         return <CategoryItemSkeleton />;
     }
     // Afficher message si non trouvé après fetch
-     if (!category) {
-         // return <div className="w-20 h-20 rounded-xl flex items-center justify-center bg-gray-100 text-xs text-red-500 p-1 text-center">{t('category.notFound')}</div>;
-         return null; // Ou ne rien afficher
-     }
+    if (!category) {
+        // return <div className="w-20 h-20 rounded-xl flex items-center justify-center bg-gray-100 text-xs text-red-500 p-1 text-center">{t('category.notFound')}</div>;
+        return null; // Ou ne rien afficher
+    }
 
     const imageUrl = category.icon?.[0] ?? category.view?.[0];
     const productCount = category.product_count; // Supposons qu'il est fourni par useGetCategories/useGetCategoryById
@@ -164,34 +164,33 @@ function CategoryItemMini({
 
     return (
         <a // Garder <a> pour la sémantique de lien si openCategory est vrai
-            href={(openCategory && !onClick) ? `/category?id=${category.id}` : undefined}
+            href={(openCategory && !onClick) ? `/categories/${category.id}` : undefined}
             onClick={handleClick}
-             // Utiliser les classes Tailwind : w-20 h-20, flex, flex-col, items-center, etc.
+            // Utiliser les classes Tailwind : w-20 h-20, flex, flex-col, items-center, etc.
             className={`relative w-20 h-20 p-1.5 rounded-xl transition duration-200 ease-in-out flex flex-col items-center justify-center text-center cursor-pointer bg-white shadow-sm border border-gray-200 ${hoverEffect ? 'hover:scale-105 hover:shadow-md hover:border-blue-200' : ''}`}
         >
             {/* Bouton Supprimer ou Compte Produit */}
             {/* Utiliser absolute, top-0, right-0, translate-x/y pour positionner */}
             <div
-                className={`absolute -top-2 -right-2 flex items-center justify-center text-white text-[10px] font-semibold rounded-full shadow z-10 ${
-                    onDelete
-                    ? 'w-6 h-6 bg-red-500 hover:bg-red-600 cursor-pointer' // Style pour bouton supprimer
-                    : 'min-w-[20px] h-5 px-1.5 bg-blue-500 cursor-default' // Style pour compteur produit
-                }`}
+                className={`absolute -top-2 -right-2 flex items-center justify-center text-white text-[10px] font-semibold rounded-full shadow z-10 ${onDelete
+                        ? 'w-6 h-6 bg-red-500 hover:bg-red-600 cursor-pointer' // Style pour bouton supprimer
+                        : 'min-w-[20px] h-5 px-1.5 bg-blue-500 cursor-default' // Style pour compteur produit
+                    }`}
                 onClick={onDelete ? handleDelete : undefined}
                 title={onDelete ? t('common.delete') : undefined}
             >
                 {onDelete ? <IoClose size={14} /> : (productCount ?? '?')}
             </div>
 
-             {/* Image/Icône */}
-             {/* Utiliser w-full aspect-square, rounded, bg-cover/contain, bg-center */}
+            {/* Image/Icône */}
+            {/* Utiliser w-full aspect-square, rounded, bg-cover/contain, bg-center */}
             <div
                 className="w-full aspect-square rounded bg-contain bg-center bg-no-repeat mb-1" // Utiliser contain pour icônes
                 style={{ backgroundImage: getImg(imageUrl, 'contain', currentStore?.url) }} // Toujours contain
             ></div>
 
-             {/* Nom */}
-             {/* Utiliser text-xs, font-medium, text-gray-700, truncate */}
+            {/* Nom */}
+            {/* Utiliser text-xs, font-medium, text-gray-700, truncate */}
             <span className="w-full text-xs font-medium text-gray-700 truncate leading-tight" title={category.name}>
                 {category.name}
             </span>
@@ -205,26 +204,26 @@ function AddCategory({ isNew }: { isNew: boolean }) {
     if (isNew) {
         return (
             // Style pleine largeur si c'est le seul élément
-             // Utiliser flex, items-center, gap-6, p-4, rounded-xl, border-dashed etc.
-             <a href='/category?id=new' className="w-full flex flex-col sm:flex-row items-center gap-4 sm:gap-6 p-4 rounded-xl border-2 border-dashed border-blue-300 bg-blue-50 text-blue-700 hover:border-blue-400 hover:bg-blue-100 transition duration-150 cursor-pointer">
-                 <CgExtensionAdd className='w-12 h-12 text-blue-500 flex-shrink-0' />
-                 <div className='text-center sm:text-left'>
-                    <p className='font-semibold'>{t('category.addNewPromptTitle')}</p> 
-                    <p className='text-sm'>{t('category.addNewPromptDesc')}</p> 
-                 </div>
-                 {/* Optionnel: bouton explicite */}
-                 {/* <button className='ml-auto bg-blue-600 text-white px-4 py-1.5 rounded-lg text-sm font-medium hover:bg-blue-700'>
+            // Utiliser flex, items-center, gap-6, p-4, rounded-xl, border-dashed etc.
+            <a href='/categories/new' className="w-full flex flex-col sm:flex-row items-center gap-4 sm:gap-6 p-4 rounded-xl border-2 border-dashed border-blue-300 bg-blue-50 text-blue-700 hover:border-blue-400 hover:bg-blue-100 transition duration-150 cursor-pointer">
+                <CgExtensionAdd className='w-12 h-12 text-blue-500 flex-shrink-0' />
+                <div className='text-center sm:text-left'>
+                    <p className='font-semibold'>{t('category.addNewPromptTitle')}</p>
+                    <p className='text-sm'>{t('category.addNewPromptDesc')}</p>
+                </div>
+                {/* Optionnel: bouton explicite */}
+                {/* <button className='ml-auto bg-blue-600 text-white px-4 py-1.5 rounded-lg text-sm font-medium hover:bg-blue-700'>
                      {t('category.addNewButton')}
                  </button> */}
             </a>
         );
     } else {
         return (
-             // Petit bouton carré
-             // Utiliser w-20 h-20, flex, flex-col, items-center, justify-center, etc.
-             <a href='/category?id=new' className="w-20 h-20 p-1.5 rounded-xl transition duration-200 ease-in-out flex flex-col items-center justify-center text-center cursor-pointer bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700 border border-gray-300 hover:border-gray-400 hover:scale-105">
-                 <IoAddSharp className='w-8 h-8 mb-1' />
-                 <span className='text-xs font-medium'>{t('common.add')}</span> 
+            // Petit bouton carré
+            // Utiliser w-20 h-20, flex, flex-col, items-center, justify-center, etc.
+            <a href='/categories/new' className="w-20 h-20 p-1.5 rounded-xl transition duration-200 ease-in-out flex flex-col items-center justify-center text-center cursor-pointer bg-gray-100 text-gray-500 hover:bg-gray-200 hover:text-gray-700 border border-gray-300 hover:border-gray-400 hover:scale-105">
+                <IoAddSharp className='w-8 h-8 mb-1' />
+                <span className='text-xs font-medium'>{t('common.add')}</span>
             </a>
         );
     }
@@ -232,12 +231,12 @@ function AddCategory({ isNew }: { isNew: boolean }) {
 
 // --- Composant interne: SeeMoreLink ---
 function SeeMoreLink() {
-     const { t } = useTranslation(); // ✅ i18n
+    const { t } = useTranslation(); // ✅ i18n
     return (
-         // Utiliser w-20 h-20, flex, flex-col, items-center, justify-center, etc.
+        // Utiliser w-20 h-20, flex, flex-col, items-center, justify-center, etc.
         <a href="/categories" className="w-20 h-20 p-1.5 rounded-xl transition duration-200 ease-in-out flex flex-col items-center justify-center text-center cursor-pointer bg-blue-50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 border border-blue-200 hover:border-blue-300 hover:scale-105">
             <IoArrowForward className='w-8 h-8 mb-1' />
-            <span className='text-xs font-medium'>{t('common.seeAll')}</span> 
+            <span className='text-xs font-medium'>{t('common.seeAll')}</span>
         </a>
     );
 }

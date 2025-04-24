@@ -1,3 +1,4 @@
+//Components/SwiperProducts/SwiperProducts.tsx
 import './SwiperProducts.css'
 // Import Swiper React components
 import { Swiper, SwiperSlide } from 'swiper/react';

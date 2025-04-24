@@ -52,5 +52,9 @@ function getSearch(myLocation:Location) {
     
     return {myLocation, get searchPared(){
        return getSearch(myLocation);
+    },  replaceLocation(url:string){
+      history.replaceState(null, "", url);
+    },nextPage(url:string){
+      window.location.assign(url)
     }}
 }

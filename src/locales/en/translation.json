@@ -132,7 +132,8 @@
         "deleteFailed": "Value deletion failed.",
         "notFound": "Value not found.",
         "idRequired": "The value ID is required.",
-        "orFeatureNotFound": "Value or parent feature not found."
+        "orFeatureNotFound": "Value or parent feature not found.",
+        "unlimitedStockShort": "Illimité"
     },
     "detail": {
         "createdSuccess": "Detail created successfully.",
@@ -328,5 +329,16 @@
             "reset": "Reset"
         },
         "searchPlaceholder": "Name, description, #id..."
+    },
+    "priceStock": {
+        "pageTitle": "Prix & Stock - {{name}}",
+        "filterTitle": "Filtrer les Combinaisons",
+        "combinationsTitle": "Combinaisons de Variantes",
+        "noCombinationMatch": "Aucune combinaison ne correspond aux filtres sélectionnés.",
+        "basePrice": "Prix Base",
+        "combinationPrice": "Prix Combinaison",
+        "stockLabel": "Stock",
+        "saveButton": "Enregistrer Prix/Stock",
+        "editValuePopupTitle": "Modifier Prix/Stock pour {{name}}"
     }
 }

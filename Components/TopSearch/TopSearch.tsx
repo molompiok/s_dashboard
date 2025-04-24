@@ -5,10 +5,9 @@ import 'swiper/css/free-mode';
 
 import { useEffect, useState } from 'react'
 import { CategoryInterface, CommandInterface, FilterType, ProductInterface } from '../../Interfaces/Interfaces'
-import { useCategory } from '../../pages/category/CategoryStore'
 import { useStore } from '../../pages/stores/StoreStore'
 import { useApp, type GlobalSearchType } from '../../renderer/AppStore/UseApp'
-import { CategoryItem } from '../CategoryItem/CategoryItem'
+import { CategoryItemMini } from '../CategoryItem/CategoryItemMini'
 import { IoSearch } from 'react-icons/io5'
 import { getImg } from '../Utils/StringFormater'
 import { ProductItem } from '../ProductItem/ProductItem'
@@ -18,7 +17,7 @@ import { useWindowSize } from '../../Hooks/useWindowSize';
 
 export { TopSearch }
 
-function TopSearch({  onClientSelected,onProductSelected ,onCategorySelected,onCommandSelected }: {onCommandSelected?: (cammand:CommandInterface) => void,onCategorySelected?: (category:CategoryInterface) => void,onProductSelected?: (product:ProductInterface) => void,onClientSelected?: (client:any) => void }) {
+function TopSearch({ onClientSelected, onProductSelected, onCategorySelected, onCommandSelected }: { onCommandSelected?: (cammand: CommandInterface) => void, onCategorySelected?: (category: CategoryInterface) => void, onProductSelected?: (product: ProductInterface) => void, onClientSelected?: (client: any) => void }) {
     const { openChild, gobalSearch } = useApp()
     const { currentStore } = useStore()
     const [filter, setFilter] = useState<FilterType>({});
@@ -69,7 +68,7 @@ function TopSearch({  onClientSelected,onProductSelected ,onCategorySelected,onC
             <>
                 <h3>Categories</h3>
                 <Swiper
-                    slidesPerView={n*1.3}
+                    slidesPerView={n * 1.3}
                     spaceBetween={p}
                     freeMode={true}
                     pagination={{
@@ -82,7 +81,7 @@ function TopSearch({  onClientSelected,onProductSelected ,onCategorySelected,onC
                     {
                         data.categories?.map((c, i) =>
                             c && <SwiperSlide>
-                                <CategoryItem key={c.id} openCategory={true} category={c} onClick={() => {
+                                <CategoryItemMini key={c.id} openCategory={true} category={c} onClick={() => {
                                     openChild(null);
                                     onCategorySelected?.(c);
                                 }} />
@@ -129,7 +128,7 @@ function TopSearch({  onClientSelected,onProductSelected ,onCategorySelected,onC
                 (data.commands?.length) == 0 &&
                 (data.products?.length) == 0
             ) && (
-                <div className="icon-160" style={{ margin:'0px auto', background: getImg('/res/empty/search.png') }}></div>
+                <div className="icon-160" style={{ margin: '0px auto', background: getImg('/res/empty/search.png') }}></div>
             )
         }
     </div >

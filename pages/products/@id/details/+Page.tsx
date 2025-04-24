@@ -1,384 +1,495 @@
-import { IoChevronDown, IoChevronForward, IoChevronUp, IoEllipsisHorizontal, IoPencil, IoPeopleSharp, IoPricetag, IoStarHalf, IoTrash } from 'react-icons/io5'
-import { MarkdownEditor2 } from '../../../../Components/MackdownEditor/MarkdownEditor'
-import { Topbar } from '../../../../Components/TopBar/TopBar'
-import { getImg } from '../../../../Components/Utils/StringFormater'
-import { useStore } from '../../../stores/StoreStore'
-import './+Page.css'
-import { ClientCall, limit, shortNumber } from '../../../../Components/Utils/functions'
-import { markdownToPlainText, MarkdownViewer } from '../../../../Components/MarkdownViewer/MarkdownViewer'
-import { DetailInterface, ListType, ProductInterface } from '../../../../Interfaces/Interfaces'
-import { useProductStore } from '../../ProductStore'
-import { usePageContext } from '../../../../renderer/usePageContext'
-import { useEffect, useState } from 'react'
-import { useDetailStore } from './DetailStore'
-import { getDefaultValues } from '../../../../Components/Utils/parseData'
-import { Indicator } from '../../../../Components/Indicator/Indicator'
-import { DETAIL_LIMIT } from '../../../../Components/Utils/constants'
-import { useApp } from '../../../../renderer/AppStore/UseApp'
-import { ChildViewer } from '../../../../Components/ChildViewer/ChildViewer'
-import { Comfirm } from '../../../../Components/Confirm/Confirm'
-import { ConfirmDelete } from '../../../../Components/Confirm/ConfirmDelete'
-import { motion, AnimatePresence } from 'framer-motion'
-import { ProductPreview } from '../../../../Components/ProductPreview/ProductPreview'
-import { PageNotFound } from '../../../../Components/PageNotFound/PageNotFound'
-import { Server_Host } from '../../../../renderer/+config'
-export { Page }
-const details: DetailInterface[] = [
-  {
-    id: '1',
-    product_id: 'P001',
-    title: 'Sac à dos urbain',
-    description: `
-# 📝 Test Complet du Markdown
+// pages/products/@id/details/+Page.tsx (Adapter chemin si nécessaire)
 
-## 1️⃣ **Texte Basique**
-- **Gras**
-- *Italique*
-- ~~Barré~~
-- __Souligné__ (via HTML : \`<u>texte</u>\`)
-
----
-
-## 2️⃣ **Titres & Listes**
-### ✅ Listes non ordonnées :
-- Éléments avec \`-\`
-- Second élément  
-  - Sous-élément avec \`-\`
-  - Encore un sous-élément
-
-### 🔢 Listes ordonnées :
-1. Premier élément
-2. Deuxième élément
-   1. Sous-élément 1
-   2. Sous-élément 2
-3. Troisième élément
-
----
-
-## 3️⃣ **Liens & Images**
-- [🔗 Lien vers Google](https://www.google.com)  
-- ![🌄 Image](https://via.placeholder.com/150)
-
----
-
-## 4️⃣ **Code & Syntaxe**
-### 👨‍💻 Code en ligne :
-Voici un exemple de \`console.log("Hello, Markdown!")\`
-
-### 🖥️ Bloc de code multi-lignes :
-\`\`\`js
-function test() {
-  console.log("Markdown est génial !");
-}
-test();
-
-      `,
-    view: ['/res/store_img_1.png'],
-    index: 0
-  },
-  {
-    id: '2',
-    product_id: 'P002',
-    title: 'Montre connectée avec suivi d\'activité et notifications intelligentes',
-    description: `## ⌚ Montre Connectée  
-  Une **montre intelligente** pour suivre votre santé et rester connecté :  
-  - 📊 Suivi du sommeil et fréquence cardiaque  
-  - 🔔 Notifications d’appels et messages  
-  - 🔋 Autonomie de 10 jours`,
-    view: ['/res/store_img_2.png'],
-    index: 1
-  },
-  {
-    id: '3',
-    product_id: 'P003',
-    title: 'Casque Bluetooth sans fil',
-    description: `### 🎧 Casque Bluetooth  
-  Profitez d’un **son exceptionnel** avec ce casque sans fil :  
-  - 🔊 Réduction de bruit active  
-  - 🎶 Basses profondes et audio HD  
-  - 🔋 Jusqu’à 30h d’autonomie`,
-    view: ['/res/store_img_3.png'],
-    index: 2
-  },
-  {
-    id: '4',
-    product_id: 'P004',
-    title: 'Lampe LED de bureau minimaliste et élégante',
-    description: `## 💡 Lampe LED  
-  Illuminez votre espace de travail avec une **lampe design et fonctionnelle** :  
-  - 💡 Lumière ajustable (blanche, chaude)  
-  - 🔌 Recharge USB intégrée  
-  - 🎨 Design épuré`,
-    view: ['/res/store_img_4.png'],
-    index: 3
-  },
-];
+// --- Imports ---
+import { useEffect, useState, useMemo, useCallback } from 'react';
+import { usePageContext } from '../../../../renderer/usePageContext';
+import { useStore } from '../../../stores/StoreStore';
+// ✅ Importer les hooks API nécessaires
+import {
+    useGetProducts, // Pour charger le produit
+    useGetDetails, // Pour charger les détails
+    useCreateDetail,
+    useUpdateDetail,
+    useDeleteDetail,
+} from '../../../../api/ReactSublymusApi';
+import { DetailInterface, ListType, ProductInterface } from '../../../../Interfaces/Interfaces';
+import { Topbar } from '../../../../Components/TopBar/TopBar';
+import { PageNotFound } from '../../../../Components/PageNotFound/PageNotFound';
+import { Indicator } from '../../../../Components/Indicator/Indicator';
+import { ConfirmDelete } from '../../../../Components/Confirm/ConfirmDelete';
+import { MarkdownEditor2 } from '../../../../Components/MackdownEditor/MarkdownEditor';
+import { MarkdownViewer } from '../../../../Components/MarkdownViewer/MarkdownViewer'; // Pour affichage
+import { ProductPreview } from '../../../../Components/ProductPreview/ProductPreview';
+import { ChildViewer } from '../../../../Components/ChildViewer/ChildViewer';
+import { Comfirm } from '../../../../Components/Confirm/Confirm'; // Pour popup DetailInfo
+import { getImg } from '../../../../Components/Utils/StringFormater';
+import { getFileType, limit } from '../../../../Components/Utils/functions'; // Garder limit
+import { DETAIL_LIMIT } from '../../../../Components/Utils/constants';
+import { IoAdd, IoChevronDown, IoChevronUp, IoCloudUploadOutline, IoEllipsisHorizontal, IoPencil, IoTrash } from 'react-icons/io5';
+import { RiImageEditFill } from 'react-icons/ri';
+import { motion, AnimatePresence } from 'framer-motion'; // Garder pour animation
+import { useTranslation } from 'react-i18next'; // ✅ i18n
+import logger from '../../../../api/Logger';
+import { v4 } from 'uuid'; // Pour ID temporaire
+import { useChildViewer } from '../../../../Components/ChildViewer/useChildViewer';
 
 
+export { Page };
+
+// --- Composant Principal ---
 function Page() {
-  const { fetchProductBy } = useProductStore();
-  const { routeParams } = usePageContext()
-  const [product, setProduct] = useState<Partial<ProductInterface>>()
-  const { currentStore } = useStore();
-  const { updateDetail, createDetail, fetchDetails, deleteDetail } = useDetailStore()
-  const { openChild } = useApp()
-  const [loading, setLoading] = useState(false)
-  const [s] = useState({
-    init_product: false,
-  })
+    const { t } = useTranslation(); // ✅ i18n
+    const { routeParams } = usePageContext();
+    const { currentStore } = useStore();
+    const productId = routeParams?.['id'];
 
-  const [details, setDetails] = useState<ListType<DetailInterface>>()
-  const saveRequired = async (c: Partial<DetailInterface> & { id: string }) => {
-    return await updateDetail(c, false).then(res => {
-      openChild(null)
-      if (!res?.id) return
-      (res as any).update = true;
-      setDetails((current) => current && ({
-        ...current,
-        list: (current.list || []).map(a => a.id == res.id ? res : a)
-      }))
-      return res
-    })
-  }
-  function openDetailOption(d: Partial<DetailInterface>, mode: 'add' | 'edit') {
-    openChild(<ChildViewer>
-      <DetailInfo detail={d || {} as any} setDetail={(_d) => {
-        // const id =  detail?.id || d.id;
-        //  id  && saveRequired({...d, id});
+    // --- Récupération Données ---
+    // Produit
+    const { data: productData, isLoading: isLoadingProduct,isError } = useGetProducts(
+        { product_id: productId, with_feature: false }, // Pas besoin des features ici a priori
+        { enabled: !!productId && productId !== 'new' }
+    );
+    const product = productData?.list?.[0];
 
+    // Détails
+    const { data: detailsData, isLoading: isLoadingDetails, refetch: refetchDetails,
+      isError: isFetchError,
+      error: fetchError,
+     } = useGetDetails(
+        { product_id: productId, limit: DETAIL_LIMIT + 5 }, // Fetcher un peu plus pour être sûr
+        { enabled: !!productId && productId !== 'new' }
+    );
+    // Trier les détails par index côté client pour l'affichage et la logique up/down
+    const sortedDetails = useMemo(() =>
+        [...(detailsData?.list ?? [])].sort((a, b) => a.index - b.index),
+        [detailsData?.list]
+    );
 
-        if (mode == 'add') {
-          product?.id && createDetail({ ..._d, product_id: product.id }).then(res => {
-            openChild(null)
-            if (!res?.id) return
-            setDetails((current) => current && ({
-              ...current,
-              list: [res, ...(current.list || [])]
-            }))
-          })
-        } else if (mode == 'edit') {
-          d?.id && saveRequired({ ..._d, id: d.id } as any)
-        }
-      }} onCancel={() => {
-        openChild(null)
-      }} />
-    </ChildViewer>, {
-      background: '#3455'
-    })
-  }
+    // --- Mutations ---
+    const createDetailMutation = useCreateDetail();
+    const deleteDetailMutation = useDeleteDetail();
+    // updateDetail est géré dans le popup DetailInfo
 
-  const resetDetails = () => {
-    fetchDetails({ product_id: routeParams.id }).then(res => {
-      setDetails(res)
-    })
-  }
-  useEffect(() => {
-    currentStore && fetchProductBy({ product_id: routeParams.id }).then(res => {
-      if (!res?.id) return
-      setProduct(res)
-    })
-    currentStore && resetDetails()
-  }, [currentStore])
+    // --- État & Handlers ---
+    const { openChild } = useChildViewer();
+    const isLoading = isLoadingProduct || isLoadingDetails;
 
-  console.log(details);
+    const handleOpenDetailPopup = (detail?: DetailInterface) => {
+        const isCreating = !detail;
+        openChild(
+            <ChildViewer title={isCreating ? t('detail.addPopupTitle') : t('detail.editPopupTitle')}>
+                <DetailInfo
+                    // Donner un ID temporaire et product_id pour la création
+                    detail={detail ?? { id: `new-${v4()}`, product_id: productId }}
+                    onSave={(savedDetail) => {
+                        // Après sauvegarde (création ou MAJ), on recharge la liste
+                        refetchDetails();
+                        openChild(null);
+                         // Afficher toast succès?
+                    }}
+                    onCancel={() => openChild(null)}
+                 />
+            </ChildViewer>,
+            { background: '#3455' }
+        );
+    };
 
-  const is_detail_max = (details?.list?.length || 0) >= DETAIL_LIMIT;
-  return <div className="page-detail">
-    <Topbar />
-    {product && <ProductPreview product={product} />}
-    <div className="add">
-      <h2 style={{ flexWrap: 'wrap' }}> Les details du produit <b className='prompt'>( {details?.list.length || 0} / {DETAIL_LIMIT} )</b>
-        <Indicator title=''
-          description={!is_detail_max ? `Vous pouvez ajoueter jusqu\'a ${DETAIL_LIMIT} details par produit` : `Vous avez atteint la limit de ${DETAIL_LIMIT} details par produit`}
-        />
-      </h2>
-      {<span style={{ display: is_detail_max ? 'none' : '' }} onClick={() => {
-        if (is_detail_max) return
-        openDetailOption({}, 'add')
-      }}>Ajoutez</span>}
-    </div>
-    <div className="details">
+     const handleDelete = (detailId: string, detailTitle?: string) => {
+         openChild(
+             <ChildViewer>
+                 <ConfirmDelete
+                     title={t('detail.confirmDelete', { title: detailTitle || t('detail.thisDetail') })} 
+                     onCancel={() => openChild(null)}
+                     onDelete={() => {
+                          deleteDetailMutation.mutate(detailId, {
+                              onSuccess: () => {
+                                   logger.info(`Detail ${detailId} deleted`);
+                                   // L'invalidation se fait maintenant dans le hook useDeleteDetail
+                                   // refetchDetails(); // Plus besoin si useDeleteDetail invalide bien
+                                   openChild(null);
+                                    // Afficher toast succès?
+                              },
+                              onError: (error) => {
+                                   logger.error({ error }, `Failed to delete detail ${detailId}`);
+                                   openChild(null);
+                                    // Afficher toast erreur?
+                              }
+                          });
+                     }}
+                 />
+             </ChildViewer>,
+             { background: '#3455' }
+         );
+     };
 
-      <AnimatePresence>
-        {
-          details?.list.map((d, i) => (
-            <motion.div
-              key={d.id}
-              layout // ← magie ici pour les animations d'ordre
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.95 }}
-              transition={{ duration: 0.3 }}
-            >
+     // Handlers pour Up/Down (simplifié, appelle l'API directement)
+     const handleMove = async (detailToMove: DetailInterface, direction: 'up' | 'down') => {
+          const currentIndex = detailToMove.index;
+          const newIndex = direction === 'up' ? currentIndex + 1 : currentIndex - 1;
 
-              <Detail key={d.id + ((d as any).update ? ClientCall(Math.random, 0) : '')} detail={d}
-                canUp={d.index+1<details.list.length}
-                canDown={d.index>0}
-                onDelete={() => {
-                  openChild(<ChildViewer>
-                    <ConfirmDelete title='Etez vous sur de vouloir supprimer cet detail du produit ' onCancel={() => {
-                      openChild(null);
-                    }} onDelete={() => {
-                      if (loading) return;
-                      openChild(null);
-                      setLoading(false);
-                      deleteDetail({ detail_id: d.id }).then(res => {
-                        setLoading(false)
-                        if (res) {
-                          setDetails((current) => current && ({
-                            ...current,
-                            list: current.list.filter(_d => _d.id != d.id)
-                          }))
-                        }
-                      }
-                      )
-                    }} />
-                  </ChildViewer>, {
-                    background: '#3455'
-                  })
-                }} onOption={() => {
-                  openDetailOption(d, 'edit')
-                }} onDown={() => {
-                  const index = d.index - 1;
-                  if (index < 0) return
-                  saveRequired({ index: d.index - 1, id: d.id }).then((res) => {
-                    resetDetails();
-                  })
-                }} onUp={() => {
-                  const index = d.index + 1;
-                  if (index >= (details?.list.length || 0)) return
-                  saveRequired({ index: d.index + 1, id: d.id }).then((res) => {
-                    resetDetails();
-                  })
-                }}/>
-            </motion.div>
-          ))
-        }
-      </AnimatePresence>
-      {
-        (details?.list.length||0)==0 && <PageNotFound  
-        url={Server_Host+'/demo/details'} 
-        image='/res/font.png' 
-        description={`Les details du produit sont compsee d'un titre, une description, et une image de haite qualite`} 
-        title={`Ajoutez un detail a ce produit`} 
-        forward='Voir comment ajouter detail'
-        iconForwardBefore={null}
-        iconForwardAfter={<IoChevronForward/>}
-        />
-      }
-    </div>
-  </div>
-}
+          // Trouver le détail voisin avec lequel échanger l'index
+          const neighborDetail = sortedDetails.find(d => d.index === newIndex);
+
+          if (newIndex < 0 || newIndex >= sortedDetails.length || !neighborDetail) {
+               logger.warn("Cannot move detail, invalid index or neighbor not found", { detailId: detailToMove.id, direction, newIndex });
+               return;
+          }
+
+           // Appeler la mutation d'update pour les deux détails pour échanger leur index
+           // C'est un peu lourd, idéalement l'API gérerait ça atomiquement.
+           // On utilise une promesse pour attendre les deux MAJ.
+           try {
+               // Mettre à jour le détail voisin avec l'index du détail actuel
+                await updateDetailDirect(neighborDetail.id, { index: currentIndex });
+                // Mettre à jour le détail actuel avec le nouvel index
+                await updateDetailDirect(detailToMove.id, { index: newIndex });
+                 // Recharger la liste après succès
+                 refetchDetails();
+           } catch (error) {
+                 logger.error("Failed to swap detail indexes", error);
+                 // Afficher une erreur à l'utilisateur
+           }
+     };
+
+      // Fonction helper pour appeler updateDetail (sera dans DetailInfo mais utilisée ici aussi)
+      const updateDetailDirect = (detailId: string, data: Partial<DetailInterface>) => {
+         const formData = new FormData();
+         Object.entries(data).forEach(([key, value]) => {
+             if (value !== undefined && value !== null) {
+                 formData.append(key, String(value));
+             }
+         });
+          // **Important**: Il faut aussi envoyer l'ID dans le corps pour le schéma de validation updateDetailSchema
+          formData.append('id', detailId);
+          // Pas besoin de passer l'ID dans l'URL pour l'API updateDetail telle que définie
+          return useUpdateDetail().mutateAsync({ detailId: detailId, formData }); // Utiliser la mutation
+      };
 
 
-function Detail({ detail, onDelete, onOption, onUp, onDown,canDown,canUp }: {canDown?:boolean,canUp?:boolean, onDown: () => void, onUp: () => void, onOption: () => void, onDelete: () => void, detail: Partial<DetailInterface & { prevView?: string }> }) {
-  const view = detail?.view?.[0];
-  const { currentStore } = useStore()
-  return <div className="detail">
-    <div className="top">
-      <div className="icon-140 view" style={{
-        background:
-          view ? getImg(
-            typeof view == 'string' ? view
-              : detail.prevView,
-            undefined, typeof view == 'string' ?
-            currentStore?.url : undefined
-          ) : getImg('/res/empty/drag-and-drop.png', '160%')
-      }}></div>
-      <div className="right">
-        <div className="options">
-          <IoChevronUp onClick={onUp} style={{opacity:canUp?1:0, visibility:canUp?'visible':'hidden'}}/>
-          <IoChevronDown onClick={onDown} style={{opacity:canDown?1:0, visibility:canDown?'visible':'hidden'}}/>
-          <IoTrash onClick={onDelete} />
-          <IoEllipsisHorizontal onClick={onOption} />
+    // --- Rendu ---
+    if (isLoading) return <div className="p-6 text-center text-gray-500">{t('common.loading')}</div>;
+    if (isFetchError && fetchError?.status === 404 ) return <PageNotFound title={t('product.notFound')} description={fetchError?.message} />;
+    if (isFetchError) return <div className="p-6 text-center text-red-500">{fetchError?.message || t('error_occurred')}</div>;
+    if (!product) return <PageNotFound title={t('product.notFound')} description={t('product.loadError')} />;
+
+
+    const isDetailMaxReached = (sortedDetails?.length || 0) >= DETAIL_LIMIT;
+
+    return (
+        <div className="page-detail w-full flex flex-col bg-gray-100 min-h-screen">
+            <Topbar back={true} title={t('detail.pageTitle', { name: product.name }).toString()} /> 
+
+            <main className="w-full max-w-4xl mx-auto p-4 md:p-6 lg:p-8 flex flex-col gap-6">
+
+                {/* Aperçu Produit */}
+                 {/* Utiliser mb-6 */}
+                <div className="mb-6">
+                     <ProductPreview product={product} />
+                 </div>
+
+
+                {/* Section Ajout Détail */}
+                 {/* Utiliser p-4 bg-white rounded-lg shadow-sm border */}
+                 <div className="add flex items-center justify-between p-4 bg-white rounded-lg shadow-sm border border-gray-200">
+                     <h2 className="text-base sm:text-lg font-semibold text-gray-800 flex items-center gap-2 flex-wrap">
+                          {t('detail.sectionTitle')} 
+                          <span className='text-sm font-normal text-gray-500'>({sortedDetails.length} / {DETAIL_LIMIT})</span> 
+                          <Indicator title={t('detail.addTooltipTitle')} description={t('detail.addTooltipDesc', { limit: DETAIL_LIMIT })} /> 
+                     </h2>
+                     <button
+                          type="button"
+                          onClick={() => handleOpenDetailPopup()}
+                          disabled={isDetailMaxReached}
+                          className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                         <IoAdd size={18} className="-ml-1" />
+                         {t('detail.addButton')} 
+                     </button>
+                 </div>
+
+                {/* Liste des Détails */}
+                 {/* Utiliser flex flex-col gap-4 */}
+                <div className="details flex flex-col gap-4">
+                    <AnimatePresence initial={false}> {/* initial=false pour éviter anim au chargement */}
+                         {sortedDetails.map((d, i) => (
+                             <motion.div
+                                 key={d.id}
+                                 layout // Animation d'ordre
+                                 initial={{ opacity: 0, y: 20 }}
+                                 animate={{ opacity: 1, y: 0 }}
+                                 exit={{ opacity: 0, y: -20, transition: { duration: 0.2 } }}
+                                 transition={{ duration: 0.3, ease: "easeOut" }}
+                                 className="origin-top" // Pour l'animation d'exit
+                             >
+                                 <DetailItem // Renommer Detail en DetailItem pour éviter conflit
+                                     detail={d}
+                                     canUp={i < sortedDetails.length - 1} // Peut monter si pas le dernier
+                                     canDown={i > 0} // Peut descendre si pas le premier
+                                     onDelete={() => handleDelete(d.id, d.title)}
+                                     onOption={() => handleOpenDetailPopup(d)}
+                                     onDown={() => handleMove(d, 'down')}
+                                     onUp={() => handleMove(d, 'up')}
+                                 />
+                             </motion.div>
+                         ))}
+                     </AnimatePresence>
+
+                     {/* Message si aucun détail */}
+                     {!isLoadingDetails && sortedDetails.length === 0 && (
+                         <PageNotFound
+                             image='/res/font.png'
+                             description={t('detail.emptyDesc')} 
+                             title={t('detail.emptyTitle')} 
+                             // forward={t('detail.emptyLink')}
+                             // iconForwardAfter={<IoChevronForward/>}
+                         />
+                     )}
+                 </div>
+            </main>
         </div>
-        <h2 className={!detail.title ? 'empty' : ''}>{limit(detail.title, 124)}</h2>
-      </div>
-    </div>
-
-    <MarkdownViewer markdown={limit(detail.description, 360).split('\n').slice(0, 5).join('\n') || ' '} />
-  </div >
+    );
 }
 
-function DetailInfo({ detail, setDetail, onCancel }: { onCancel: () => void, detail: Partial<DetailInterface & { prevView?: string }>, setDetail: (detail: Partial<DetailInterface & { prevView?: string }>) => void }) {
-  const { currentStore } = useStore()
-  const [collected, setCollected] = useState<Partial<DetailInterface & { prevView?: string }>>(detail || {})
-  const view = collected?.view?.[0];
-  const [accu, setAccu] = useState<Partial<DetailInterface & { prevView?: string }>>({})
 
-  const setBoth = (cb: (b: Partial<DetailInterface & { prevView?: string }>) => Partial<DetailInterface & { prevView?: string }>) => {
-    const b = cb({});
-    setCollected((current) => ({
-      ...current,
-      ...b
-    }))
-    setAccu((current) => ({
-      ...current,
-      ...b
-    }))
-  }
+// --- Composant DetailItem (Ancien Detail) ---
+function DetailItem({ detail, onDelete, onOption, onUp, onDown, canDown, canUp }: {
+    canDown?: boolean;
+    canUp?: boolean;
+    onDown: () => void;
+    onUp: () => void;
+    onOption: () => void;
+    onDelete: () => void;
+    detail: Partial<DetailInterface>;
+}) {
+     const { t } = useTranslation();
+     const view = detail?.view?.[0];
+     const { currentStore } = useStore();
 
-  const [loading, setLoading] = useState(false)
-  return <div className="detail-info">
-    <div className="top">
-      <label htmlFor='detail-view' className={` view`} style={{
-        background:
-          view ? getImg(
-            typeof view == 'string' ? view
-              : collected?.prevView,
-            undefined, typeof view == 'string' ?
-            currentStore?.url : undefined
-          ) : getImg('/res/empty/drag-and-drop.png', '70%')
-      }} >
-        <input id='detail-view' type="file" accept={'image/*'} style={{ display: 'none' }} onChange={(e) => {
-          const files = e.currentTarget.files;
-          console.log({ files });
-          if (!files?.[0]) return
-          setBoth((current) => ({
-            ...current,
-            view: Array.from(files),
-            prevView: URL.createObjectURL(files[0])
-          }))
-        }} />
-      </label>
-      <div className="options"></div>
-    </div>
-    <label className='editor' htmlFor='input-detail-title'>Detail du Produit <IoPencil /></label>
-    <input className={`editor `} type="text" id={'input-detail-title'} value={collected.title || ''} placeholder="Ajoutez un title au detail du produit" onChange={(e) => {
-      const title = e.currentTarget.value
-      setBoth((current) => ({
-        ...current,
-        title: title.replace(/\s+/g, ' ').substring(0, 56),
-      }));
-    }} onKeyUp={(e) => {
-      if (e.code == 'Enter') {
-        const p = document.querySelector('.ProseMirror.toastui-editor-contents') as HTMLTextAreaElement | null;
-        p && p.focus()
-      }
-    }} onKeyDown={(e) => {
-      if (e.code == 'Tab') {
-        e.stopPropagation();
-        e.preventDefault();
-        const p = document.querySelector('.ProseMirror.toastui-editor-contents') as HTMLTextAreaElement | null;
-        p && p.focus()
-      }
-    }} />
-    <div className="input-message"><span className='right'>{(collected.title?.trim()?.length || 0)} / 56</span></div>
-    <label className='editor' htmlFor='input-product-description'>Description <IoPencil /></label>
+     return (
+          // Utiliser bg-white, rounded-lg, shadow-sm, border, p-4, flex flex-col md:flex-row gap-4
+         <div className="detail-item bg-white rounded-lg shadow-sm border border-gray-200 p-4 flex flex-col md:flex-row gap-4 items-start">
+             {/* Image/Video */}
+             {/* Utiliser w-full md:w-40 lg:w-48, aspect-square, rounded-md, flex-shrink-0 */}
+             {view && ( // Afficher seulement si une vue existe
+                <div className="w-full md:w-40 lg:w-48 aspect-square rounded-md flex-shrink-0 bg-gray-100 overflow-hidden">
+                    {getFileType(view) === 'image' ? (
+                        <img src={getImg(view, undefined, currentStore?.url).match(/url\("?([^"]+)"?\)/)?.[1]} alt={detail.title || 'Detail view'} className="w-full h-full object-cover" />
+                    ) : (
+                        <video loop autoPlay muted playsInline className="w-full h-full object-cover" src={getImg(view, undefined, currentStore?.url).match(/url\("?([^"]+)"?\)/)?.[1]} />
+                    )}
+                 </div>
+             )}
 
-    {<MarkdownEditor2 value={collected.description || ' '} setValue={(value) => {
-      setBoth((current) => ({
-        ...current,
-        description: value.substring(0, 1024)
-      }));
-    }} />}
-    <div className="input-message"><span className='right'>{(collected.description?.trim()?.length || 0)} / 1024</span></div>
-    <Comfirm canConfirm={!!(collected.title || collected.description || collected.prevView) && !loading} onCancel={onCancel} confirm='Ok' onConfirm={() => {
-      setDetail(accu);
-      console.log({ accu });
+             {/* Contenu Texte + Actions */}
+              {/* Utiliser flex-grow min-w-0 */}
+             <div className="flex-grow min-w-0 w-full">
+                 {/* Titre et Options */}
+                 <div className="flex justify-between items-start gap-2 mb-2">
+                     <h2 className={`text-base font-semibold text-gray-800 ${!detail.title ? 'italic text-gray-400' : ''}`}>
+                         {detail.title || t('detail.untitled')} 
+                     </h2>
+                      {/* Options (Up/Down/Delete/Edit) */}
+                     <div className="options flex items-center gap-1 text-gray-400 flex-shrink-0">
+                         <button onClick={onUp} disabled={!canUp} title={t('common.moveUp')} className="p-1 rounded-full hover:bg-gray-100 hover:text-gray-600 disabled:opacity-30 disabled:cursor-not-allowed">
+                             <IoChevronUp />
+                         </button>
+                         <button onClick={onDown} disabled={!canDown} title={t('common.moveDown')} className="p-1 rounded-full hover:bg-gray-100 hover:text-gray-600 disabled:opacity-30 disabled:cursor-not-allowed">
+                             <IoChevronDown />
+                         </button>
+                         <button onClick={onOption} title={t('common.edit')} className="p-1 rounded-full hover:bg-gray-100 hover:text-gray-600">
+                             <IoEllipsisHorizontal />
+                         </button>
+                         <button onClick={onDelete} title={t('common.delete')} className="p-1 rounded-full hover:bg-red-50 hover:text-red-600">
+                             <IoTrash />
+                         </button>
+                    </div>
+                 </div>
+                  {/* Description (Markdown Viewer) */}
+                  {/* Ajouter une classe prose pour le style markdown si nécessaire */}
+                 <div className="text-sm text-gray-600 prose prose-sm max-w-none">
+                    <MarkdownViewer markdown={detail.description || t('detail.noDescription')} /> 
+                 </div>
+             </div>
+         </div>
+     );
+}
 
-      setLoading(true)
-    }} iconConfirmLeft={loading ? <div className='icon-25' style={{ background: getImg('/res/loading.gif') }}></div> : undefined}
-    />
-  </div >
+
+// --- Composant DetailInfo (Popup d'édition/création) ---
+function DetailInfo({ detail: initialDetail, onSave, onCancel }: {
+    onCancel: () => void;
+    detail: Partial<DetailInterface>; // Inclut id, product_id potentiellement
+    onSave: (detailData: Partial<DetailInterface>) => void; // Retourne seulement les données modifiées/nouvelles
+}) {
+    const { t } = useTranslation();
+    const { currentStore } = useStore();
+    // État local du formulaire
+    const [collected, setCollected] = useState<Partial<DetailInterface & { prevView?: string }>>({
+        ...initialDetail,
+         // Séparer le fichier de la preview
+         prevView: typeof initialDetail?.view?.[0] === 'string' ? initialDetail.view[0] : undefined,
+         view: typeof initialDetail?.view?.[0] === 'object' ? initialDetail.view : [], // Garder seulement si c'est un File/Blob existant?
+    });
+    const [localPreview, setLocalPreview] = useState<string | undefined>(
+         typeof initialDetail?.view?.[0] === 'object' ? URL.createObjectURL(initialDetail.view[0]) : undefined
+    );
+    // Erreurs potentielles (validation plus simple ici)
+    const [titleError, setTitleError] = useState(false);
+
+     // Nettoyer la preview locale
+     useEffect(() => {
+         return () => {
+             if (localPreview) URL.revokeObjectURL(localPreview);
+         };
+     }, [localPreview]);
+
+    // Handlers
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+         const files = e.target.files;
+         if (!files?.[0]) {
+            // Si l'utilisateur annule, remettre l'image originale si elle existait
+            setCollected(prev => ({ ...prev, view: initialDetail.view ?? [] }));
+            setLocalPreview(undefined); // Supprimer la preview locale
+             return;
+         }
+         const file = files[0];
+         const previewUrl = URL.createObjectURL(file);
+
+         // Révoquer l'ancienne preview locale si elle existait
+         if (localPreview) URL.revokeObjectURL(localPreview);
+
+         setCollected(prev => ({ ...prev, view: [file] })); // Remplacer par le nouveau fichier
+         setLocalPreview(previewUrl);
+         // Reset erreur si nécessaire
+    };
+
+    const handleTextChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const { name, value } = e.target;
+         setCollected(prev => ({ ...prev, [name]: value }));
+         if (name === 'title') setTitleError(value.trim().length === 0); // Erreur si titre vide
+    };
+
+     const handleMarkdownChange = (value: string) => {
+         setCollected(prev => ({ ...prev, description: value }));
+     };
+
+    const handleConfirm = () => {
+         // Validation simple
+         const isTitleValid = collected.title && collected.title.trim().length > 0;
+         setTitleError(!isTitleValid);
+         if (!isTitleValid) return;
+
+         // Construire l'objet de données à sauvegarder
+         const dataToSave: Partial<DetailInterface> = {
+             id: collected.id, // Peut être undefined si nouveau
+             product_id: collected.product_id,
+             title: collected.title,
+             description: collected.description,
+             type: collected.type // Garder le type si défini
+         };
+
+         // Ne pas inclure 'view' si c'est la même string qu'initialement
+         const currentViewFile = collected.view?.[0];
+         const initialViewUrl = typeof initialDetail?.view?.[0] === 'string' ? initialDetail.view[0] : null;
+
+         if (currentViewFile instanceof File) {
+            // Si un nouveau fichier a été sélectionné, on le met dans les données à sauvegarder
+            // L'API s'attend à recevoir le fichier dans FormData, pas ici directement.
+            // On signale juste qu'il y a un fichier à traiter.
+             dataToSave.view = collected.view; // Contient le File object
+         } else if (collected.view === undefined || collected.view?.length === 0) {
+             // Si l'utilisateur a supprimé l'image (et qu'il y en avait une avant)
+             if(initialViewUrl) {
+                dataToSave.view = []; // Envoyer tableau vide pour indiquer suppression
+             }
+         }
+          // Si collected.view contient une string et est différent de l'initial, on le garde (ne devrait pas arriver avec ce code)
+          else if (typeof currentViewFile === 'string' && currentViewFile !== initialViewUrl) {
+               dataToSave.view = collected.view;
+          }
+
+
+         onSave(dataToSave); // Envoyer les données modifiées/nouvelles
+    };
+
+    // Affichage de l'image (preview locale ou URL serveur)
+     const viewUrlForDisplay = localPreview ?? (typeof collected?.view?.[0] === 'string' ? getImg(collected.view[0], undefined, currentStore?.url) : getImg('/res/empty/drag-and-drop.png', '70%'));
+     const showPlaceholder = !localPreview && (!collected?.view || collected.view.length === 0 || typeof collected.view[0] !== 'string');
+
+
+    return (
+         // Utiliser flex flex-col gap-4 ou 5, padding
+        <div className="detail-info p-4 sm:p-6 flex flex-col gap-5">
+            {/* Image */}
+            <div>
+                <label className='block text-sm font-medium text-gray-700 mb-1' htmlFor='detail-view-input'>
+                    {t('detail.imageLabel')} 
+                </label>
+                 <label htmlFor='detail-view-input' className={`relative block w-full aspect-video rounded-lg cursor-pointer overflow-hidden group bg-gray-100 border border-gray-300 hover:bg-gray-200`}>
+                    <div
+                        className="absolute inset-0 bg-cover bg-center transition-opacity duration-150"
+                        style={{ backgroundImage: viewUrlForDisplay }}
+                    ></div>
+                     {showPlaceholder && (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-400 group-hover:text-blue-500">
+                            <IoCloudUploadOutline size={40} />
+                             <span className="mt-1 text-xs">{t('detail.selectImagePrompt')}</span> 
+                        </div>
+                     )}
+                      {!showPlaceholder && (
+                          <div className="absolute bottom-2 right-2 p-1.5 bg-white/70 backdrop-blur-sm rounded-full shadow text-gray-600 group-hover:text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <RiImageEditFill size={18}/>
+                          </div>
+                      )}
+                     <input id='detail-view-input' name="view" type="file" accept='image/*,video/*' className="sr-only" onChange={handleFileChange} />
+                </label>
+            </div>
+
+            {/* Titre */}
+            <div>
+                <label className='block text-sm font-medium text-gray-700 mb-1 flex justify-between items-center' htmlFor='input-detail-title'>
+                    <span>{t('detail.titleLabel')} <IoPencil className="inline-block ml-1 w-3 h-3 text-gray-400" /></span> 
+                     <span className={`text-xs ${ (collected.title?.trim()?.length || 0) > 124 ? 'text-red-600' : 'text-gray-400'}`}>
+                        {(collected.title?.trim()?.length || 0)} / 124
+                    </span>
+                </label>
+                <input
+                    id='input-detail-title'
+                    name="title"
+                     className={`block w-full rounded-md shadow-sm sm:text-sm h-10 ${titleError ? 'border-red-500 ring-red-500 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'}`}
+                    type="text"
+                    value={collected.title || ''}
+                    placeholder={t('detail.titlePlaceholder')} 
+                    onChange={handleTextChange}
+                 />
+                 {titleError && <p className="mt-1 text-xs text-red-600">{t('detail.validation.titleRequired')}</p>} 
+            </div>
+
+             {/* Description */}
+             <div>
+                 <label className='block text-sm font-medium text-gray-700 mb-1 flex justify-between items-center' htmlFor='input-detail-description'>
+                     <span>{t('detail.descriptionLabel')} <IoPencil className="inline-block ml-1 w-3 h-3 text-gray-400" /></span> 
+                     <span className={`text-xs ${ (collected.description?.trim()?.length || 0) > 2000 ? 'text-red-600' : 'text-gray-400'}`}>
+                        {(collected.description?.trim()?.length || 0)} / 2000
+                    </span>
+                 </label>
+                 <MarkdownEditor2
+                     value={collected.description || ''}
+                     setValue={handleMarkdownChange}
+                     // error={!!fieldErrors.description}
+                 />
+                 {/* {fieldErrors.description && <p className="mt-1 text-xs text-red-600">{fieldErrors.description}</p>} */}
+            </div>
+
+            {/* Confirmation */}
+             <Comfirm
+                  // Actif seulement si titre valide (et image si nouveau?)
+                 canConfirm={!!collected.title?.trim()}
+                 onCancel={onCancel}
+                 confirm={t('common.ok')}
+                 onConfirm={handleConfirm}
+                 // iconConfirmLeft={mutation.isPending ? <Spinner /> : undefined} // Gérer état chargement si mutation passée en prop
+             />
+        </div>
+    );
 }

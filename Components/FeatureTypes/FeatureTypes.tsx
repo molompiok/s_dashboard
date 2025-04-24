@@ -1,3 +1,4 @@
+//Components/FeatureTypes/FeatureTypes.tsx
 import { getImg } from '../Utils/StringFormater';
 
 import './FeatureTypes.css'

@@ -4,18 +4,18 @@ export type Data = Awaited<ReturnType<typeof data>>
 
 import fetch from 'node-fetch'
 import type { PageContextServer } from 'vike/types'
-import { CategoryInterface, ListType } from '../../Interfaces/Interfaces'
-import { Api_host } from '../../renderer/+config'
+import { CategoryInterface, ListType } from '../../../Interfaces/Interfaces'
+import { Api_host } from '../../../renderer/+config'
 
 const data = async (pageContext: PageContextServer) => {
   await sleep(300) // Simulate slow network
   console.log(pageContext.urlParsed.search['store'], pageContext.urlParsed.search['id']);
   let categories: ListType<CategoryInterface> | undefined = undefined;
-const id = pageContext.urlParsed.search['id'];
+  const id = pageContext.urlParsed.search['id'];
   try {
-    if ( id!== 'new') {
-      console.log({id});
-      
+    if (id !== 'new') {
+      console.log({ id });
+
       const response = await fetch(`${Api_host}/get_categories/?category_id=${id}`)//&store_name=${pageContext.urlParsed.search['store']}
       categories = (await response.json()) as ListType<CategoryInterface>
     }

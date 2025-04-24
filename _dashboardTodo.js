@@ -1,4 +1,26 @@
 /*
+Implémentation Logique Métier Manquante :
+Actions dans Menus (ProductRowItem, CategoryItemCard, CategoryItemRow, DetailItem) : Connecter les boutons "Supprimer", "Modifier Visibilité", "Dupliquer" (?) aux mutations React Query correspondantes.
+Sauvegarde Complète (Product Detail Page) : Finaliser la fonction handleSave pour construire correctement le FormData (en distinguant update simple et update multiple features/values) et appeler les bonnes mutations (useUpdateProduct / useMultipleUpdateFeaturesValues).
+Validation Fine import_store : (Reporté à S2 mais à garder en tête).
+Transitions de Statut Commande (UI) : Adapter StatusUpdatePopup pour n'afficher/activer que les statuts suivants valides (basé sur les règles API qui sont encore à finaliser côté backend).
+Composants Manquants / À Finaliser :
+Page Liste Catégories (/categories) : Finaliser l'implémentation avec CategoriesToolbar, CategoryItemCard/Row, Pagination.
+Page Édition Catégorie (/category?id=ID&edit=true) : S'assurer que le lien depuis le menu action fonctionne.
+Page Création Produit (/products/new) : Vérifier que le formulaire fonctionne correctement en mode création.
+Composants Button, ConfirmDelete, ChildViewer, Indicator, ProductPreview : Vérifier/Finaliser leur refactoring Tailwind.
+Gestion des Erreurs API : Afficher les messages d'erreur retournés par ApiError de manière conviviale (ex: via Toasts react-hot-toast).
+Gestion Fine du Chargement : Afficher des indicateurs de chargement plus spécifiques (ex: sur les boutons, dans les sections) en utilisant les états isLoading/isPending des hooks/mutations.
+Intégration & Tests :
+Tests Fonctionnels Complets : Tester tous les parcours utilisateurs (CRUD complet produits/catégories, consultation commandes/clients, gestion collaborateurs/inventaire, etc.).
+Tests Responsives : Vérifier l'affichage et l'utilisabilité sur différentes tailles d'écran.
+Tests i18n : Basculer entre les langues et vérifier que tous les textes sont traduits.
+Tests Permissions : Se connecter en tant qu'Owner puis en tant que Collaborateur (avec différentes permissions) pour vérifier que les accès sont corrects.
+Points API en Attente (Rappel) :
+Finalisation logique transition statuts commande (Backend).
+Calcul et exposition stock réel (Backend).
+Endpoint API pour réordonnancement atomique des DetailItem (Optionnel, workaround actuel avec 2 appels).
+
 
 # 📝 Test Complet du Markdown
 

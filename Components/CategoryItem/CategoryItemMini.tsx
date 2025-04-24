@@ -47,7 +47,7 @@ function CategoryItemMini({
 
     // --- Gestion Image ---
     // Priorité: icon[0], sinon view[0], sinon placeholder
-    const primaryImageUrl = category.icon?.[0] ?? category.view?.[0]??NO_PICTURE;
+    const primaryImageUrl = category.icon?.[0] ?? category.view?.[0] ?? NO_PICTURE;
     const imageStyle = {
         // Utiliser getImg pour construire la propriété background-image
         // Passer currentStore.url pour gérer les URLs relatives
@@ -72,7 +72,7 @@ function CategoryItemMini({
 
     const ContainerElement = (openCategory && !onClick) ? 'a' : 'div';
     const containerProps = ContainerElement === 'a'
-        ? { href: `/category?id=${category.id}` }
+        ? { href: `/categories/${category.id}` }
         : { onClick: onClick ? handleClick : undefined, role: onClick ? 'button' : undefined, tabIndex: onClick ? 0 : undefined };
 
     return (
@@ -82,11 +82,10 @@ function CategoryItemMini({
         >
             {/* Bouton/Compteur */}
             <div
-                className={`absolute -top-2 -right-2 flex items-center justify-center text-white text-[10px] font-semibold rounded-full shadow z-10 transition-opacity ${
-                    onDelete
-                    ? 'w-6 h-6 bg-red-500 hover:bg-red-600 cursor-pointer opacity-0 group-hover:opacity-100'
-                    : 'min-w-[20px] h-5 px-1.5 bg-blue-500 cursor-default'
-                }`}
+                className={`absolute -top-2 -right-2 flex items-center justify-center text-white text-[10px] font-semibold rounded-full shadow z-10 transition-opacity ${onDelete
+                        ? 'w-6 h-6 bg-red-500 hover:bg-red-600 cursor-pointer opacity-1 group-hover:opacity-100'
+                        : 'min-w-[20px] h-5 px-1.5 bg-blue-500 cursor-default'
+                    }`}
                 onClick={onDelete ? (e: any) => handleDelete(e) : undefined}
                 title={onDelete ? t('common.delete') : undefined}
                 {...(onDelete ? { type: 'button' } : {})}

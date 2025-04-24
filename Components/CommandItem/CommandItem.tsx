@@ -20,7 +20,7 @@ export function CommandItem({ command }: { command: CommandInterface }) {
                      {/* Utiliser w-14 h-14, rounded-xl, flex-shrink-0, bg-cover, bg-center, bg-gray-200 */}
                     <div
                         className="w-14 h-14 rounded-xl flex-shrink-0 bg-cover bg-center bg-no-repeat bg-gray-200"
-                        style={{ backgroundImage: getImg(command.user?.photo?.[0] ?? '/res/delivery_moto.png') }} // Utiliser photo user si dispo
+                        style={{ background: getImg(command.user?.photo?.[0] ?? '/res/delivery_moto.png') }} // Utiliser photo user si dispo
                     ></div>
                      {/* Infos Textuelles */}
                      {/* Utiliser flex, flex-col, gap-0.5, flex-shrink, overflow-hidden */}

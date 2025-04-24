@@ -328,7 +328,7 @@ export interface CategoryInterface {
   id: string,
   name: string,
   description: string,
-  parent_category_id?: string
+  parent_category_id?: string|null
   store_id: string,
   slug: string,
   product_count?: number
@@ -391,8 +391,8 @@ export interface FeatureInterface {
   index?: number,
   multiple?: false,
   is_double?: false,
-  default?: string,
-  is_default:string,
+  default?: string|null,
+  is_default:boolean,
   created_at: string,
   updated_at: string,
   values?: ValueInterface[];

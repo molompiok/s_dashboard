@@ -122,6 +122,8 @@ export class SublymusApi {
                  const contentType = response.headers.get("content-type");
                  if (contentType && contentType.indexOf("application/json") !== -1) {
                     responseBody = await response.json();
+                    console.log({responseBody});
+                    
                  } else {
                     // Si pas JSON, lire comme texte (pour debug)
                     responseBody = await response.text();

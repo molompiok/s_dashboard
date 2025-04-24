@@ -1,12 +1,26 @@
-import { JSX, useRef, useState } from 'react';
-import './FeatureInfo.css'
-import { FeatureInterface } from '../../Interfaces/Interfaces';
-import { FeatureTypes } from '../FeatureTypes/FeatureTypes';
-import { IoChevronBack, IoPencil } from 'react-icons/io5';
-import { Comfirm } from '../Confirm/Confirm';
+// Components/FeatureInfo/FeatureInfo.tsx
+// import './FeatureInfo.css'; // ❌ Supprimer
 
-const MapFeatureTypeParams: Record<string, Partial<FeatureInterface>> = {
-    icon_text: {
+import { JSX, useRef, useState, useEffect } from 'react';
+import { FeatureInterface } from '../../Interfaces/Interfaces'; // Importer FeatureType
+import { FeatureTypes } from '../FeatureTypes/FeatureTypes'; // Gardé
+import { IoPencil } from 'react-icons/io5';
+import { Comfirm } from '../Confirm/Confirm'; // Gardé
+import { useTranslation } from 'react-i18next'; // ✅ i18n
+import { NEW_ID_START } from '../Utils/constants';
+import { FeatureType } from '../Utils/functions';
+
+export { FeatureInfo };
+
+interface FeatureInfoProps {
+    feature: Partial<FeatureInterface>; // Utiliser Partial car peut être nouveau
+    onChange: (feature: FeatureInterface) => void;
+    onCancel?: () => void;
+}
+
+// Mapping type -> config par défaut (si différent de MapFeatureTypeParams)
+const FeatureDefaults: Partial<Record<string, Partial<FeatureInterface>>> = {
+     icon_text: {
       type: 'icon_text',
       icon: [],
     },
@@ -35,86 +49,175 @@ const MapFeatureTypeParams: Record<string, Partial<FeatureInterface>> = {
     input: {
       type: 'input'
     },
-  }
+};
 
 
-export { FeatureInfo }
-function FeatureInfo({ feature, onChange, onCancel }: { onCancel?: () => void, feature: FeatureInterface, onChange: (feature: FeatureInterface) => void }) {
+function FeatureInfo({ feature: initialFeature, onChange, onCancel }: FeatureInfoProps) {
+    const { t } = useTranslation(); // ✅ i18n
+    // État local pour le formulaire
+    const [f, setFeature] = useState<Partial<FeatureInterface>>(initialFeature);
+    // Erreurs locales
+    const nameRef = useRef<HTMLInputElement>(null);
+    const [nameError, setNameError] = useState('');
 
-  const [f, setFeature] = useState({...feature});
+    // Mettre à jour l'état local si la prop initiale change (rare, mais sécurité)
+    useEffect(() => {
+        setFeature(initialFeature);
+    }, [initialFeature]);
 
-  const nameRef = useRef<HTMLInputElement>(null);
-  const [nameError, setNameError] = useState('');
 
-  
+    // Validation locale
+    const validateFeature = (): boolean => {
+        let isValid = true;
+        let errors = { name: '' };
+        if (!f.name || f.name.trim().length < 3) {
+             errors.name = t('feature.validation.nameRequired'); // Nouvelle clé
+             nameRef.current?.focus();
+             isValid = false;
+        }
+        setNameError(errors.name); // Mettre à jour l'erreur
+        return isValid;
+    };
 
-  function isValidFeature(showError?: boolean) {
-    let v = true;
-    if (!f.name || f.name.length < 3) {
-      showError && setNameError('Le nom de la variante doit contenir au moins 3 carateres')
-      showError && nameRef.current?.focus()
-      v = false
-    }
-    return v
-  }
-  // Fonction pour gérer le changement des cases à cocher
-  const handleCheckboxChange = (key: keyof FeatureInterface) => {
-    setFeature((prev) => {
-      const updatedFeature = { ...prev, [key]: !prev[key] };
-      return updatedFeature;
-    });
-  };
-  const is_name_error = isValidFeature()
+    // Handler pour les changements d'input texte
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+         const { name, value } = e.target;
+         setFeature(prev => ({ ...prev, [name]: value }));
+         if (name === 'name') setNameError(''); // Reset erreur nom si modifié
+    };
 
-  f.type = f.type || 'icon_text'
-  
-  return (
-    <div className="feature-info">
-      <h3 style={{ display: 'flex', flexWrap: 'wrap', marginTop: '12px' }}>Choisez l'affichage de la variante</h3>
-      <FeatureTypes className='list open' active={f.type} onSelected={(type) => {
+    // Handler pour les checkboxes
+    const handleCheckboxChange = (key: keyof FeatureInterface) => {
+        setFeature((prev) => ({ ...prev, [key]: !prev[key] }));
+    };
+
+    // Handler pour le changement de type
+    const handleTypeChange = (newType: string) => {
         setFeature((prev) => ({
-          ...prev,
-          ...MapFeatureTypeParams[type]
+             // Garder les champs communs
+            ...prev,
+            id: prev?.id,
+            name: prev?.name,
+            required: prev?.required ?? false, // Garder 'required'
+            // Appliquer les valeurs par défaut du nouveau type
+             ...(FeatureDefaults[newType] ?? {}), // Appliquer les défauts pour ce type
+            type: newType, // Appliquer le nouveau type
+             // Réinitialiser les champs spécifiques à l'ancien type? Optionnel.
+             // Ex: reset min/max si on passe de RANGE à TEXT
         }));
-      }} />
-      <h3>Nom de la Variante <IoPencil /></h3>
-      <label htmlFor="feature-info-name-input">
-        <input
-          className={"editor " + (nameError ? 'error' : '')}
-          placeholder="Nom de la variante"
-          id="feature-info-name-input"
-          type="text"
-          value={f.name}
-          onChange={(e) => {
-            const name = e.currentTarget.value;
-            setFeature((prev) => ({ ...prev, name }));
-            setNameError('')
-          }}
-          onKeyUp={(e) => {
-            if (e.code == 'Enter') {
-              if (!isValidFeature(true)) return
-              onChange?.(f)
-            }
-          }}
-        />
-      </label>
-      <div className="input-message"><span className='error-message'>{nameError}</span><span className='right'>{(f.name?.trim()?.length || 0)} / 256</span></div>
-      <h3 style={{ whiteSpace: 'nowrap' }}>La Variante est-elle <span className={`check-text no-selectable prompt ${f.required ? 'ok' : ''}`} onClick={() => handleCheckboxChange("required")} >requise</span> ?</h3>
-      <label>
-        <input
-          type="checkbox"
-          style={{ scale: 1.3, marginRight: '12px' }}
-          checked={f.required}
-          onChange={() => handleCheckboxChange("required")}
-        />
-        <span style={{ fontSize: '0.9em' }}> Oui, cette variante est obligatoire pour passer commande. Le client doit choisir cette variante avant d'ajouter le produit au panier</span>
-      </label>
-      <Comfirm canConfirm={(!!(f.name && f.type))} onCancel={onCancel} confirm='Ok' onConfirm={() => {
-        if (!isValidFeature(true)) return
-        onChange?.(f)
-      }} />
-    </div>
-  );
+    };
+
+    const handleConfirm = () => {
+        if (validateFeature()) {
+             // Assurer que les champs non définis sont null ou valeur par défaut avant d'envoyer
+             const finalFeature: FeatureInterface = {
+                 id: f.id || NEW_ID_START + Date.now(), // Assigner un ID si nouveau
+                 product_id: f.product_id || '', // Doit être défini par le parent
+                 name: f.name || '',
+                 type: f.type || FeatureType.TEXT, // Défaut si non défini
+                 required: f.required ?? false,
+                 icon: f.icon ?? [],
+                 regex: f.regex ?? '',
+                 min: f.min ?? 0,
+                 max: f.max ?? 0,
+                 min_size: f.min_size ?? 0,
+                 max_size: f.max_size ?? 0,
+                 index: f.index ?? 1,
+                 multiple: f.multiple ?? false,
+                 is_double: f.is_double ?? false,
+                 default: f.default,
+                 is_default: f.is_default ?? false,
+                 values: f.values ?? [],
+                 created_at: f.created_at || new Date().toISOString(), // Dates fictives
+                 updated_at: new Date().toISOString(),
+             };
+            onChange(finalFeature);
+        }
+    };
+
+    return (
+         // Utiliser flex flex-col gap-4 ou 6, padding
+        <div className="feature-info p-4 sm:p-6 flex flex-col gap-5">
+            <div>
+                 <h3 className="block text-sm font-medium text-gray-700 mb-2">{t('feature.selectDisplayType')}</h3> 
+                 {/* FeatureTypes est déjà un composant Swiper */}
+                 <FeatureTypes active={f.type} onSelected={handleTypeChange} />
+            </div>
+
+            <div>
+                 <label className='block text-sm font-medium text-gray-700 mb-1 flex justify-between items-center' htmlFor="feature-info-name-input">
+                      <span>{t('feature.nameLabel')} <IoPencil className="inline-block ml-1 w-3 h-3 text-gray-400" /></span> 
+                      <span className={`text-xs ${ (f.name?.trim()?.length || 0) > 56 ? 'text-red-600' : 'text-gray-400'}`}>
+                          {(f.name?.trim()?.length || 0)} / 56
+                      </span>
+                 </label>
+                 <input
+                    ref={nameRef}
+                    id="feature-info-name-input"
+                    name="name" // Important pour handleInputChange
+                    className={`block w-full rounded-md shadow-sm sm:text-sm ${nameError ? 'border-red-500 ring-red-500 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'}`}
+                    placeholder={t('feature.namePlaceholder')} 
+                    type="text"
+                    value={f.name || ''}
+                    onChange={handleInputChange}
+                    onKeyUp={(e) => e.key === 'Enter' && handleConfirm()}
+                  />
+                 {nameError && <p className="mt-1 text-xs text-red-600">{nameError}</p>}
+            </div>
+
+            {/* Checkbox Requis */}
+             {/* Utiliser flex items-center gap-2 */}
+             <div className="relative flex items-start">
+                 <div className="flex h-6 items-center">
+                     <input
+                         id="feature-required"
+                         name="required"
+                         type="checkbox"
+                         className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                         checked={f.required ?? false}
+                         onChange={() => handleCheckboxChange('required')}
+                     />
+                 </div>
+                 <div className="ml-3 text-sm leading-6">
+                      <label htmlFor="feature-required" className="font-medium text-gray-800 cursor-pointer">
+                           {t('feature.isRequiredLabel')} 
+                      </label>
+                      <p className="text-gray-500 text-xs">{t('feature.isRequiredDesc')}</p> 
+                 </div>
+            </div>
+
+             {/* Ajouter ici les champs spécifiques au type de feature si nécessaire */}
+             {/* Exemple pour type INPUT: */}
+             {f.type === FeatureType.INPUT && (
+                 <div className='flex flex-col gap-4 border-t border-gray-200 pt-4'>
+                      <h4 className="text-sm font-medium text-gray-500">{t('feature.specificOptions', { type: f.type })}</h4> 
+                     {/* Min/Max Length */}
+                      <div className='grid grid-cols-2 gap-4'>
+                           <div>
+                                <label htmlFor="feature-min-size" className='block text-xs font-medium text-gray-700 mb-1'>{t('feature.minLength')}</label> 
+                                <input type="number" id="feature-min-size" name="min_size" value={f.min_size ?? 0} onChange={handleInputChange} className="block w-full rounded-md border-gray-300 shadow-sm sm:text-sm h-9"/>
+                           </div>
+                           <div>
+                                <label htmlFor="feature-max-size" className='block text-xs font-medium text-gray-700 mb-1'>{t('feature.maxLength')}</label> 
+                                <input type="number" id="feature-max-size" name="max_size" value={f.max_size ?? 0} onChange={handleInputChange} className="block w-full rounded-md border-gray-300 shadow-sm sm:text-sm h-9"/>
+                           </div>
+                      </div>
+                      {/* Regex */}
+                       <div>
+                            <label htmlFor="feature-regex" className='block text-xs font-medium text-gray-700 mb-1'>{t('feature.regexLabel')} ({t('common.optionalField')})</label> 
+                            <input type="text" id="feature-regex" name="regex" value={f.regex ?? ''} onChange={handleInputChange} placeholder={t('feature.regexPlaceholder')} className="block w-full rounded-md border-gray-300 shadow-sm sm:text-sm h-9"/>
+                       </div>
+                 </div>
+             )}
+              {/* Ajouter d'autres conditions pour DATE, RANGE, etc. */}
+
+
+            {/* Boutons Confirmation/Annulation */}
+             <Comfirm
+                 canConfirm={!!f.name && !!f.type} // Confirmer si nom et type sont définis
+                 onCancel={onCancel}
+                 confirm={t('common.ok')} // Utiliser OK ou Save selon contexte
+                 onConfirm={handleConfirm} />
+        </div>
+    );
 }
-
-

@@ -29,12 +29,12 @@ export function CategoriesToolbar({
         // Ne pas déclencher la recherche si seulement initialisé ou si vide après avoir été non vide
         // Comparer avec filter.search pour éviter boucle infinie si filtre externe change
         if (searchTerm !== (filter.search || '')) {
-             debounce(() => onFilterChange({ ...filter, search: searchTerm || undefined, page: 1 }), 'category-search', 400);
+            debounce(() => onFilterChange({ ...filter, search: searchTerm || undefined, page: 1 }), 'category-search', 400);
         }
     }, [searchTerm, filter, onFilterChange]); // Ajouter filter et onFilterChange aux dépendances
 
-     // Mettre à jour l'état local si le filtre externe change (ex: reset)
-     useEffect(() => {
+    // Mettre à jour l'état local si le filtre externe change (ex: reset)
+    useEffect(() => {
         if (filter.search !== searchTerm) {
             setSearchTerm(filter.search || '');
         }
@@ -109,7 +109,7 @@ export function CategoriesToolbar({
                         onClick={() => onViewChange('row')}
                         title={t('productList.viewRow')}
                         className={`p-1.5 rounded ${currentView === 'row' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-800'}`}
-                         aria-pressed={currentView === 'row'}
+                        aria-pressed={currentView === 'row'}
                     >
                         <IoListSharp size={18} />
                     </button>
@@ -117,11 +117,11 @@ export function CategoriesToolbar({
 
                 {/* Bouton Ajouter */}
                 <a
-                    href="/category?id=new" // Lien vers la page de création
+                    href="/categories/new" // Lien vers la page de création
                     className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                 >
                     <IoAddSharp size={18} className="-ml-1" />
-                    {t('category.addCategoryButton')} 
+                    {t('category.addCategoryButton')}
                 </a>
             </div>
         </div>

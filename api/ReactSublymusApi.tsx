@@ -53,7 +53,7 @@ export const SublymusApiProvider: React.FC<SublymusApiProviderProps> = ({ childr
                 () => 'oat_MTk.Y1BleEpvTEhDVVQxa3lRSU1WdTk3ejBlYjIyc0ppUzVGQVYtWlU3ZzQwMzc2Njc5MDA',//user?.token ?? null,
                 (target, data) => {
                     try {
-                        return t(target)
+                        return t(target,data).toString()
                     } catch (error) {
                         return target
                     }

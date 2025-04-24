@@ -1,13 +1,13 @@
-//Components/ChildViewer/ChildViewer.tsx
 import { JSX } from 'react';
 import { useApp } from '../../renderer/AppStore/UseApp';
 import './ChildViewer.css'
 import { IoCloseSharp } from "react-icons/io5";
+import { useChildViewer } from './useChildViewer';
 export { ChildViewer }
 
 function ChildViewer({ children, title,style,back }: {back?:boolean,title?:string,children?: JSX.Element, style?:React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement>['style'] }) {
     
-    const {openChild} = useApp()
+    const {openChild} = useChildViewer()
 
     return <div className="child-viewer">
         <div className="top">
