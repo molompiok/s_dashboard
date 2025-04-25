@@ -76,20 +76,27 @@ export function CategoriesToolbar({
                 </label>
 
                 {/* Sélecteur de Tri */}
-                <div className="relative">
+                <div className="relative w-full sm:w-auto max-w-xs">
                     <select
                         id="category-sort"
-                        value={filter.order_by || 'name_asc'} // Contrôler la valeur
+                        value={filter.order_by || 'name_asc'}
                         onChange={handleSortChange}
-                        className="appearance-none w-full sm:w-auto pl-3 pr-8 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm bg-white cursor-pointer"
+                        className="appearance-none w-full pl-4 pr-12 py-1.5 bg-white border border-gray-200 rounded-xl text-sm text-gray-800 font-medium focus:outline-none focus:ring-2 focus:ring-blue-400 focus:border-blue-400 hover:border-gray-300 shadow-sm transition-all duration-300 cursor-pointer"
                         aria-label={t('category.sortLabel')}
                     >
-                        {/* <option value="" disabled>{t('category.sortLabel')}</option> */}
                         {sortOptions.map(option => (
-                            <option key={option.value} value={option.value}>{option.label}</option>
+                            <option
+                                key={option.value}
+                                value={option.value}
+                                className="text-gray-800 bg-white hover:bg-blue-50 font-medium py-2"
+                            >
+                                {option.label}
+                            </option>
                         ))}
                     </select>
-                    <IoChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-base pointer-events-none" />
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center pointer-events-none">
+                        <IoChevronDown className="text-gray-500 text-base transition-transform duration-300 group-focus-within:rotate-180" />
+                    </div>
                 </div>
             </div>
 

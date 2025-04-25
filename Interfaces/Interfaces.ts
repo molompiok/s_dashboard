@@ -164,6 +164,7 @@ export type FilterType = {
   page?: number,
   with_feature?: boolean,
   limit?: number,
+  is_visible?:boolean,
   no_save?: boolean,
   min_price?: number | undefined,
   max_price?: number | undefined,
@@ -351,6 +352,7 @@ export interface ProductInterface {
   price: number;
   rating: number,
   comment_count: number,
+  stock?:number|null
   is_visible: boolean,// TODO
   currency: string;
   created_at: Date;
@@ -374,6 +376,7 @@ export interface ValueInterface {
   index: number;
   created_at: string | Date;
   updated_at: string | Date;
+  _request_mode?: 'edited'|'new'
 };
 
 export interface FeatureInterface {
@@ -396,6 +399,7 @@ export interface FeatureInterface {
   created_at: string,
   updated_at: string,
   values?: ValueInterface[];
+  _request_mode?: 'edited'|'new'
 };
 // src/Interfaces/Interfaces.ts (ou un fichier similaire)
 

@@ -8,10 +8,9 @@ import { Comfirm } from '../Confirm/Confirm'; // Gardé
 import { Colors } from '../Utils/constants'; // Gardé
 import { ValuePricing } from '../ValuePricing/ValuePricing'; // Gardé
 import { useTranslation } from 'react-i18next'; // ✅ i18n
-import logger from '../../api/Logger';
-import { useApp } from '../../renderer/AppStore/UseApp'; // Pour popup delete
 import { ChildViewer } from '../ChildViewer/ChildViewer'; // Pour popup delete
 import { ConfirmDelete } from '../Confirm/ConfirmDelete'; // Pour popup delete
+import { useChildViewer } from '../ChildViewer/useChildViewer';
 
 export { ColorInfo, ColorValue };
 
@@ -152,7 +151,7 @@ function ColorInfo({ value: initialValue, feature, onChange, onCancel }: ColorIn
 
 // --- Composant de Rendu Value Color ---
 function ColorValue({ value, feature, onRemove, onClick }: { onClick?: () => void; onRemove?: () => void; value: ValueInterface; feature: Partial<FeatureInterface> }) {
-     const { openChild } = useApp();
+     const { openChild } = useChildViewer();
      const { t } = useTranslation();
 
     return (

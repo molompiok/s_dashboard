@@ -2,7 +2,7 @@
 import React, { createContext, useContext, useMemo, ReactNode } from 'react';
 import { QueryClient, QueryClientProvider, useQuery, useMutation, UseQueryResult, UseMutationResult, InvalidateQueryFilters } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import { SublymusApi, ApiError } from './SublymusApi'; // Importer la classe et l'erreur
+import { SublymusApi, ApiError, BuildFormDataForFeaturesValuesParam, CreateProductParams } from './SublymusApi'; // Importer la classe et l'erreur
 import { useAuthStore } from '../pages/login/AuthStore'; // Pour le token
 import { useStore } from '../pages/stores/StoreStore'; // Pour l'URL du store
 import type {
@@ -426,10 +426,10 @@ export const useGetCategoryFilters = (slug?: string, options: { enabled?: boolea
 // ========================
 
 // Hook pour créer un produit
-export const useCreateProduct = (): UseMutationResult<{ message: string, product: ProductInterface }, ApiError, FormData> => {
+export const useCreateProduct = (): UseMutationResult<{ message: string, product?: ProductInterface }, ApiError, CreateProductParams> => {
     const api = useApi();
-    return useMutation<{ message: string, product: ProductInterface }, ApiError, FormData>({
-        mutationFn: (formData) => api.createProduct(formData),
+    return useMutation<{ message: string, product?: ProductInterface }, ApiError, CreateProductParams>({
+        mutationFn: (data) => api.createProduct(data),
         onSuccess: (data) => {
             // Invalider la liste des produits
             queryClient.invalidateQueries({ queryKey: ['products'] } as InvalidateQueryFilters);
@@ -440,12 +440,12 @@ export const useCreateProduct = (): UseMutationResult<{ message: string, product
 };
 
 // Hook pour mettre à jour un produit (infos de base)
-export const useUpdateProduct = (): UseMutationResult<{ message: string, product: Partial<ProductInterface> }, ApiError, FormData> => {
+export const useUpdateProduct = (): UseMutationResult<{ message: string, product: Partial<ProductInterface> }, ApiError, Partial<ProductInterface>> => {
     const api = useApi();
-    return useMutation<{ message: string, product: Partial<ProductInterface> }, ApiError, FormData>({
-        mutationFn: (formData) => api.updateProduct(formData),
-        onSuccess: (data, formData) => {
-            const productId = formData.get('product_id') as string;
+    return useMutation<{ message: string, product: Partial<ProductInterface> }, ApiError, Partial<ProductInterface>>({
+        mutationFn: (product) => api.updateProduct(product),
+        onSuccess: (data, product) => {
+            const productId = product.id;
             // Invalider la liste ET le détail de ce produit
             queryClient.invalidateQueries({ queryKey: ['products'] } as InvalidateQueryFilters);
             if (productId) {
@@ -477,13 +477,13 @@ export const useDeleteProduct = (): UseMutationResult<{ message: string }, ApiEr
 // ==================================
 
 // Hook pour la mise à jour multiple des features/values
-export const useMultipleUpdateFeaturesValues = (): UseMutationResult<{ message: string, product: ProductInterface }, ApiError, FormData> => {
+export const useMultipleUpdateFeaturesValues = (): UseMutationResult<{ message: string, product?: ProductInterface }, ApiError,BuildFormDataForFeaturesValuesParam > => {
     const api = useApi();
-    return useMutation<{ message: string, product: ProductInterface }, ApiError, FormData>({
-        mutationFn: (formData) => api.multipleUpdateFeaturesValues(formData),
-        onSuccess: (data, formData) => {
-            const productId = formData.get('product_id') as string;
-            // Invalider la liste produits ET le détail de ce produit ET les features/values
+    return useMutation<{ message: string, product?: ProductInterface }, ApiError, BuildFormDataForFeaturesValuesParam>({
+        mutationFn: (collected) => api.multipleUpdateFeaturesValues(collected),
+        onSuccess: (data, collected) => {
+            const productId = collected.product_id;
+            
             queryClient.invalidateQueries({ queryKey: ['products'] } as InvalidateQueryFilters);
             if (productId) {
                 queryClient.invalidateQueries({ queryKey: ['product', productId] } as InvalidateQueryFilters);

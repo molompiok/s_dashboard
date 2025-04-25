@@ -28,7 +28,9 @@
         "required": "Requis",
         "ok": "OK",
         "moveUp": "Monter",
-        "moveDown": "Descendre"
+        "moveDown": "Descendre",
+        "imageError": "Image non chargée",
+        "visible": "Visibilité"
     },
     "validationFailed": "La validation des données a échoué.",
     "unauthorized_action": "Vous n’avez pas la permission d’effectuer cette action.",
@@ -128,6 +130,11 @@
         "saveButtonValid": "Enregistrer",
         "saveButtonInvalid": "Informations invalides",
         "noChangesToSave": "Aucune modification",
+        "inStock": "En Stock",
+        "lowStockShort": "Stock Faible",
+        "outOfStock": "Épuisé",
+        "visibilityTitle": "Visibilité du produit",
+        "removeCategory": "Cette action va retirer le produit de la catégorie {{name}}",
         "validation": {
             "nameRequired": "Le nom du produit est requis (3 caractères min).",
             "priceRequired": "Le prix du produit est requis.",
@@ -197,6 +204,8 @@
         "saveButtonInvalid": "Modifications invalides",
         "noChangesButton": "Aucune modification",
         "productCountTooltip": "Nombre de produits dans cette catégorie",
+        "categoryProducts": "Les produits de la catégorie",
+        "addProductToCategory": "Ajouter un produit a cette catégorie",
         "sortOptions": {
             "name_asc": "Nom (A-Z)",
             "name_desc": "Nom (Z-A)",
@@ -245,7 +254,9 @@
         "minLength": "Longueur Min.",
         "maxLength": "Longueur Max.",
         "regexLabel": "Validation (Regex)",
-        "regexPlaceholder": "Ex: ^[A-Za-z]+$"
+        "regexPlaceholder": "Ex: ^[A-Za-z]+$",
+        "createTitle": "Ajouter une Nouvelle Variante",
+        "editTitle": "Modifier la Variante"
     },
     "value": {
         "invalidColorKey": "La clé de couleur '{{key}}' est invalide pour la valeur {{value}}.",
@@ -514,6 +525,15 @@
             "titleRequired": "Le titre du détail est requis."
         }
     },
+    "pagination": {
+        "pageInfo": "Page {{currentPage}} sur {{lastPage}}",
+        "totalItems": "{{total}} éléments",
+        "label": "Navigation de pagination",
+        "previous": "Précédent",
+        "next": "Suivant",
+        "pageInfoFull": "Affichage de {{first}} à {{last}} sur {{total}} résultats",
+        "pageInfoShort": "Page {{currentPage}} sur {{lastPage}}"
+    },
     "dashboard": {
         "home": "Accueil",
         "products": "Produits",
@@ -537,15 +557,6 @@
             "day": "Jour",
             "week": "Semaine",
             "month": "Mois"
-        },
-        "pagination": {
-            "pageInfo": "Page {{currentPage}} sur {{lastPage}}",
-            "totalItems": "{{total}} éléments",
-            "label": "Navigation de pagination",
-            "previous": "Précédent",
-            "next": "Suivant",
-            "pageInfoFull": "Affichage de {{first}} à {{last}} sur {{total}} résultats",
-            "pageInfoShort": "Page {{currentPage}} sur {{lastPage}}"
         },
         "orderFilters": {
             "status": "Statut",

@@ -1,14 +1,17 @@
 // src/api/SublymusApi.ts (ou chemin 
-import { OrderStatus } from '../Components/Utils/constants';
+import { EDITED_DATA, NEW_ID_START, OrderStatus } from '../Components/Utils/constants';
 import type {
     ListType, ProductInterface, CategoryInterface, UserInterface, StoreInterface,
     CommandInterface, CommentInterface, DetailInterface, Inventory, Role, Favorite,
     FilterType, CommandFilterType, UserFilterType, /* ... autres types d'input/output ... */
     GlobalSearchType, StatsData, StatParamType, EventStatus,
     FeatureInterface,
-    TypeJsonRole
+    TypeJsonRole,
+    ValueInterface
 } from '../Interfaces/Interfaces'; // Adapter le chemin
 
+export type CreateProductParams = {product: Partial<ProductInterface>, views:(string|Blob)[]};
+export type BuildFormDataForFeaturesValuesParam = {product_id:string,currentFeatures: Partial<FeatureInterface>[], initialFeatures: Partial<FeatureInterface>[]} 
 import logger from './Logger';
 
 // Type pour les options de requête internes
@@ -56,9 +59,10 @@ export class SublymusApi {
             isFormData = false
         } = options;
 
+
         const token = this.getAuthToken();
         const requestHeaders = new Headers(headers);
-        console.log(`###########${token}##############`)
+       
         // Ajouter le token d'authentification si disponible
         if (token) {
             requestHeaders.set('Authorization', `Bearer ${token}`);
@@ -100,8 +104,8 @@ export class SublymusApi {
             }
         }
 
-        logger.debug(`API Request: ${method} ${url}`); // Log avant l'appel
-
+        console.log(`API Request: ${method} ${url}`,requestBody, options);
+    
         try {
             const response = await fetch(url, {
                 method,
@@ -122,7 +126,7 @@ export class SublymusApi {
                  const contentType = response.headers.get("content-type");
                  if (contentType && contentType.indexOf("application/json") !== -1) {
                     responseBody = await response.json();
-                    console.log({responseBody});
+                   
                     
                  } else {
                     // Si pas JSON, lire comme texte (pour debug)
@@ -138,7 +142,7 @@ export class SublymusApi {
                 // Garder responseBody à null si le parsing échoue sur une erreur HTTP
             }
 
-            logger.debug(`API Response: ${response.status} ${response.statusText}`, responseBody ? { bodySlice: JSON.stringify(responseBody).slice(0, 100) } : {});
+            console.log(responseBody);
 
             if (!response.ok) {
                 // Utiliser le message du corps si disponible, sinon un message générique
@@ -210,12 +214,19 @@ export class SublymusApi {
         return this._request('/get_products', { method: 'GET', params: filter });
     }
 
-    async createProduct(formData: FormData): Promise<{ message: string, product: ProductInterface }> {
-        return this._request('/create_product', { method: 'POST', body: formData, isFormData: true });
+    async createProduct({product,views}:CreateProductParams): Promise<{ message: string, product: ProductInterface }> {
+        const formData = await  this.buildFormData({
+            data:product,
+            files:{views}
+        })
+        return  this._request('/create_product', { method: 'POST', body: formData, isFormData: true });
     }
 
-    async updateProduct(formData: FormData): Promise<{ message: string, product: Partial<ProductInterface> }> {
-         // L'ID produit doit être dans le FormData (ex: 'product_id')
+    async updateProduct(product: Partial<ProductInterface>): Promise<{ message: string, product: Partial<ProductInterface> }> {
+        delete product.features
+        const formData = await this.buildFormData({
+            data:product
+        })
         return this._request('/update_product', { method: 'PUT', body: formData, isFormData: true });
     }
 
@@ -257,11 +268,19 @@ export class SublymusApi {
      async getFeaturesWithValues(filter: { feature_id?: string, product_id?: string }): Promise<FeatureInterface[]> {
          return this._request('/get_features_with_values', { method: 'GET', params: filter });
      }
+     
+     
      // create_feature, update_feature, delete_feature sont moins utilisés directement si multiple_update fonctionne bien
-     async multipleUpdateFeaturesValues(formData: FormData): Promise<{ message: string, product: ProductInterface }> {
-         // product_id et multiple_update_features (JSON string) doivent être dans le FormData
-         return this._request('/muptiple_update_features_values', { method: 'POST', body: formData, isFormData: true });
+     async multipleUpdateFeaturesValues(data:BuildFormDataForFeaturesValuesParam): Promise<{ message: string, product?: ProductInterface }> {
+        const formData = await this.buildFormDataForFeaturesValues(data); 
+        if(!formData){
+            return {
+                message:'Error avant l\'envoie de la requette, '
+            }
+        }
+        return this._request('/muptiple_update_features_values', { method: 'POST', body: formData, isFormData: true });
      }
+
      // Ajouter create/update/delete Value si nécessaire
 
     // == Détails Produit ==
@@ -411,28 +430,174 @@ export class SublymusApi {
      }
 
      // --- Helpers potentiels ---
-     // buildFormData(data: Record<string, any>, fileFields: string[] = ['views', 'icon', 'logo', 'cover_image']): FormData { ... }
+     async buildFormData({data,files,dataFilesFelds=[]}:{dataFilesFelds?:string[],files?:Record<string,(string|Blob)[]>,data: Record<string, any>}) { 
+        const formData = new FormData();
 
-} // Fin classe SublymusApi
+        for (const [key, value] of Object.entries(data)) {
+            if(dataFilesFelds.includes(key)){
+                if(Array.isArray(value)){
+                    const distinct = Math.random().toString(32)
+                    let i = 0
+                    for (const v of value) {
+                       v && formData.append(`${distinct}:${key}_${i++}`,v);
+                    }
+                }else{
+                    logger.warn(`le champs "${key}" doit contenir un tableau, (string|blob)[]`)
+                }
+            }
+            if(Array.isArray(value)){
+                for (const v of value) {
+                    formData.append(key,v);
+                }
+            }else {
+                formData.append(key,value);
+            }
+        }
 
-// --- Nouvelle structure pour les clés i18n ---
-/*
-{
-  "api": {
-    "apiUrlRequired": "L'URL de l'API est requise pour initialiser le client.",
-    "parseError": "Erreur lors de l'analyse de la réponse de l'API.",
-    "networkError": "Erreur réseau ou impossible de joindre l'API.",
-    "unknownError": "Une erreur inconnue est survenue lors de la requête API.",
-    "httpError": {
-        "400": "Requête invalide.",
-        "401": "Authentification requise.",
-        "403": "Accès refusé.",
-        "404": "Ressource non trouvée.",
-        "422": "Données invalides fournies.",
-        "500": "Erreur interne du serveur.",
-        "503": "Service indisponible."
+        if(files){
+            for (const [key, value] of Object.entries(files)) {
+                if(Array.isArray(value)){
+                    const distinct = Math.random().toString(32)
+                    let i = 0
+                    for (const v of value) {
+                       v && formData.append(`${distinct}:${key}_${i++}`,v);
+                    }
+                }
+            }
+        }
+        return formData;
+      }
+      async prepareMultipleFeaturesValus({currentFeatures,initialFeatures,product_id}:BuildFormDataForFeaturesValuesParam){
+        if (!currentFeatures) return null;
+        try {
+            
+            let send = false;
+    
+            const delete_features_id: string[] = []
+            const update_features: Partial<FeatureInterface>[] = []
+            const create_features: Partial<FeatureInterface>[] = []
+            const values: Record<string, Partial<{
+                create_values: Partial<ValueInterface>[],
+                update_values: Partial<ValueInterface>[],
+                delete_values_id: string[],
+            }>> = {}
+    
+            const next_f: Partial<FeatureInterface>[] = []
+            for (const f of currentFeatures) {
+                if(!f.id) continue
+                if (f.id.startsWith(NEW_ID_START)) {
+                    create_features.push(f);
+                    send = true
+                } else {
+                    next_f.push(f)
+                }
+            }
+    
+            for (const initial_f of initialFeatures) {
+                const initial_here = (next_f || []).find(f => initial_f.id == f.id);
+                if (!initial_here) {
+                    initial_f.id && delete_features_id.push(initial_f.id);
+                    send = true
+                    continue
+                }
+                if (!initial_here.id) continue
+                const next_v: Partial<ValueInterface>[] = []
+                for (const v of initial_here.values || []) {
+                    if (v.id.startsWith(NEW_ID_START)) {
+                        if (!values[initial_here.id]) values[initial_here.id] = {};
+                        if (!values[initial_here.id].create_values) values[initial_here.id].create_values = []
+                        values[initial_here.id].create_values?.push(v);
+                        send = true
+                    } else {
+                        next_v.push(v)
+                    }
+                }
+    
+                for (const i_v of initial_f.values || []) {
+                    const same_inital_value = next_v.find(_v => _v.id == i_v.id);
+    
+                    if (!same_inital_value) {
+                        if (!values[initial_here.id]) values[initial_here.id] = {};
+                        if (!values[initial_here.id].delete_values_id) values[initial_here.id].delete_values_id = []
+                        values[initial_here.id].delete_values_id?.push(i_v.id)
+                        send = true
+                    } else if ((same_inital_value as any)[EDITED_DATA] == EDITED_DATA) {
+                        if (!values[initial_here.id]) values[initial_here.id] = {};
+                        if (!values[initial_here.id].update_values) values[initial_here.id].update_values = []
+                        values[initial_here.id].update_values?.push(same_inital_value);
+                        send = true
+                    }
+                }
+                const need_update = (initial_here as any)[EDITED_DATA] == EDITED_DATA
+                if (!need_update) continue
+                update_features.push(initial_here);
+                send = true
+            }
+            const multiple_update_features = {
+                delete_features_id: delete_features_id.length > 0 ? delete_features_id : undefined,
+                update_features: update_features.length > 0 ? update_features : undefined,
+                create_features: create_features.length > 0 ? create_features : undefined,
+                values,
+            }
+    
+            if (!send) return null;
+            return multiple_update_features;
+
+        }catch(error){
+            return null
+        }
+      }
+    async  buildFormDataForFeaturesValues({currentFeatures,initialFeatures,product_id}:BuildFormDataForFeaturesValuesParam) {
+
+            const multiple_update_features = await this.prepareMultipleFeaturesValus({currentFeatures,initialFeatures,product_id})
+            if(!multiple_update_features) return null;
+
+            console.log('avant ==> multi_update_features', { multiple_update_features, initialFeatures, currentFeatures });
+            /************  ENvoie a l'Api  du store    ************/
+        try{
+    
+            const newFiles = (newV: Partial<ValueInterface>) => {
+                (['icon', 'views'] as const).forEach((a) => {
+    
+                    if (!Array.isArray(newV[a])) return console.warn('newV[a] n\'est pas array', newV[a]); // Sécurisation
+    
+                    (newV as any)[a] = newV[a].map((v, i) => {
+                        if (typeof v === 'string') return v; // Conserver les strings
+    
+                        if (!(v instanceof Blob)) return console.warn('newV[a][' + i + '] n\'est un string ou Blob', v);; // Sécurité supplémentaire
+    
+                        if (!newV.id) {
+                            console.warn(`ID manquant pour l'élément ${a}, index ${i}`);
+                            return null;
+                        }
+    
+                        const field = `${newV.id.replace('.','')}:${a}_${i}`;
+                        formData.append(field, v);
+                        return field;
+                    }).filter(Boolean); // Supprime les valeurs null ou undefined
+                });
+            }
+    
+            const formData = new FormData();
+            for (const value of Object.values(multiple_update_features.values)) {
+                for (const newV of value.create_values || []) {
+                    newFiles(newV)
+                }
+                for (const newV of value.update_values || []) {
+                    newFiles(newV)
+                }
+            }
+            for (const feature of multiple_update_features.create_features || []) {
+                for (const newV of feature.values || []) {
+                    newFiles(newV)
+                }
+            }
+            formData.append('product_id', product_id);
+            formData.append('multiple_update_features', JSON.stringify(multiple_update_features));
+            return formData;
+        } catch (error) {
+            console.error('multiple_features_values', error);
+        }
+        return null
     }
-  },
-  // ... garder toutes les autres clés spécifiques aux modules (auth, product, category, etc.)
-}
-*/
+} // Fin classe SublymusApi

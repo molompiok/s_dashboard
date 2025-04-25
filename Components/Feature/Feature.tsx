@@ -10,7 +10,6 @@ import { IconTextValue, TextValue } from '../FV_IconText_Info/FV_IconText_Info';
 import { ColorValue } from '../FV_Color_Info/FV_Color_Info';
 // Importer le popup d'édition de Feature et le popup d'édition/création de Value
 import { FeatureInfo } from '../FeatureInfo/FeatureInfo';
-import { EDITED_DATA, NEW_ID_START } from '../Utils/constants';
 import { ConfirmDelete } from '../Confirm/ConfirmDelete';
 import { useTranslation } from 'react-i18next'; // ✅ i18n
 
@@ -29,12 +28,12 @@ const VALUE_LIMIT = 7;
 
 function Feature({ feature, setFeature, onOpenRequired, onDelete }: FeatureProps) {
     const { t } = useTranslation(); // ✅ i18n
-    const { openChild } = useApp();
+    const { openChild } = useChildViewer();
 
     // --- Handlers ---
     const handleValueChange = (newValue: ValueInterface) => {
         // Marquer la valeur et la feature comme éditées
-         (newValue as any)[EDITED_DATA] = EDITED_DATA;
+        newValue._request_mode = 'edited';
         setFeature((current) => {
              const updatedValues = (current?.values ?? []).map(_v => (_v.id === newValue.id) ? newValue : _v);
              // Vérifier si la valeur existait déjà pour éviter de marquer la feature si juste une valeur change
@@ -43,7 +42,7 @@ function Feature({ feature, setFeature, onOpenRequired, onDelete }: FeatureProps
                  ...current,
                  values: updatedValues,
                   // Marquer la feature seulement si la valeur n'existait pas? Non, toujours marquer.
-                 [EDITED_DATA]: EDITED_DATA
+                 _request_mode: 'edited'
              };
          });
         openChild(null); // Fermer le popup
@@ -54,7 +53,7 @@ function Feature({ feature, setFeature, onOpenRequired, onDelete }: FeatureProps
          setFeature((current) => ({
              ...current,
              values: [...(current?.values ?? []), newValue],
-             [EDITED_DATA]: EDITED_DATA
+             _request_mode: 'edited'
          }));
          openChild(null);
     };
@@ -63,7 +62,7 @@ function Feature({ feature, setFeature, onOpenRequired, onDelete }: FeatureProps
         setFeature((current) => ({
             ...current,
             values: (current?.values ?? []).filter(_v => _v.id !== valueIdToRemove),
-            [EDITED_DATA]: EDITED_DATA // Marquer comme édité après suppression
+            _request_mode: 'edited' // Marquer comme édité après suppression
         }));
         openChild(null); // Fermer la popup de confirmation
     };
@@ -86,7 +85,7 @@ function Feature({ feature, setFeature, onOpenRequired, onDelete }: FeatureProps
              <FeatureInfo
                  feature={feature as FeatureInterface} // Passer la feature complète
                  onChange={(updatedFeature) => {
-                      (updatedFeature as any)[EDITED_DATA] = EDITED_DATA; // Marquer comme éditée
+                      updatedFeature._request_mode= 'edited'; // Marquer comme éditée
                       setFeature(() => updatedFeature); // Remplacer la feature dans l'état parent
                       openChild(null);
                  }}
@@ -100,7 +99,7 @@ function Feature({ feature, setFeature, onOpenRequired, onDelete }: FeatureProps
         // Si pas de valeur, c'est une création
         const isCreating = !value;
         const valueData = value ?? {
-             id: NEW_ID_START + Date.now(), // ID temporaire
+             id:  ClientCall(()=>Date.now().toString(32)+Math.random().toString(32),0), // ID temporaire
              feature_id: feature?.id || '',
              index: (feature?.values?.length ?? 0) + 1, // Index suivant
              text: '', // Valeurs par défaut
@@ -217,6 +216,7 @@ import logger from '../../api/Logger';
 import { JSX, useMemo } from 'react';
 import { useApp } from '../../renderer/AppStore/UseApp';
 import { ChildViewer } from '../ChildViewer/ChildViewer';
+import { useChildViewer } from '../ChildViewer/useChildViewer';
 // Importer d'autres formulaires Info ici (DateInfo, InputInfo, etc.)
 
 export function getInfoPopup({ value, feature, onChange, onCancel }: {

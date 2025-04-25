@@ -10,10 +10,9 @@ import { RiImageEditFill } from 'react-icons/ri';
 import { Comfirm } from '../Confirm/Confirm'; // Gardé
 import { ValuePricing } from '../ValuePricing/ValuePricing'; // Gardé
 import { useTranslation } from 'react-i18next'; // ✅ i18n
-import logger from '../../api/Logger';
-import { useApp } from '../../renderer/AppStore/UseApp';
 import { ChildViewer } from '../ChildViewer/ChildViewer';
 import { ConfirmDelete } from '../Confirm/ConfirmDelete';
+import { useChildViewer } from '../ChildViewer/useChildViewer';
 
 export { FV_IconText_Info, IconTextValue, TextValue };
 
@@ -175,7 +174,7 @@ function FV_IconText_Info({ value: initialValue, feature, onChange, onCancel }: 
 function IconTextValue({ value, feature, onRemove, onClick }: { onClick?: () => void; onRemove?: () => void; value: ValueInterface; feature: Partial<FeatureInterface> }) {
     const icon = value.icon?.[0];
     const { currentStore } = useStore();
-    const { openChild } = useApp();
+    const { openChild } = useChildViewer();
     const { t } = useTranslation();
 
     return (
@@ -219,7 +218,7 @@ function IconTextValue({ value, feature, onRemove, onClick }: { onClick?: () => 
 }
 
 function TextValue({ value, feature, onRemove, onClick }: { onClick?: () => void; onRemove?: () => void; value: ValueInterface; feature: Partial<FeatureInterface> }) {
-     const { openChild } = useApp();
+     const { openChild } = useChildViewer();
      const { t } = useTranslation();
 
     return (

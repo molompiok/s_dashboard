@@ -17,12 +17,14 @@ interface SaveButtonProps {
     title?: string; // Titre personnalisé
     loading?: boolean;
     effect?: ButtonEffect;
+    className?:string,
     isNew?: boolean; // Indiquer si c'est une action de création
     hasChanges?: boolean; // Indiquer s'il y a des modifications non sauvegardées
 }
 
 function SaveButton({
     onClick,
+    className,
     required = false,
     title,
     loading = false,
@@ -78,7 +80,8 @@ function SaveButton({
             type="button" // Important pour éviter soumission de formulaire parent
             onClick={onClick}
             disabled={isDisabled || loading} // Désactiver si invalide OU chargement
-            className={`${baseClasses} ${effectClasses}`}
+            // className={`${baseClasses} ${effectClasses}`}
+            className={className}
             style={{
                 // Ajouter des styles inline si nécessaire (ex: pour effets complexes non gérés par classes)
                  minWidth: '200px' // Assurer une largeur minimale

@@ -7,40 +7,14 @@ import './TopBar.css'
 import { IoSearch, IoNotifications, IoChevronBack } from "react-icons/io5";
 import { ClientCall } from '../Utils/functions';
 import { Transmit } from '@adonisjs/transmit-client'
+import { useChildViewer } from '../ChildViewer/useChildViewer';
 
 export { Topbar }
 
 
 function Topbar({ back, notif, search, onBack }: { onBack?: () => void, back?: boolean, search?: boolean, notif?: boolean }) {
-    const  {testSSE,currentStore} = useStore();
-    const { openChild } = useApp()
-    // const [test, setTest] = useState(0)
-    // useEffect(() => {
-    //     if (!currentStore ) return
-    //     const transmit = getTransmit(currentStore.url)
-    //     const subscription = transmit?.subscription(`test:sse`)
-        
-    //     async function subscribe() {
-    //         if(!subscription) return
-    //         await subscription.create()
-           
-    //         subscription.onMessage<{ test?: number }>((data)=>{
-    //               setTest(data.test||0)
-    //            if(data.test){
-    //            }
-    //         })
-    //     }
+    const { openChild } = useChildViewer()
 
-    //     subscribe().catch(console.log)
-    
-    //     return () => {
-    //         subscription?.delete() // 🔴 Ferme la connexion à l'ancien store lorsqu'on change
-    //     }
-
-    // }, [currentStore])
-
-    // console.log(test);
-    
     return (
         <div className='top-bar'>
             {back != false && <IoChevronBack className='icon' onClick={() => {

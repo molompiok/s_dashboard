@@ -28,6 +28,7 @@ import { useTranslation } from 'react-i18next'; // ✅ i18n
 import logger from '../../../api/Logger'; // Logger
 import { ApiError } from '../../../api/SublymusApi'; // Importer ApiError
 import { useChildViewer } from '../../../Components/ChildViewer/useChildViewer';
+import { VisibilityControl } from '../../../Components/Button/VisibilityControl';
 
 export { Page };
 
@@ -45,10 +46,10 @@ function Page() {
     const { openChild } = useChildViewer();
     const { currentStore } = useStore();
     const { routeParams } = usePageContext();
-   
+
     const categoryIdFromRoute = routeParams?.['id'];
     const isNewCategory = categoryIdFromRoute === 'new';
-   
+
     // --- Gestion de l'état du formulaire ---
     const [categoryFormState, setCategoryFormState] = useState<Partial<CategoryInterface>>(
         isNewCategory ? initialEmptyCategory : {} // Commencer vide si édition (sera rempli par fetch)
@@ -155,9 +156,9 @@ function Page() {
         // Focus sur le premier champ en erreur (optionnel)
         if (!isValid) {
             const firstErrorKey = Object.keys(errors)[0];
-            const element =ClientCall(function name() {
-               return document.getElementById(`input-category-${firstErrorKey}`)
-            },null); // Assigner des IDs aux inputs
+            const element = ClientCall(function name() {
+                return document.getElementById(`input-category-${firstErrorKey}`)
+            }, null); // Assigner des IDs aux inputs
             element?.focus();
         }
         return isValid;
@@ -325,8 +326,10 @@ function Page() {
             });
         }
     };
-
-    // --- Suppression ---
+    const handleVisibility = (is_visible: boolean) => {
+        setCategoryFormState(prev => ({ ...prev, is_visible }));
+        setIsAutoSaving(true);
+    }
     const handleDelete = () => {
         if (!categoryFormState.id || isNewCategory || isLoadingMutation) return;
         openChild(
@@ -355,7 +358,7 @@ function Page() {
         );
     };
 
-    console.log({categoryIdFromRoute,isNewCategory, currentStore,isFetchError,isLoadingCategory,categoryFormState});
+    console.log({ categoryIdFromRoute, isNewCategory, currentStore, isFetchError, isLoadingCategory, categoryFormState });
 
     // --- Affichage ---
     // Afficher PageNotFound si erreur de fetch en mode édition
@@ -372,14 +375,14 @@ function Page() {
     }
 
     // Préparer les URLs d'image pour l'affichage (locale ou depuis serveur)
-    const viewUrl = localImagePreviews.view ?? (typeof categoryFormState.view?.[0] === 'string' ? getImg(categoryFormState.view[0], undefined, currentStore?.url) : getImg('/res/empty/drag-and-drop.png', '80%'));
-    const iconUrl = localImagePreviews.icon ?? (typeof categoryFormState.icon?.[0] === 'string' ? getImg(categoryFormState.icon[0], 'contain', currentStore?.url) : getImg('/res/empty/drag-and-drop.png', '80%'));
+    const viewUrl = localImagePreviews.view ?? (typeof categoryFormState.view?.[0] === 'string' ? getImg(categoryFormState.view[0], undefined, currentStore?.url) : '');
+    const iconUrl = localImagePreviews.icon ?? (typeof categoryFormState.icon?.[0] === 'string' ? getImg(categoryFormState.icon[0], 'contain', currentStore?.url) : '');
     const showViewPlaceholder = !localImagePreviews.view && (!categoryFormState.view || categoryFormState.view.length === 0);
     const showIconPlaceholder = !localImagePreviews.icon && (!categoryFormState.icon || categoryFormState.icon.length === 0);
 
 
-   
-    
+
+
     return (
         // Layout principal
         <div className="w-full flex flex-col bg-gray-50 min-h-screen">
@@ -387,14 +390,12 @@ function Page() {
             {/* Utiliser max-w-2xl ou 3xl pour page formulaire, gap-4 ou 6 */}
             <main className="w-full max-w-3xl mx-auto p-4 md:p-6 lg:p-8 flex flex-col gap-6 pb-24"> {/* Ajouter pb-24 pour espace bouton flottant */}
 
-                {/* Titre de la page */}
                 <h1 className="text-2xl font-semibold text-gray-900">
                     {isNewCategory ? t('category.createTitle') : t('category.editTitle', { name: originalCategoryData?.name || '...' })}
                 </h1>
 
-                {/* Image de couverture */}
                 <div>
-                    <label className='block text-sm font-medium text-gray-700 mb-1' htmlFor='chose-category-view'>
+                    <label className='block text-sm font-medium text-gray-700 mb-1 flex  items-center' htmlFor='chose-category-view'>
                         {t('category.coverImageLabel')} <Indicator title={t('category.coverImageTooltipTitle')} description={t('category.coverImageTooltipDesc')} />
                     </label>
                     {/* Utiliser aspect-video ou aspect-[16/9] ? Ou 3/1? */}
@@ -425,7 +426,7 @@ function Page() {
                 <div className="flex flex-col sm:flex-row items-start gap-6">
                     {/* Icône */}
                     <div className='flex-shrink-0'>
-                        <label className='block text-sm font-medium text-gray-700 mb-1' htmlFor='chose-category-icon'>
+                        <label className='block text-sm font-medium text-gray-700 mb-1  flex  items-center' htmlFor='chose-category-icon'>
                             {t('category.iconLabel')} <Indicator title={t('category.iconTooltipTitle')} description={t('category.iconTooltipDesc')} />
                         </label>
                         <label htmlFor='chose-category-icon' className={`relative block w-36 h-36 rounded-lg cursor-pointer overflow-hidden group bg-gray-100 border ${fieldErrors.icon ? 'border-red-500' : 'border-gray-300'} ${!showIconPlaceholder ? 'hover:opacity-90' : 'hover:bg-gray-200'}`}>
@@ -475,7 +476,7 @@ function Page() {
                     <input
                         id='input-category-name'
                         name="name" // Important pour handleInputChange
-                        className={`block w-full rounded-md shadow-sm sm:text-sm ${fieldErrors.name ? 'border-red-500 ring-red-500 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'}`}
+                        className={`p-2.5 px-4 block w-full rounded-md shadow-sm sm:text-sm ${fieldErrors.name ? 'border-red-500 ring-red-500 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'}`}
                         type="text"
                         value={categoryFormState.name || ''}
                         placeholder={t('category.namePlaceholder')}
@@ -509,21 +510,14 @@ function Page() {
                     </h3>
                     <div className='flex items-center gap-3 flex-wrap'>
                         {/* Bouton Choisir/Remplacer */}
-                        <button
-                            type="button"
-                            onClick={() => {
-                                openChild(<ChildViewer title={t('category.selectParentTitle')}>
-                                    <CategoriesPopup ignore={[categoryFormState?.id || 'new']} onSelected={handleParentCategorySelect} />
-                                </ChildViewer>, { background: '#3455' }); // Ne pas permettre de se sélectionner soi-même
-                            }}
-                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium border transition ${categoryFormState.parent_category_id
-                                    ? 'bg-yellow-50 text-yellow-700 border-yellow-200 hover:bg-yellow-100'
-                                    : 'bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100'
-                                }`}
-                        >
-                            {categoryFormState.parent_category_id ? <FaRedo size={14} /> : <IoAdd size={16} />}
-                            {categoryFormState.parent_category_id ? t('category.replaceParentButton') : t('category.selectParentButton')}
-                        </button>
+                        <ParentCategoryButton
+                            categoryFormState={categoryFormState}
+                            openChild={openChild}
+                            ChildViewer={ChildViewer}
+                            CategoriesPopup={CategoriesPopup}
+                            handleParentCategorySelect={handleParentCategorySelect}
+                            t={t}
+                        />
                         {/* Affichage du parent sélectionné */}
                         {categoryFormState.parent_category_id && (
                             <CategoryItemMini
@@ -531,7 +525,7 @@ function Page() {
                                 category_id={categoryFormState.parent_category_id}
                                 onDelete={handleRemoveParent} // Permettre de supprimer le parent
                                 hoverEffect={false}
-                                
+
                             />
                         )}
                     </div>
@@ -539,19 +533,25 @@ function Page() {
 
                 {/* Section Actions Basse (Supprimer, etc. en mode édition) */}
                 {!isNewCategory && categoryFormState.id && (
-                    <div className="mt-6 pt-6 border-t border-gray-200">
-                        <h3 className="text-base font-medium text-gray-700 mb-3">{t('common.dangerZone')}</h3>
-                        <Button
-                            title={t('category.deleteButton')}
-                            icon={<IoTrash />}
-                            onClick={handleDelete}
-                            className="!bg-red-50 !text-red-700 hover:!bg-red-100" // Overwrite default button styles
-                            iconCtnStyle={{ background: 'transparent' }}
-                            forward={null} // Pas de flèche
-                            justifyContent='flex-start'
-                            style={{ width: 'fit-content' }} // Ajuster largeur
-                        />
-                    </div>
+                    <VisibilityControl
+                        isVisible={!!originalCategoryData?.is_visible}
+                        title={t('product.visibilityTitle')}
+                        onSetVisibility={handleVisibility}
+                        onDeleteRequired={handleDelete} // Utilise la fonction simulée
+                        isLoading={false}
+                        t={t}
+                    />
+                )}
+                {!isNewCategory && categoryFormState.id && (
+                    <ProductList
+                        title={t('category.categoryProducts')}
+                        addTo={{
+                            category_id: categoryFormState.id,
+                            text: t('category.addProductToCategory')
+                        }}
+                        baseFilter={{
+                            categories_id: [categoryFormState.id]
+                        }} />
                 )}
 
             </main>
@@ -577,6 +577,64 @@ function Page() {
                 // style={isNewCategory ? { background: 'linear-gradient(...)' } : undefined}
                 />
             </div>
+
+
         </div>
+    );
+}
+
+
+function ParentCategoryButton({ categoryFormState, openChild, ChildViewer, CategoriesPopup, handleParentCategorySelect, t }: any) {
+
+    const hasParent = !!categoryFormState.parent_category_id;
+
+    const handleOpenPopup = () => {
+        openChild(
+            <ChildViewer title={t('category.selectParentTitle')}>
+                <CategoriesPopup
+                    ignore={[categoryFormState?.id || 'new']}
+                    onSelected={handleParentCategorySelect}
+                />
+            </ChildViewer>,
+            { background: '#3455' } // Attention: cette couleur peut ne pas être valide, vérifiez le format attendu par openChild
+        );
+    };
+
+    return (
+        <button
+            type="button"
+            onClick={handleOpenPopup}
+            // Applique les classes conditionnellement en fonction de la présence d'un parent
+            className={`transition flex ${hasParent
+                // --- Style CARRÉ pour "Remplacer" ---
+                ? 'flex-col items-center justify-center p-2 w-20 h-20 rounded-md hover:bg-gray-100 text-gray-700 gap-1 text-center' // w-20 h-20 pour carré (ajustez si besoin), pas de bordure/bg par défaut, flex-col, gap
+                // --- Style RECTANGLE original pour "Sélectionner" ---
+                : 'items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium border bg-blue-50 text-blue-700 border-blue-200 hover:bg-blue-100'
+                }`}
+            // Ajout d'un aria-label pour l'accessibilité, surtout pour le bouton carré
+            aria-label={hasParent ? t('category.replaceParentButton') : t('category.selectParentButton')}
+        >
+            {hasParent ? (
+                // --- Contenu pour "Remplacer" (Icône + Texte) ---
+                <>
+                    {/* Wrapper pour l'icône avec fond léger et rond */}
+                    <span className="flex items-center justify-center p-2 bg-blue-100 rounded-full text-blue-600 mb-1"> {/* bg léger, texte bleu pur, rond, padding, marge basse */}
+                        <FaRedo size={14} /> {/* Icône Remplacer */}
+                    </span>
+                    {/* Texte pour "Remplacer" */}
+                    <span className="text-xs font-medium"> {/* Taille de texte plus petite pour s'adapter */}
+                        {t('category.replaceParentButton')}
+                    </span>
+                </>
+            ) : (
+                // --- Contenu original pour "Sélectionner" ---
+                <>
+                    <IoAdd size={16} /> {/* Icône Ajouter */}
+                    <span> {/* Garder le span pour la cohérence si besoin, ou juste le texte */}
+                        {t('category.selectParentButton')}
+                    </span>
+                </>
+            )}
+        </button>
     );
 }

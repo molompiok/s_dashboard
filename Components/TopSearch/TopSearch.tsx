@@ -10,15 +10,17 @@ import { useApp, type GlobalSearchType } from '../../renderer/AppStore/UseApp'
 import { CategoryItemMini } from '../CategoryItem/CategoryItemMini'
 import { IoSearch } from 'react-icons/io5'
 import { getImg } from '../Utils/StringFormater'
-import { ProductItem } from '../ProductItem/ProductItem'
+import { ProductItemCard } from '../ProductItem/ProductItemCard'
 import { Swiper, SwiperSlide } from 'swiper/react'
 import { FreeMode } from 'swiper/modules'
 import { useWindowSize } from '../../Hooks/useWindowSize';
+import { useChildViewer } from '../ChildViewer/useChildViewer';
 
 export { TopSearch }
 
 function TopSearch({ onClientSelected, onProductSelected, onCategorySelected, onCommandSelected }: { onCommandSelected?: (cammand: CommandInterface) => void, onCategorySelected?: (category: CategoryInterface) => void, onProductSelected?: (product: ProductInterface) => void, onClientSelected?: (client: any) => void }) {
-    const { openChild, gobalSearch } = useApp()
+    const { gobalSearch } = useApp()
+    const { openChild } = useChildViewer()
     const { currentStore } = useStore()
     const [filter, setFilter] = useState<FilterType>({});
     const [data, setData] = useState<GlobalSearchType>({
@@ -110,7 +112,7 @@ function TopSearch({ onClientSelected, onProductSelected, onCategorySelected, on
                     {
                         data.products?.map((p, i) =>
                             p && <SwiperSlide>
-                                <ProductItem key={p.id} product={p} onClick={() => {
+                                <ProductItemCard key={p.id} product={p} onClick={() => {
                                     console.log(p);
                                     onProductSelected?.(p)
                                     openChild(null);

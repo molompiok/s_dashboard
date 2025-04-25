@@ -68,44 +68,55 @@ function SomeComponent() {
   );
 }
 function OpenChild() {
-  const { currentChild, alignItems, background, justifyContent, openChild,back } = useChildViewer();
-  
-
-  const child = currentChild || null;
-  const hash = useHashWatcher() 
+  const { currentChild, alignItems, background, justifyContent, openChild } = useChildViewer();
+  const hash = useHashWatcher();
 
   useEffect(() => {
-    if (!child && location.hash === "#openChild") {
+    if (!currentChild && location.hash === "#openChild") {
       ClientCall(() => {
-        // history.replaceState(null, "", location.pathname);
-        history.back()
-        openChild(null)
+        history.back();
+        openChild(null);
       });
     }
-    if(location.hash !== "#openChild") {
-      openChild(null)
+
+    if (location.hash !== "#openChild") {
+      openChild(null);
     }
-  }, [child, hash]);
+  }, [currentChild, hash]);
 
-  
+  const flexAlignment = [
+    alignItems === 'start' ? 'items-start' :
+    alignItems === 'end' ? 'items-end' : 'items-center',
 
-  return (child)&& hash=='#openChild' &&
-    <div id='open-child' style={{
-      alignItems, background, justifyContent
-    }} onClick={(e) => {
-      if (e.currentTarget == e.target) {
-        openChild(null)
-      }
-    }}>{child}</div>
+    justifyContent === 'left' ? 'justify-start' :
+    justifyContent === 'right' ? 'justify-end' :
+    justifyContent === 'space-between' ? 'justify-between' :
+    'justify-center'
+  ].join(' ');
+
+  return currentChild && hash === '#openChild' && (
+    <div
+      className={`fixed top-0 left-0 w-full h-full z-[9999] flex ${flexAlignment}`}
+      style={{ background }}
+      onClick={(e) => {
+        if (e.currentTarget === e.target) {
+          openChild(null);
+        }
+      }}
+    >
+      {currentChild}
+    </div>
+  );
 }
 
+
 function Frame({ children }: { children: React.ReactNode }) {
-  const { blur } = useApp();
+  const { blur } = useChildViewer();
   return (
     <div
       style={{
         display: 'flex',
-        maxWidth: 900,
+        maxWidth: 1200,
         margin: 'auto',
         filter: blur ? `blur(${blur}px)` : ''
       }}
@@ -132,7 +143,7 @@ function Sidebar({ children }: { children: React.ReactNode }) {
   )
 }
 function Bottombar({ children }: { children: React.ReactNode }) {
-  const { blur } = useApp();
+  const { blur } = useChildViewer();
   return (
     <div id="bottombar" style={{ filter: blur ? `blur(10px)` : '' }} >
       {children}

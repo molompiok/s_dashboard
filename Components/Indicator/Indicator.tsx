@@ -7,11 +7,11 @@ export {Indicator}
 function Indicator({title,description, style,className}:{style?:React.CSSProperties | undefined,className?:string,title:string,description?:string}) {
     
 
-    return <div style={style} className={"indicator "+ (className||'')}> 
+    return <span style={style} className={"indicator "+ (className||'')}> 
     <IoHelp/>
     <div  className="info">
         <h2>{title}</h2>
         {<p>{description}</p>}
     </div>
-    </div>
+    </span>
 }

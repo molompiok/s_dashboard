@@ -33,8 +33,10 @@ function CommandeList({ product_id, user_id }: { user_id?: string; product_id?: 
     // const [commands, setCommands] = useState<CommandInterface[]>([]); // Géré par React Query
 
     // ✅ Utiliser le hook React Query
+    const d = filter.max_date ? new Date(filter.max_date) : undefined;
+    d?.setDate(d.getDate() + 1);
     const { data: commandsData, isLoading, isError, error: apiError, refetch } = useGetAllOrders(
-        { ...filter, product_id, user_id }, // Fusionner filtres
+        { ...filter, product_id, user_id, max_date:d?.toISOString() }, // Fusionner filtres
         { enabled: !!currentStore } // Activer seulement si store chargé
     );
     const commands = commandsData?.list ?? []; // Extraire la liste

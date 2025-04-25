@@ -1,7 +1,6 @@
 .indicator{
     position: relative;
     display: flex;
-    justify-content: center;
 }
 
 .indicator svg {

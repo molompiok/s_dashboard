@@ -1,42 +1,38 @@
-// pages/category/+Page.tsx (ou chemin correspondant)
-
+// pages/category/+Page.tsx
 import { Topbar } from '../../Components/TopBar/TopBar';
 import { CategoriesToolbar } from '../../Components/CategoriesList/CategoriesToolbar'; // Nouveau
-import { CategoryItemCard } from '../../Components/CategoryItem/CategoryItemCard'; // Nouveau
-import { CategoryItemRow } from '../../Components/CategoryItem/CategoryItemRow'; // Nouveau
+import { CategoryItemCard, CategoryItemSkeletonCard } from '../../Components/CategoryItem/CategoryItemCard'; // Nouveau
+import { CategoryItemRow, CategoryItemSkeletonRow } from '../../Components/CategoryItem/CategoryItemRow'; // Nouveau
 import { Pagination } from '../../Components/Pagination/Pagination'; // Nouveau (ou existant)
 import { useGetCategories } from '../../api/ReactSublymusApi'; // ✅ Hook API
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { CategoryFilterType } from '../../Interfaces/Interfaces'; // Assumer type FilterType adapté aux catégories
-import { CategoryItemSkeletonCard } from '../../Components/CategoryItem/CategoryItemSkeletonCard'; // Nouveau
-import { CategoryItemSkeletonRow } from '../../Components/CategoryItem/CategoryItemSkeletonRow'; // Nouveau
-// Optionnel: Importer ProductList ou un aperçu produit
-// import { ProductQuickPreview } from '../../Components/ProductList/ProductQuickPreview';
+import { ClientCall } from '../../Components/Utils/functions';
 
 export { Page };
 
 function Page() {
     const { t } = useTranslation();
-    const [viewType, setViewType] = useState<'card' | 'row'>('card'); // Vue par défaut
+    const [viewType, setViewType] = useState<'card' | 'row'>(ClientCall(function () { return localStorage.getItem('product:view_type') }) as any || 'card'); // Vue par défaut
     const [filter, setFilter] = useState<CategoryFilterType>({
         page: 1,
-        limit: 12, // Limite par défaut pour la vue carte
-        with_product_count: true, // Toujours récupérer le compte produit
-        order_by: 'name_asc', // Tri par défaut
+        limit: 12,
+        with_product_count: true,
+        order_by: 'name_asc', 
     });
 
-    // Adapter le limit pour la vue ligne si différent
+   
     useEffect(() => {
         setFilter(prev => ({
             ...prev,
-            limit: viewType === 'card' ? 12 : 15, // Plus d'items en vue ligne
-            page: 1 // Reset page quand la vue ou limite change
+            limit: viewType === 'card' ? 12 : 15,
+            page: 1
         }));
+        localStorage.setItem('product:view_type', viewType)
     }, [viewType]);
 
 
-    // ✅ Récupérer les données avec React Query
     const { data: categoriesData, isLoading, isError, error: apiError } = useGetCategories(
         filter,
         // { enabled: true } // Activé par défaut
@@ -52,10 +48,6 @@ function Page() {
             <Topbar back={true} />
             <main className="w-full max-w-7xl mx-auto p-4 md:p-6 lg:p-8 flex flex-col gap-6">
 
-                {/* Optionnel: Aperçu rapide des produits */}
-                {/* <ProductQuickPreview /> */}
-
-                {/* Titre principal */}
                 <h1 className="text-2xl font-semibold text-gray-900">{t('dashboard.categories')}</h1>
 
                 {/* Barre d'outils Catégories */}
