@@ -90,11 +90,10 @@ function ProductRowItem({ product, categoriesMap }: ProductRowItemProps) {
         setIsMenuOpen(false);
         setIsVisible(newVisibility); // Optimistic UI
 
-        const formData = new FormData();
-        formData.append('product_id', product.id); // ID pour l'API update
-        formData.append('is_visible', String(newVisibility));
-
-        updateProductMutation.mutate(formData, {
+        updateProductMutation.mutate({
+            product_id : product.id,
+            is_visible: newVisibility
+        }, {
             onSuccess: () => { logger.info(`Product ${product.id} visibility updated to ${newVisibility}`); },
             onError: (error) => {
                 logger.error({ error }, `Failed to update visibility for product ${product.id}`);

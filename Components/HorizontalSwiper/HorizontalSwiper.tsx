@@ -14,14 +14,14 @@ import './HorizontalSwiper.css';
 import { Pagination, Navigation } from 'swiper/modules';
 import { useWindowSize } from '../../Hooks/useWindowSize';
 import { ValueInterface } from '../../Interfaces/Interfaces';
-import { IoArrowBackCircle, IoArrowBackCircleOutline, IoArrowForwardCircle, IoArrowForwardCircleOutline, IoTrash } from 'react-icons/io5';
+import { IoArrowBackCircleOutline, IoArrowForwardCircleOutline, IoTrash } from 'react-icons/io5';
 import { BiSolidImageAdd } from 'react-icons/bi';
 import { getFileType } from '../Utils/functions';
-import { useApp } from '../../renderer/AppStore/UseApp';
 import { ChildViewer } from '../ChildViewer/ChildViewer';
 import { ConfirmDelete } from '../Confirm/ConfirmDelete';
 import { useStore } from '../../pages/stores/StoreStore';
 import { getImg } from '../Utils/StringFormater';
+import { useChildViewer } from '../ChildViewer/useChildViewer';
 
 export { HoriszontalSwiper }
 
@@ -30,7 +30,7 @@ function HoriszontalSwiper({ values, onActiveIndexChange, onDeleteValue, goBack,
     const [swiperRef, setSwiperRef] = useState<SwiperType | null>(null);
     const { currentStore } = useStore()
     const size = useWindowSize()
-    const { openChild } = useApp();
+    const { openChild } = useChildViewer();
     
 
     const s = useWindowSize().width;

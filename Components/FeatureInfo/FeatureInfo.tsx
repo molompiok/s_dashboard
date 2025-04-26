@@ -14,7 +14,7 @@ export { FeatureInfo };
 
 interface FeatureInfoProps {
     feature: Partial<FeatureInterface>; // Utiliser Partial car peut être nouveau
-    onChange: (feature: FeatureInterface) => void;
+    onChange: (feature: Partial<FeatureInterface>) => void;
     onCancel?: () => void;
 }
 
@@ -49,11 +49,15 @@ const FeatureDefaults: Partial<Record<string, Partial<FeatureInterface>>> = {
     input: {
       type: 'input'
     },
+    file: {
+      type: 'input'
+    },
 };
 
 
 function FeatureInfo({ feature: initialFeature, onChange, onCancel }: FeatureInfoProps) {
     const { t } = useTranslation(); // ✅ i18n
+    initialFeature.type = initialFeature.type || 'icon_text'
     // État local pour le formulaire
     const [f, setFeature] = useState<Partial<FeatureInterface>>(initialFeature);
     // Erreurs locales
@@ -69,7 +73,7 @@ function FeatureInfo({ feature: initialFeature, onChange, onCancel }: FeatureInf
     // Validation locale
     const validateFeature = (): boolean => {
         let isValid = true;
-        let errors = { name: '' };
+        let errors = { name: '' , type:''};
         if (!f.name || f.name.trim().length < 3) {
              errors.name = t('feature.validation.nameRequired'); // Nouvelle clé
              nameRef.current?.focus();
@@ -109,29 +113,7 @@ function FeatureInfo({ feature: initialFeature, onChange, onCancel }: FeatureInf
 
     const handleConfirm = () => {
         if (validateFeature()) {
-             // Assurer que les champs non définis sont null ou valeur par défaut avant d'envoyer
-             const finalFeature: FeatureInterface = {
-                 id: f.id || NEW_ID_START + Date.now(), // Assigner un ID si nouveau
-                 product_id: f.product_id || '', // Doit être défini par le parent
-                 name: f.name || '',
-                 type: f.type || FeatureType.TEXT, // Défaut si non défini
-                 required: f.required ?? false,
-                 icon: f.icon ?? [],
-                 regex: f.regex ?? '',
-                 min: f.min ?? 0,
-                 max: f.max ?? 0,
-                 min_size: f.min_size ?? 0,
-                 max_size: f.max_size ?? 0,
-                 index: f.index ?? 1,
-                 multiple: f.multiple ?? false,
-                 is_double: f.is_double ?? false,
-                 default: f.default,
-                 is_default: f.is_default ?? false,
-                 values: f.values ?? [],
-                 created_at: f.created_at || new Date().toISOString(), // Dates fictives
-                 updated_at: new Date().toISOString(),
-             };
-            onChange(finalFeature);
+            onChange(f);
         }
     };
 
@@ -155,7 +137,7 @@ function FeatureInfo({ feature: initialFeature, onChange, onCancel }: FeatureInf
                     ref={nameRef}
                     id="feature-info-name-input"
                     name="name" // Important pour handleInputChange
-                    className={`block w-full rounded-md shadow-sm sm:text-sm ${nameError ? 'border-red-500 ring-red-500 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'}`}
+                    className={`block px-4 py-2 w-full rounded-md shadow-sm sm:text-sm ${nameError ? 'border-red-500 ring-red-500 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'}`}
                     placeholder={t('feature.namePlaceholder')} 
                     type="text"
                     value={f.name || ''}
@@ -173,7 +155,7 @@ function FeatureInfo({ feature: initialFeature, onChange, onCancel }: FeatureInf
                          id="feature-required"
                          name="required"
                          type="checkbox"
-                         className="h-4 w-4 rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
+                         className="h-4 w-4  rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
                          checked={f.required ?? false}
                          onChange={() => handleCheckboxChange('required')}
                      />
@@ -195,17 +177,17 @@ function FeatureInfo({ feature: initialFeature, onChange, onCancel }: FeatureInf
                       <div className='grid grid-cols-2 gap-4'>
                            <div>
                                 <label htmlFor="feature-min-size" className='block text-xs font-medium text-gray-700 mb-1'>{t('feature.minLength')}</label> 
-                                <input type="number" id="feature-min-size" name="min_size" value={f.min_size ?? 0} onChange={handleInputChange} className="block w-full rounded-md border-gray-300 shadow-sm sm:text-sm h-9"/>
+                                <input type="number" id="feature-min-size" name="min_size" value={f.min_size ?? 0} onChange={handleInputChange} className="block w-full rounded-md px-4 border-gray-300 shadow-sm sm:text-sm h-9"/>
                            </div>
                            <div>
                                 <label htmlFor="feature-max-size" className='block text-xs font-medium text-gray-700 mb-1'>{t('feature.maxLength')}</label> 
-                                <input type="number" id="feature-max-size" name="max_size" value={f.max_size ?? 0} onChange={handleInputChange} className="block w-full rounded-md border-gray-300 shadow-sm sm:text-sm h-9"/>
+                                <input type="number" id="feature-max-size" name="max_size" value={f.max_size ?? 0} onChange={handleInputChange} className="block w-full rounded-md px-4 border-gray-300 shadow-sm sm:text-sm h-9"/>
                            </div>
                       </div>
                       {/* Regex */}
                        <div>
                             <label htmlFor="feature-regex" className='block text-xs font-medium text-gray-700 mb-1'>{t('feature.regexLabel')} ({t('common.optionalField')})</label> 
-                            <input type="text" id="feature-regex" name="regex" value={f.regex ?? ''} onChange={handleInputChange} placeholder={t('feature.regexPlaceholder')} className="block w-full rounded-md border-gray-300 shadow-sm sm:text-sm h-9"/>
+                            <input type="text" id="feature-regex" name="regex" value={f.regex ?? ''} onChange={handleInputChange} placeholder={t('feature.regexPlaceholder')} className="block w-full rounded-md px-4 border-gray-300 shadow-sm sm:text-sm h-9"/>
                        </div>
                  </div>
              )}

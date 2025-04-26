@@ -27,7 +27,7 @@ import { ConfirmDelete } from '../../../Components/Confirm/ConfirmDelete';
 import { PageNotFound } from '../../../Components/PageNotFound/PageNotFound';
 // Importer les utilitaires
 import { debounce } from '../../../Components/Utils/functions';
-import {  NEW_VIEW } from '../../../Components/Utils/constants';
+import { NEW_VIEW } from '../../../Components/Utils/constants';
 // Autres imports
 import { useMyLocation } from '../../../Hooks/useRepalceState';
 import { ChildViewer } from '../../../Components/ChildViewer/ChildViewer'; // Utiliser le hook
@@ -89,13 +89,13 @@ function Page() {
     // Erreurs de validation par champ
     const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({});
 
-    const [featuresFromState, setFeaturesFromState] = useState<FeatureInterface[]>([]);
-    
+    const [featuresFromState, setFeaturesFromState] = useState<Partial<FeatureInterface>[]>([]);
+
     const [s] = useState({
-        features: undefined as FeatureInterface[] | undefined,
+        features: undefined as Partial<FeatureInterface>[] | undefined,
         collected: {} as Partial<ProductInterface>,
         isUpdated: false,
-        isViewChanged :false,
+        isViewChanged: false,
     });
 
     // --- Récupération des données pour l'édition ---
@@ -117,8 +117,9 @@ function Page() {
             const fetchedProduct = fetchedProductData.list[0];
             setProductFormState(fetchedProduct);
             setOriginalProductData(fetchedProduct); // Sauver l'original
-            setValues(fetchedProduct.features?.find(f=>f.id ==fetchedProduct?.default_feature_id)?.values||[]);
-            setFeaturesFromState(fetchedProduct.features||[])
+            const v = fetchedProduct.features?.find(f => f.id == fetchedProduct?.default_feature_id)?.values || []
+            setValues(v.map((a, i) => ({ ...a, index: i })));
+            setFeaturesFromState(fetchedProduct.features || [])
             setFieldErrors({});
             logger.info("Product data loaded for editing", { productId: fetchedProduct.id });
         }
@@ -142,21 +143,38 @@ function Page() {
     const updateLocalProduct = (cb: (current: Partial<ProductInterface>) => Partial<ProductInterface>) => {
         setProductFormState((current) => {
             const d = cb({});
-            if(d.features){
+            if (d.features) {
                 s.features = d.features;
                 delete d.features;
-                if(Object.keys(d).length == 0) return current
+                if (Object.keys(d).length == 0) return current
             }
             s.collected = { ...s.collected, ...d }
-            s.isUpdated =true
+            s.isUpdated = true
             return { ...current, ...d }
         });
     }
-    const updateLocalFeatures = (cb: (current: {}) => Partial<ProductInterface>) => {
+    const updateLocalFeatures = (cb: (current: {}) => { features?: Partial<FeatureInterface>[] }) => {
         const d = cb({});
-        if(!d.features) return;
+        if (!d.features) return;
         s.features = d.features;
         setFeaturesFromState(s.features);
+    }
+
+    const updateValues = async (vs: ValueInterface[], feature_id?: string) => {
+        vs = vs.map((v, i) => {
+            if (v.index !== i) {
+                v.index = i;
+                v._request_mode = 'edited'
+            }
+            return v
+        })
+        setValues(vs)
+        const ft = featuresFromState.map(_f => (_f.id === (feature_id || originalProductData?.default_feature_id)) ? { ..._f, values: vs } : _f);
+        console.log(ft);
+
+        updateLocalFeatures(() => ({
+            features: ft
+        }));
     }
 
     const handleDelete = () => {
@@ -175,15 +193,15 @@ function Page() {
     const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value, type, checked } = e.target as HTMLInputElement; // Cast pour checked
         const fieldValue = type === 'checkbox' ? checked : value;
-        updateLocalProduct((prev)=>({
+        updateLocalProduct((prev) => ({
             ...prev,
-            [name]: fieldValue 
+            [name]: fieldValue
         }));
         setFieldErrors(prev => ({ ...prev, [name]: '' }));
     }, [updateLocalProduct]);
 
     const handleMarkdownChange = useCallback((value: string) => {
-        updateLocalProduct((prev)=>({
+        updateLocalProduct((prev) => ({
             ...prev,
             description: value
         }));
@@ -220,11 +238,12 @@ function Page() {
         if (validate && hasError) setFieldErrors(errors)
         return hasError
     }
-    const openFeatureOption = (f: Partial<FeatureInterface> | undefined, metod: 'add' | 'replace') => {
+    const openNewFeature = () => {
         openChild(<ChildViewer title='Les Informations sur la variante'>
-            <FeatureInfo feature={f || (getNewFeature())} onChange={(f) => {
+            <FeatureInfo feature={(getNewFeature())} onChange={(f) => {
                 const fs = featuresFromState || [];
-                const features = metod == 'add' ? [...fs, f] : fs.map(_f => (_f == f || _f.id == f.id) ? f : _f);
+                f._request_mode = 'new'
+                const features = [...fs, f];
                 updateLocalFeatures((current) => ({
                     ...current,
                     features
@@ -251,9 +270,9 @@ function Page() {
                 s.collected = {}
                 setProductFormState(data.product); // Mettre à jour avec données serveur (qui inclut default_feature_id)
                 setOriginalProductData(data.product);
-                setFeaturesFromState(data.product.features||[])
+                setFeaturesFromState(data.product.features || [])
                 setFieldErrors({});
-                setValues(data.product.features?.find(f=>f.id ==data.product?.default_feature_id)?.values||[])
+                setValues(data.product.features?.find(f => f.id == data.product?.default_feature_id)?.values || [])
                 replaceLocation(`/products/${data.product.id}`); // Mettre à jour l'URL
                 // toast.success(data.message || t('product.createdSuccess'));
             },
@@ -269,25 +288,25 @@ function Page() {
         });
     };
 
-    const hasCollected = (c:Partial<ProductInterface>)=>{
-        const a = {...c};
+    const hasCollected = (c: Partial<ProductInterface>) => {
+        const a = { ...c };
         delete a.features
         delete a.id
         delete (a as any).product_id
-        const k = Object.keys(a) as (keyof typeof a )[];
+        const k = Object.keys(a) as (keyof typeof a)[];
         for (const e of k) {
-            if(a[e] == undefined) delete a[e]
+            if (a[e] == undefined) delete a[e]
         }
         return Object.keys(a).length > 0
     }
     const saveRequired = async (collected: Partial<ProductInterface>) => {
         if (isLoadingMutation) return console.log('onLoading');
-        if(!hasCollected(collected)) return
-        if (!isFilledProduct(collected,true,Object.keys(s.collected))) return console.log('informations incomplete');
+        if (!hasCollected(collected)) return
+        if (!isFilledProduct(collected, true, Object.keys(s.collected))) return console.log('informations incomplete');
 
         try {
-            
-            const c = {...s.collected,product_id :productIdFromRoute, features:undefined};
+
+            const c = { ...s.collected, product_id: productIdFromRoute, features: undefined };
             s.collected = {}
             updateProductMutation.mutate(c, {
                 onSuccess: (data) => {
@@ -295,15 +314,15 @@ function Page() {
                     logger.info("Product updated successfully (simple)", data);
                     const updatedProduct = { ...originalProductData, ...data.product }; // Merger avec l'original pour garder les features/values
                     setOriginalProductData(updatedProduct);
-                    if(hasCollected(collected)) {
+                    if (hasCollected(collected)) {
                         debounce(() => {
                             saveRequired(s.collected)
                         }, DEBOUNCE_PRODUCT_ID, DEBOUNCE_PRODUCT_TIME)
                         return
                     }
                     s.collected = {};
-                    setFeaturesFromState(updatedProduct.features||[])
-                    setValues(updatedProduct.features?.find(f=>f.id ==updatedProduct.default_feature_id)?.values||[])
+                    setFeaturesFromState(updatedProduct.features || [])
+                    setValues(updatedProduct.features?.find(f => f.id == updatedProduct.default_feature_id)?.values || [])
                     setProductFormState(updatedProduct);
                     setFieldErrors({});
                     // toast.success(data.message || t('product.updateSuccess'));
@@ -321,25 +340,20 @@ function Page() {
         } catch (error) { }
     }
 
-    const updateViews = async (views:any[])=>{
-
-    }
-
-    
-    const updateFeaturesValues = async ()=>{
+    const updateFeaturesValues = async () => {
         if (isLoadingMutation) return console.log('onLoading');
-        if(!s.features) return;
-        if(!originalProductData?.features) return;
-        if(!originalProductData.id) return
-        if(isNewProduct) return
+        if (isNewProduct) return
+        if (!s.features) return;
+        if (!originalProductData?.features) return;
+        if (!originalProductData.id) return
         try {
             const f = s.features;
             return console.log('----------- FEATURES ------------', await api.prepareMultipleFeaturesValus({
-                    currentFeatures:f,
-                    initialFeatures:originalProductData.features,
-                    product_id:originalProductData.id,
-                }));
-            
+                currentFeatures: f,
+                initialFeatures: originalProductData.features,
+                product_id: originalProductData.id,
+            }));
+
             // s.features = undefined;
             // multipleUpdateMutation.mutate({
             //     currentFeatures:f,
@@ -398,14 +412,12 @@ function Page() {
 
     const [values, setValues] = useState<ValueInterface[]>([] as any);
     const [index, setindex] = useState(0);
-   
+
     const clearValues = () => {
         return [...values].map(val => ({ ...val, views: (val.views || []).filter(view => view != NEW_VIEW) })).filter(val => val.views && val.views.length > 0);
     }
     useEffect(() => {
         const vs = clearValues();
-        console.log('-----------------', vs);
-        
         setValues(vs)
     }, [index])
 
@@ -442,7 +454,7 @@ function Page() {
                         }
                         const vs = clearValues();
                         s.isUpdated = true
-                        updateViews(vs);
+                        updateValues(vs);
                     }} />
                     {fieldErrors.images && <p className="mt-2 text-xs text-red-600">{fieldErrors.images}</p>}
                 </section>
@@ -451,10 +463,10 @@ function Page() {
                     {!isNewProduct && <div className="image-manager no-selectable">
                         <HoriszontalSwiper values={clearValues() as any} onActiveIndexChange={(_index) => {
                             setindex(_index)
-                            s.isViewChanged =true
+                            s.isViewChanged = true
                         }} onDeleteValue={() => {
                             s.isUpdated = true
-                            updateViews([
+                            updateValues([
                                 ...values.slice(0, index),
                                 ...values.slice(index + 1)
                             ]);
@@ -462,13 +474,13 @@ function Page() {
                             const nextValue = values[index + 1];
                             if (!nextValue || (nextValue.views?.length == 0) || (nextValue.views?.length == 1 && nextValue.views?.[0] == NEW_VIEW)) return false;
                             const currentvalue = values[index];
-                            updateViews(values.map((v, i) => i == index ? nextValue : i == index + 1 ? currentvalue : v));
+                            updateValues(values.map((v, i) => i == index ? nextValue : i == index + 1 ? currentvalue : v));
                             return true;
                         }} goBack={() => {
                             const lastValue = values[index - 1];
                             if (!lastValue || (lastValue.views?.length == 0) || (lastValue.views?.length == 1 && lastValue.views?.[0] == NEW_VIEW)) return false;
                             const currentvalue = values[index];
-                            updateViews(values.map((v, i) => i == index ? lastValue : i == index - 1 ? currentvalue : v));
+                            updateValues(values.map((v, i) => i == index ? lastValue : i == index - 1 ? currentvalue : v));
                             return true;
                         }} />
                     </div>}
@@ -567,9 +579,9 @@ function Page() {
                                             <CategoriesPopup
                                                 ignore={productFormState.categories_id ?? []} // Ignorer celles déjà sélectionnées
                                                 onSelected={(cat) => {
-                                                    updateLocalProduct((prev)=>({
+                                                    updateLocalProduct((prev) => ({
                                                         ...prev,
-                                                        categories_id:  [...(productFormState.categories_id ?? []), cat.id]  
+                                                        categories_id: [...(productFormState.categories_id ?? []), cat.id]
                                                     }));
                                                     openChild(null);
                                                 }}
@@ -593,9 +605,9 @@ function Page() {
                                                 <ConfirmDelete title={t('product.removeCategory', { name: catToDelete.name })} onCancel={() => {
                                                     openChild(null)
                                                 }} onDelete={() => {
-                                                    updateLocalProduct((prev)=>({
+                                                    updateLocalProduct((prev) => ({
                                                         ...prev,
-                                                        categories_id: (productFormState.categories_id ?? []).filter(id => id !== catToDelete.id)  
+                                                        categories_id: (productFormState.categories_id ?? []).filter(id => id !== catToDelete.id)
                                                     }));
                                                     setTimeout(() => {
                                                         openChild(null)
@@ -613,17 +625,19 @@ function Page() {
                 {/* Section Variantes (Features/Values) */}
                 {!isNewProduct && productFormState.id && (
                     <section className="product-section-feature mt-4 p-4 bg-white rounded-lg shadow-sm border border-gray-200">
-                        <div className="flex justify-between items-center mb-3">
+                        <div className="flex justify-between items-center flex-wrap mb-3">
                             <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
                                 {t('product.variantsTitle')}
-                                <span className='text-sm font-normal text-gray-500'>({(featuresFromState?.filter(f => !f.is_default).length || 0)} / {FEATURE_LIMIT})</span>
-                                <Indicator title={t('product.variantsTooltipTitle')} description={t('product.variantsTooltipDesc', { limit: FEATURE_LIMIT })} />
                             </h2>
+                            <span className="flex justify-between items-center flex-wrap ">
+                                <span className='text-sm ml-2 font-normal text-gray-500'>({(featuresFromState?.filter(f => !f.is_default).length || 0)} / {FEATURE_LIMIT})</span>
+                                <Indicator title={t('product.variantsTooltipTitle')} description={t('product.variantsTooltipDesc', { limit: FEATURE_LIMIT })} />
+                            </span>
                             <button
                                 type="button"
-                                onClick={() => { openFeatureOption(undefined, 'add') }}
+                                onClick={() => { openNewFeature() }}
                                 disabled={(featuresFromState?.filter(f => !f.is_default).length || 0) >= FEATURE_LIMIT}
-                                className="text-sm text-blue-600 hover:text-blue-800 px-3 py-1 rounded border border-blue-300 hover:bg-blue-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="text-sm ml-auto text-blue-600 hover:text-blue-800 px-3 py-1 rounded border border-blue-300 hover:bg-blue-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {t('product.addVariantButton')}
                             </button>
@@ -636,16 +650,14 @@ function Page() {
                                     key={f.id}
                                     feature={f}
                                     setFeature={(cb) => {
-                                        // Mettre à jour UNE feature dans le state
-                                        updateLocalFeatures((prev)=>({
+                                        updateLocalFeatures((prev) => ({
                                             ...prev,
                                             features: (featuresFromState ?? []).map(_f => _f.id === f.id ? cb(_f) as FeatureInterface : _f)
                                         }));
                                     }}
-                                    onOpenRequired={(f)=>openFeatureOption(f,'replace')}
                                     onDelete={() => {
                                         // Supprimer UNE feature du state
-                                        updateLocalFeatures((prev)=>({
+                                        updateLocalFeatures((prev) => ({
                                             ...prev,
                                             features: (featuresFromState ?? []).filter(_f => _f.id !== f.id)
                                         }));

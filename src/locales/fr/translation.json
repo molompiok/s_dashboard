@@ -216,18 +216,6 @@
         },
         "addCategoryButton": "Ajouter une catégorie"
     },
-    "featureTypes": {
-        "icon_text": "Icône et Texte",
-        "icon": "Icône seule",
-        "text": "Texte seul",
-        "color": "Couleur",
-        "date": "Date",
-        "double_date": "Plage de Dates",
-        "level": "Niveau (Slide)",
-        "range": "Intervalle (Double Slide)",
-        "input": "Champ de Saisie",
-        "file": "Fichier Client"
-    },
     "feature": {
         "createdSuccess": "Caractéristique créée avec succès.",
         "creationFailed": "La création de la caractéristique a échoué.",
@@ -258,6 +246,18 @@
         "createTitle": "Ajouter une Nouvelle Variante",
         "editTitle": "Modifier la Variante"
     },
+    "featureTypes": {
+        "text": "Texte seul",
+        "icon": "Icône seule",
+        "icon_text": "Icône et Texte",
+        "color": "Couleur",
+        "date": "Date unique",
+        "date_double": "Plage de Dates", 
+        "level": "Niveau (Curseur)",    
+        "range": "Intervalle (Double Curseur)", 
+        "input": "Champ de Saisie Client",
+        "file": "Fichier Client"
+     },
     "value": {
         "invalidColorKey": "La clé de couleur '{{key}}' est invalide pour la valeur {{value}}.",
         "textRequired": "Le texte est requis pour ce type de valeur.",

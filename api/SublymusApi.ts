@@ -222,8 +222,12 @@ export class SublymusApi {
         return  this._request('/create_product', { method: 'POST', body: formData, isFormData: true });
     }
 
-    async updateProduct(product: Partial<ProductInterface>): Promise<{ message: string, product: Partial<ProductInterface> }> {
+    async updateProduct(product: Partial<ProductInterface>&{product_id?:string}): Promise<{ message: string, product?: Partial<ProductInterface> }> {
         delete product.features
+        product.product_id = product.product_id || product.id;
+        if(!product.product_id) return {
+            message:'Error product.id or product.product_id is required before send to server'
+        }
         const formData = await this.buildFormData({
             data:product
         })
@@ -468,7 +472,7 @@ export class SublymusApi {
         return formData;
       }
       async prepareMultipleFeaturesValus({currentFeatures,initialFeatures,product_id}:BuildFormDataForFeaturesValuesParam){
-        if (!currentFeatures) return null;
+        if (!currentFeatures) return console.log('>>>>>>1>>>>>>>>')??null;
         try {
             
             let send = false;
@@ -481,56 +485,58 @@ export class SublymusApi {
                 update_values: Partial<ValueInterface>[],
                 delete_values_id: string[],
             }>> = {}
-    
+            
             const next_f: Partial<FeatureInterface>[] = []
             for (const f of currentFeatures) {
                 if(!f.id) continue
-                if (f.id.startsWith(NEW_ID_START)) {
+                if (f._request_mode =='new') {
                     create_features.push(f);
                     send = true
                 } else {
                     next_f.push(f)
                 }
             }
+   
     
             for (const initial_f of initialFeatures) {
-                const initial_here = (next_f || []).find(f => initial_f.id == f.id);
-                if (!initial_here) {
+                const current_f = (next_f || []).find(f => initial_f.id == f.id);
+                if (!current_f) {
                     initial_f.id && delete_features_id.push(initial_f.id);
                     send = true
                     continue
                 }
-                if (!initial_here.id) continue
+                if (!current_f.id) continue
                 const next_v: Partial<ValueInterface>[] = []
-                for (const v of initial_here.values || []) {
-                    if (v.id.startsWith(NEW_ID_START)) {
-                        if (!values[initial_here.id]) values[initial_here.id] = {};
-                        if (!values[initial_here.id].create_values) values[initial_here.id].create_values = []
-                        values[initial_here.id].create_values?.push(v);
+                for (const v of current_f.values || []) {
+                    if (v._request_mode =='new') {
+                        if (!values[current_f.id]) values[current_f.id] = {};
+                        if (!values[current_f.id].create_values) values[current_f.id].create_values = []
+                        values[current_f.id].create_values?.push(v);
                         send = true
                     } else {
                         next_v.push(v)
                     }
                 }
-    
+                console.log(currentFeatures,next_v);
                 for (const i_v of initial_f.values || []) {
-                    const same_inital_value = next_v.find(_v => _v.id == i_v.id);
-    
-                    if (!same_inital_value) {
-                        if (!values[initial_here.id]) values[initial_here.id] = {};
-                        if (!values[initial_here.id].delete_values_id) values[initial_here.id].delete_values_id = []
-                        values[initial_here.id].delete_values_id?.push(i_v.id)
+                    const current_v = next_v.find(_v => _v.id == i_v.id);
+                    console.log({f_if:current_f.id,current_v,v_id : i_v.id });
+                    
+                    if (!current_v) {
+                        if (!values[current_f.id]) values[current_f.id] = {};
+                        if (!values[current_f.id].delete_values_id) values[current_f.id].delete_values_id = []
+                        values[current_f.id].delete_values_id?.push(i_v.id)
                         send = true
-                    } else if ((same_inital_value as any)[EDITED_DATA] == EDITED_DATA) {
-                        if (!values[initial_here.id]) values[initial_here.id] = {};
-                        if (!values[initial_here.id].update_values) values[initial_here.id].update_values = []
-                        values[initial_here.id].update_values?.push(same_inital_value);
+                    } else if (current_v._request_mode == 'edited') {
+                        if (!values[current_f.id]) values[current_f.id] = {};
+                        if (!values[current_f.id].update_values) values[current_f.id].update_values = []
+                        values[current_f.id].update_values?.push(current_v);
                         send = true
                     }
                 }
-                const need_update = (initial_here as any)[EDITED_DATA] == EDITED_DATA
+                const need_update = current_f._request_mode == 'edited'
                 if (!need_update) continue
-                update_features.push(initial_here);
+                update_features.push(current_f);
                 send = true
             }
             const multiple_update_features = {
@@ -540,10 +546,13 @@ export class SublymusApi {
                 values,
             }
     
+            console.log('>>>>>>>3>>>>>>>');
             if (!send) return null;
             return multiple_update_features;
 
         }catch(error){
+            console.log('>>>>>>>2>>>>>>>',error);
+            
             return null
         }
       }

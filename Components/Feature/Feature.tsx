@@ -19,41 +19,34 @@ export { Feature };
 interface FeatureProps {
     feature: Partial<FeatureInterface>; // Utiliser Partial car peut être en cours de création
     setFeature: (cb: (current: Partial<FeatureInterface> | undefined) => Partial<FeatureInterface> | undefined) => void;
-    onOpenRequired?: (feature: Partial<FeatureInterface>) => void; // Gardé si besoin externe
+
     onDelete: () => void; // Callback pour supprimer la feature du state parent
 }
 
 // Limite de valeurs par feature
 const VALUE_LIMIT = 7;
 
-function Feature({ feature, setFeature, onOpenRequired, onDelete }: FeatureProps) {
+function Feature({ feature, setFeature, onDelete }: FeatureProps) {
     const { t } = useTranslation(); // ✅ i18n
     const { openChild } = useChildViewer();
 
     // --- Handlers ---
-    const handleValueChange = (newValue: ValueInterface) => {
-        // Marquer la valeur et la feature comme éditées
-        newValue._request_mode = 'edited';
+    const handleValueChange = (updatedValue: ValueInterface) => {
+        updatedValue._request_mode = 'edited';
         setFeature((current) => {
-             const updatedValues = (current?.values ?? []).map(_v => (_v.id === newValue.id) ? newValue : _v);
-             // Vérifier si la valeur existait déjà pour éviter de marquer la feature si juste une valeur change
-             const valueExisted = current?.values?.some(v => v.id === newValue.id);
              return {
                  ...current,
-                 values: updatedValues,
-                  // Marquer la feature seulement si la valeur n'existait pas? Non, toujours marquer.
-                 _request_mode: 'edited'
+                 values: (current?.values ?? []).map(_v => (_v.id === updatedValue.id) ? updatedValue : _v),
              };
          });
         openChild(null); // Fermer le popup
     };
 
      const handleValueCreate = (newValue: ValueInterface) => {
-         // Ajouter la nouvelle valeur et marquer la feature comme éditée
+         newValue._request_mode = 'new'
          setFeature((current) => ({
              ...current,
              values: [...(current?.values ?? []), newValue],
-             _request_mode: 'edited'
          }));
          openChild(null);
     };
@@ -62,7 +55,6 @@ function Feature({ feature, setFeature, onOpenRequired, onDelete }: FeatureProps
         setFeature((current) => ({
             ...current,
             values: (current?.values ?? []).filter(_v => _v.id !== valueIdToRemove),
-            _request_mode: 'edited' // Marquer comme édité après suppression
         }));
         openChild(null); // Fermer la popup de confirmation
     };

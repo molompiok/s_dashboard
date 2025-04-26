@@ -440,9 +440,9 @@ export const useCreateProduct = (): UseMutationResult<{ message: string, product
 };
 
 // Hook pour mettre à jour un produit (infos de base)
-export const useUpdateProduct = (): UseMutationResult<{ message: string, product: Partial<ProductInterface> }, ApiError, Partial<ProductInterface>> => {
+export const useUpdateProduct = (): UseMutationResult<{ message: string, product?: Partial<ProductInterface> }, ApiError, Partial<ProductInterface>&{product_id?:string}> => {
     const api = useApi();
-    return useMutation<{ message: string, product: Partial<ProductInterface> }, ApiError, Partial<ProductInterface>>({
+    return useMutation<{ message: string, product?: Partial<ProductInterface> }, ApiError, Partial<ProductInterface>&{product_id?:string}>({
         mutationFn: (product) => api.updateProduct(product),
         onSuccess: (data, product) => {
             const productId = product.id;

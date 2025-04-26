@@ -93,4 +93,8 @@ test();
 │ /users/clients/@id/comments │ Filesystem Route │ /pages/users/clients/@id/comments/ │
 └─────────────────────────────┴──────────────────┴────────────────────────────────────┘
 
+
+value.selectColorLabe
+value.colorNameLabel
+value.colorNamePlaceholder 
 */

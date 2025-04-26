@@ -63,7 +63,7 @@ function ColorInfo({ value: initialValue, feature, onChange, onCancel }: ColorIn
     };
 
      const handleColorSelect = (hex: string, name: string) => {
-        setValue(prev => ({ ...prev, key: hex, text: prev.text || name })); // Pré-remplir text si vide
+        setValue(prev => ({ ...prev, key: hex, text: name || prev.text })); // Pré-remplir text si vide
         setKeyError('');
         if (!textError && (!v.text || v.text.trim().length < 1)) {
             setTextError(''); // Ne pas mettre d'erreur texte si on vient de sélectionner une couleur
@@ -87,7 +87,7 @@ function ColorInfo({ value: initialValue, feature, onChange, onCancel }: ColorIn
             <div>
                 <h3 className="block text-sm font-medium text-gray-700 mb-2">{t('value.selectColorLabel')}</h3> 
                  {/* Utiliser overflow-x-auto pour le scroll horizontal */}
-                <div className="scroll overflow-x-auto pb-2 -mb-2"> {/* Padding négatif pour compenser scrollbar */}
+                <div className="scroll overflow-x-auto p-2 pb-6 -mb-2"> {/* Padding négatif pour compenser scrollbar */}
                     {/* Utiliser flex gap-1.5 */}
                     <div className="colors flex flex-nowrap gap-1.5">
                         {Colors.map((c, groupIndex) => (
