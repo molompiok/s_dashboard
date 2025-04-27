@@ -25,17 +25,17 @@ import { DateTime } from 'luxon';
 import "react-day-picker/style.css"; // Garder CSS DayPicker
 import { useGetOrderDetails, useUpdateOrderStatus, queryClient } from '../../../api/ReactSublymusApi'; // ✅ Importer hooks API et queryClient
 import logger from '../../../api/Logger'; // Assurer chemin correct
-import { useApp } from '../../../renderer/AppStore/UseApp';
 import { UseMutationResult } from '@tanstack/react-query';
 import { ApiError } from '../../../api/SublymusApi';
 import { Receipt } from './Receipt/Receipt';
+import { useChildViewer } from '../../../Components/ChildViewer/useChildViewer';
 
 export { Page };
 
 function Page() {
     const { t } = useTranslation(); // ✅ i18n
     const { currentStore } = useStore();
-    const { openChild } = useApp(); // Utiliser le hook pour ouvrir/fermer
+    const { openChild } = useChildViewer(); // Utiliser le hook pour ouvrir/fermer
     const size = useWindowSize();
 
     const { routeParams } = usePageContext();
@@ -43,7 +43,9 @@ function Page() {
 
     // ✅ Utiliser le hook pour récupérer les détails
     const { data: command, isLoading, isError, error: apiError } = useGetOrderDetails(
-        command_id,
+        {
+            order_id:command_id
+        },
         { enabled: !!currentStore && !!command_id }
     );
 
@@ -94,7 +96,7 @@ function Page() {
                     mutation={updateStatusMutation}
                 />
             </ChildViewer>,
-            { background: '#3455', alignItems: 'center', justifyContent: 'center' }
+            { background: '#3455' }
         );
     };
 
@@ -152,7 +154,7 @@ export  function CommandTop({ command }: { command?: Partial<CommandInterface> }
     const commandId = command?.id ?? '';
     const commandIdShort = getId(commandId);
     const [copiedId, setCopiedId] = useState(false);
-    const {openChild} = useApp()
+    const {openChild} = useChildViewer()
     const handleCopy = (textToCopy: string | undefined) => {
         if (!textToCopy) return;
         copyToClipboard(textToCopy, () => {
@@ -169,7 +171,9 @@ export  function CommandTop({ command }: { command?: Partial<CommandInterface> }
             <div className="flex items-center gap-4 flex-shrink-0" onClick={()=>{
                 openChild(<ChildViewer>
                     <Receipt command={command} i18nIsDynamicList />
-                </ChildViewer>)
+                </ChildViewer>,
+                 { background: '#3455' }
+                )
             }}>
                 <QRCodeCanvas value={qrCodeValue} size={80} bgColor="#ffffff" fgColor="#374151" level="Q" className="border border-gray-200 rounded p-1" />
                 <div className="flex flex-col">

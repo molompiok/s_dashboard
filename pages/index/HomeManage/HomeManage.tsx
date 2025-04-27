@@ -3,7 +3,7 @@
 import { IoBagHandle, IoStorefront, IoFolderOpen } from 'react-icons/io5';
 import { useTranslation } from 'react-i18next'; // ✅ Importer useTranslation
 // Importer les hooks pour récupérer les données dynamiques si nécessaire
-import { useGetProducts } from '../../../api/ReactSublymusApi';
+import { useGetProductList } from '../../../api/ReactSublymusApi';
 import { useGetCategories } from '../../../api/ReactSublymusApi';
 import { useStore } from '../../stores/StoreStore'; // Pour le nombre de stores si dynamique
 
@@ -19,7 +19,7 @@ function HomeManage() {
 
     // TODO: Remplacer les valeurs statiques par des données réelles si nécessaire
     // Exemple:
-    const { data: productData } = useGetProducts({ limit: 1 }); // Juste pour le count
+    const { data: productData } = useGetProductList({ limit: 1 }); // Juste pour le count
     const { data: categoryData } = useGetCategories({ limit: 1 });
     const { stores } = useStore();
     const productCount = productData?.meta?.total ?? 0;
@@ -61,7 +61,7 @@ function HomeManage() {
                     {/* TODO: Logique d'affichage des images catégories */}
                 </div>
                 <div className="bottom">
-                     {/* 🌍 i18n */}
+                    {/* 🌍 i18n */}
                     <h2 className="font-semibold text-base">{t('dashboard.categories')}</h2>
                     <span className="text-sm">{categoryCount}</span>
                 </div>
@@ -69,11 +69,11 @@ function HomeManage() {
 
             {/* Carte Boutiques (si pertinent pour l'owner dans CE dashboard) */}
             <a href='/stores' className={`${cardBaseClasses} bg-white text-primary ${shadowClasses('yellow')}`}> {/* Assumer text-primary défini dans tailwind.config */}
-                 <div className="views">
+                <div className="views">
                     <IoStorefront className='w-8 h-8' />
-                 </div>
-                 <div className="bottom">
-                     {/* 🌍 i18n */}
+                </div>
+                <div className="bottom">
+                    {/* 🌍 i18n */}
                     <h2 className="font-semibold text-base">{t('dashboard.manageStores')}</h2>
                     <span className="text-sm">{storeCount}</span>
                 </div>

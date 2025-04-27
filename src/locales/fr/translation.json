@@ -27,6 +27,7 @@
         "optionalField": "Optionnel",
         "required": "Requis",
         "ok": "OK",
+        "verify":"Verifier",
         "moveUp": "Monter",
         "moveDown": "Descendre",
         "imageError": "Image non chargée",
@@ -136,9 +137,14 @@
         "visibilityTitle": "Visibilité du produit",
         "removeCategory": "Cette action va retirer le produit de la catégorie {{name}}",
         "validation": {
-            "nameRequired": "Le nom du produit est requis (3 caractères min).",
+            "nameRequired": "Le nom du prduit est requis (3 caractères min).",
+            "nameMinLength": "Le nom doit contenir au moins {{min}} caractères.",
+            "descriptionMinLength": "La description doit contenir au moins {{min}} caractères.",
+            "barredPriceHigher": "Le prix barré doit être supérieur au prix.",
             "priceRequired": "Le prix du produit est requis.",
-            "imageRequired": "Au moins une image principale est requise pour le produit."
+            "pricePositive": "Le prix du produit doit être supérieur à 0.",
+            "barredPricePositive": "Le prix barré doit être supérieur au prix de base.",
+            "imageRequired": "Au moins une image principale est requise."
         }
     },
     "productSettings": {
@@ -244,7 +250,10 @@
         "regexLabel": "Validation (Regex)",
         "regexPlaceholder": "Ex: ^[A-Za-z]+$",
         "createTitle": "Ajouter une Nouvelle Variante",
-        "editTitle": "Modifier la Variante"
+        "editTitle": "Modifier la Variante",
+        "validation": {
+            "nameRequired": "Le nom de la variante est requis (3 caractères min)."
+        }
     },
     "featureTypes": {
         "text": "Texte seul",
@@ -252,12 +261,12 @@
         "icon_text": "Icône et Texte",
         "color": "Couleur",
         "date": "Date unique",
-        "date_double": "Plage de Dates", 
-        "level": "Niveau (Curseur)",    
-        "range": "Intervalle (Double Curseur)", 
+        "date_double": "Plage de Dates",
+        "level": "Niveau (Curseur)",
+        "range": "Intervalle (Double Curseur)",
         "input": "Champ de Saisie Client",
         "file": "Fichier Client"
-     },
+    },
     "value": {
         "invalidColorKey": "La clé de couleur '{{key}}' est invalide pour la valeur {{value}}.",
         "textRequired": "Le texte est requis pour ce type de valeur.",
@@ -270,6 +279,9 @@
         "notFound": "Valeur non trouvée.",
         "idRequired": "L'identifiant de la valeur est requis.",
         "orFeatureNotFound": "Valeur ou caractéristique parente non trouvée.",
+        "selectColorLabel": "Choisissez une couleur",
+        "colorNameLabel": "Nom de la Couleur",
+        "colorNamePlaceholder": "Ex: Rouge Brique",
         "validation": {
             "textRequired": "Le texte de l'option est requis.",
             "iconRequired": "Une icône est requise pour ce type d'option.",

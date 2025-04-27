@@ -74,7 +74,9 @@ function ProductRowItem({ product, categoriesMap }: ProductRowItemProps) {
                      title={t('product.confirmDelete', { name: product.name })}
                      onCancel={() => openChild(null)}
                      onDelete={() => {
-                          deleteProductMutation.mutate(product.id, {
+                          deleteProductMutation.mutate({
+                            product_id:product.id
+                          },{
                               onSuccess: () => { logger.info(`Product ${product.id} deleted`); openChild(null); },
                               onError: (error) => { logger.error({ error }, `Failed to delete product ${product.id}`); openChild(null); }
                           });
@@ -92,7 +94,9 @@ function ProductRowItem({ product, categoriesMap }: ProductRowItemProps) {
 
         updateProductMutation.mutate({
             product_id : product.id,
-            is_visible: newVisibility
+            data: {
+                is_visible : newVisibility
+            }
         }, {
             onSuccess: () => { logger.info(`Product ${product.id} visibility updated to ${newVisibility}`); },
             onError: (error) => {

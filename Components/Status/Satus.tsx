@@ -36,14 +36,13 @@ const statusColors: Record<OrderStatus, { text: string; bg: string; border?: str
     [OrderStatus.NOT_PICKED_UP]:     { text: 'text-rose-600',    bg: 'bg-rose-100' }, // Idem
     [OrderStatus.WAITING_FOR_PAYMENT]:{ text: 'text-yellow-600',  bg: 'bg-yellow-100' },
     [OrderStatus.WAITING_PICKED_UP]: { text: 'text-cyan-600',    bg: 'bg-cyan-100' },
-    // Ajouter une couleur par défaut si nécessaire (par exemple pour PENDING_PAYMENT etc si ajoutés)
     // PENDING_PAYMENT: { text: 'text-purple-600', bg: 'bg-purple-100'} // Exemple
 };
 
 // Fonction pour obtenir les classes Tailwind ou un style par défaut
 const getStatusClasses = (status: OrderStatus | string): { text: string; bg: string } => {
-    const upperStatus = status?.toUpperCase() as OrderStatus; // Tenter de caster
-    return statusColors[upperStatus] ?? { text: 'text-gray-700', bg: 'bg-gray-200' }; // Couleur par défaut
+    const upperStatus = status?.toLowerCase() as OrderStatus; // Tenter de caster
+   return statusColors[upperStatus] ?? { text: 'text-gray-700', bg: 'bg-gray-200' }; // Couleur par défaut
 };
 
 // --- Composant OrderStatusElement ---

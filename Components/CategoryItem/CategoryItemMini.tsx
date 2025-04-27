@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { CategoryInterface } from "../../Interfaces/Interfaces";
 import { IoClose } from "react-icons/io5";
-import { useGetCategoryById } from "../../api/ReactSublymusApi";
+import { useGetCategory } from "../../api/ReactSublymusApi";
 import { useStore } from "../../pages/stores/StoreStore";
 import { getImg } from "../Utils/StringFormater"; // Import de getImg
 import { useTranslation } from "react-i18next";
@@ -32,8 +32,9 @@ function CategoryItemMini({
     const { currentStore } = useStore();
     const [category, setCategory] = useState(initialCategory);
 
-    const { data: fetchedCategory, isLoading, isError } = useGetCategoryById(
-        !initialCategory ? category_id : undefined,
+    const { data: fetchedCategory, isLoading, isError } = useGetCategory({
+            category_id:!initialCategory ? category_id : undefined
+        },
         { enabled: !initialCategory && !!category_id }
     );
 
@@ -108,7 +109,7 @@ function CategoryItemMini({
     );
 }
 // --- Composant Skeleton adapté ---
-function CategoryItemSkeletonMini() {
+export function CategoryItemSkeletonMini() {
     return (
         <div className="w-20 h-20 p-1.5 rounded-xl bg-gray-200 animate-pulse flex flex-col items-center">
             <div className="w-full aspect-square rounded bg-gray-300 mb-1"></div>

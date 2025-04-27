@@ -12,7 +12,7 @@ import { IoSearch } from 'react-icons/io5';
 import { getImg } from '../Utils/StringFormater';
 import { useTranslation } from 'react-i18next'; // ✅ i18n
 import { debounce } from '../Utils/functions'; // Garder debounce
-import { CategoryItemSkeletonMini } from '../CommandItem/CommandItem';
+import { CategoryItemSkeletonMini } from '../CategoryItem/CategoryItemMini';
 
 export { CategoriesPopup };
 

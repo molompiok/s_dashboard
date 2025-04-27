@@ -1,3 +1,4 @@
+//renderer/Layout.tsx
 export { Layout }
 
 import React, { useEffect } from 'react'
@@ -31,7 +32,7 @@ function Layout({ children, pageContext }: { children: React.ReactNode; pageCont
             {/* <Link href="/stats" activeIcon={Icons.stats} defaultIcon={Icons.stats_outline}>Statistique</Link> */}
             <Link href="/commands" activeIcon={Icons.commands} defaultIcon={Icons.commands_outline}>Commandes</Link>
             <Link href="/stores" activeIcon={Icons.stores} defaultIcon={Icons.stores_outline}>Boutiques</Link>
-            <SomeComponent/>
+            {/* <SomeComponent/> */}
           </Sidebar>
           <Content>{children}</Content>
         </Frame>
@@ -48,25 +49,25 @@ function Layout({ children, pageContext }: { children: React.ReactNode; pageCont
 }
 
 
-function SomeComponent() {
-  const { t, i18n } = useTranslation(); // ✅ Utiliser le hook
+// function SomeComponent() {
+//   const { t, i18n } = useTranslation(); // ✅ Utiliser le hook
 
-  const changeLanguage = (lng: string) => {
-    i18n.changeLanguage(lng); // Change la langue
-    // Met à jour localStorage et cookie (géré par LanguageDetector si configuré)
-  };
+//   const changeLanguage = (lng: string) => {
+//     i18n.changeLanguage(lng); // Change la langue
+//     // Met à jour localStorage et cookie (géré par LanguageDetector si configuré)
+//   };
 
-  return (
-    <div>
-      {/* Utiliser la fonction t() */}
-      <h2>{t('welcomeMessageKey')}</h2>
-      <p>{t('someOtherTextKey', { variable: 'valeur' })}</p>
-      <button onClick={() => changeLanguage('fr')}>Français</button>
-      <button onClick={() => changeLanguage('en')}>English</button>
-      <p>{t('currentLanguageLabel')}: {i18n.language}</p>
-    </div>
-  );
-}
+//   return (
+//     <div>
+//       {/* Utiliser la fonction t() */}
+//       <h2>{t('welcomeMessageKey')}</h2>
+//       <p>{t('someOtherTextKey', { variable: 'valeur' })}</p>
+//       <button onClick={() => changeLanguage('fr')}>Français</button>
+//       <button onClick={() => changeLanguage('en')}>English</button>
+//       <p>{t('currentLanguageLabel')}: {i18n.language}</p>
+//     </div>
+//   );
+// }
 function OpenChild() {
   const { currentChild, alignItems, background, justifyContent, openChild } = useChildViewer();
   const hash = useHashWatcher();

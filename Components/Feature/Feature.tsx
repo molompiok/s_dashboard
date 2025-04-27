@@ -51,6 +51,7 @@ function Feature({ feature, setFeature, onDelete }: FeatureProps) {
          openChild(null);
     };
 
+
     const handleValueRemove = (valueIdToRemove: string) => {
         setFeature((current) => ({
             ...current,
@@ -109,7 +110,7 @@ function Feature({ feature, setFeature, onDelete }: FeatureProps) {
 
     // Vérifier si on peut ajouter une valeur
     const canAddValue = (feature?.values?.length ?? 0) < VALUE_LIMIT;
-
+    const hashIconAdd = ([FeatureType.COLOR,FeatureType.DATE,FeatureType.ICON,FeatureType.ICON_TEXT] satisfies FeatureType[] ).includes(feature.type as any);
     return (
         // Conteneur Feature : bordure, padding, rounded, etc.
         <div className="feature border border-gray-200 rounded-lg p-3 bg-white/50">
@@ -139,7 +140,7 @@ function Feature({ feature, setFeature, onDelete }: FeatureProps) {
 
             {/* Liste des Valeurs + Bouton Ajouter */}
              {/* Utiliser flex flex-wrap gap-2 */}
-            <div className="list-values flex flex-wrap gap-2 items-start">
+            <div className="list-values flex flex-wrap gap-2 items-center">
                 {(feature?.values ?? []).map((v) => (
                     // Le composant Value choisit le bon rendu
                     <Value
@@ -157,9 +158,13 @@ function Feature({ feature, setFeature, onDelete }: FeatureProps) {
                          type="button"
                          onClick={() => handleOpenValuePopup()}
                          disabled={!canAddValue}
-                         className={`add-new flex flex-col items-center justify-center w-16 h-16 sm:w-20 sm:h-20 rounded-lg border-2 border-dashed border-gray-300 text-gray-400 hover:border-blue-400 hover:text-blue-500 transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed`}
+                         className={`add-new flex flex-col items-center justify-center w-16  sm:w-20  rounded-lg border-2 border-dashed border-gray-300 text-gray-400 hover:border-blue-400 hover:text-blue-500 transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${hashIconAdd?'h-16':'h-8 px-12'} `}
                      >
+                        
+                        {
+                             hashIconAdd &&  
                          <IoAdd className='w-6 h-6 sm:w-8 sm:h-8' />
+                         }
                          <span className='text-[10px] sm:text-xs font-medium whitespace-nowrap mt-1'>
                              {t('value.add')} ({feature?.values?.length ?? 0}/{VALUE_LIMIT})
                          </span>

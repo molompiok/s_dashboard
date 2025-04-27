@@ -12,7 +12,7 @@ import { useChildViewer } from '../ChildViewer/useChildViewer';
 export { Topbar }
 
 
-function Topbar({ back, notif, search, onBack }: { onBack?: () => void, back?: boolean, search?: boolean, notif?: boolean }) {
+function Topbar({ back, notif, search, onBack, title }: { title?:string,onBack?: () => void, back?: boolean, search?: boolean, notif?: boolean }) {
     const { openChild } = useChildViewer()
 
     return (
@@ -25,7 +25,7 @@ function Topbar({ back, notif, search, onBack }: { onBack?: () => void, back?: b
                 }
             }} />}
             <div className='left'>
-                <h3>Bienvenu !!</h3>
+                <h3>{title||'Bienvenu !!'}</h3>
                 <h2>Kouassi Noga</h2>
             </div>
             <div className='right'>

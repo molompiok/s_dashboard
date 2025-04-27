@@ -4,7 +4,7 @@
 import { IoChevronDown, IoChevronForward, IoSearch } from 'react-icons/io5';
 // import { useApp } from '../../renderer/AppStore/UseApp'; // Supprimé
 // import { ChildViewer } from '../ChildViewer/ChildViewer'; // Supposé non utilisé ici
-import { CommandItem } from '../CommandItem/CommandItem';
+import { CommandItem} from '../CommandItem/CommandItem';
 import { CommandFilterType, CommandInterface } from '../../Interfaces/Interfaces';
 import { useEffect, useMemo, useState } from 'react';
 import { OrderStatusElement, statusColors /*, statusIcons */ } from '../Status/Satus'; // statusIcons non utilisé
@@ -20,6 +20,7 @@ import { useTranslation } from 'react-i18next'; // ✅ Importer useTranslation
 import { queryClient } from '../../api/ReactSublymusApi'; // Importer queryClient pour invalidation SSE
 import { DateTime } from 'luxon';
 import Logger from '../../api/Logger';
+import { CommandItemSkeleton } from '../CommandItem/CommandItem';
 
 
 
@@ -141,7 +142,7 @@ function CommandeList({ product_id, user_id }: { user_id?: string; product_id?: 
              <div className="w-full flex flex-col items-stretch gap-3">
                 {isLoading && (
                     // Squelette ou indicateur de chargement
-                    <div className="p-6 text-center text-gray-500">{t('common.loading')}</div>
+                    Array.from({length:5}).map((_,i)=><CommandItemSkeleton/>)
                 )}
                 {isError && (
                      // Message d'erreur

@@ -17,6 +17,19 @@ function getSearch(myLocation:Location) {
     });
     return res
   }
+  function getParams(url: string): string[] {
+    if(!url) return []
+    try {
+      console.log({url});
+      
+      const u = new URL(url);
+      const pathSegments = u.pathname.split('/').filter(Boolean);
+      return pathSegments;
+    } catch (error) {
+      console.error('Invalid URL:', error);
+      return [];
+    }
+  }
 
   function useMyLocation() {
     const [myLocation, setMyLocation] = useState<Location>(ClientCall(()=>location,{}))    
@@ -50,7 +63,10 @@ function getSearch(myLocation:Location) {
     
     
     
-    return {myLocation, get searchPared(){
+    return {myLocation, get params(){
+      if(!myLocation.href) return []
+      return getParams(myLocation.href)
+    } , get searchPared(){
        return getSearch(myLocation);
     },  replaceLocation(url:string){
       history.replaceState(null, "", url);

@@ -142,6 +142,8 @@ export interface DetailInterface {
   view?: (string | Blob)[],
   index: number
   type?: string,
+  created_at: string
+  updated_at: string
 }
 
 
@@ -374,8 +376,8 @@ export interface ValueInterface {
   decreases_stock?: boolean,
   continue_selling?: boolean
   index: number;
-  created_at: string | Date;
-  updated_at: string | Date;
+  created_at?: string | Date;
+  updated_at?: string | Date;
   _request_mode?: 'edited'|'new'
 };
 
@@ -403,17 +405,15 @@ export interface FeatureInterface {
 };
 // src/Interfaces/Interfaces.ts (ou un fichier similaire)
 
-// --- Interface pour Favorite ---
-// Basée sur le modèle Favorite.ts et les données retournées par get_favorites
-export interface Favorite {
+// --- Interface pour FavoriteInteraface ---
+// Basée sur le modèle FavoriteInteraface.ts et les données retournées par get_favorites
+export interface FavoriteInteraface {
   id: string;
   user_id: string;
   label: string; // Le label/tag donné par l'utilisateur
   product_id: string;
   created_at: string; // Format ISO String
   updated_at: string; // Format ISO String
-
-  // Optionnel: Si préchargé via la relation dans le hook useGetFavorites
   product?: ProductInterface;
 }
 

@@ -5,7 +5,6 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { IoPeopleSharp, IoCart, IoEllipsisHorizontalSharp, IoEyeOff, IoEyeSharp } from "react-icons/io5";
 import { Nuage } from "../Nuage"; // Garder Nuage
 import MyChart from "../MiniChart"; // Garder MiniChart
-import { useApp } from "../../../renderer/AppStore/UseApp"; // Sera remplacé par useGetStats
 import { useGetStats } from "../../../api/ReactSublymusApi"; // ✅ Importer le hook
 import { PeriodType, StatsData } from "../../../Interfaces/Interfaces";
 import { useStore } from "../../stores/StoreStore";

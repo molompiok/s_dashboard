@@ -1,33 +1,73 @@
 // src/api/ReactSublymusApi.tsx
+
 import React, { createContext, useContext, useMemo, ReactNode } from 'react';
-import { QueryClient, QueryClientProvider, useQuery, useMutation, UseQueryResult, UseMutationResult, InvalidateQueryFilters } from '@tanstack/react-query';
+
+import {
+    QueryClient, QueryClientProvider, useQuery, useMutation,
+    UseQueryResult, UseMutationResult, InvalidateQueryFilters, QueryKey
+} from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import { SublymusApi, ApiError, BuildFormDataForFeaturesValuesParam, CreateProductParams } from './SublymusApi'; // Importer la classe et l'erreur
+import {
+    SublymusApi, ApiError,
+    // Importer TOUS les types Params/Response nécessaires depuis SublymusApi.ts
+    LoginParams, LoginResponse, RegisterParams, RegisterResponse,
+    VerifyEmailParams, ResendVerificationParams, UpdateUserParams, UpdateUserResponse,
+    GetMeResponse, MessageResponse, DeleteResponse,
+    GetProductListParams, GetProductListResponse, GetProductParams, GetProductResponse,
+    CreateProductParams, CreateProductResponse, UpdateProductParams, UpdateProductResponse,
+    DeleteProductResponse, MultipleUpdateFeaturesValuesParams, MultipleUpdateFeaturesValuesResponse,
+    GetCategoriesParams, GetCategoriesResponse, GetCategoryResponse, CreateCategoryParams, CreateCategoryResponse,
+    UpdateCategoryParams, UpdateCategoryResponse, DeleteCategoryParams, DeleteCategoryResponse,
+    GetSubCategoriesParams, GetSubCategoriesResponse, GetCategoryFiltersParams, GetCategoryFiltersResponse,
+    GetFeaturesParams, GetFeaturesResponse, GetFeatureParams, GetFeatureResponse, GetFeaturesWithValuesParams, GetFeaturesWithValuesResponse,
+    GetValuesParams, GetValuesResponse, GetValueResponse, CreateValueParams, CreateValueResponse,
+    UpdateValueParams, UpdateValueResponse, DeleteValueParams, DeleteValueResponse,
+    GetDetailListParams, GetDetailListResponse, GetDetailParams, GetDetailResponse,
+    CreateDetailParams, CreateDetailResponse, UpdateDetailParams, UpdateDetailResponse,
+    DeleteDetailParams, DeleteDetailResponse,
+    CreateOrderParams, CreateOrderResponse, GetMyOrdersParams, GetMyOrdersResponse,
+    GetAllOrdersResponse, GetOrderParams, GetOrderResponse, UpdateOrderStatusParams, UpdateOrderStatusResponse,
+    DeleteOrderParams, DeleteOrderResponse, CommandFilterType,
+    UpdateCartParams, UpdateCartResponse, ViewCartResponse, MergeCartResponse,
+    CreateCommentParams, CreateCommentResponse, GetCommentForOrderItemParams, GetCommentForOrderItemResponse,
+    GetCommentsParams, GetCommentsResponse, UpdateCommentParams, UpdateCommentResponse, DeleteCommentParams, DeleteCommentResponse,
+    AddFavoriteParams, AddFavoriteResponse, GetFavoritesParams, GetFavoritesResponse, UpdateFavoriteParams, UpdateFavoriteResponse, DeleteFavoriteParams, DeleteFavoriteResponse,
+    CreateAddressParams, AddressResponse, GetAddressesParams, GetAddressesResponse, UpdateAddressParams, DeleteAddressParams, UserAddressInterface,
+    CreatePhoneParams, PhoneResponse, GetPhonesParams, GetPhonesResponse, UpdatePhoneParams, DeletePhoneParams, UserPhoneInterface,
+    UserFilterType, GetUsersResponse,
+    GetCollaboratorsParams, GetCollaboratorsResponse, CreateCollaboratorParams, CreateCollaboratorResponse, UpdateCollaboratorParams, UpdateCollaboratorResponse, DeleteCollaboratorParams, RemoveCollaboratorResponse, // Utiliser CollaboratorType
+    GetInventoriesParams, GetInventoriesResponse, GetInventoryResponse, CreateInventoryParams, InventoryResponse, UpdateInventoryParams, DeleteInventoryParams, DeleteInventoryResponse, Inventory, // Utiliser Inventory
+    StatParamType, GetStatsResponse,
+    GlobalSearchParams, GlobalSearchResponse,
+    ScaleResponse,
+    FilesObjectType
+} from './SublymusApi'; // Importer la classe et l'erreur, et TOUS les types
 import { useAuthStore } from '../pages/login/AuthStore'; // Pour le token
 import { useStore } from '../pages/stores/StoreStore'; // Pour l'URL du store
-import type {
-    ListType, ProductInterface, CategoryInterface, UserInterface,
-    CommandInterface, CommentInterface, DetailInterface, Inventory, Role, Favorite,
-    CommandFilterType, UserFilterType,
-    GlobalSearchType, StatsData, StatParamType, FeatureInterface,
-    FilterType,
-    TypeJsonRole,
-} from '../Interfaces/Interfaces';
-import logger from "./Logger";
+import logger from './Logger';
+import { CommentInterface, FeatureInterface } from '../Interfaces/Interfaces';
 import { useTranslation } from 'react-i18next';
-import { OrderStatus } from '../Components/Utils/constants';
 
-// Créer le client de requête TanStack
+
+// --- Client TanStack Query (inchangé) ---
 export const queryClient = new QueryClient({
-    defaultOptions: {
+     defaultOptions: {
         queries: {
-            staleTime: 5 * 60 * 1000, // 5 minutes de cache par défaut
-            refetchOnWindowFocus: false, // Désactiver pour éviter appels inutiles
+            staleTime: 5 * 60 * 1000,
+            refetchOnWindowFocus: false,
+            retry: (failureCount, error) => {
+                 // Ne pas réessayer pour les erreurs 4xx (sauf 429 - Too Many Requests)
+                 if (error instanceof ApiError && error.status >= 400 && error.status < 500 && error.status !== 429) {
+                     return false;
+                 }
+                 // Réessayer 3 fois pour les autres erreurs
+                 return failureCount < 3;
+            }
         },
     },
 });
 
-// Créer le contexte pour l'instance de l'API
+// --- Contexte API (inchangé) ---
 interface SublymusApiContextType {
     api: SublymusApi | null;
 }
@@ -76,1061 +116,1338 @@ export const SublymusApiProvider: React.FC<SublymusApiProviderProps> = ({ childr
     );
 };
 
-// Hook pour accéder facilement à l'instance de l'API
+// --- Hook useApi (inchangé) ---
 export const useApi = (): SublymusApi => {
     const context = useContext(SublymusApiContext);
     const { t } = useTranslation();
     if (!context || !context.api) {
-        // Tenter de récupérer le store actuel pour donner une meilleure erreur
-        const { currentStore, } = useStore.getState(); // Accès direct au store Zustand
+        const { currentStore } = useStore.getState();
         if (!currentStore?.url) {
-            throw new Error(t('api.contextError.noStoreUrl')); // Nouvelle clé i18n
+             throw new Error(t('api.contextError.noStoreUrl'));
         }
-        // Si l'URL existe mais l'API est null, c'est une erreur de provider
-        throw new Error(t('api.contextError.providerMissing')); // Nouvelle clé i18n
+        throw new Error(t('api.contextError.providerMissing'));
     }
     return context.api;
 };
 
-// --- Hooks Personnalisés basés sur TanStack Query ---
-
-// Exemple: Hook pour récupérer les produits
-export const useGetProducts = (filter: FilterType, options: { enabled?: boolean } = {}): UseQueryResult<ListType<ProductInterface>, ApiError> => {
-    const api = useApi();
-    // La clé de requête inclut le filtre pour que TanStack refetch si le filtre change
-    return useQuery<ListType<ProductInterface>, ApiError>({
-        queryKey: ['products', filter],
-        queryFn: () => api.getProducts(filter),
-        enabled: options.enabled !== undefined ? options.enabled : true, // Activer/désactiver la requête
-    });
-};
-
-// Exemple: Hook pour créer une catégorie (Mutation)
-export const useCreateCategory = (): UseMutationResult<{ message: string, category: CategoryInterface }, ApiError, FormData> => {
-    const api = useApi();
-    return useMutation<{ message: string, category: CategoryInterface }, ApiError, FormData>({
-        mutationFn: (formData) => api.createCategory(formData),
-        onSuccess: (data) => {
-            // Invalider les requêtes de liste de catégories pour rafraîchir
-            queryClient.invalidateQueries({ queryKey: ['categories'] } as InvalidateQueryFilters);
-            // Afficher message de succès (via toast?)
-            // toast.success(data.message);
-            logger.info("Category created via mutation", data.category);
-        },
-        onError: (error) => {
-            // Afficher message d'erreur (via toast?)
-            // toast.error(error.message);
-            logger.error({ error }, "Failed to create category via mutation");
-        }
-    });
-};
-
-// Exemple: Hook pour récupérer toutes les commandes (Admin/Collaborateur)
-export const useGetAllOrders = (filter: CommandFilterType, options: { enabled?: boolean } = {}): UseQueryResult<ListType<CommandInterface>, ApiError> => {
-    const api = useApi();
-    return useQuery<ListType<CommandInterface>, ApiError>({
-        queryKey: ['allOrders', filter],
-        queryFn: () => api.getAllOrders(filter),
-        enabled: options.enabled !== undefined ? options.enabled : true,
-    });
-};
-
-// Exemple: Hook pour mettre à jour le statut d'une commande
-export const useUpdateOrderStatus = (): UseMutationResult<
-    { message: string, order: CommandInterface }, // Type retour succès
-    ApiError, // Type erreur
-    { user_order_id: string, status: OrderStatus, message?: string, estimated_duration?: number } // Type variables mutation
-> => {
-    const api = useApi();
-    return useMutation<
-        { message: string, order: CommandInterface },
-        ApiError,
-        { user_order_id: string, status: OrderStatus, message?: string, estimated_duration?: number }
-    >({
-        mutationFn: (variables) => api.updateOrderStatus(variables),
-        onSuccess: (data, variables) => {
-            // Invalider la liste des commandes et potentiellement le détail de cette commande
-            queryClient.invalidateQueries({ queryKey: ['allOrders'] } as InvalidateQueryFilters);
-            queryClient.invalidateQueries({ queryKey: ['orderDetails', variables.user_order_id] } as InvalidateQueryFilters); // Si un hook getOrderDetails existe
-            logger.info("Order status updated via mutation", data.order);
-        },
-        onError: (error) => {
-            logger.error({ error }, "Failed to update order status via mutation");
-        }
-    });
-};
-
-
-// --- Hooks Personnalisés basés sur TanStack Query ---
+// --- Hooks Personnalisés par Namespace ---
 
 // ========================
 // == Authentification ==
 // ========================
 
-// Hook pour le Login
-export const useLogin = (): UseMutationResult<
-    { message?: string, user: UserInterface, token: string, expires_at: string }, // Type retour succès
-    ApiError, // Type erreur
-    { email: string; password: string } // Type variables mutation (credentials)
-> => {
+// Clés de Query communes pour Auth
+const AUTH_QUERY_KEYS = {
+    me: ['me'] as const,
+};
+
+export const useLogin = (): UseMutationResult<LoginResponse, ApiError, LoginParams> => {
     const api = useApi();
-    // Inutile d'invalider le cache ici, mais on pourrait vouloir rafraîchir 'me' implicitement
-    return useMutation<
-        { message?: string, user: UserInterface, token: string, expires_at: string },
-        ApiError,
-        { email: string; password: string }
-    >({
-        mutationFn: (credentials) => api.login(credentials),
+    return useMutation<LoginResponse, ApiError, LoginParams>({
+        mutationFn: (credentials) => api.auth.login(credentials),
         onSuccess: (data) => {
-            queryClient.setQueryData(['me'], { user: data.user }); // Mettre à jour le cache 'me' directement
+            queryClient.setQueryData(AUTH_QUERY_KEYS.me, { user: data.user });
             logger.info("Login successful via mutation", { userId: data.user.id });
-            // Potentiellement mettre à jour le store Zustand ici aussi
-            useAuthStore.setState({ user: data.user }); // Exemple
+            useAuthStore.setState({ user: data.user });
         },
         onError: (error) => { logger.error({ error }, "Login failed via mutation"); }
     });
 };
 
-// Hook pour l'Inscription
-export const useRegister = (): UseMutationResult<
-    { message?: string, user_id: string },
-    ApiError,
-    { full_name: string; email: string; password: string; password_confirmation: string }
-> => {
+export const useRegister = (): UseMutationResult<RegisterResponse, ApiError, RegisterParams> => {
     const api = useApi();
-    return useMutation<
-        { message?: string, user_id: string },
-        ApiError,
-        { full_name: string; email: string; password: string; password_confirmation: string }
-    >({
-        mutationFn: (data) => api.register(data),
+    return useMutation<RegisterResponse, ApiError, RegisterParams>({
+        mutationFn: (data) => api.auth.register(data),
         onSuccess: (data) => { logger.info("Registration successful via mutation", { userId: data.user_id }); },
         onError: (error) => { logger.error({ error }, "Registration failed via mutation"); }
     });
 };
 
-// Hook pour vérifier l'email (c'est une action GET mais déclenchée comme une mutation)
-export const useVerifyEmail = (): UseMutationResult<{ message: string }, ApiError, string> => {
+export const useVerifyEmail = (): UseMutationResult<MessageResponse, ApiError, VerifyEmailParams> => {
     const api = useApi();
-    return useMutation<{ message: string }, ApiError, string>({ // string = token
-        mutationFn: (token) => api.verifyEmail(token),
+    return useMutation<MessageResponse, ApiError, VerifyEmailParams>({
+        mutationFn: (params) => api.auth.verifyEmail(params),
         onSuccess: (data) => {
-            logger.info("Email verified via mutation", data);
-            // Rafraîchir potentiellement les données utilisateur 'me'
-            queryClient.invalidateQueries({ queryKey: ['me'] } as InvalidateQueryFilters);
+             logger.info("Email verified via mutation", data);
+             queryClient.invalidateQueries({ queryKey: AUTH_QUERY_KEYS.me });
         },
         onError: (error) => { logger.error({ error }, "Email verification failed via mutation"); }
     });
 };
 
-// Hook pour renvoyer l'email de vérification
-export const useResendVerificationEmail = (): UseMutationResult<{ message: string }, ApiError, string> => {
+export const useResendVerificationEmail = (): UseMutationResult<MessageResponse, ApiError, ResendVerificationParams> => {
     const api = useApi();
-    return useMutation<{ message: string }, ApiError, string>({ // string = email
-        mutationFn: (email) => api.resendVerificationEmail(email),
+    return useMutation<MessageResponse, ApiError, ResendVerificationParams>({
+        mutationFn: (params) => api.auth.resendVerificationEmail(params),
         onSuccess: (data) => { logger.info("Resend verification email requested via mutation", data); },
         onError: (error) => { logger.error({ error }, "Resend verification email failed via mutation"); }
     });
 };
 
-// Hook pour la déconnexion
-export const useLogout = (): UseMutationResult<{ message: string }, ApiError, void> => {
+export const useLogout = (): UseMutationResult<MessageResponse, ApiError, void> => {
     const api = useApi();
-    return useMutation<{ message: string }, ApiError, void>({
-        mutationFn: () => api.logout(),
+    return useMutation<MessageResponse, ApiError, void>({
+        mutationFn: () => api.auth.logout(),
         onSuccess: (data) => {
-            queryClient.removeQueries({ queryKey: ['me'] }); // Vider le cache 'me'
-            queryClient.clear(); // Optionnel: Vider tout le cache TanStack au logout
+            queryClient.removeQueries({ queryKey: AUTH_QUERY_KEYS.me });
+            queryClient.clear(); // Vider tout le cache
             logger.info("Logout successful via mutation", data);
-            // Vider le store Zustand
-            useAuthStore.setState({ user: undefined }); // Exemple
-        },
-        onError: (error) => { logger.error({ error }, "Logout failed via mutation"); }
-    });
-};
-
-// Hook pour la déconnexion de tous les appareils
-export const useLogoutAllDevices = (): UseMutationResult<{ message: string }, ApiError, void> => {
-    const api = useApi();
-    return useMutation<{ message: string }, ApiError, void>({
-        mutationFn: () => api.logoutAllDevices(),
-        onSuccess: (data) => {
-            // Agit comme un logout normal côté client
-            queryClient.removeQueries({ queryKey: ['me'] });
-            queryClient.clear();
-            logger.info("Logout All Devices successful via mutation", data);
             useAuthStore.setState({ user: undefined });
         },
-        onError: (error) => { logger.error({ error }, "Logout All Devices failed via mutation"); }
+         onError: (error) => {
+            // Même en cas d'erreur (ex: token déjà invalide), on nettoie côté client
+            queryClient.removeQueries({ queryKey: AUTH_QUERY_KEYS.me });
+            queryClient.clear();
+            useAuthStore.setState({ user: undefined });
+            logger.error({ error }, "Logout failed via mutation, client state cleared anyway.");
+         }
     });
 };
 
-// Hook pour récupérer les infos de l'utilisateur connecté ('/me')
-// Le type inclut les relations chargées par l'API
-type MeResponseType = { user: UserInterface & { addresses: any[], phone_numbers: any[] } };
-export const useGetMe = (options: { enabled?: boolean } = {}): UseQueryResult<MeResponseType, ApiError> => {
+export const useLogoutAllDevices = (): UseMutationResult<MessageResponse, ApiError, void> => {
     const api = useApi();
-    return useQuery<MeResponseType, ApiError>({
-        queryKey: ['me'], // Clé simple car spécifique à l'utilisateur courant
-        queryFn: () => api.getMe(),
+    const logoutMutation = useLogout(); // Utiliser pour le nettoyage client
+    return useMutation<MessageResponse, ApiError, void>({
+        mutationFn: () => api.auth.logoutAllDevices(),
+         onSuccess: (data) => {
+             logger.info("Logout All Devices successful via mutation", data);
+             logoutMutation.mutate(); // Déclencher nettoyage client
+        },
+         onError: (error) => {
+            // Nettoyer côté client même si l'API échoue? Probablement oui.
+            logoutMutation.mutate();
+            logger.error({ error }, "Logout All Devices failed via mutation, client state cleared anyway.");
+         }
+    });
+};
+
+export const useGetMe = (options: { enabled?: boolean } = {}): UseQueryResult<GetMeResponse, ApiError> => {
+    const api = useApi();
+    return useQuery<GetMeResponse, ApiError>({
+        queryKey: AUTH_QUERY_KEYS.me,
+        queryFn: () => api.auth.getMe(),
         enabled: options.enabled !== undefined ? options.enabled : true,
-        staleTime: 15 * 60 * 1000, // Garder les infos user un peu plus longtemps (15 min)
+        staleTime: 15 * 60 * 1000,
     });
 };
 
-// Hook pour mettre à jour le profil utilisateur
-export const useUpdateUser = (): UseMutationResult<
-    { message?: string, user: UserInterface },
-    ApiError,
-    { full_name?: string; password?: string; password_confirmation?: string }
-> => {
+export const useUpdateUser = (): UseMutationResult<UpdateUserResponse, ApiError, UpdateUserParams> => {
     const api = useApi();
-    return useMutation<
-        { message?: string, user: UserInterface },
-        ApiError,
-        { full_name?: string; password?: string; password_confirmation?: string }
-    >({
-        mutationFn: (data) => api.updateUser(data),
+    return useMutation<UpdateUserResponse, ApiError, UpdateUserParams>({
+        mutationFn: (params) => api.auth.update(params),
         onSuccess: (data) => {
-            // Mettre à jour le cache 'me' avec les nouvelles données
-            queryClient.setQueryData(['me'], (oldData: MeResponseType | undefined) => {
-                // Attention: la réponse de updateUser ne contient pas addresses/phones
-                // Il faut soit rafraîchir, soit merger prudemment
-                return oldData ? { ...oldData, user: { ...oldData.user, ...data.user } } : undefined;
-            });
-            // Ou simplement invalider pour forcer un refetch
-            // queryClient.invalidateQueries({ queryKey: ['me'] } as InvalidateQueryFilters);
+            queryClient.setQueryData<GetMeResponse>(AUTH_QUERY_KEYS.me, (oldData) =>
+                 oldData ? { user: { ...oldData.user, ...data.user } } : undefined
+            );
             logger.info("User profile updated via mutation", data.user);
+            // Mettre à jour aussi le store Zustand si utilisé
             useAuthStore.setState(state => ({ user: state.user ? { ...state.user, ...data.user } : undefined }));
         },
         onError: (error) => { logger.error({ error }, "User profile update failed via mutation"); }
     });
 };
 
-// Hook pour supprimer le compte utilisateur
-export const useDeleteAccount = (): UseMutationResult<{ message: string }, ApiError, void> => {
-    const api = useApi();
-    // Utiliser le hook de logout pour la logique de nettoyage après succès
-    const logoutMutation = useLogout();
-    return useMutation<{ message: string }, ApiError, void>({
-        mutationFn: () => api.deleteAccount(),
-        onSuccess: (data) => {
-            logger.info("Account deleted via mutation", data);
-            // Déclencher la logique de logout pour nettoyer état/cache/token
-            logoutMutation.mutate();
-        },
-        onError: (error) => { logger.error({ error }, "Account deletion failed via mutation"); }
-    });
+export const useDeleteAccount = (): UseMutationResult<MessageResponse, ApiError, void> => {
+     const api = useApi();
+     const logoutMutation = useLogout();
+     return useMutation<MessageResponse, ApiError, void>({
+         mutationFn: () => api.auth.deleteAccount(),
+         onSuccess: (data) => {
+             logger.info("Account deleted via mutation", data);
+             logoutMutation.mutate(); // Nettoyer après suppression
+         },
+         onError: (error) => { logger.error({ error }, "Account deletion failed via mutation"); }
+     });
 };
 
-// ========================
-// == Catégories ==
-// ========================
+// --- Fin Auth Hooks ---
 
-// Hook pour récupérer les catégories
-type CategoryFilterType = { // Définir un type plus précis pour le filtre si possible
-    categories_id?: string[],
-    search?: string,
-    slug?: string,
-    order_by?: string,
-    page?: number,
-    limit?: number,
-    category_id?: string,
-    with_product_count?: boolean,
-};
-export const useGetCategories = (filter: CategoryFilterType = {}, options: { enabled?: boolean } = {}): UseQueryResult<ListType<CategoryInterface>, ApiError> => {
-    const api = useApi();
-    return useQuery<ListType<CategoryInterface>, ApiError>({
-        queryKey: ['categories', filter], // Clé incluant les filtres
-        queryFn: async() => {
-             
-            const list = await api.getCategories(filter)
-            console.log(list.list);
-            
-            return list 
-        },
-        enabled: options.enabled !== undefined ? options.enabled : true,
-    });
-};
+// src/api/ReactSublymusApi.tsx
+// ... (Imports, Setup, Auth Hooks inchangés) ...
 
-// Hook pour récupérer une catégorie par ID (basé sur useGetCategories)
-export const useGetCategoryById = (categoryId: string | undefined, options: { enabled?: boolean } = {}): UseQueryResult<CategoryInterface | null, ApiError> => {
-    const api = useApi();
-    // Utilise useQuery mais appelle l'API seulement si categoryId est défini
-    return useQuery<CategoryInterface | null, ApiError>({
-        queryKey: ['category', categoryId],
-        queryFn: async () => {
-            if (!categoryId) return null;
-            // L'API getCategories renvoie une liste même pour un ID, on prend le premier
-            const result = await api.getCategories({ category_id: categoryId });
-            return result?.list?.[0] ?? null;
-        },
-        enabled: !!categoryId && (options.enabled !== undefined ? options.enabled : true), // Actif seulement si ID fourni
-        staleTime: 10 * 60 * 1000, // Cache plus long pour une seule catégorie
-    });
-};
-
-
-// Hook pour mettre à jour une catégorie
-export const useUpdateCategory = (): UseMutationResult<{ message: string, category: CategoryInterface }, ApiError, FormData> => {
-    const api = useApi();
-    return useMutation<{ message: string, category: CategoryInterface }, ApiError, FormData>({
-        mutationFn: (formData) => api.updateCategory(formData),
-        onSuccess: (data) => {
-            // Invalider la liste ET le détail de cette catégorie
-            queryClient.invalidateQueries({ queryKey: ['categories'] } as InvalidateQueryFilters);
-            queryClient.invalidateQueries({ queryKey: ['category', data.category.id] } as InvalidateQueryFilters);
-            logger.info("Category updated via mutation", data.category);
-        },
-        onError: (error) => { logger.error({ error }, "Failed to update category via mutation"); }
-    });
-};
-
-// Hook pour supprimer une catégorie
-export const useDeleteCategory = (): UseMutationResult<{ message: string, isDeleted: boolean }, ApiError, string> => {
-    const api = useApi();
-    return useMutation<{ message: string, isDeleted: boolean }, ApiError, string>({ // string = categoryId
-        mutationFn: (categoryId) => api.deleteCategory(categoryId),
-        onSuccess: (data, categoryId) => {
-            // Invalider la liste ET le détail de cette catégorie
-            queryClient.invalidateQueries({ queryKey: ['categories'] } as InvalidateQueryFilters);
-            queryClient.removeQueries({ queryKey: ['category', categoryId] }); // Supprimer du cache détail
-            logger.info("Category deleted via mutation", { categoryId });
-        },
-        onError: (error) => { logger.error({ error }, "Failed to delete category via mutation"); }
-    });
-};
-
-// Hook pour récupérer les sous-catégories
-export const useGetSubCategories = (parentId: string | undefined, options: { enabled?: boolean } = {}): UseQueryResult<CategoryInterface[], ApiError> => {
-    const api = useApi();
-    return useQuery<CategoryInterface[], ApiError>({
-        queryKey: ['subCategories', parentId],
-        queryFn: () => parentId ? api.getSubCategories(parentId) : Promise.resolve([]), // Ne fetch que si parentId existe
-        enabled: !!parentId && (options.enabled !== undefined ? options.enabled : true),
-    });
-};
-
-// Hook pour récupérer les filtres
-export const useGetCategoryFilters = (slug?: string, options: { enabled?: boolean } = {}): UseQueryResult<any[], ApiError> => {
-    const api = useApi();
-    return useQuery<any[], ApiError>({
-        queryKey: ['categoryFilters', slug ?? 'global'], // Clé différente si slug ou global
-        queryFn: () => api.getCategoryFilters(slug),
-        enabled: options.enabled !== undefined ? options.enabled : true,
-    });
-};
+// --- Hooks Personnalisés par Namespace ---
 
 // ========================
 // == Produits ==
 // ========================
 
-// Hook pour créer un produit
-export const useCreateProduct = (): UseMutationResult<{ message: string, product?: ProductInterface }, ApiError, CreateProductParams> => {
+// Clés de Query communes pour Products
+const PRODUCTS_QUERY_KEYS = {
+    all: ['products'] as const,
+    lists: (filters: GetProductListParams = {}) => [...PRODUCTS_QUERY_KEYS.all, 'list', filters] as const,
+    details: (params: GetProductParams = {}) => [...PRODUCTS_QUERY_KEYS.all, 'detail', params] as const,
+};
+
+// Hook pour récupérer la LISTE des produits
+export const useGetProductList = (
+    filter: GetProductListParams = {},
+    options: { enabled?: boolean, keepPreviousData?: boolean } = {}
+): UseQueryResult<GetProductListResponse, ApiError> => {
     const api = useApi();
-    return useMutation<{ message: string, product?: ProductInterface }, ApiError, CreateProductParams>({
-        mutationFn: (data) => api.createProduct(data),
+    return useQuery<GetProductListResponse, ApiError>({
+        queryKey: PRODUCTS_QUERY_KEYS.lists(filter),
+        queryFn: () => api.products.getList(filter),
+        enabled: options.enabled !== undefined ? options.enabled : true,
+        // keepPreviousData: options.keepPreviousData ?? true, // Garder les données précédentes pendant le chargement de nouvelles
+    });
+};
+
+// Hook pour récupérer UN produit par ID ou Slug
+export const useGetProduct = (
+    params: GetProductParams, // Doit contenir soit product_id soit slug
+    options: { enabled?: boolean } = {}
+): UseQueryResult<GetProductResponse, ApiError> => {
+    const api = useApi();
+    const enabled = !!(params.product_id || params.slug) && (options.enabled !== undefined ? options.enabled : true);
+    return useQuery<GetProductResponse, ApiError>({
+        queryKey: PRODUCTS_QUERY_KEYS.details(params),
+        queryFn: () => api.products.getOne(params), // Utiliser getOne
+        enabled: enabled,
+        staleTime: 10 * 60 * 1000, // Cache plus long pour un détail
+    });
+};
+
+// Hook pour créer un produit
+export const useCreateProduct = (): UseMutationResult<CreateProductResponse, ApiError, CreateProductParams> => {
+    const api = useApi();
+    return useMutation<CreateProductResponse, ApiError, CreateProductParams>({
+        mutationFn: (params) => api.products.create(params),
         onSuccess: (data) => {
-            // Invalider la liste des produits
-            queryClient.invalidateQueries({ queryKey: ['products'] } as InvalidateQueryFilters);
             logger.info("Product created via mutation", data.product);
+            // Invalider toutes les listes de produits après création
+            queryClient.invalidateQueries({ queryKey: PRODUCTS_QUERY_KEYS.lists() } as InvalidateQueryFilters);
+            // Pré-remplir le cache pour le nouveau produit?
+            queryClient.setQueryData(PRODUCTS_QUERY_KEYS.details({ product_id: data.product.id }), data.product);
         },
         onError: (error) => { logger.error({ error }, "Failed to create product via mutation"); }
     });
 };
 
 // Hook pour mettre à jour un produit (infos de base)
-export const useUpdateProduct = (): UseMutationResult<{ message: string, product?: Partial<ProductInterface> }, ApiError, Partial<ProductInterface>&{product_id?:string}> => {
+export const useUpdateProduct = (): UseMutationResult<UpdateProductResponse, ApiError, UpdateProductParams> => {
     const api = useApi();
-    return useMutation<{ message: string, product?: Partial<ProductInterface> }, ApiError, Partial<ProductInterface>&{product_id?:string}>({
-        mutationFn: (product) => api.updateProduct(product),
-        onSuccess: (data, product) => {
-            const productId = product.id;
-            // Invalider la liste ET le détail de ce produit
-            queryClient.invalidateQueries({ queryKey: ['products'] } as InvalidateQueryFilters);
-            if (productId) {
-                queryClient.invalidateQueries({ queryKey: ['product', productId] } as InvalidateQueryFilters); // Si hook getProductById existe
-            }
+    return useMutation<UpdateProductResponse, ApiError, UpdateProductParams>({
+        mutationFn: (params) => api.products.update(params),
+        onSuccess: (data, variables) => {
             logger.info("Product updated via mutation", data.product);
+            const productId = variables.product_id;
+            // Invalider les listes
+            queryClient.invalidateQueries({ queryKey: PRODUCTS_QUERY_KEYS.lists() } as InvalidateQueryFilters);
+            // Mettre à jour le cache détail
+            queryClient.setQueryData<GetProductResponse>(
+                 PRODUCTS_QUERY_KEYS.details({ product_id: productId }),
+                 (oldData) => oldData ? { ...oldData, ...(data.product ?? {}) } : undefined // Merger les nouvelles données
+            );
+            // Invalider aussi par slug si on l'utilise
+            // queryClient.invalidateQueries({ queryKey: ['product', { slug: data.product?.slug }] });
         },
         onError: (error) => { logger.error({ error }, "Failed to update product via mutation"); }
     });
 };
 
 // Hook pour supprimer un produit
-export const useDeleteProduct = (): UseMutationResult<{ message: string }, ApiError, string> => {
+export const useDeleteProduct = (): UseMutationResult<DeleteProductResponse, ApiError, {product_id:string}> => { // string = productId
     const api = useApi();
-    return useMutation<{ message: string }, ApiError, string>({ // string = productId
-        mutationFn: (productId) => api.deleteProduct(productId),
-        onSuccess: (data, productId) => {
-            // Invalider la liste ET supprimer le détail du cache
-            queryClient.invalidateQueries({ queryKey: ['products'] } as InvalidateQueryFilters);
-            queryClient.removeQueries({ queryKey: ['product', productId] });
-            logger.info("Product deleted via mutation", { productId });
+    return useMutation<DeleteProductResponse, ApiError, {product_id:string}>({
+        mutationFn: (data) => api.products.delete(data.product_id),
+        onSuccess: (data, params) => {
+            logger.info("Product deleted via mutation", { productId:params.product_id });
+            // Invalider les listes
+            queryClient.invalidateQueries({ queryKey: PRODUCTS_QUERY_KEYS.lists() } as InvalidateQueryFilters);
+            // Supprimer le détail du cache
+            queryClient.removeQueries({ queryKey: PRODUCTS_QUERY_KEYS.details({ product_id: params.product_id }) });
         },
         onError: (error) => { logger.error({ error }, "Failed to delete product via mutation"); }
     });
 };
 
-// ==================================
-// == Features & Values (Multiple) ==
-// ==================================
-
-// Hook pour la mise à jour multiple des features/values
-export const useMultipleUpdateFeaturesValues = (): UseMutationResult<{ message: string, product?: ProductInterface }, ApiError,BuildFormDataForFeaturesValuesParam > => {
+// Hook pour multipleUpdateFeaturesValues
+export const useMultipleUpdateFeaturesValues = (): UseMutationResult<MultipleUpdateFeaturesValuesResponse, ApiError, MultipleUpdateFeaturesValuesParams> => {
     const api = useApi();
-    return useMutation<{ message: string, product?: ProductInterface }, ApiError, BuildFormDataForFeaturesValuesParam>({
-        mutationFn: (collected) => api.multipleUpdateFeaturesValues(collected),
-        onSuccess: (data, collected) => {
-            const productId = collected.product_id;
-            
-            queryClient.invalidateQueries({ queryKey: ['products'] } as InvalidateQueryFilters);
-            if (productId) {
-                queryClient.invalidateQueries({ queryKey: ['product', productId] } as InvalidateQueryFilters);
-                queryClient.invalidateQueries({ queryKey: ['featuresWithValues', { product_id: productId }] } as InvalidateQueryFilters); // Si hook getFeaturesWithValues existe
-            }
-            logger.info("Multiple features/values updated via mutation", { productId });
+    return useMutation<MultipleUpdateFeaturesValuesResponse, ApiError, MultipleUpdateFeaturesValuesParams>({
+        mutationFn: (params) => api.products.multipleUpdateFeaturesValues(params),
+        onSuccess: (data, variables) => {
+            logger.info("Multiple features/values updated via mutation", { productId: variables.product_id });
+            const productId = variables.product_id;
+             // Invalider les listes ET le détail complet du produit
+            queryClient.invalidateQueries({ queryKey: PRODUCTS_QUERY_KEYS.lists() } as InvalidateQueryFilters);
+            queryClient.invalidateQueries({ queryKey: PRODUCTS_QUERY_KEYS.details({ product_id: productId }) } as InvalidateQueryFilters);
+            // Invalider aussi les features/values si requêtes dédiées existent
+            queryClient.invalidateQueries({ queryKey: ['features', { product_id: productId }] } as InvalidateQueryFilters);
+            queryClient.invalidateQueries({ queryKey: ['featuresWithValues', { product_id: productId }] } as InvalidateQueryFilters);
+
+             // Mettre à jour le cache détail avec le produit retourné?
+             if (data.product) {
+                 queryClient.setQueryData(PRODUCTS_QUERY_KEYS.details({ product_id: productId }), data.product);
+             }
         },
         onError: (error) => { logger.error({ error }, "Failed multiple features/values update via mutation"); }
     });
 };
 
-// Hook pour récupérer les features d'un produit (avec ou sans valeurs)
-// Note: Adapte selon si tu préfères un hook séparé ou un booléen dans getFeatures
-type FeatureFilterType = { feature_id?: string, product_id?: string };
-export const useGetFeatures = (filter: FeatureFilterType = {}, options: { enabled?: boolean } = {}): UseQueryResult<ListType<FeatureInterface>, ApiError> => {
-    const api = useApi();
-    return useQuery<ListType<FeatureInterface>, ApiError>({
-        queryKey: ['features', filter],
-        queryFn: () => api.getFeatures(filter),
-        enabled: options.enabled !== undefined ? options.enabled : true,
-    });
-};
-export const useGetFeaturesWithValues = (filter: FeatureFilterType = {}, options: { enabled?: boolean } = {}): UseQueryResult<FeatureInterface[], ApiError> => {
-    const api = useApi();
-    return useQuery<FeatureInterface[], ApiError>({
-        queryKey: ['featuresWithValues', filter],
-        queryFn: () => api.getFeaturesWithValues(filter),
-        enabled: options.enabled !== undefined ? options.enabled : true,
-    });
-};
-
-// Ajouter useCreateFeature, useUpdateFeature, useDeleteFeature si nécessaire
-
-// Ajouter useCreateValue, useUpdateValue, useDeleteValue si nécessaire
-
 
 // ========================
+// == Catégories ==
+// ========================
+
+// Clés de Query communes pour Categories
+const CATEGORIES_QUERY_KEYS = {
+    all: ['categories'] as const,
+    lists: (filters: GetCategoriesParams = {}) => [...CATEGORIES_QUERY_KEYS.all, 'list', filters] as const,
+    details: (params: { category_id?: string; slug?: string } = {}) => [...CATEGORIES_QUERY_KEYS.all, 'detail', params] as const,
+    subCategories: (parentId: string) => [...CATEGORIES_QUERY_KEYS.all, 'sub', parentId] as const,
+    filters: (slug?: string) => [...CATEGORIES_QUERY_KEYS.all, 'filters', slug ?? 'global'] as const,
+};
+
+// Hook pour récupérer la LISTE des catégories
+export const useGetCategories = (
+    filter: GetCategoriesParams = {},
+    options: { enabled?: boolean, keepPreviousData?: boolean } = {}
+): UseQueryResult<GetCategoriesResponse, ApiError> => {
+    const api = useApi();
+    return useQuery<GetCategoriesResponse, ApiError>({
+        queryKey: CATEGORIES_QUERY_KEYS.lists(filter),
+        queryFn: () => api.categories.getList(filter),
+        enabled: options.enabled !== undefined ? options.enabled : true,
+        // keepPreviousData: options.keepPreviousData ?? true,
+    });
+};
+
+// Hook pour récupérer UNE catégorie par ID ou Slug
+export const useGetCategory = (
+    params: { category_id?: string; slug?: string }, // ID ou Slug requis
+    options: { enabled?: boolean } = {}
+): UseQueryResult<GetCategoryResponse, ApiError> => {
+    const api = useApi();
+    const enabled = !!(params.category_id || params.slug) && (options.enabled !== undefined ? options.enabled : true);
+    return useQuery<GetCategoryResponse, ApiError>({
+        queryKey: CATEGORIES_QUERY_KEYS.details(params),
+        queryFn: () => api.categories.getOne(params),
+        enabled: enabled,
+        staleTime: 10 * 60 * 1000,
+    });
+};
+
+// Hook pour créer une catégorie
+export const useCreateCategory = (): UseMutationResult<CreateCategoryResponse, ApiError, CreateCategoryParams> => {
+    const api = useApi();
+    return useMutation<CreateCategoryResponse, ApiError, CreateCategoryParams>({
+        mutationFn: (params) => api.categories.create(params),
+        onSuccess: (data) => {
+            logger.info("Category created via mutation", data.category);
+            queryClient.invalidateQueries({ queryKey: CATEGORIES_QUERY_KEYS.lists() } as InvalidateQueryFilters);
+            queryClient.setQueryData(CATEGORIES_QUERY_KEYS.details({ category_id: data.category.id }), data.category);
+        },
+        onError: (error) => { logger.error({ error }, "Failed to create category via mutation"); }
+    });
+};
+
+// Hook pour mettre à jour une catégorie
+export const useUpdateCategory = (): UseMutationResult<UpdateCategoryResponse, ApiError, UpdateCategoryParams> => {
+    const api = useApi();
+    return useMutation<UpdateCategoryResponse, ApiError, UpdateCategoryParams>({
+        mutationFn: (params) => api.categories.update(params),
+        onSuccess: (data, variables) => {
+            logger.info("Category updated via mutation", data.category);
+            const categoryId = variables.category_id;
+            queryClient.invalidateQueries({ queryKey: CATEGORIES_QUERY_KEYS.lists() } as InvalidateQueryFilters);
+            queryClient.setQueryData<GetCategoryResponse>(CATEGORIES_QUERY_KEYS.details({ category_id: categoryId }), data.category);
+            // Invalider aussi par slug si le slug a pu changer
+             queryClient.invalidateQueries({ queryKey: CATEGORIES_QUERY_KEYS.details({ slug: data.category.slug }) } as InvalidateQueryFilters);
+        },
+        onError: (error) => { logger.error({ error }, "Failed to update category via mutation"); }
+    });
+};
+
+// Hook pour supprimer une catégorie
+export const useDeleteCategory = (): UseMutationResult<DeleteCategoryResponse, ApiError, DeleteCategoryParams> => {
+    const api = useApi();
+    return useMutation<DeleteCategoryResponse, ApiError, DeleteCategoryParams>({
+        mutationFn: (params) => api.categories.delete(params),
+        onSuccess: (data, variables) => {
+            logger.info("Category deleted via mutation", { categoryId: variables.category_id });
+            queryClient.invalidateQueries({ queryKey: CATEGORIES_QUERY_KEYS.lists() } as InvalidateQueryFilters);
+            queryClient.removeQueries({ queryKey: CATEGORIES_QUERY_KEYS.details({ category_id: variables.category_id }) });
+             // TODO: Invalider les produits qui contenaient cette catégorie? Complexe.
+             queryClient.invalidateQueries({ queryKey: PRODUCTS_QUERY_KEYS.lists() }); // Invalidation large
+        },
+        onError: (error) => { logger.error({ error }, "Failed to delete category via mutation"); }
+    });
+};
+
+// Hook pour récupérer les sous-catégories
+export const useGetSubCategories = (
+    params: GetSubCategoriesParams,
+    options: { enabled?: boolean } = {}
+): UseQueryResult<GetSubCategoriesResponse, ApiError> => {
+    const api = useApi();
+    return useQuery<GetSubCategoriesResponse, ApiError>({
+        queryKey: CATEGORIES_QUERY_KEYS.subCategories(params.category_id),
+        queryFn: () => api.categories.getSubCategories(params),
+        enabled: !!params.category_id && (options.enabled !== undefined ? options.enabled : true),
+    });
+};
+
+// Hook pour récupérer les filtres
+export const useGetCategoryFilters = (
+    params: GetCategoryFiltersParams = {},
+    options: { enabled?: boolean } = {}
+): UseQueryResult<GetCategoryFiltersResponse, ApiError> => {
+    const api = useApi();
+    return useQuery<GetCategoryFiltersResponse, ApiError>({
+        queryKey: CATEGORIES_QUERY_KEYS.filters(params.slug),
+        queryFn: () => api.categories.getFilters(params),
+        enabled: options.enabled !== undefined ? options.enabled : true,
+    });
+};
+
+// ======================================
+// == Features & Values ==
+// ======================================
+
+// Clés de Query communes
+const FEATURES_QUERY_KEYS = {
+    all: ['features'] as const,
+    lists: (filters: GetFeaturesParams = {}) => [...FEATURES_QUERY_KEYS.all, 'list', filters] as const,
+    details: (params: GetFeatureParams = {}) => [...FEATURES_QUERY_KEYS.all, 'detail', params] as const,
+    withValues: (filters: GetFeaturesWithValuesParams = {}) => [...FEATURES_QUERY_KEYS.all, 'withValues', filters] as const,
+};
+const VALUES_QUERY_KEYS = {
+    all: ['values'] as const,
+    lists: (filters: GetValuesParams = {}) => [...VALUES_QUERY_KEYS.all, 'list', filters] as const,
+    details: (params: { value_id: string }) => [...VALUES_QUERY_KEYS.all, 'detail', params] as const,
+};
+
+
+// Hook pour récupérer les features (sans valeurs)
+export const useGetFeatures = (
+    filter: Omit<GetFeaturesParams, 'feature_id'> = {}, // Exclure feature_id pour liste
+    options: { enabled?: boolean } = {}
+): UseQueryResult<GetFeaturesResponse, ApiError> => {
+    const api = useApi();
+    return useQuery<GetFeaturesResponse, ApiError>({
+        queryKey: FEATURES_QUERY_KEYS.lists(filter),
+        queryFn: () => api.features.getList(filter),
+        enabled: options.enabled !== undefined ? options.enabled : true,
+    });
+};
+// Hook pour récupérer UNE feature (sans valeurs)
+export const useGetFeature = (
+    params: { feature_id: string },
+    options: { enabled?: boolean } = {}
+): UseQueryResult<GetFeatureResponse, ApiError> => {
+    const api = useApi();
+    return useQuery<GetFeatureResponse, ApiError>({
+        queryKey: FEATURES_QUERY_KEYS.details(params),
+        queryFn: () => api.features.getOne(params),
+        enabled: !!params.feature_id && (options.enabled !== undefined ? options.enabled : true),
+    });
+};
+
+// Hook pour récupérer les features AVEC valeurs
+export const useGetFeaturesWithValues = (
+    filter: GetFeaturesWithValuesParams = {},
+    options: { enabled?: boolean } = {}
+): UseQueryResult<GetFeaturesWithValuesResponse, ApiError> => {
+    const api = useApi();
+    return useQuery<GetFeaturesWithValuesResponse, ApiError>({
+        queryKey: FEATURES_QUERY_KEYS.withValues(filter),
+        queryFn: () => api.features.getListWithValues(filter),
+        enabled: options.enabled !== undefined ? options.enabled : true,
+    });
+};
+// Hook pour récupérer UNE feature AVEC valeurs
+export const useGetFeatureWithValues = (
+    params: { feature_id: string },
+    options: { enabled?: boolean } = {}
+): UseQueryResult<FeatureInterface | null, ApiError> => {
+     const api = useApi();
+     return useQuery<FeatureInterface | null, ApiError>({
+         queryKey: FEATURES_QUERY_KEYS.withValues(params), // Utiliser la même clé que la liste pour MAJ cache
+         queryFn: async () => {
+             const result = await api.features.getListWithValues({ ...params, limit: 1 } as any);
+             return result?.[0] ?? null;
+         },
+         enabled: !!params.feature_id && (options.enabled !== undefined ? options.enabled : true),
+     });
+};
+
+
+// Hook pour créer une valeur (Value)
+export const useCreateValue = (): UseMutationResult<CreateValueResponse, ApiError, CreateValueParams> => {
+    const api = useApi();
+    return useMutation<CreateValueResponse, ApiError, CreateValueParams>({
+        mutationFn: (params) => api.values.create(params), // L'API gère le FormData
+        onSuccess: (data, variables) => {
+            logger.info("Value created via mutation", data.value);
+            // Invalider la liste des valeurs pour cette feature ET les features avec valeurs du produit
+            queryClient.invalidateQueries({ queryKey: VALUES_QUERY_KEYS.lists({ feature_id: variables.data.feature_id }) } as InvalidateQueryFilters);
+             // Idéalement on connait le product_id ici pour invalider plus précisément
+             // queryClient.invalidateQueries({ queryKey: FEATURES_QUERY_KEYS.withValues({ product_id: productId }) });
+             // Invalidation large pour l'instant:
+             queryClient.invalidateQueries({ queryKey: FEATURES_QUERY_KEYS.withValues() } as InvalidateQueryFilters);
+             queryClient.invalidateQueries({ queryKey: PRODUCTS_QUERY_KEYS.details() } as InvalidateQueryFilters); // Invalider produit détail aussi
+        },
+        onError: (error) => { logger.error({ error }, "Failed to create value via mutation"); }
+    });
+};
+
+// Hook pour mettre à jour une valeur (Value)
+export const useUpdateValue = (): UseMutationResult<UpdateValueResponse, ApiError, UpdateValueParams> => {
+    const api = useApi();
+    return useMutation<UpdateValueResponse, ApiError, UpdateValueParams>({
+        mutationFn: (params) => api.values.update(params), // L'API gère le FormData
+        onSuccess: (data, variables) => {
+            logger.info("Value updated via mutation", data.value);
+            const valueId = variables.value_id;
+            const featureId = data.value.feature_id; // Feature ID depuis la réponse
+             // Invalider la liste des valeurs pour cette feature, le détail de cette valeur et les features avec valeurs
+             queryClient.invalidateQueries({ queryKey: VALUES_QUERY_KEYS.lists({ feature_id: featureId }) } as InvalidateQueryFilters);
+             queryClient.invalidateQueries({ queryKey: VALUES_QUERY_KEYS.details({ value_id: valueId }) } as InvalidateQueryFilters);
+             queryClient.invalidateQueries({ queryKey: FEATURES_QUERY_KEYS.withValues() } as InvalidateQueryFilters);
+             queryClient.invalidateQueries({ queryKey: PRODUCTS_QUERY_KEYS.details() } as InvalidateQueryFilters);
+        },
+        onError: (error) => { logger.error({ error }, "Failed to update value via mutation"); }
+    });
+};
+
+// Hook pour supprimer une valeur (Value)
+export const useDeleteValue = (): UseMutationResult<DeleteValueResponse, ApiError, DeleteValueParams> => {
+    const api = useApi();
+     // Garder trace de la feature parente pour invalidation
+     let parentFeatureId: string | undefined;
+     return useMutation<DeleteValueResponse, ApiError, DeleteValueParams>({
+         onMutate: async (variables) => {
+              // Essayer de récupérer la valeur du cache pour obtenir featureId
+              const cachedValue = queryClient.getQueryData<GetValueResponse>(VALUES_QUERY_KEYS.details({ value_id: variables.value_id }));
+              parentFeatureId = cachedValue?.feature_id;
+         },
+         mutationFn: (params) => api.values.delete(params),
+         onSuccess: (data, variables) => {
+             logger.info("Value deleted via mutation", { valueId: variables.value_id });
+              const valueId = variables.value_id;
+              // Invalider les listes et supprimer le détail du cache
+              if (parentFeatureId) {
+                  queryClient.invalidateQueries({ queryKey: VALUES_QUERY_KEYS.lists({ feature_id: parentFeatureId }) } as InvalidateQueryFilters);
+              } else {
+                  queryClient.invalidateQueries({ queryKey: VALUES_QUERY_KEYS.lists() } as InvalidateQueryFilters); // Fallback large
+              }
+              queryClient.removeQueries({ queryKey: VALUES_QUERY_KEYS.details({ value_id: valueId }) });
+              queryClient.invalidateQueries({ queryKey: FEATURES_QUERY_KEYS.withValues() } as InvalidateQueryFilters);
+              queryClient.invalidateQueries({ queryKey: PRODUCTS_QUERY_KEYS.details() } as InvalidateQueryFilters);
+              parentFeatureId = undefined; // Reset
+         },
+         onError: (error) => { logger.error({ error }, "Failed to delete value via mutation"); parentFeatureId = undefined; }
+    });
+};
+
+
+// ================================
 // == Détails Produit ==
-// ========================
+// ================================
 
-// Hook pour récupérer les détails d'un produit
-type DetailFilterType = { product_id?: string, detail_id?: string, page?: number, limit?: number };
-export const useGetDetails = (filter: DetailFilterType = {}, options: { enabled?: boolean } = {}): UseQueryResult<ListType<DetailInterface>, ApiError> => {
+// Clés de Query communes
+const DETAILS_QUERY_KEYS = {
+    all: ['details'] as const,
+    lists: (filters: GetDetailListParams = {}) => [...DETAILS_QUERY_KEYS.all, 'list', filters] as const,
+    details: (params: GetDetailParams) => [...DETAILS_QUERY_KEYS.all, 'detail', params] as const,
+};
+
+// Hook pour récupérer la LISTE des détails d'un produit
+export const useGetDetailList = (
+    filter: GetDetailListParams, // product_id est généralement requis ici
+    options: { enabled?: boolean } = {}
+): UseQueryResult<GetDetailListResponse, ApiError> => {
     const api = useApi();
-    return useQuery<ListType<DetailInterface>, ApiError>({
-        queryKey: ['details', filter],
-        queryFn: () => api.getDetails(filter),
-        enabled: options.enabled !== undefined ? options.enabled : true,
+    return useQuery<GetDetailListResponse, ApiError>({
+        queryKey: DETAILS_QUERY_KEYS.lists(filter),
+        queryFn: () => api.details.getList(filter),
+        enabled: !!filter.product_id && (options.enabled !== undefined ? options.enabled : true), // Activer si product_id
     });
 };
+
+// Hook pour récupérer UN détail par ID
+export const useGetDetail = (
+    params: GetDetailParams, // detail_id requis
+    options: { enabled?: boolean } = {}
+): UseQueryResult<GetDetailResponse, ApiError> => {
+    const api = useApi();
+    return useQuery<GetDetailResponse, ApiError>({
+        queryKey: DETAILS_QUERY_KEYS.details(params),
+        queryFn: () => api.details.getOne(params),
+        enabled: !!params.detail_id && (options.enabled !== undefined ? options.enabled : true),
+    });
+};
+
 
 // Hook pour créer un détail
-export const useCreateDetail = (): UseMutationResult<{ message: string, detail: DetailInterface }, ApiError, FormData> => {
+export const useCreateDetail = (): UseMutationResult<CreateDetailResponse, ApiError, CreateDetailParams> => {
     const api = useApi();
-    return useMutation<{ message: string, detail: DetailInterface }, ApiError, FormData>({
-        mutationFn: (formData) => api.createDetail(formData),
-        onSuccess: (data) => {
-            queryClient.invalidateQueries({ queryKey: ['details', { product_id: data.detail.product_id }] } as InvalidateQueryFilters);
+    return useMutation<CreateDetailResponse, ApiError, CreateDetailParams>({
+        mutationFn: (params) => api.details.create(params), // L'API gère FormData
+        onSuccess: (data, variables) => {
             logger.info("Detail created via mutation", data.detail);
+            // Invalider la liste des détails pour ce produit
+            queryClient.invalidateQueries({ queryKey: DETAILS_QUERY_KEYS.lists({ product_id: variables.data.product_id }) } as InvalidateQueryFilters);
         },
         onError: (error) => { logger.error({ error }, "Failed to create detail via mutation"); }
     });
 };
 
 // Hook pour mettre à jour un détail
-export const useUpdateDetail = (): UseMutationResult<{ message: string, detail: DetailInterface }, ApiError, { detailId: string, formData: FormData }> => {
+export const useUpdateDetail = (): UseMutationResult<UpdateDetailResponse, ApiError, UpdateDetailParams> => {
     const api = useApi();
-    return useMutation<{ message: string, detail: DetailInterface }, ApiError, { detailId: string, formData: FormData }>({
-        mutationFn: ({ detailId, formData }) => api.updateDetail(detailId, formData),
-        onSuccess: (data) => {
-            queryClient.invalidateQueries({ queryKey: ['details', { product_id: data.detail.product_id }] } as InvalidateQueryFilters);
-            queryClient.invalidateQueries({ queryKey: ['details', { detail_id: data.detail.id }] } as InvalidateQueryFilters); // Invalider par ID aussi
+    return useMutation<UpdateDetailResponse, ApiError, UpdateDetailParams>({
+        mutationFn: (params) => api.details.update(params), // L'API gère FormData
+        onSuccess: (data, variables) => {
             logger.info("Detail updated via mutation", data.detail);
+            const detailId = variables.detail_id;
+            const productId = data.detail.product_id; // Récupérer productId depuis réponse
+            // Invalider la liste ET le détail
+            queryClient.invalidateQueries({ queryKey: DETAILS_QUERY_KEYS.lists({ product_id: productId }) } as InvalidateQueryFilters);
+            queryClient.invalidateQueries({ queryKey: DETAILS_QUERY_KEYS.details({ detail_id: detailId }) } as InvalidateQueryFilters);
         },
         onError: (error) => { logger.error({ error }, "Failed to update detail via mutation"); }
     });
 };
 
 // Hook pour supprimer un détail
-export const useDeleteDetail = (): UseMutationResult<{ message: string, isDeleted: boolean }, ApiError, string> => {
+export const useDeleteDetail = (): UseMutationResult<DeleteDetailResponse, ApiError, DeleteDetailParams> => {
     const api = useApi();
-    return useMutation<{ message: string, isDeleted: boolean }, ApiError, string>({ // string = detailId
-        mutationFn: (detailId) => api.deleteDetail(detailId),
-        onSuccess: (data, detailId) => {
-            // Difficile de savoir le product_id ici pour invalider la liste, on invalide toutes les listes de détails
-            queryClient.invalidateQueries({ queryKey: ['details'] } as InvalidateQueryFilters);
-            queryClient.removeQueries({ queryKey: ['details', { detail_id: detailId }] }); // Supprimer du cache détail
-            logger.info("Detail deleted via mutation", { detailId });
+    // Garder trace du produit parent pour invalidation
+    let parentProductId: string | undefined;
+    return useMutation<DeleteDetailResponse, ApiError, DeleteDetailParams>({
+         onMutate: async (variables) => {
+             const cachedDetail = queryClient.getQueryData<GetDetailResponse>(DETAILS_QUERY_KEYS.details({ detail_id: variables.detail_id }));
+             parentProductId = cachedDetail?.product_id;
+         },
+        mutationFn: (params) => api.details.delete(params),
+        onSuccess: (data, variables) => {
+            logger.info("Detail deleted via mutation", { detailId: variables.detail_id });
+             const detailId = variables.detail_id;
+             // Invalider la liste et supprimer le détail du cache
+            if (parentProductId) {
+                 queryClient.invalidateQueries({ queryKey: DETAILS_QUERY_KEYS.lists({ product_id: parentProductId }) } as InvalidateQueryFilters);
+            } else {
+                 queryClient.invalidateQueries({ queryKey: DETAILS_QUERY_KEYS.lists() } as InvalidateQueryFilters); // Fallback large
+            }
+            queryClient.removeQueries({ queryKey: DETAILS_QUERY_KEYS.details({ detail_id: detailId }) });
+            parentProductId = undefined;
         },
-        onError: (error) => { logger.error({ error }, "Failed to delete detail via mutation"); }
+        onError: (error) => { logger.error({ error }, "Failed to delete detail via mutation"); parentProductId = undefined; }
     });
 };
 
-// --- Fin Partie 1/3 ---
 
+// --- Fin Partie 2/3 ---
 // src/api/ReactSublymusApi.tsx
-// ... (imports, client, context, provider, useApi, et hooks précédents inchangés) ...
+// ... (Imports, Setup, Auth, Produits, Catégories, Features, Values, Détails Hooks inchangés) ...
+
+// --- Hooks Personnalisés par Namespace ---
 
 // ========================
 // == Commandes ==
 // ========================
 
+// Clés de Query communes pour Orders
+const ORDERS_QUERY_KEYS = {
+    all: ['orders'] as const,
+    myLists: (filters: GetMyOrdersParams = {}) => [...ORDERS_QUERY_KEYS.all, 'myList', filters] as const,
+    allLists: (filters: CommandFilterType = {}) => [...ORDERS_QUERY_KEYS.all, 'allList', filters] as const,
+    details: (params: GetOrderParams) => [...ORDERS_QUERY_KEYS.all, 'detail', params] as const,
+};
+
 // Hook pour créer une commande
-// Le type pour 'data' doit correspondre aux champs attendus par createOrder dans SublymusApi
-type CreateOrderInput = Omit<CommandInterface, 'id' | 'user_id' | 'reference' | 'status' | 'payment_status' | 'payment_method' | 'currency' | 'total_price' | 'items_count' | 'events_status' | 'created_at' | 'updated_at' | 'items' | 'user'>;
-export const useCreateOrder = (): UseMutationResult<{ message: string, order: CommandInterface }, ApiError, CreateOrderInput> => {
+export const useCreateOrder = (): UseMutationResult<CreateOrderResponse, ApiError, CreateOrderParams> => {
     const api = useApi();
-    return useMutation<{ message: string, order: CommandInterface }, ApiError, CreateOrderInput>({
-        mutationFn: (data) => api.createOrder(data),
+    return useMutation<CreateOrderResponse, ApiError, CreateOrderParams>({
+        mutationFn: (params) => api.orders.create(params),
         onSuccess: (data) => {
-            // Invalider la liste des commandes de l'utilisateur ET potentiellement la liste admin
-            queryClient.invalidateQueries({ queryKey: ['myOrders'] } as InvalidateQueryFilters);
-            queryClient.invalidateQueries({ queryKey: ['allOrders'] } as InvalidateQueryFilters);
-            // Vider le cache du panier après succès commande
-            queryClient.invalidateQueries({ queryKey: ['cart'] } as InvalidateQueryFilters);
             logger.info("Order created via mutation", data.order);
+            // Invalider 'myOrders' et 'allOrders' listes, et le panier
+            queryClient.invalidateQueries({ queryKey: ORDERS_QUERY_KEYS.myLists() } as InvalidateQueryFilters);
+            queryClient.invalidateQueries({ queryKey: ORDERS_QUERY_KEYS.allLists() } as InvalidateQueryFilters);
+            queryClient.invalidateQueries({ queryKey: ['cart'] } as InvalidateQueryFilters); // Clé du panier
         },
         onError: (error) => { logger.error({ error }, "Failed to create order via mutation"); }
     });
 };
 
 // Hook pour récupérer les commandes de l'utilisateur connecté
-type MyOrdersFilterType = { order_by?: string, page?: number, limit?: number };
-export const useGetMyOrders = (filter: MyOrdersFilterType = {}, options: { enabled?: boolean } = {}): UseQueryResult<ListType<CommandInterface>, ApiError> => {
+export const useGetMyOrders = (
+    filter: GetMyOrdersParams = {},
+    options: { enabled?: boolean, keepPreviousData?: boolean } = {}
+): UseQueryResult<GetMyOrdersResponse, ApiError> => {
     const api = useApi();
-    return useQuery<ListType<CommandInterface>, ApiError>({
-        queryKey: ['myOrders', filter], // Clé spécifique pour les commandes de l'utilisateur
-        queryFn: () => api.getMyOrders(filter),
+    return useQuery<GetMyOrdersResponse, ApiError>({
+        queryKey: ORDERS_QUERY_KEYS.myLists(filter),
+        queryFn: () => api.orders.getMyList(filter),
         enabled: options.enabled !== undefined ? options.enabled : true,
+        // keepPreviousData: options.keepPreviousData ?? true,
     });
 };
 
-// Hook pour récupérer les commandes (Admin/Collab) - useGetAllOrders déjà défini précédemment
-
-// Hook pour récupérer les détails d'UNE commande (Admin/Collab)
-export const useGetOrderDetails = (orderId: string | undefined, options: { enabled?: boolean } = {}): UseQueryResult<CommandInterface | null, ApiError> => {
+// Hook pour récupérer TOUTES les commandes (Admin/Collab)
+export const useGetAllOrders = (
+    filter: CommandFilterType = {},
+    options: { enabled?: boolean, keepPreviousData?: boolean } = {}
+): UseQueryResult<GetAllOrdersResponse, ApiError> => {
     const api = useApi();
-    // Utilise le même endpoint que getAllOrders mais avec un ID et with_items=true
-    const filter: CommandFilterType = { command_id: orderId, with_items: true };
-    return useQuery<CommandInterface | null, ApiError>({
-        queryKey: ['orderDetails', orderId],
-        queryFn: async () => {
-            if (!orderId) return null;
-            const result = await api.getAllOrders(filter);
-            return result?.list?.[0] ?? null;
+    return useQuery<GetAllOrdersResponse, ApiError>({
+        queryKey: ORDERS_QUERY_KEYS.allLists(filter),
+        queryFn: () => api.orders.getList(filter),
+        enabled: options.enabled !== undefined ? options.enabled : true,
+        // keepPreviousData: options.keepPreviousData ?? true,
+    });
+};
+
+// Hook pour récupérer les détails d'UNE commande
+export const useGetOrderDetails = (
+    params: GetOrderParams, // order_id requis
+    options: { enabled?: boolean } = {}
+): UseQueryResult<GetOrderResponse, ApiError> => {
+    const api = useApi();
+    return useQuery<GetOrderResponse, ApiError>({
+        queryKey: ORDERS_QUERY_KEYS.details(params),
+        queryFn: () => api.orders.getOne(params),
+        enabled: !!params.order_id && (options.enabled !== undefined ? options.enabled : true),
+        staleTime: 5 * 60 * 1000, // Cache un peu plus long pour les détails
+    });
+};
+
+// Hook pour mettre à jour le statut d'une commande
+export const useUpdateOrderStatus = (): UseMutationResult<UpdateOrderStatusResponse, ApiError, UpdateOrderStatusParams> => {
+    const api = useApi();
+    return useMutation<UpdateOrderStatusResponse, ApiError, UpdateOrderStatusParams>({
+        mutationFn: (params) => api.orders.updateStatus(params),
+        onSuccess: (data, variables) => {
+            logger.info("Order status updated via mutation", data.order);
+            const orderId = variables.user_order_id;
+            // Invalider les listes ET le détail
+            queryClient.invalidateQueries({ queryKey: ORDERS_QUERY_KEYS.myLists() } as InvalidateQueryFilters);
+            queryClient.invalidateQueries({ queryKey: ORDERS_QUERY_KEYS.allLists() } as InvalidateQueryFilters);
+            queryClient.invalidateQueries({ queryKey: ORDERS_QUERY_KEYS.details({ order_id: orderId }) } as InvalidateQueryFilters);
+             // Mettre à jour directement le cache détail?
+             queryClient.setQueryData<GetOrderResponse>(ORDERS_QUERY_KEYS.details({ order_id: orderId }), data.order);
         },
-        enabled: !!orderId && (options.enabled !== undefined ? options.enabled : true),
-        staleTime: 10 * 60 * 1000, // Cache plus long pour les détails
+        onError: (error) => { logger.error({ error }, "Failed to update order status via mutation"); }
     });
 };
 
-
-// Hook pour mettre à jour le statut (Admin/Collab) - useUpdateOrderStatus déjà défini précédemment
-
-// Hook pour supprimer une commande (Admin/Collab)
-export const useDeleteOrder = (): UseMutationResult<{ message: string, isDeleted: boolean }, ApiError, string> => {
+// Hook pour supprimer une commande
+export const useDeleteOrder = (): UseMutationResult<DeleteOrderResponse, ApiError, DeleteOrderParams> => {
     const api = useApi();
-    return useMutation<{ message: string, isDeleted: boolean }, ApiError, string>({ // string = orderId
-        mutationFn: (orderId) => api.deleteOrder(orderId),
-        onSuccess: (data, orderId) => {
+    return useMutation<DeleteOrderResponse, ApiError, DeleteOrderParams>({
+        mutationFn: (params) => api.orders.delete(params),
+        onSuccess: (data, variables) => {
+            logger.info("Order deleted via mutation", { orderId: variables.order_id });
+            const orderId = variables.order_id;
             // Invalider les listes ET supprimer le détail du cache
-            queryClient.invalidateQueries({ queryKey: ['myOrders'] } as InvalidateQueryFilters);
-            queryClient.invalidateQueries({ queryKey: ['allOrders'] } as InvalidateQueryFilters);
-            queryClient.removeQueries({ queryKey: ['orderDetails', orderId] });
-            logger.info("Order deleted via mutation", { orderId });
+            queryClient.invalidateQueries({ queryKey: ORDERS_QUERY_KEYS.myLists() } as InvalidateQueryFilters);
+            queryClient.invalidateQueries({ queryKey: ORDERS_QUERY_KEYS.allLists() } as InvalidateQueryFilters);
+            queryClient.removeQueries({ queryKey: ORDERS_QUERY_KEYS.details({ order_id: orderId }) });
         },
         onError: (error) => { logger.error({ error }, "Failed to delete order via mutation"); }
     });
 };
 
-// ========================
-// == Panier ==
-// ========================
+// ====================
+// == Namespace Panier ==
+// ====================
 
-// Hook pour voir le panier (utilisateur connecté ou invité)
-type CartResponseType = { cart: any, total: number }; // Utiliser any pour cart car la structure peut varier légèrement
-export const useViewCart = (options: { enabled?: boolean } = {}): UseQueryResult<CartResponseType, ApiError> => {
+// Clé de Query pour le Panier
+const CART_QUERY_KEY = ['cart'] as const;
+
+// Hook pour voir le panier
+export const useViewCart = (options: { enabled?: boolean } = {}): UseQueryResult<ViewCartResponse, ApiError> => {
     const api = useApi();
-    return useQuery<CartResponseType, ApiError>({
-        queryKey: ['cart'], // Clé unique pour le panier courant
-        queryFn: () => api.viewCart(),
+    return useQuery<ViewCartResponse, ApiError>({
+        queryKey: CART_QUERY_KEY,
+        queryFn: () => api.cart.view(),
         enabled: options.enabled !== undefined ? options.enabled : true,
-        staleTime: 1 * 60 * 1000, // Cache plus court pour le panier (1 min)
+        staleTime: 1 * 60 * 1000, // Cache court
     });
 };
 
 // Hook pour mettre à jour le panier
-type UpdateCartInput = { product_id: string, mode: string, value?: number, bind?: Record<string, any>, ignoreStock?: boolean };
-type UpdateCartResponseType = { message: string, cart: any, updatedItem: any, total: number, action: string };
-export const useUpdateCart = (): UseMutationResult<UpdateCartResponseType, ApiError, UpdateCartInput> => {
+export const useUpdateCart = (): UseMutationResult<UpdateCartResponse, ApiError, UpdateCartParams> => {
     const api = useApi();
-    return useMutation<UpdateCartResponseType, ApiError, UpdateCartInput>({
-        mutationFn: (data) => api.updateCart(data),
+    return useMutation<UpdateCartResponse, ApiError, UpdateCartParams>({
+        mutationFn: (params) => api.cart.update(params),
         onSuccess: (data) => {
-            // Mettre à jour directement le cache du panier avec la nouvelle valeur
-            queryClient.setQueryData(['cart'], { cart: data.cart, total: data.total });
             logger.info("Cart updated via mutation", { action: data.action });
+            // Mettre à jour le cache avec les données retournées
+            queryClient.setQueryData<ViewCartResponse>(CART_QUERY_KEY, { cart: data.cart, total: data.total });
         },
         onError: (error) => { logger.error({ error }, "Failed to update cart via mutation"); }
     });
 };
 
 // Hook pour fusionner les paniers au login
-export const useMergeCart = (): UseMutationResult<any, ApiError, void> => { // Type retour à affiner
+export const useMergeCart = (): UseMutationResult<MergeCartResponse, ApiError, void> => {
     const api = useApi();
-    return useMutation<any, ApiError, void>({
-        mutationFn: () => api.mergeCartOnLogin(),
+    return useMutation<MergeCartResponse, ApiError, void>({
+        mutationFn: () => api.cart.mergeOnLogin(),
         onSuccess: (data) => {
-            // Mettre à jour le cache du panier avec le panier fusionné retourné par l'API
-            if (data.cart) {
-                queryClient.setQueryData(['cart'], { cart: data.cart, total: data.total });
-            } else {
-                // Si aucun panier retourné (ex: pas de panier invité), invalider pour re-fetch
-                queryClient.invalidateQueries({ queryKey: ['cart'] } as InvalidateQueryFilters);
-            }
             logger.info("Carts merged via mutation");
+            // Mettre à jour ou invalider le cache panier
+            if (data.cart) {
+                queryClient.setQueryData<ViewCartResponse>(CART_QUERY_KEY, { cart: data.cart, total: data.total });
+            } else {
+                queryClient.invalidateQueries({ queryKey: CART_QUERY_KEY });
+            }
         },
         onError: (error) => { logger.error({ error }, "Failed to merge carts via mutation"); }
     });
 };
 
-// ========================
-// == Commentaires ==
-// ========================
+// ===========================
+// == Namespace Commentaires ==
+// ===========================
+
+// Clés de Query communes
+const COMMENTS_QUERY_KEYS = {
+    all: ['comments'] as const,
+    lists: (filters: GetCommentsParams = {}) => [...COMMENTS_QUERY_KEYS.all, 'list', filters] as const,
+    details: (params: { comment_id: string }) => [...COMMENTS_QUERY_KEYS.all, 'detail', params] as const,
+    forItem: (params: GetCommentForOrderItemParams) => [...COMMENTS_QUERY_KEYS.all, 'forItem', params] as const,
+};
 
 // Hook pour créer un commentaire
-export const useCreateComment = (): UseMutationResult<{ message: string, comment: CommentInterface }, ApiError, FormData> => {
+export const useCreateComment = (): UseMutationResult<CreateCommentResponse, ApiError, { data: CreateCommentParams, files?: FilesObjectType }> => {
     const api = useApi();
-    return useMutation<{ message: string, comment: CommentInterface }, ApiError, FormData>({
-        mutationFn: (formData) => api.createComment(formData),
+    return useMutation<CreateCommentResponse, ApiError, { data: CreateCommentParams, files?: FilesObjectType }>({
+        mutationFn: (params) => api.comments.create(params),
         onSuccess: (data) => {
-            // Invalider la liste des commentaires pour le produit concerné
-            queryClient.invalidateQueries({ queryKey: ['comments', { product_id: data.comment.product_id }] } as InvalidateQueryFilters);
-            // Invalider la query getComment pour cet orderItemId s'il existe
-            queryClient.invalidateQueries({ queryKey: ['comment', data.comment.order_item_id] } as InvalidateQueryFilters);
             logger.info("Comment created via mutation", data.comment);
+            // Invalider la liste des commentaires pour le produit et la query forItem
+            queryClient.invalidateQueries({ queryKey: COMMENTS_QUERY_KEYS.lists({ product_id: data.comment.product_id }) } as InvalidateQueryFilters);
+            queryClient.invalidateQueries({ queryKey: COMMENTS_QUERY_KEYS.forItem({ order_item_id: data.comment.order_item_id }) } as InvalidateQueryFilters);
+             // Invalider aussi les stats produit (rating/count)
+             queryClient.invalidateQueries({ queryKey: PRODUCTS_QUERY_KEYS.details({ product_id: data.comment.product_id }) } as InvalidateQueryFilters);
+             queryClient.invalidateQueries({ queryKey: PRODUCTS_QUERY_KEYS.lists() } as InvalidateQueryFilters); // Large
         },
         onError: (error) => { logger.error({ error }, "Failed to create comment via mutation"); }
     });
 };
 
 // Hook pour récupérer le commentaire d'un order_item
-export const useGetCommentForOrderItem = (orderItemId: string | undefined, options: { enabled?: boolean } = {}): UseQueryResult<CommentInterface | null, ApiError> => {
+export const useGetCommentForOrderItem = (
+    params: GetCommentForOrderItemParams,
+    options: { enabled?: boolean } = {}
+): UseQueryResult<GetCommentForOrderItemResponse, ApiError> => {
     const api = useApi();
-    return useQuery<CommentInterface | null, ApiError>({
-        queryKey: ['comment', orderItemId],
-        queryFn: () => orderItemId ? api.getCommentForOrderItem(orderItemId) : Promise.resolve(null),
-        enabled: !!orderItemId && (options.enabled !== undefined ? options.enabled : true),
+    return useQuery<GetCommentForOrderItemResponse, ApiError>({
+        queryKey: COMMENTS_QUERY_KEYS.forItem(params),
+        queryFn: () => api.comments.getForOrderItem(params),
+        enabled: !!params.order_item_id && (options.enabled !== undefined ? options.enabled : true),
     });
 };
 
-// Hook pour récupérer la liste des commentaires (ex: pour un produit)
-type CommentFilterType = { order_by?: string, page?: number, limit?: number, comment_id?: string, product_id?: string, with_users?: boolean };
-export const useGetComments = (filter: CommentFilterType = {}, options: { enabled?: boolean } = {}): UseQueryResult<ListType<CommentInterface>, ApiError> => {
+// Hook pour récupérer la LISTE des commentaires
+export const useGetComments = (
+    filter: GetCommentsParams = {},
+    options: { enabled?: boolean, keepPreviousData?: boolean } = {}
+): UseQueryResult<GetCommentsResponse, ApiError> => {
     const api = useApi();
-    return useQuery<ListType<CommentInterface>, ApiError>({
-        queryKey: ['comments', filter],
-        queryFn: () => api.getComments(filter),
+    return useQuery<GetCommentsResponse, ApiError>({
+        queryKey: COMMENTS_QUERY_KEYS.lists(filter),
+        queryFn: () => api.comments.getList(filter),
         enabled: options.enabled !== undefined ? options.enabled : true,
+        // keepPreviousData: options.keepPreviousData ?? true,
     });
 };
+// Hook pour récupérer UN commentaire par ID
+export const useGetComment = (
+    params: { comment_id: string, with_users?: boolean },
+    options: { enabled?: boolean } = {}
+): UseQueryResult<CommentInterface | null, ApiError> => {
+     const api = useApi();
+     return useQuery<CommentInterface | null, ApiError>({
+         queryKey: COMMENTS_QUERY_KEYS.details(params),
+         queryFn: async () => {
+             const result = await api.comments.getList(params);
+             return result?.list?.[0] ?? null;
+         },
+         enabled: !!params.comment_id && (options.enabled !== undefined ? options.enabled : true),
+     });
+};
+
 
 // Hook pour mettre à jour un commentaire
-export const useUpdateComment = (): UseMutationResult<{ message: string, comment: CommentInterface }, ApiError, FormData> => {
+export const useUpdateComment = (): UseMutationResult<UpdateCommentResponse, ApiError, UpdateCommentParams> => {
     const api = useApi();
-    return useMutation<{ message: string, comment: CommentInterface }, ApiError, FormData>({
-        mutationFn: (formData) => api.updateComment(formData),
-        onSuccess: (data, formData) => {
-            const commentId = formData.get('comment_id') as string;
-            // Invalider les listes et le détail
-            queryClient.invalidateQueries({ queryKey: ['comments'] } as InvalidateQueryFilters); // Invalider toutes les listes par simplicité
-            if (commentId) {
-                queryClient.invalidateQueries({ queryKey: ['comment', commentId] } as InvalidateQueryFilters); // Si getCommentById existe
-                queryClient.invalidateQueries({ queryKey: ['comment', data.comment.order_item_id] } as InvalidateQueryFilters); // Invalider par orderItemId
-            }
+    return useMutation<UpdateCommentResponse, ApiError, UpdateCommentParams>({
+        mutationFn: (params) => api.comments.update(params),
+        onSuccess: (data, variables) => {
             logger.info("Comment updated via mutation", data.comment);
+            const commentId = variables.comment_id;
+            const orderItemId = data.comment.order_item_id;
+            const productId = data.comment.product_id;
+            // Invalider listes, détail, forItem
+            queryClient.invalidateQueries({ queryKey: COMMENTS_QUERY_KEYS.lists({ product_id: productId }) } as InvalidateQueryFilters);
+            queryClient.invalidateQueries({ queryKey: COMMENTS_QUERY_KEYS.details({ comment_id: commentId }) } as InvalidateQueryFilters);
+            queryClient.invalidateQueries({ queryKey: COMMENTS_QUERY_KEYS.forItem({ order_item_id: orderItemId }) } as InvalidateQueryFilters);
+            // Invalider stats produit
+             queryClient.invalidateQueries({ queryKey: PRODUCTS_QUERY_KEYS.details({ product_id: productId }) } as InvalidateQueryFilters);
+             queryClient.invalidateQueries({ queryKey: PRODUCTS_QUERY_KEYS.lists() } as InvalidateQueryFilters);
         },
         onError: (error) => { logger.error({ error }, "Failed to update comment via mutation"); }
     });
 };
 
 // Hook pour supprimer un commentaire
-export const useDeleteComment = (): UseMutationResult<{ message: string }, ApiError, string> => {
+export const useDeleteComment = (): UseMutationResult<DeleteCommentResponse, ApiError, DeleteCommentParams> => {
     const api = useApi();
-    // Gardons une référence à l'ancien commentaire pour l'invalidation après suppression
-    let deletedCommentData: CommentInterface | null = null;
-    return useMutation<{ message: string }, ApiError, string>({ // string = commentId
-        onMutate: async (commentId) => {
-            // Essayer de récupérer les données du commentaire avant suppression
-            try {
-                deletedCommentData = await queryClient.fetchQuery<CommentInterface | null>({ queryKey: ['comment', commentId] });
-            } catch {
-                // Ignorer si le commentaire n'était pas dans le cache
-            }
-        },
-        mutationFn: (commentId) => api.deleteComment(commentId),
-        onSuccess: (data, commentId) => {
-            // Invalider les listes
-            queryClient.invalidateQueries({ queryKey: ['comments'] } as InvalidateQueryFilters);
-            // Supprimer le détail du cache
-            queryClient.removeQueries({ queryKey: ['comment', commentId] });
-            if (deletedCommentData?.order_item_id) {
-                queryClient.removeQueries({ queryKey: ['comment', deletedCommentData.order_item_id] });
-            }
-            logger.info("Comment deleted via mutation", { commentId });
-        },
-        onError: (error) => { logger.error({ error }, "Failed to delete comment via mutation"); },
-        onSettled: () => { deletedCommentData = null; } // Nettoyer
+     let commentDataForInvalidation: CommentInterface | null = null;
+     return useMutation<DeleteCommentResponse, ApiError, DeleteCommentParams>({
+         onMutate: async (variables) => {
+              commentDataForInvalidation = await queryClient.fetchQuery({ queryKey: COMMENTS_QUERY_KEYS.details({ comment_id: variables.comment_id }) });
+         },
+         mutationFn: (params) => api.comments.delete(params),
+         onSuccess: (data, variables) => {
+             logger.info("Comment deleted via mutation", { commentId: variables.comment_id });
+             const commentId = variables.comment_id;
+             const productId = commentDataForInvalidation?.product_id;
+             const orderItemId = commentDataForInvalidation?.order_item_id;
+             // Invalider listes, supprimer détail, forItem
+             queryClient.invalidateQueries({ queryKey: COMMENTS_QUERY_KEYS.lists({ product_id: productId }) } as InvalidateQueryFilters);
+             queryClient.removeQueries({ queryKey: COMMENTS_QUERY_KEYS.details({ comment_id: commentId }) });
+             if (orderItemId) {
+                 queryClient.invalidateQueries({ queryKey: COMMENTS_QUERY_KEYS.forItem({ order_item_id: orderItemId }) } as InvalidateQueryFilters);
+             }
+             // Invalider stats produit
+             if (productId) {
+                 queryClient.invalidateQueries({ queryKey: PRODUCTS_QUERY_KEYS.details({ product_id: productId }) } as InvalidateQueryFilters);
+                 queryClient.invalidateQueries({ queryKey: PRODUCTS_QUERY_KEYS.lists() } as InvalidateQueryFilters);
+             }
+             commentDataForInvalidation = null;
+         },
+         onError: (error) => { logger.error({ error }, "Failed to delete comment via mutation"); commentDataForInvalidation = null; }
     });
 };
 
-// ========================
-// == Favoris ==
-// ========================
-type FavoriteWithProduct = Favorite & { product: ProductInterface };
+// =======================
+// == Namespace Favoris ==
+// =======================
+
+// Clés de Query communes
+const FAVORITES_QUERY_KEYS = {
+    all: ['favorites'] as const,
+    lists: (filters: GetFavoritesParams = {}) => [...FAVORITES_QUERY_KEYS.all, 'list', filters] as const,
+    details: (params: { favorite_id: string }) => [...FAVORITES_QUERY_KEYS.all, 'detail', params] as const,
+};
+
 
 // Hook pour ajouter un favori
-export const useAddFavorite = (): UseMutationResult<any, ApiError, string> => { // string = productId
+export const useAddFavorite = (): UseMutationResult<AddFavoriteResponse, ApiError, AddFavoriteParams> => {
     const api = useApi();
-    return useMutation<any, ApiError, string>({
-        mutationFn: (productId) => api.addFavorite(productId),
+    return useMutation<AddFavoriteResponse, ApiError, AddFavoriteParams>({
+        mutationFn: (params) => api.favorites.add(params),
         onSuccess: (data) => {
-            queryClient.invalidateQueries({ queryKey: ['favorites'] } as InvalidateQueryFilters);
             logger.info("Favorite added via mutation", data);
+            queryClient.invalidateQueries({ queryKey: FAVORITES_QUERY_KEYS.lists() } as InvalidateQueryFilters);
         },
         onError: (error) => { logger.error({ error }, "Failed to add favorite via mutation"); }
     });
 };
 
 // Hook pour récupérer les favoris de l'utilisateur
-type FavoriteFilterType = { page?: number, limit?: number, order_by?: string, label?: string, product_id?: string };
-export const useGetFavorites = (filter: FavoriteFilterType = {}, options: { enabled?: boolean } = {}): UseQueryResult<ListType<FavoriteWithProduct>, ApiError> => {
+export const useGetFavorites = (
+    filter: GetFavoritesParams = {},
+    options: { enabled?: boolean } = {}
+): UseQueryResult<GetFavoritesResponse, ApiError> => {
     const api = useApi();
-    return useQuery<ListType<FavoriteWithProduct>, ApiError>({
-        queryKey: ['favorites', filter],
-        queryFn: () => api.getFavorites(filter),
+    return useQuery<GetFavoritesResponse, ApiError>({
+        queryKey: FAVORITES_QUERY_KEYS.lists(filter),
+        queryFn: () => api.favorites.getList(filter),
         enabled: options.enabled !== undefined ? options.enabled : true,
     });
 };
 
-// Hook pour mettre à jour un favori (le label)
-export const useUpdateFavorite = (): UseMutationResult<Favorite, ApiError, { favoriteId: string, label: string }> => {
+// Hook pour mettre à jour un favori (label)
+export const useUpdateFavorite = (): UseMutationResult<UpdateFavoriteResponse, ApiError, UpdateFavoriteParams> => {
     const api = useApi();
-    return useMutation<Favorite, ApiError, { favoriteId: string, label: string }>({
-        mutationFn: ({ favoriteId, label }) => api.updateFavorite(favoriteId, label),
-        onSuccess: (data) => {
-            queryClient.invalidateQueries({ queryKey: ['favorites'] } as InvalidateQueryFilters);
+    return useMutation<UpdateFavoriteResponse, ApiError, UpdateFavoriteParams>({
+        mutationFn: (params) => api.favorites.update(params),
+        onSuccess: (data, variables) => {
             logger.info("Favorite updated via mutation", data);
+            queryClient.invalidateQueries({ queryKey: FAVORITES_QUERY_KEYS.lists() } as InvalidateQueryFilters);
+            // Mettre à jour le cache détail si nécessaire
+             queryClient.setQueryData<UpdateFavoriteResponse | null>(FAVORITES_QUERY_KEYS.details({ favorite_id: variables.favorite_id }), (old:any) => old ? { ...old, ...data } : undefined);
         },
-        onError: (error) => { logger.error({ error }, "Failed to update favorite via mutation"); }
+         onError: (error) => { logger.error({ error }, "Failed to update favorite via mutation"); }
     });
 };
 
 // Hook pour supprimer un favori
-export const useRemoveFavorite = (): UseMutationResult<{ message: string, isDeleted: boolean }, ApiError, string> => {
+export const useRemoveFavorite = (): UseMutationResult<DeleteFavoriteResponse, ApiError, DeleteFavoriteParams> => {
     const api = useApi();
-    return useMutation<{ message: string, isDeleted: boolean }, ApiError, string>({ // string = favoriteId
-        mutationFn: (favoriteId) => api.removeFavorite(favoriteId),
-        onSuccess: (data, favoriteId) => {
-            queryClient.invalidateQueries({ queryKey: ['favorites'] } as InvalidateQueryFilters);
-            logger.info("Favorite removed via mutation", { favoriteId });
-        },
-        onError: (error) => { logger.error({ error }, "Failed to remove favorite via mutation"); }
+    return useMutation<DeleteFavoriteResponse, ApiError, DeleteFavoriteParams>({
+        mutationFn: (params) => api.favorites.remove(params),
+         onSuccess: (data, variables) => {
+             logger.info("Favorite removed via mutation", { favoriteId: variables.favorite_id });
+             queryClient.invalidateQueries({ queryKey: FAVORITES_QUERY_KEYS.lists() } as InvalidateQueryFilters);
+             queryClient.removeQueries({ queryKey: FAVORITES_QUERY_KEYS.details({ favorite_id: variables.favorite_id }) });
+         },
+         onError: (error) => { logger.error({ error }, "Failed to remove favorite via mutation"); }
     });
 };
 
-
-// --- Fin Partie 2/3 ---
-
-// src/api/ReactSublymusApi.tsx
-// ... (imports, client, context, provider, useApi, et hooks précédents inchangés) ...
-
 // ==============================
-// == Adresses Utilisateur ==
+// == Namespace UserProfile ==
 // ==============================
-type AddressType = any; // Utiliser le vrai type UserAddressInterface si disponible
 
-// Hook pour créer une adresse
-type CreateAddressInput = { name: string, longitude: number, latitude: number };
-export const useCreateUserAddress = (): UseMutationResult<{ message: string, address: AddressType }, ApiError, CreateAddressInput> => {
+// Clés de Query communes
+const USER_PROFILE_QUERY_KEYS = {
+    addresses: (filters: GetAddressesParams = {}) => ['userAddresses', filters] as const,
+    phones: (filters: GetPhonesParams = {}) => ['userPhones', filters] as const,
+};
+
+// Adresses
+export const useCreateUserAddress = (): UseMutationResult<AddressResponse, ApiError, CreateAddressParams> => {
     const api = useApi();
-    return useMutation<{ message: string, address: AddressType }, ApiError, CreateAddressInput>({
-        mutationFn: (data) => api.createUserAddress(data),
+    return useMutation<AddressResponse, ApiError, CreateAddressParams>({
+        mutationFn: (params) => api.userProfile.createAddress(params),
         onSuccess: (data) => {
-            // Invalider la liste des adresses de l'utilisateur ('me' ou une query dédiée)
-            queryClient.invalidateQueries({ queryKey: ['userAddresses'] } as InvalidateQueryFilters);
-            queryClient.invalidateQueries({ queryKey: ['me'] } as InvalidateQueryFilters); // 'me' contient les adresses
             logger.info("User address created via mutation", data.address);
+            queryClient.invalidateQueries({ queryKey: USER_PROFILE_QUERY_KEYS.addresses() } as InvalidateQueryFilters);
+            queryClient.invalidateQueries({ queryKey: AUTH_QUERY_KEYS.me } as InvalidateQueryFilters); // 'me' contient les adresses
         },
         onError: (error) => { logger.error({ error }, "Failed to create user address via mutation"); }
     });
 };
 
-// Hook pour récupérer les adresses de l'utilisateur
-export const useGetUserAddresses = (options: { enabled?: boolean } = {}): UseQueryResult<AddressType[], ApiError> => {
+export const useGetUserAddresses = (
+     options: { enabled?: boolean } = {}
+): UseQueryResult<GetAddressesResponse, ApiError> => {
     const api = useApi();
-    return useQuery<AddressType[], ApiError>({
-        queryKey: ['userAddresses'], // Clé spécifique pour les adresses de l'user courant
-        queryFn: () => api.getUserAddresses(), // Sans ID, retourne toutes les adresses de l'user auth
+    // Ce hook récupère la liste complète pour l'utilisateur authentifié
+    return useQuery<GetAddressesResponse, ApiError>({
+        queryKey: USER_PROFILE_QUERY_KEYS.addresses(),
+        queryFn: () => api.userProfile.getAddressList(), // Pas de filtre ici
         enabled: options.enabled !== undefined ? options.enabled : true,
     });
 };
 
-// Hook pour récupérer UNE adresse de l'utilisateur par ID
-export const useGetUserAddressById = (addressId: string | undefined, options: { enabled?: boolean } = {}): UseQueryResult<AddressType | null, ApiError> => {
+export const useUpdateUserAddress = (): UseMutationResult<AddressResponse, ApiError, UpdateAddressParams> => {
     const api = useApi();
-    return useQuery<AddressType | null, ApiError>({
-        queryKey: ['userAddress', addressId],
-        queryFn: async () => {
-            if (!addressId) return null;
-            // getUserAddresses renvoie un tableau, même pour un ID, prendre le premier
-            const addresses = await api.getUserAddresses(addressId);
-            return addresses?.[0] ?? null;
-        },
-        enabled: !!addressId && (options.enabled !== undefined ? options.enabled : true),
-    });
-};
-
-
-// Hook pour mettre à jour une adresse
-type UpdateAddressInput = { id: string, name?: string, longitude?: number, latitude?: number };
-export const useUpdateUserAddress = (): UseMutationResult<{ message: string, address: AddressType }, ApiError, UpdateAddressInput> => {
-    const api = useApi();
-    return useMutation<{ message: string, address: AddressType }, ApiError, UpdateAddressInput>({
-        mutationFn: (data) => api.updateUserAddress(data),
-        onSuccess: (data) => {
-            queryClient.invalidateQueries({ queryKey: ['userAddresses'] } as InvalidateQueryFilters);
-            queryClient.invalidateQueries({ queryKey: ['userAddress', data.address.id] } as InvalidateQueryFilters);
-            queryClient.invalidateQueries({ queryKey: ['me'] } as InvalidateQueryFilters);
+    return useMutation<AddressResponse, ApiError, UpdateAddressParams>({
+        mutationFn: (params) => api.userProfile.updateAddress(params),
+        onSuccess: (data, variables) => {
             logger.info("User address updated via mutation", data.address);
+            queryClient.invalidateQueries({ queryKey: USER_PROFILE_QUERY_KEYS.addresses() } as InvalidateQueryFilters);
+            // Mettre à jour le cache pour cette adresse spécifique si un hook getOne existe
+             // queryClient.setQueryData(USER_PROFILE_QUERY_KEYS.addresses({ id: variables.address_id }), data.address);
+             queryClient.invalidateQueries({ queryKey: AUTH_QUERY_KEYS.me } as InvalidateQueryFilters);
         },
         onError: (error) => { logger.error({ error }, "Failed to update user address via mutation"); }
     });
 };
 
-// Hook pour supprimer une adresse
-export const useDeleteUserAddress = (): UseMutationResult<null, ApiError, string> => {
+export const useDeleteUserAddress = (): UseMutationResult<DeleteResponse, ApiError, DeleteAddressParams> => {
     const api = useApi();
-    return useMutation<null, ApiError, string>({ // string = addressId
-        mutationFn: (addressId) => api.deleteUserAddress(addressId),
-        onSuccess: (data, addressId) => {
-            queryClient.invalidateQueries({ queryKey: ['userAddresses'] } as InvalidateQueryFilters);
-            queryClient.removeQueries({ queryKey: ['userAddress', addressId] });
-            queryClient.invalidateQueries({ queryKey: ['me'] } as InvalidateQueryFilters);
-            logger.info("User address deleted via mutation", { addressId });
+    return useMutation<DeleteResponse, ApiError, DeleteAddressParams>({
+        mutationFn: (params) => api.userProfile.deleteAddress(params),
+        onSuccess: (data, variables) => {
+            logger.info("User address deleted via mutation", { addressId: variables.address_id });
+            queryClient.invalidateQueries({ queryKey: USER_PROFILE_QUERY_KEYS.addresses() } as InvalidateQueryFilters);
+            queryClient.invalidateQueries({ queryKey: AUTH_QUERY_KEYS.me } as InvalidateQueryFilters);
         },
         onError: (error) => { logger.error({ error }, "Failed to delete user address via mutation"); }
     });
 };
 
-// ==============================
-// == Téléphones Utilisateur == (Ajouter les méthodes dans SublymusApi d'abord si nécessaire)
-// ==============================
-// type PhoneType = any; // Vrai type UserPhoneInterface
-// type CreatePhoneInput = { phone_number: string, format?: string, country_code?: string };
-// type UpdatePhoneInput = { id: string, phone_number?: string, format?: string, country_code?: string };
-
-// export const useCreateUserPhone = (): UseMutationResult<{ message: string, phone: PhoneType }, ApiError, CreatePhoneInput> => { ... }
-// export const useGetUserPhones = (options?) => useQuery(...)
-// export const useUpdateUserPhone = (): UseMutationResult<{ message: string, phone: PhoneType }, ApiError, UpdatePhoneInput> => { ... }
-// export const useDeleteUserPhone = (): UseMutationResult<null, ApiError, string> => { ... }
-
-// ========================
-// == Clients (Users) ==
-// ========================
-
-// Hook pour récupérer la liste des utilisateurs (clients/collaborateurs)
-export const useGetUsers = (filter: UserFilterType = {}, options: { enabled?: boolean } = {}): UseQueryResult<ListType<UserInterface>, ApiError> => {
+// Téléphones (similaire à Adresses)
+export const useCreateUserPhone = (): UseMutationResult<PhoneResponse, ApiError, CreatePhoneParams> => {
     const api = useApi();
-    return useQuery<ListType<UserInterface>, ApiError>({
-        queryKey: ['users', filter],
-        queryFn: () => api.getUsers(filter),
+    return useMutation<PhoneResponse, ApiError, CreatePhoneParams>({
+        mutationFn: (params) => api.userProfile.createPhone(params),
+        onSuccess: (data) => {
+            logger.info("User phone created via mutation", data.phone);
+            queryClient.invalidateQueries({ queryKey: USER_PROFILE_QUERY_KEYS.phones() } as InvalidateQueryFilters);
+            queryClient.invalidateQueries({ queryKey: AUTH_QUERY_KEYS.me } as InvalidateQueryFilters);
+        },
+        onError: (error) => { logger.error({ error }, "Failed to create user phone via mutation"); }
+    });
+};
+
+export const useGetUserPhones = (
+     options: { enabled?: boolean } = {}
+): UseQueryResult<GetPhonesResponse, ApiError> => {
+    const api = useApi();
+    return useQuery<GetPhonesResponse, ApiError>({
+        queryKey: USER_PROFILE_QUERY_KEYS.phones(),
+        queryFn: () => api.userProfile.getPhoneList(),
         enabled: options.enabled !== undefined ? options.enabled : true,
     });
 };
 
-// Ajouter useDeleteUser si une route admin existe pour cela (différent de deleteAccount)
+export const useUpdateUserPhone = (): UseMutationResult<PhoneResponse, ApiError, UpdatePhoneParams> => {
+    const api = useApi();
+    return useMutation<PhoneResponse, ApiError, UpdatePhoneParams>({
+        mutationFn: (params) => api.userProfile.updatePhone(params),
+        onSuccess: (data, variables) => {
+            logger.info("User phone updated via mutation", data.phone);
+            queryClient.invalidateQueries({ queryKey: USER_PROFILE_QUERY_KEYS.phones() } as InvalidateQueryFilters);
+            queryClient.invalidateQueries({ queryKey: AUTH_QUERY_KEYS.me } as InvalidateQueryFilters);
+        },
+        onError: (error) => { logger.error({ error }, "Failed to update user phone via mutation"); }
+    });
+};
 
-// ========================
-// == Collaborateurs (Roles) ==
-// ========================
-type CollaboratorType = Role & { user: UserInterface }; // Type combiné
+export const useDeleteUserPhone = (): UseMutationResult<DeleteResponse, ApiError, DeletePhoneParams> => {
+    const api = useApi();
+    return useMutation<DeleteResponse, ApiError, DeletePhoneParams>({
+        mutationFn: (params) => api.userProfile.deletePhone(params),
+        onSuccess: (data, variables) => {
+            logger.info("User phone deleted via mutation", { phoneId: variables.phone_id });
+            queryClient.invalidateQueries({ queryKey: USER_PROFILE_QUERY_KEYS.phones() } as InvalidateQueryFilters);
+            queryClient.invalidateQueries({ queryKey: AUTH_QUERY_KEYS.me } as InvalidateQueryFilters);
+        },
+        onError: (error) => { logger.error({ error }, "Failed to delete user phone via mutation"); }
+    });
+};
+
+
+// ==============================
+// == Namespace Users (Admin)  ==
+// ==============================
+
+// Clés de Query communes
+const USERS_QUERY_KEYS = {
+    all: ['users'] as const,
+    lists: (filters: UserFilterType = {}) => [...USERS_QUERY_KEYS.all, 'list', filters] as const,
+     details: (params: { user_id: string }) => [...USERS_QUERY_KEYS.all, 'detail', params] as const, // Si on ajoute un getOne
+};
+
+// Hook pour récupérer la LISTE des utilisateurs (Admin/Collab)
+export const useGetUsers = (
+    filter: UserFilterType = {},
+    options: { enabled?: boolean, keepPreviousData?: boolean } = {}
+): UseQueryResult<GetUsersResponse, ApiError> => {
+    const api = useApi();
+    return useQuery<GetUsersResponse, ApiError>({
+        queryKey: USERS_QUERY_KEYS.lists(filter),
+        queryFn: () => api.users.getList(filter),
+        enabled: options.enabled !== undefined ? options.enabled : true,
+        // keepPreviousData: options.keepPreviousData ?? true,
+    });
+};
+// Ajouter useGetUser si un endpoint getOne est créé
+
+
+// ==============================
+// == Namespace Roles (Admin)  ==
+// ==============================
+
+// Clés de Query communes
+const ROLES_QUERY_KEYS = {
+    all: ['roles'] as const,
+    collaborators: (filters: GetCollaboratorsParams = {}) => [...ROLES_QUERY_KEYS.all, 'collaborators', filters] as const,
+};
 
 // Hook pour récupérer la liste des collaborateurs
-type CollaboratorFilterType = { page?: number, limit?: number };
-export const useGetCollaborators = (filter: CollaboratorFilterType = {}, options: { enabled?: boolean } = {}): UseQueryResult<ListType<CollaboratorType>, ApiError> => {
+export const useGetCollaborators = (
+    filter: GetCollaboratorsParams = {},
+    options: { enabled?: boolean, keepPreviousData?: boolean } = {}
+): UseQueryResult<GetCollaboratorsResponse, ApiError> => {
     const api = useApi();
-    return useQuery<ListType<CollaboratorType>, ApiError>({
-        queryKey: ['collaborators', filter],
-        queryFn: () => api.getCollaborators(filter),
+    return useQuery<GetCollaboratorsResponse, ApiError>({
+        queryKey: ROLES_QUERY_KEYS.collaborators(filter),
+        queryFn: () => api.roles.getCollaborators(filter),
         enabled: options.enabled !== undefined ? options.enabled : true,
+        // keepPreviousData: options.keepPreviousData ?? true,
     });
 };
 
 // Hook pour créer un collaborateur
-export const useCreateCollaborator = (): UseMutationResult<{ message: string, role: CollaboratorType }, ApiError, string> => { // string = email
+export const useCreateCollaborator = (): UseMutationResult<CreateCollaboratorResponse, ApiError, CreateCollaboratorParams> => {
     const api = useApi();
-    return useMutation<{ message: string, role: CollaboratorType }, ApiError, string>({
-        mutationFn: (email) => api.createCollaborator(email),
+    return useMutation<CreateCollaboratorResponse, ApiError, CreateCollaboratorParams>({
+        mutationFn: (params) => api.roles.createCollaborator(params),
         onSuccess: (data) => {
-            queryClient.invalidateQueries({ queryKey: ['collaborators'] } as InvalidateQueryFilters);
             logger.info("Collaborator created via mutation", data.role);
+            queryClient.invalidateQueries({ queryKey: ROLES_QUERY_KEYS.collaborators() } as InvalidateQueryFilters);
+             // Invalider aussi la liste des users généraux?
+             queryClient.invalidateQueries({ queryKey: USERS_QUERY_KEYS.lists() } as InvalidateQueryFilters);
         },
         onError: (error) => { logger.error({ error }, "Failed to create collaborator via mutation"); }
     });
 };
 
-// Hook pour mettre à jour les permissions d'un collaborateur
-type UpdatePermsInput = { userId: string, permissions: Partial<TypeJsonRole> };
-export const useUpdateCollaboratorPermissions = (): UseMutationResult<{ message: string, role: CollaboratorType }, ApiError, UpdatePermsInput> => {
+// Hook pour mettre à jour les permissions
+export const useUpdateCollaboratorPermissions = (): UseMutationResult<UpdateCollaboratorResponse, ApiError, UpdateCollaboratorParams> => {
     const api = useApi();
-    return useMutation<{ message: string, role: CollaboratorType }, ApiError, UpdatePermsInput>({
-        mutationFn: ({ userId, permissions }) => api.updateCollaboratorPermissions(userId, permissions),
-        onSuccess: (data) => {
-            queryClient.invalidateQueries({ queryKey: ['collaborators'] } as InvalidateQueryFilters);
+    return useMutation<UpdateCollaboratorResponse, ApiError, UpdateCollaboratorParams>({
+        mutationFn: (params) => api.roles.updatePermissions(params),
+        onSuccess: (data, variables) => {
             logger.info("Collaborator permissions updated via mutation", data.role);
+            // Invalider la liste des collaborateurs
+            queryClient.invalidateQueries({ queryKey: ROLES_QUERY_KEYS.collaborators() } as InvalidateQueryFilters);
+            // Mettre à jour le cache pour cet item spécifique? Non, l'invalidation suffit.
         },
         onError: (error) => { logger.error({ error }, "Failed to update collaborator permissions via mutation"); }
     });
 };
 
 // Hook pour supprimer un collaborateur
-export const useRemoveCollaborator = (): UseMutationResult<{ message: string, isDeleted: boolean }, ApiError, string> => {
+export const useRemoveCollaborator = (): UseMutationResult<RemoveCollaboratorResponse, ApiError, DeleteCollaboratorParams> => {
     const api = useApi();
-    return useMutation<{ message: string, isDeleted: boolean }, ApiError, string>({ // string = userId
-        mutationFn: (userId) => api.removeCollaborator(userId),
-        onSuccess: (data, userId) => {
-            queryClient.invalidateQueries({ queryKey: ['collaborators'] } as InvalidateQueryFilters);
-            logger.info("Collaborator removed via mutation", { userId });
+    return useMutation<RemoveCollaboratorResponse, ApiError, DeleteCollaboratorParams>({
+        mutationFn: (params) => api.roles.removeCollaborator(params),
+        onSuccess: (data, variables) => {
+            logger.info("Collaborator removed via mutation", { userId: variables.user_id });
+            queryClient.invalidateQueries({ queryKey: ROLES_QUERY_KEYS.collaborators() } as InvalidateQueryFilters);
+             // Invalider aussi la liste des users généraux?
+             queryClient.invalidateQueries({ queryKey: USERS_QUERY_KEYS.lists() } as InvalidateQueryFilters);
         },
         onError: (error) => { logger.error({ error }, "Failed to remove collaborator via mutation"); }
     });
 };
 
-// ========================
-// == Inventaires ==
-// ========================
-type InventoryType = Inventory; // Utiliser le type Inventory directement
 
-// Hook pour récupérer les inventaires
-type InventoryFilterType = { inventory_id?: string, page?: number, limit?: number };
-export const useGetInventories = (filter: InventoryFilterType = {}, options: { enabled?: boolean } = {}): UseQueryResult<ListType<InventoryType> | InventoryType, ApiError> => {
-    // Le type de retour dépend si un ID est fourni ou non
+// ========================
+// == Namespace Inventaires ==
+// ========================
+
+// Clés de Query communes
+const INVENTORIES_QUERY_KEYS = {
+    all: ['inventories'] as const,
+    lists: (filters: GetInventoriesParams = {}) => [...INVENTORIES_QUERY_KEYS.all, 'list', filters] as const,
+    details: (params: { inventory_id: string }) => [...INVENTORIES_QUERY_KEYS.all, 'detail', params] as const,
+};
+
+// Hook pour récupérer la LISTE des inventaires
+export const useGetInventories = (
+    filter: Omit<GetInventoriesParams, 'inventory_id'> = {}, // Exclure ID pour la liste
+    options: { enabled?: boolean, keepPreviousData?: boolean } = {}
+): UseQueryResult<GetInventoriesResponse, ApiError> => {
     const api = useApi();
-    return useQuery<ListType<InventoryType> | InventoryType, ApiError>({
-        queryKey: ['inventories', filter],
-        queryFn: async () => {
-            const result = await api.getInventories(filter);
-            // Si un ID était dans le filtre et qu'on a reçu une liste, prendre le premier élément
-            // Note: L'API actuelle renvoie déjà l'objet unique si ID fourni.
-            return result;
-        },
+    return useQuery<GetInventoriesResponse, ApiError>({
+        queryKey: INVENTORIES_QUERY_KEYS.lists(filter),
+        queryFn: () => api.inventories.getList(filter),
         enabled: options.enabled !== undefined ? options.enabled : true,
+        // keepPreviousData: options.keepPreviousData ?? true,
     });
 };
 
+// Hook pour récupérer UN inventaire par ID
+export const useGetInventory = (
+    params: { inventory_id: string },
+    options: { enabled?: boolean } = {}
+): UseQueryResult<GetInventoryResponse, ApiError> => {
+    const api = useApi();
+    return useQuery<GetInventoryResponse, ApiError>({
+        queryKey: INVENTORIES_QUERY_KEYS.details(params),
+        queryFn: () => api.inventories.getOne(params),
+        enabled: !!params.inventory_id && (options.enabled !== undefined ? options.enabled : true),
+    });
+};
 
 // Hook pour créer un inventaire
-export const useCreateInventory = (): UseMutationResult<{ message: string, inventory: InventoryType }, ApiError, FormData> => {
+export const useCreateInventory = (): UseMutationResult<InventoryResponse, ApiError, CreateInventoryParams> => {
     const api = useApi();
-    return useMutation<{ message: string, inventory: InventoryType }, ApiError, FormData>({
-        mutationFn: (formData) => api.createInventory(formData),
+    return useMutation<InventoryResponse, ApiError, CreateInventoryParams>({
+        mutationFn: (params) => api.inventories.create(params),
         onSuccess: (data) => {
-            queryClient.invalidateQueries({ queryKey: ['inventories'] } as InvalidateQueryFilters);
             logger.info("Inventory created via mutation", data.inventory);
+            queryClient.invalidateQueries({ queryKey: INVENTORIES_QUERY_KEYS.lists() } as InvalidateQueryFilters);
         },
         onError: (error) => { logger.error({ error }, "Failed to create inventory via mutation"); }
     });
 };
 
 // Hook pour mettre à jour un inventaire
-export const useUpdateInventory = (): UseMutationResult<{ message: string, inventory: InventoryType }, ApiError, { inventoryId: string, formData: FormData }> => {
+export const useUpdateInventory = (): UseMutationResult<InventoryResponse, ApiError, UpdateInventoryParams> => {
     const api = useApi();
-    return useMutation<{ message: string, inventory: InventoryType }, ApiError, { inventoryId: string, formData: FormData }>({
-        mutationFn: ({ inventoryId, formData }) => api.updateInventory(inventoryId, formData),
+    return useMutation<InventoryResponse, ApiError, UpdateInventoryParams>({
+        mutationFn: (params) => api.inventories.update(params),
         onSuccess: (data, variables) => {
-            queryClient.invalidateQueries({ queryKey: ['inventories'] } as InvalidateQueryFilters);
-            queryClient.invalidateQueries({ queryKey: ['inventories', { inventory_id: variables.inventoryId }] } as InvalidateQueryFilters);
             logger.info("Inventory updated via mutation", data.inventory);
+            const inventoryId = variables.inventory_id;
+            queryClient.invalidateQueries({ queryKey: INVENTORIES_QUERY_KEYS.lists() } as InvalidateQueryFilters);
+            queryClient.invalidateQueries({ queryKey: INVENTORIES_QUERY_KEYS.details({ inventory_id: inventoryId }) } as InvalidateQueryFilters);
+            queryClient.setQueryData<GetInventoryResponse>(INVENTORIES_QUERY_KEYS.details({ inventory_id: inventoryId }), data.inventory);
         },
         onError: (error) => { logger.error({ error }, "Failed to update inventory via mutation"); }
     });
 };
 
 // Hook pour supprimer un inventaire
-export const useDeleteInventory = (): UseMutationResult<{ message: string, isDeleted: boolean }, ApiError, string> => {
+export const useDeleteInventory = (): UseMutationResult<DeleteInventoryResponse, ApiError, DeleteInventoryParams> => {
     const api = useApi();
-    return useMutation<{ message: string, isDeleted: boolean }, ApiError, string>({ // string = inventoryId
-        mutationFn: (inventoryId) => api.deleteInventory(inventoryId),
-        onSuccess: (data, inventoryId) => {
-            queryClient.invalidateQueries({ queryKey: ['inventories'] } as InvalidateQueryFilters);
-            queryClient.removeQueries({ queryKey: ['inventories', { inventory_id: inventoryId }] });
-            logger.info("Inventory deleted via mutation", { inventoryId });
+    return useMutation<DeleteInventoryResponse, ApiError, DeleteInventoryParams>({
+        mutationFn: (params) => api.inventories.delete(params),
+        onSuccess: (data, variables) => {
+            logger.info("Inventory deleted via mutation", { inventoryId: variables.inventory_id });
+            queryClient.invalidateQueries({ queryKey: INVENTORIES_QUERY_KEYS.lists() } as InvalidateQueryFilters);
+            queryClient.removeQueries({ queryKey: INVENTORIES_QUERY_KEYS.details({ inventory_id: variables.inventory_id }) });
         },
         onError: (error) => { logger.error({ error }, "Failed to delete inventory via mutation"); }
     });
 };
 
-// ========================
-// == Statistiques ==
-// ========================
+// ===========================
+// == Namespace Statistiques ==
+// ===========================
 
-export const useGetStats = (params: StatParamType = {}, options: { enabled?: boolean } = {}): UseQueryResult<StatsData, ApiError> => {
+// Clé de Query
+const STATS_QUERY_KEY = (params: StatParamType = {}) => ['stats', params] as const;
+
+export const useGetStats = (
+    params: StatParamType = {},
+    options: { enabled?: boolean } = {}
+): UseQueryResult<GetStatsResponse, ApiError> => {
     const api = useApi();
-    return useQuery<StatsData, ApiError>({
-        queryKey: ['stats', params],
-        queryFn: () => api.getStats(params),
+    return useQuery<GetStatsResponse, ApiError>({
+        queryKey: STATS_QUERY_KEY(params),
+        queryFn: () => api.stats.get(params),
         enabled: options.enabled !== undefined ? options.enabled : true,
     });
 };
 
-// ========================
-// == Recherche Globale ==
-// ========================
+// =========================
+// == Namespace General   ==
+// =========================
 
-export const useGlobalSearch = (text: string | undefined, options: { enabled?: boolean } = {}): UseQueryResult<GlobalSearchType, ApiError> => {
+// Clé de Query
+const GLOBAL_SEARCH_QUERY_KEY = (params: GlobalSearchParams) => ['globalSearch', params] as const;
+
+export const useGlobalSearch = (
+    params: GlobalSearchParams,
+    options: { enabled?: boolean } = {}
+): UseQueryResult<GlobalSearchResponse, ApiError> => {
     const api = useApi();
-    // Utiliser text comme partie de la queryKey, debounce peut être géré au niveau du composant appelant
-    return useQuery<GlobalSearchType, ApiError>({
-        queryKey: ['globalSearch', text],
-        queryFn: () => text ? api.globalSearch(text) : Promise.resolve({ products: [], categories: [], clients: [], commands: [] }), // Ne fetch que si text existe
-        enabled: !!text && (options.enabled !== undefined ? options.enabled : true),
-        staleTime: 1 * 60 * 1000, // Cache court pour la recherche
+    return useQuery<GlobalSearchResponse, ApiError>({
+        queryKey: GLOBAL_SEARCH_QUERY_KEY(params),
+        queryFn: () => api.general.globalSearch(params),
+        enabled: !!params.text && (options.enabled !== undefined ? options.enabled : true), // Activer seulement si texte
+        staleTime: 1 * 60 * 1000, // Cache court
     });
 };
 
-// ========================
-// == Debug ==
-// ========================
 
-export const useRequestScaleUp = (): UseMutationResult<{ message: string, jobId: string }, ApiError, void> => {
+// ======================
+// == Namespace Debug  ==
+// ======================
+
+export const useRequestScaleUp = (): UseMutationResult<ScaleResponse, ApiError, void> => {
     const api = useApi();
-    return useMutation<{ message: string, jobId: string }, ApiError, void>({
-        mutationFn: () => api.requestScaleUp(),
+    return useMutation<ScaleResponse, ApiError, void>({
+        mutationFn: () => api.debug.requestScaleUp(),
         onSuccess: (data) => { logger.info("Scale Up requested via mutation", data); },
         onError: (error) => { logger.error({ error }, "Scale Up request failed via mutation"); }
     });
 };
 
-export const useRequestScaleDown = (): UseMutationResult<{ message: string, jobId: string }, ApiError, void> => {
+export const useRequestScaleDown = (): UseMutationResult<ScaleResponse, ApiError, void> => {
     const api = useApi();
-    return useMutation<{ message: string, jobId: string }, ApiError, void>({
-        mutationFn: () => api.requestScaleDown(),
+    return useMutation<ScaleResponse, ApiError, void>({
+        mutationFn: () => api.debug.requestScaleDown(),
         onSuccess: (data) => { logger.info("Scale Down requested via mutation", data); },
         onError: (error) => { logger.error({ error }, "Scale Down request failed via mutation"); }
     });
 };
 
-
-// --- Fin de ReactSublymusApi.tsx ---
+// --- Fin ReactSublymusApi.tsx ---

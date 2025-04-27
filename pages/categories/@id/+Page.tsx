@@ -4,7 +4,7 @@
 import { useEffect, useRef, useState, useMemo } from 'react';
 import { usePageContext } from '../../../renderer/usePageContext';
 import { useStore } from '../../stores/StoreStore';
-import { useGetCategoryById, useCreateCategory, useUpdateCategory, useDeleteCategory } from '../../../api/ReactSublymusApi'; // ✅ Hooks API
+import { useGetCategory, useCreateCategory, useUpdateCategory, useDeleteCategory } from '../../../api/ReactSublymusApi'; // ✅ Hooks API
 import { CategoryInterface, FilterType } from '../../../Interfaces/Interfaces';
 import { Topbar } from '../../../Components/TopBar/TopBar';
 import { IoAdd, IoBagHandle, IoCloudUploadOutline, IoLayers, IoPencil, IoTrash } from 'react-icons/io5';
@@ -25,12 +25,15 @@ import { ProductList } from '../../../Components/ProductList/ProductList'; // Ga
 import { ClientCall, debounce } from '../../../Components/Utils/functions'; // Gardé
 import { useMyLocation } from '../../../Hooks/useRepalceState'; // Gardé
 import { useTranslation } from 'react-i18next'; // ✅ i18n
-import logger from '../../../api/Logger'; // Logger
 import { ApiError } from '../../../api/SublymusApi'; // Importer ApiError
 import { useChildViewer } from '../../../Components/ChildViewer/useChildViewer';
-import { VisibilityControl } from '../../../Components/Button/VisibilityControl';
+import { VisibilityControl } from '../../../Components/Controls/VisibilityControl';
+import { CreateControl } from '../../../Components/Controls/CreateControl';
 
 export { Page };
+
+const DEBOUNCE_CATEGORY_ID = 'debounce:save:category'
+const DEBOUNCE_CATEGORY_TIME = 2000
 
 // État initial vide pour une nouvelle catégorie
 const initialEmptyCategory: Partial<CategoryInterface> = {
@@ -46,8 +49,8 @@ function Page() {
     const { openChild } = useChildViewer();
     const { currentStore } = useStore();
     const { routeParams } = usePageContext();
-
-    const categoryIdFromRoute = routeParams?.['id'];
+    const { params, myLocation, replaceLocation, nextPage } = useMyLocation()
+    const categoryIdFromRoute = params[1];
     const isNewCategory = categoryIdFromRoute === 'new';
 
     // --- Gestion de l'état du formulaire ---
@@ -60,9 +63,12 @@ function Page() {
     const [localImagePreviews, setLocalImagePreviews] = useState<{ view?: string; icon?: string }>({});
     // État pour les erreurs de validation par champ
     const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({});
-    // État pour l'auto-save (non actif par défaut)
-    const [isAutoSaving, setIsAutoSaving] = useState(false);
 
+
+    const [s] = useState({
+        collected: {} as Partial<CategoryInterface>,
+        isUpdated: false,
+    });
     // --- Récupération des données pour l'édition ---
     const {
         data: fetchedCategoryData, // Renommer pour éviter conflit
@@ -70,8 +76,10 @@ function Page() {
         isError: isFetchError,
         error: fetchError,
         isSuccess: isFetchSuccess,
-    } = useGetCategoryById(
-        isNewCategory ? undefined : categoryIdFromRoute, // Fetch seulement si ce n'est pas 'new'
+    } = useGetCategory(
+        {
+            category_id: isNewCategory ? undefined : categoryIdFromRoute
+        }, // Fetch seulement si ce n'est pas 'new'
         { enabled: !isNewCategory && !!currentStore } // Activer si édition et store chargé
     );
 
@@ -82,7 +90,6 @@ function Page() {
             setOriginalCategoryData(fetchedCategoryData); // Sauver l'original
             setLocalImagePreviews({}); // Reset previews locales
             setFieldErrors({}); // Reset erreurs
-            setIsAutoSaving(false); // Désactiver auto-save au chargement
         }
         // Si on navigue vers /new après avoir été sur une page d'édition
         if (isNewCategory) {
@@ -90,105 +97,48 @@ function Page() {
             setOriginalCategoryData(null);
             setLocalImagePreviews({});
             setFieldErrors({});
-            setIsAutoSaving(false);
+            isFilledCategory(false)
         }
-    }, [isNewCategory, isFetchSuccess, fetchedCategoryData]); // Ajouter categoryIdFromRoute comme dépendance
+    }, [isNewCategory, isFetchSuccess, fetchedCategoryData]);
 
     // --- Mutations API ---
     const createCategoryMutation = useCreateCategory();
     const updateCategoryMutation = useUpdateCategory();
-    const deleteCategoryMutation = useDeleteCategory(); // Supposons qu'il existe
+    const deleteCategoryMutation = useDeleteCategory();
 
     const isLoadingMutation = createCategoryMutation.isPending || updateCategoryMutation.isPending || deleteCategoryMutation.isPending;
 
-    // --- Détection des changements ---
-    const hasChanges = useMemo(() => {
-        if (isNewCategory || !originalCategoryData) return true; // Toujours considéré comme modifié si nouveau
-        // Comparaison simple (à affiner si besoin avec deep-equal)
-        // Comparer seulement les champs modifiables
-        const modifiableFields: (keyof CategoryInterface)[] = ['name', 'description', 'parent_category_id', 'view', 'icon', 'is_visible'];
-        for (const key of modifiableFields) {
-            // Gérer la comparaison des tableaux (images) - comparer les refs ou le contenu?
-            // Pour les fichiers, comparer les objets File peut être complexe.
-            // On peut simplement vérifier si categoryFormState[key] a été défini (contient un objet File ou une nouvelle string)
-            if (key === 'view' || key === 'icon') {
-                if (Array.isArray(categoryFormState[key]) && categoryFormState[key]?.length > 0 && !(typeof categoryFormState[key]?.[0] === 'string')) {
-                    return true; // Nouveau fichier Blob/File = changement
-                }
-                // Comparer les URLs string si pas de nouveau fichier
-                if (JSON.stringify(categoryFormState[key]) !== JSON.stringify(originalCategoryData[key])) return true;
+    const updateLocalCategory = (cb: (current: Partial<CategoryInterface>) => Partial<CategoryInterface>) => {
+        setCategoryFormState((current) => {
+            const d = cb({});
+            s.collected = { ...s.collected, ...d }
+            s.isUpdated = true;
+            const c = { ...current, ...d };
+            return c
+        });
+    }
 
-            } else if (categoryFormState[key] !== originalCategoryData[key]) {
-                // Gérer le cas où '' et null doivent être considérés comme égaux pour parent_id?
-                if (key === 'parent_category_id' && (!categoryFormState[key] && !originalCategoryData[key])) continue;
-                return true;
-            }
-        }
-        return false;
-    }, [categoryFormState, originalCategoryData, isNewCategory]);
-
-
-    // --- Validation Locale Simple (avant envoi API) ---
-    const validateForm = (): boolean => {
-        const errors: { [key: string]: string } = {};
-        let isValid = true;
-
-        if (!categoryFormState.name || categoryFormState.name.trim().length < 3) {
-            errors.name = t('category.validation.nameRequired'); // Nouvelle clé
-            isValid = false;
-        }
-        // Description optionnelle (pas de validation de longueur min ici)
-
-        // Vérifier présence image VIEW (soit URL existante, soit nouveau fichier)
-        const viewValue = categoryFormState.view?.[0];
-        if (!viewValue) {
-            errors.view = t('category.validation.viewRequired'); // Nouvelle clé
-            isValid = false;
-        }
-        // Vérifier présence image ICON
-        const iconValue = categoryFormState.icon?.[0];
-        if (!iconValue) {
-            errors.icon = t('category.validation.iconRequired'); // Nouvelle clé
-            isValid = false;
-        }
-
-        // setFieldErrors(errors);
-        // Focus sur le premier champ en erreur (optionnel)
-        if (!isValid) {
-            const firstErrorKey = Object.keys(errors)[0];
-            const element = ClientCall(function name() {
-                return document.getElementById(`input-category-${firstErrorKey}`)
-            }, null); // Assigner des IDs aux inputs
-            element?.focus();
-        }
-        return isValid;
-    };
 
     // --- Handlers ---
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { name, value } = e.target;
-        setCategoryFormState(prev => ({ ...prev, [name]: value }));
-        setFieldErrors(prev => ({ ...prev, [name]: '' })); // Reset erreur du champ
-        setIsAutoSaving(true); // Activer auto-save au changement
+        updateLocalCategory(prev => ({ ...prev, [name]: value.substring(0, 52) }));
     };
 
     const handleMarkdownChange = (value: string) => {
-        setCategoryFormState(prev => ({ ...prev, description: value }));
-        setFieldErrors(prev => ({ ...prev, description: '' }));
-        setIsAutoSaving(true);
+        updateLocalCategory(prev => ({ ...prev, description: value }));
     }
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, field: 'view' | 'icon') => {
         const files = e.target.files;
         if (!files?.[0]) return;
         const file = files[0];
+        console.log({ file });
+
         const previewUrl = URL.createObjectURL(file);
 
-        setCategoryFormState(prev => ({ ...prev, [field]: [file] })); // Stocker l'objet File
+        updateLocalCategory(prev => ({ ...prev, [field]: [file] })); // Stocker l'objet File
         setLocalImagePreviews(prev => ({ ...prev, [field]: previewUrl })); // Stocker l'URL de preview locale
-        setFieldErrors(prev => ({ ...prev, [field]: '' }));
-        setIsAutoSaving(true);
-
         // Révoquer l'ancienne URL de preview si elle existe, après un délai pour laisser l'UI mettre à jour
         const oldPreview = localImagePreviews[field];
         if (oldPreview) {
@@ -199,136 +149,15 @@ function Page() {
     };
 
     const handleParentCategorySelect = (selectedCategory: CategoryInterface) => {
-        setCategoryFormState(prev => ({ ...prev, parent_category_id: selectedCategory.id }));
-        setIsAutoSaving(true);
+        updateLocalCategory(prev => ({ ...prev, parent_category_id: selectedCategory.id }));
         openChild(null); // Fermer la popup
     };
 
     const handleRemoveParent = () => {
-        setCategoryFormState(prev => ({ ...prev, parent_category_id: null }));
-        setIsAutoSaving(true);
-    };
-
-    // --- Auto Save ---
-    useEffect(() => {
-        // Ne pas auto-save si nouveau, pas de changements, ou si une mutation est en cours
-        if (isNewCategory || !hasChanges || !isAutoSaving || isLoadingMutation) return;
-
-        const handler = debounce(() => {
-            logger.debug("Triggering auto-save...");
-            if (validateForm()) { // Valider avant auto-save
-                handleSave(true); // true pour indiquer auto-save
-            } else {
-                logger.warn("Auto-save skipped due to validation errors.");
-            }
-        }, 'category-auto-save', 3000); // Déclencher 3s après le dernier changement
-
-        return () => {
-            // Nettoyer le debounce si le composant est démonté ou si les dépendances changent
-            // (Normalement, debounce gère déjà ça en interne si implémenté correctement)
-        };
-    }, [hasChanges, isAutoSaving, isNewCategory, isLoadingMutation]); // Surveiller l'état du formulaire
-
-
-    // --- Sauvegarde Manuelle / Création ---
-    const handleSave = async (isAuto = false) => {
-        if (isLoadingMutation) return; // Empêcher double clic
-        if (!validateForm()) {
-            logger.warn("Manual save prevented by validation errors.");
-            return; // Arrêter si validation échoue
-        }
-        setIsAutoSaving(false); // Désactiver auto-save pendant sauvegarde manuelle
-
-        // Construire FormData
-        const formData = new FormData();
-        let hasFileChanges = false;
-
-        // Ajouter les champs texte/numériques modifiés ou tous si nouvelle catégorie
-        Object.entries(categoryFormState).forEach(([key, value]) => {
-            if (key !== 'view' && key !== 'icon' && key !== 'id') { // Exclure fichiers et id pour l'instant
-                if (isNewCategory || value !== originalCategoryData?.[key as keyof CategoryInterface]) {
-                    // Gérer null pour parent_category_id
-                    if (value !== null && value !== undefined) {
-                        formData.append(key, String(value));
-                    } else if (key === 'parent_category_id') {
-                        formData.append(key, ''); // Envoyer string vide pour null? Ou ne pas envoyer? API doit gérer.
-                    }
-                }
-            }
-        });
-
-        // Ajouter les fichiers SEULEMENT s'ils ont changé (objet File)
-        (['view', 'icon'] as const).forEach(key => {
-            const file = categoryFormState[key]?.[0];
-            if (file && file instanceof File) {
-                formData.append(`${key}_0`, file); // Nom attendu par createFiles/updateFiles
-                formData.append(key, JSON.stringify([`${key}_0`])); // Pseudo URL
-                hasFileChanges = true;
-            } else if (originalCategoryData && categoryFormState[key] !== originalCategoryData[key]) {
-                // Si l'URL a changé (ex: suppression d'image sans ajout de nouvelle)
-                // Envoyer un tableau vide ou la nouvelle URL si c'est juste une string
-                formData.append(key, JSON.stringify(categoryFormState[key] ?? []));
-            }
-        });
-
-        // Choisir la mutation
-        if (isNewCategory) {
-            // Création
-            createCategoryMutation.mutate(formData, {
-                onSuccess: (data) => {
-                    logger.info("Category created successfully", data);
-                    setCategoryFormState(data.category); // Mettre à jour avec données serveur
-                    setOriginalCategoryData(data.category);
-                    setLocalImagePreviews({});
-                    setFieldErrors({});
-                    history.replaceState(null, "", `/categories/${data.category.id}`);
-                    // Afficher toast succès
-                },
-                onError: (error) => {
-                    logger.error({ error }, "Category creation failed");
-                    // Afficher toast erreur
-                }
-            });
-        } else {
-            // Mise à jour (seulement si changements détectés, même si bouton cliqué)
-            if (!hasChanges && !isAuto) {
-                logger.info("Update skipped, no changes detected.");
-                // Afficher toast "Aucune modification" ?
-                return;
-            }
-            if (!categoryFormState.id) {
-                logger.error("Cannot update category without ID");
-                return; // Sécurité
-            }
-            formData.append('category_id', categoryFormState.id); // Ajouter l'ID pour l'update
-            updateCategoryMutation.mutate(formData, {
-                onSuccess: (data) => {
-                    logger.info("Category updated successfully", data);
-                    // Mettre à jour l'original pour refléter la sauvegarde
-                    setCategoryFormState(data.category); // Mettre à jour avec données serveur
-                    setOriginalCategoryData(data.category);
-                    setLocalImagePreviews({}); // Les previews ne sont plus utiles
-                    setFieldErrors({});
-                    // Si c'était un auto-save, ne pas forcément afficher de toast
-                    if (!isAuto) {
-                        // Afficher toast succès
-                    }
-                },
-                onError: (error) => {
-                    logger.error({ error }, "Category update failed");
-                    // Afficher toast erreur
-                },
-                onSettled: () => {
-                    // Réactiver auto-save après la fin de la requête (succès ou erreur)
-                    // Sauf si c'était un auto-save qui a échoué? À affiner.
-                    // setIsAutoSaving(true);
-                }
-            });
-        }
+        updateLocalCategory(prev => ({ ...prev, parent_category_id: null }));
     };
     const handleVisibility = (is_visible: boolean) => {
-        setCategoryFormState(prev => ({ ...prev, is_visible }));
-        setIsAutoSaving(true);
+        updateLocalCategory(prev => ({ ...prev, is_visible }));
     }
     const handleDelete = () => {
         if (!categoryFormState.id || isNewCategory || isLoadingMutation) return;
@@ -338,15 +167,17 @@ function Page() {
                     title={t('category.confirmDeleteTitle', { name: categoryFormState.name })}
                     onCancel={() => openChild(null)}
                     onDelete={() => {
-                        deleteCategoryMutation.mutate(categoryFormState.id!, {
+                        deleteCategoryMutation.mutate({
+                            category_id: categoryFormState.id!
+                        }, {
                             onSuccess: () => {
-                                logger.info(`Category ${categoryFormState.id} deleted`);
+                                console.log(`Category ${categoryFormState.id} deleted`);
                                 openChild(null);
-                                // Rediriger vers la liste des catégories
-                                ClientCall(() => { window.location.href = '/categories'; });
+                                setCategoryFormState({})
+                                // ClientCall(() => { window.location.href = '/categories'; });
                             },
                             onError: (error) => {
-                                logger.error({ error }, `Failed to delete category ${categoryFormState.id}`);
+                                console.log({ error }, `Failed to delete category ${categoryFormState.id}`);
                                 openChild(null);
                                 // Afficher toast erreur
                             }
@@ -357,9 +188,116 @@ function Page() {
             { background: '#3455' }
         );
     };
+    // --- Validation Locale Simple (avant envoi API) ---
+    const isFilledCategory = (validate=true): boolean => {
+        const errors: { [key: string]: string } = {};
 
-    console.log({ categoryIdFromRoute, isNewCategory, currentStore, isFetchError, isLoadingCategory, categoryFormState });
+        if (!categoryFormState.name || categoryFormState.name.trim().length < 3) {
+            errors.name = t('category.validation.nameRequired'); // Nouvelle clé
+        }
+        const viewValue = categoryFormState.view?.[0];
+        if (!viewValue) {
+            errors.view = t('category.validation.viewRequired'); // Nouvelle clé
+        }
+        // Vérifier présence image ICON
+        const iconValue = categoryFormState.icon?.[0];
+        if (!iconValue) {
+            errors.icon = t('category.validation.iconRequired'); // Nouvelle clé
+        }
 
+        
+        const e: any = errors
+        const hasError = Object.keys(errors).length > 0;
+        if (!validate) {
+            for (const k of Object.keys(errors)) {
+                e[k] = ''
+            }
+        }
+         setFieldErrors(e)
+        return !hasError
+    };
+
+    const createCategory = async () => {
+        if (!isFilledCategory()) return
+
+        createCategoryMutation.mutate({
+            data: categoryFormState
+        }, {
+            onSuccess: (data) => {
+                console.log("Category created successfully", data);
+                setCategoryFormState(data.category); // Mettre à jour avec données serveur
+                setOriginalCategoryData(data.category);
+                setLocalImagePreviews({});
+                setFieldErrors({});
+                replaceLocation(`/categories/${data.category.id}`);
+                // Afficher toast succès
+            },
+            onError: (error) => {
+                console.log({ error }, "Category creation failed");
+                // Afficher toast erreur
+            }
+        });
+    }
+
+    // --- Sauvegarde Manuelle / Création ---
+    const hasCollected = () => {
+        const a = { ...s.collected };
+        delete a.id
+        const k = Object.keys(a) as (keyof typeof a)[];
+        for (const e of k) {
+            if (a[e] == undefined) delete a[e]
+        }
+        return Object.keys(a).length > 0
+    }
+    const saveRequired = async () => {
+        if (isLoadingMutation) return; // Empêcher double clic
+        if (!isFilledCategory()) return console.log("Manual save prevented by validation errors.");
+        if (isNewCategory) return
+
+        const c = s.collected
+        s.collected = {}
+        updateCategoryMutation.mutate({
+            data: c,
+            category_id: categoryIdFromRoute
+        }, {
+            onSuccess: (data) => {
+                if (!data.category?.id) return;
+                console.log("Category updated successfully", data);
+                const updatedCategory = { ...originalCategoryData, ...data.category }; // Merger avec l'original pour garder les features/values
+                setOriginalCategoryData(updatedCategory);
+                if (hasCollected()) {
+                    debounce(() => {
+                        saveRequired()
+                    }, DEBOUNCE_CATEGORY_ID, DEBOUNCE_CATEGORY_TIME)
+                    return
+                }
+                setCategoryFormState(updatedCategory); // Mettre à jour avec données serveur
+                setLocalImagePreviews({}); // Les previews ne sont plus utiles
+                setFieldErrors({});
+            },
+            onError: (error) => {
+                console.log({ error }, "Category update failed");
+            }
+        });
+    };
+
+    useEffect(() => {
+        !isNewCategory && s.isUpdated && (() => {
+            s.isUpdated = false
+            debounce(() => {
+                saveRequired()
+            }, DEBOUNCE_CATEGORY_ID, DEBOUNCE_CATEGORY_TIME)
+        })()
+        isFilledCategory(!isNewCategory)
+    }, [categoryFormState])
+
+     useEffect(()=>{
+            if(!currentStore) return
+            if(!isNewCategory){
+                console.log('RELOAD DATA REQUIRED');
+                return
+            }
+        },[currentStore,myLocation])
     // --- Affichage ---
     // Afficher PageNotFound si erreur de fetch en mode édition
     if (!isNewCategory && isFetchError && fetchError?.status === 404) {
@@ -371,18 +309,20 @@ function Page() {
     }
     // Si on est en mode édition mais que la catégorie n'a pas été trouvée (autre erreur 404 gérée ci-dessus)
     if (!isNewCategory && !isLoadingCategory && !categoryFormState.id) {
-        return <PageNotFound title={'option 2'} description={t('category.loadError')} />;
+        return <PageNotFound title={t('category.notFound')} description={t('category.loadError')} back />;
     }
 
     // Préparer les URLs d'image pour l'affichage (locale ou depuis serveur)
-    const viewUrl = localImagePreviews.view ?? (typeof categoryFormState.view?.[0] === 'string' ? getImg(categoryFormState.view[0], undefined, currentStore?.url) : '');
-    const iconUrl = localImagePreviews.icon ?? (typeof categoryFormState.icon?.[0] === 'string' ? getImg(categoryFormState.icon[0], 'contain', currentStore?.url) : '');
+    const viewUrl = localImagePreviews.view? getImg(localImagePreviews.view) :(typeof categoryFormState.view?.[0] === 'string' ? getImg(categoryFormState.view[0], undefined, currentStore?.url) : '');
+    const iconUrl =  localImagePreviews.icon? getImg(localImagePreviews.icon) : (typeof categoryFormState.icon?.[0] === 'string' ? getImg(categoryFormState.icon[0], 'contain', currentStore?.url) : '');
     const showViewPlaceholder = !localImagePreviews.view && (!categoryFormState.view || categoryFormState.view.length === 0);
     const showIconPlaceholder = !localImagePreviews.icon && (!categoryFormState.icon || categoryFormState.icon.length === 0);
 
+    const hasError = Object.keys(fieldErrors).length > 0
 
 
-
+    console.log(categoryFormState,viewUrl);
+    
     return (
         // Layout principal
         <div className="w-full flex flex-col bg-gray-50 min-h-screen">
@@ -470,7 +410,7 @@ function Page() {
                     <label className='block text-sm font-medium text-gray-700 mb-1 flex justify-between items-center' htmlFor='input-category-name'>
                         <span>{t('category.nameLabel')} <IoPencil className="inline-block ml-1 w-3 h-3 text-gray-400" /></span>
                         <span className={`text-xs ${(categoryFormState.name?.trim()?.length || 0) > 255 ? 'text-red-600' : 'text-gray-400'}`}>
-                            {(categoryFormState.name?.trim()?.length || 0)} / 255
+                            {(categoryFormState.name?.trim()?.length || 0)} / 52
                         </span>
                     </label>
                     <input
@@ -542,6 +482,20 @@ function Page() {
                         t={t}
                     />
                 )}
+                {
+                    isNewCategory && <CreateControl
+                        onCancel={() => {
+                            history.back();
+                        }}
+                        onCreate={() => {
+                            createCategory()
+                        }}                  
+                        canCreate={!hasError}
+                        t={t}
+                        title={t('product.createTitle')}
+                        isLoading={isLoadingMutation}
+                    />
+                }
                 {!isNewCategory && categoryFormState.id && (
                     <ProductList
                         title={t('category.categoryProducts')}
@@ -556,33 +510,13 @@ function Page() {
 
             </main>
 
-            {/* Bouton Sauvegarde Flottant */}
-            <div className={`fixed bottom-4 right-4 left-4 sm:left-auto sm:w-auto z-50 transition-opacity duration-300 ${hasChanges || isNewCategory ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
-                <SaveButton
-                    loading={isLoadingMutation}
-                    // Différencier le titre et le style
-                    title={isNewCategory
-                        ? (validateForm() ? t('category.createButtonValid') : t('category.createButtonInvalid'))
-                        : (hasChanges
-                            ? (validateForm() ? t('category.saveButtonValid') : t('category.saveButtonInvalid'))
-                            : t('category.noChangesButton')
-                        )
-                    }
-                    // Le bouton est cliquable seulement si valide (pour création) ou si changements valides (pour MAJ)
-                    required={validateForm() && (isNewCategory || hasChanges)}
-                    onClick={() => handleSave(false)} // false = sauvegarde manuelle
-                    // Adapter l'effet/couleur
-                    effect="color" // Garder l'effet couleur
-                // Utiliser des classes pour le style conditionnel? Moins facile avec les gradients.
-                // style={isNewCategory ? { background: 'linear-gradient(...)' } : undefined}
-                />
+            {/* Flottant LOADING */}
+            <div className={`fixed bottom-4 right-4 left-4 sm:left-auto sm:w-auto z-50 transition-opacity duration-300 ${isLoadingMutation || isNewCategory ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
+                {isLoadingMutation}
             </div>
-
-
         </div>
     );
 }
-
 
 function ParentCategoryButton({ categoryFormState, openChild, ChildViewer, CategoriesPopup, handleParentCategorySelect, t }: any) {
 

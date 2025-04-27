@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { IoAddSharp, IoArrowForward, IoClose } from "react-icons/io5";
 import { CgExtensionAdd } from "react-icons/cg";
 import { CategoryInterface } from '../../Interfaces/Interfaces';
-import { useGetCategories, useGetCategoryById } from '../../api/ReactSublymusApi'; 
+import { useGetCategories } from '../../api/ReactSublymusApi'; 
 import { useStore } from '../../pages/stores/StoreStore';
 import { getImg } from '../Utils/StringFormater';
 import { useTranslation } from 'react-i18next'; 

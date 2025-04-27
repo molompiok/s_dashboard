@@ -16,6 +16,8 @@ import { getFileType } from '../Utils/functions';
 import { NEW_VIEW } from '../Utils/constants';
 import { ConfirmDelete } from '../Confirm/ConfirmDelete';
 import { useStore } from '../../pages/stores/StoreStore';
+import { globalActionZust } from '../../renderer/AppStore/globalActionZust';
+import { useTranslation } from 'react-i18next';
 
 export { SwiperProducts }
 //IoArrowBackCircle IoArrowForwardCircle IoChevronBackCircle IoChevronForwardCircle
@@ -28,9 +30,14 @@ function SwiperProducts({ views, setViews }: { views: (string | Blob)[], setView
   const [mouseMove, setMouseMove] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
   const { currentStore } = useStore()
+ 
+  const { t } = useTranslation()
   useEffect(() => {
     setLocalViews(views.length > 0 ? views : [NEW_VIEW])
   }, [views]);
+
+
+  
 
   useEffect(() => {
     setRequireDetele(-1);
@@ -112,7 +119,9 @@ function SwiperProducts({ views, setViews }: { views: (string | Blob)[], setView
               }}
             />
             <div className="move" style={{ display: (localViews[index] == NEW_VIEW || requireDetele == index) ? 'none' : '' }}>
-              <IoArrowBackCircleOutline style={{ opacity: index == 0 ? '0.6' : '' }} onClick={() => {
+              <IoArrowBackCircleOutline style={{ opacity: index == 0 ? '0.6' : '' }} onClick={(e) => {
+                e.stopPropagation()
+                e.preventDefault()
                 if (index == 0) return
                 const lastView = localViews[index - 1];
                 const currentView = localViews[index];
@@ -121,7 +130,9 @@ function SwiperProducts({ views, setViews }: { views: (string | Blob)[], setView
                   swiperRef.current.slideTo(index - 1)
                 }, 100);
               }} />
-              <IoArrowForwardCircleOutline style={{ opacity: localViews.length - 1 == index ? '0.6' : '', marginLeft: 'auto' }} onClick={() => {
+              <IoArrowForwardCircleOutline style={{ opacity: localViews.length - 1 == index ? '0.6' : '', marginLeft: 'auto' }} onClick={(e) => {
+                e.stopPropagation()
+                e.preventDefault()
                 if (localViews.length - 1 == index) return
                 const lastView = localViews[index + 1];
                 const currentView = localViews[index];
@@ -152,10 +163,9 @@ function SwiperProducts({ views, setViews }: { views: (string | Blob)[], setView
                       setLocalViews(v)
                       setViews(v)
                     }} />
-                    <IoCloudUploadOutline />
-                    Glisser Déposer Image/Video
-                    <div className={"chose-file " + (mouseMove ? 'mouse-move' : '')}>
-                      Chosir un fichier
+                    <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-400 group-hover:text-blue-500 p-2 text-center">
+                      <IoCloudUploadOutline size={32} />
+                      <span className="mt-1 text-xs">{t('category.selectImagePrompt')}</span>
                     </div>
                   </label>
                 </div> :

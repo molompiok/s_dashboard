@@ -3,7 +3,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { ProductItemCard } from '../ProductItem/ProductItemCard';
 import { ProductRowItem } from '../ProductItem/ProductRowItem';
 
-import { useGetProducts } from '../../api/ReactSublymusApi';
+import { useGetProductList } from '../../api/ReactSublymusApi';
 import { useEffect, useState } from 'react';
 import { useStore } from '../../pages/stores/StoreStore';
 import { IoAppsSharp, IoListSharp, IoChevronDown, IoSearch } from 'react-icons/io5';
@@ -27,7 +27,7 @@ function ProductList({ baseFilter, title, addTo }: {title?:string, addTo?:{categ
     const [viewType, setViewType] = useState<ProductViewType>(ClientCall(function () { return localStorage.getItem('product:view_type') }) as any || 'card');
     const { currentStore } = useStore();
 
-    const { data: productsData, isLoading, isError, error: apiError } = useGetProducts(
+    const { data: productsData, isLoading, isError, error: apiError } = useGetProductList(
         { ...filter, with_feature: true, },
         { enabled: !!currentStore }
     );
@@ -39,8 +39,6 @@ function ProductList({ baseFilter, title, addTo }: {title?:string, addTo?:{categ
         localStorage.setItem('product:view_type', viewType)
     }, [viewType])
 
-    console.log(products);
-    
     return (
         <div className="w-full flex flex-col  mt-2">
             <div className="flex flex-wrap justify-between items-center gap-4 mb-4">

@@ -6,12 +6,13 @@ import { usePageContext } from '../../../renderer/usePageContext';
 import { useStore } from '../../stores/StoreStore';
 // ✅ Importer les hooks API nécessaires
 import {
-    useGetProducts, // Pourrait être utilisé pour charger l'original
+    useGetProductList, // Pourrait être utilisé pour charger l'original
     useCreateProduct,
     useUpdateProduct,
     useDeleteProduct,
     useMultipleUpdateFeaturesValues,
-    useApi
+    useApi,
+    useGetProduct
 } from '../../../api/ReactSublymusApi';
 import { FeatureInterface, ProductInterface, ValueInterface } from '../../../Interfaces/Interfaces';
 import { Topbar } from '../../../Components/TopBar/TopBar';
@@ -19,7 +20,7 @@ import { Topbar } from '../../../Components/TopBar/TopBar';
 import { SwiperProducts } from '../../../Components/SwiperProducts/SwiperProducts';
 import { CategoryItemMini } from '../../../Components/CategoryItem/CategoryItemMini';
 import { CategoriesPopup } from '../../../Components/CategoriesPopup/CategoriesPopup';
-import { Feature } from '../../../Components/Feature/Feature';
+import { Feature, getInfoPopup } from '../../../Components/Feature/Feature';
 import { MarkdownEditor2 } from '../../../Components/MackdownEditor/MarkdownEditor';
 import { CommandeList } from '../../../Components/CommandesList/CommandesList';
 import { Indicator } from '../../../Components/Indicator/Indicator';
@@ -43,14 +44,18 @@ import 'swiper/css';
 import 'swiper/css/pagination';
 import 'swiper/css/grid';
 import { useChildViewer } from '../../../Components/ChildViewer/useChildViewer';
-import { getNewFeature } from '../../../Components/Utils/parseData';
+import { getDefaultValues, getNewFeature } from '../../../Components/Utils/parseData';
 import { FeatureInfo } from '../../../Components/FeatureInfo/FeatureInfo';
 import { HoriszontalSwiper } from '../../../Components/HorizontalSwiper/HorizontalSwiper';
+import { VisibilityControl } from '../../../Components/Controls/VisibilityControl';
+import { CreateControl } from '../../../Components/Controls/CreateControl';
+import { preview } from 'vite';
+import { globalActionZust } from '../../../renderer/AppStore/globalActionZust';
 // Constantes
 const FEATURE_LIMIT = 5;
 const DEBOUNCE_PRODUCT_ID = 'debounce:save:product';
 const DEBOUNCE_FEATURES_ID = 'debounce:save:features';
-const DEBOUNCE_PRODUCT_TIME = 3000;
+const DEBOUNCE_PRODUCT_TIME = 2000;
 const DEBOUNCE_FEATURES_TIME = 200;
 
 // État initial vide
@@ -73,10 +78,14 @@ function Page() {
     const { openChild } = useChildViewer();
     const { currentStore } = useStore();
     const { routeParams } = usePageContext();
-    const { replaceLocation, nextPage } = useMyLocation()
-    const productIdFromRoute = routeParams?.['id'];
+    const { params, searchPared, myLocation, replaceLocation, nextPage } = useMyLocation()
+    
+    const productIdFromRoute = params[1]||routeParams['id'];
     const isNewProduct = productIdFromRoute === 'new';
-    const api = useApi()
+
+
+    console.log(productIdFromRoute);
+    
     // --- États du Composant ---
     // État principal du formulaire
     const [productFormState, setProductFormState] = useState<Partial<ProductInterface>>(
@@ -89,32 +98,34 @@ function Page() {
     // Erreurs de validation par champ
     const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({});
 
+    const [values, setValues] = useState<ValueInterface[]>([] as any);
+    const [index, setindex] = useState(0);
+
     const [featuresFromState, setFeaturesFromState] = useState<Partial<FeatureInterface>[]>([]);
 
     const [s] = useState({
         features: undefined as Partial<FeatureInterface>[] | undefined,
         collected: {} as Partial<ProductInterface>,
         isUpdated: false,
-        isViewChanged: false,
     });
 
     // --- Récupération des données pour l'édition ---
-    // Utiliser useGetProducts avec l'ID spécifique
+    // Utiliser useGetProductList avec l'ID spécifique
     const {
         data: fetchedProductData,
         isLoading: isLoadingProduct,
         isError: isFetchError,
         error: fetchError,
         isSuccess: isFetchSuccess,
-    } = useGetProducts(
+    } = useGetProduct(
         { product_id: isNewProduct ? undefined : productIdFromRoute, with_feature: true }, // Fetch seulement si ID et avec features/values
         { enabled: !isNewProduct && !!currentStore && !!productIdFromRoute }
     );
 
     // Initialiser le formulaire quand les données sont chargées
     useEffect(() => {
-        if (!isNewProduct && isFetchSuccess && fetchedProductData?.list?.[0]) {
-            const fetchedProduct = fetchedProductData.list[0];
+        if (!isNewProduct && isFetchSuccess && fetchedProductData) {
+            const fetchedProduct = fetchedProductData;
             setProductFormState(fetchedProduct);
             setOriginalProductData(fetchedProduct); // Sauver l'original
             const v = fetchedProduct.features?.find(f => f.id == fetchedProduct?.default_feature_id)?.values || []
@@ -128,8 +139,10 @@ function Page() {
             setProductFormState(initialEmptyProduct);
             setOriginalProductData(initialEmptyProduct);
             setFieldErrors({});
+            isFilledProduct(false)
         }
     }, [isNewProduct, isFetchSuccess, fetchedProductData]);
+
 
 
     // --- Mutations API ---
@@ -141,6 +154,7 @@ function Page() {
     const isLoadingMutation = createProductMutation.isPending || updateProductMutation.isPending || multipleUpdateMutation.isPending || deleteProductMutation.isPending;
 
     const updateLocalProduct = (cb: (current: Partial<ProductInterface>) => Partial<ProductInterface>) => {
+
         setProductFormState((current) => {
             const d = cb({});
             if (d.features) {
@@ -149,8 +163,9 @@ function Page() {
                 if (Object.keys(d).length == 0) return current
             }
             s.collected = { ...s.collected, ...d }
-            s.isUpdated = true
-            return { ...current, ...d }
+            s.isUpdated = true;
+            const c = { ...current, ...d };
+            return c
         });
     }
     const updateLocalFeatures = (cb: (current: {}) => { features?: Partial<FeatureInterface>[] }) => {
@@ -159,12 +174,16 @@ function Page() {
         s.features = d.features;
         setFeaturesFromState(s.features);
     }
-
+    const handleVisibility = (is_visible: boolean) => {
+        updateLocalProduct(prev => ({ ...prev, is_visible }));
+    }
     const updateValues = async (vs: ValueInterface[], feature_id?: string) => {
         vs = vs.map((v, i) => {
             if (v.index !== i) {
                 v.index = i;
-                v._request_mode = 'edited'
+                if(!v._request_mode){
+                    v._request_mode = 'edited'
+                }
             }
             return v
         })
@@ -181,8 +200,12 @@ function Page() {
         logger.warn("handleDelete not implemented yet.");
         if (!isNewProduct && productFormState.id) {
             openChild(<ChildViewer><ConfirmDelete title={t('product.confirmDelete', { name: productFormState.name })} onCancel={() => openChild(null)} onDelete={() => {
-                deleteProductMutation.mutate(productFormState.id!, {
-                    onSuccess: () => { /* Redirection... */ },
+                deleteProductMutation.mutate({
+                    product_id: productFormState.id!
+                }, {
+                    onSuccess: () => {
+                        setProductFormState({})
+                    },
                     onError: () => { /* Toast erreur... */ }
                 });
                 openChild(null);
@@ -190,54 +213,32 @@ function Page() {
         }
     };
 
-    const handleInputChange = useCallback((e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        const { name, value, type, checked } = e.target as HTMLInputElement; // Cast pour checked
-        const fieldValue = type === 'checkbox' ? checked : value;
+    const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const { name, value, type, checked } = e.target as HTMLInputElement; // Cast pour accéder à 'checked'
+        let fieldValue: any = type === 'checkbox' ? checked : value;
+
+        if (name === 'price' || name === 'barred_price') {
+            const sanitized = value
+                .toString()
+                .replace(/[^0-9.\-]/g, '') // Ne garde que chiffres, point, tiret
+                .replace(/^(-?\d*\.?\d*).*$/, '$1'); // Corrige au cas où plusieurs '.' ou '-' apparaissent
+
+            fieldValue = sanitized ? parseFloat(sanitized) : '';
+        }
+
         updateLocalProduct((prev) => ({
             ...prev,
-            [name]: fieldValue
+            [name]: fieldValue,
         }));
-        setFieldErrors(prev => ({ ...prev, [name]: '' }));
-    }, [updateLocalProduct]);
+    }
 
     const handleMarkdownChange = useCallback((value: string) => {
         updateLocalProduct((prev) => ({
             ...prev,
             description: value
         }));
-        setFieldErrors(prev => ({ ...prev, description: '' }));
     }, [updateLocalProduct]);
 
-
-    function isFilledProduct(product: Partial<ProductInterface>, validate?: boolean, keys?: string[]) {
-        const errors: { [key: string]: string } = {};
-        if ((!product.name || product.name.length < 3) && (!keys || (keys && keys.includes('name')))) {
-            errors.name = t('category.validation.nameRequired');
-            // validate && nameRef.current?.focus()
-        }
-        if ((!product.description || product.description.length < 3) && (!keys || (keys && keys.includes('description')))) {
-            errors.description = t('category.validation.nameRequired');
-            //   validate && descriptionRef.current?.focus()
-        }
-        if ((product.barred_price && (product.barred_price <= (product.price || 0))) && (!keys || (keys && keys.includes('barred_price')))) {
-            errors.barred_price = t('category.validation.nameRequired');
-            //   barredPriceRef.current?.focus()
-        }
-        if (!product.price && (!keys || (keys && keys.includes('price')))) {
-            errors.price = t('category.validation.nameRequired');
-            //   priceRef.current?.focus()
-        } else {
-            if (((product.barred_price || 0) <= (product.price || 0)) && (!keys || (keys && keys.includes('price')))) {
-                // !barredError && setBarredError('le prix du produit doit etre difinie ');
-                // v = false
-            } else {
-                errors.barred_price = t('category.validation.nameRequired');
-            }
-        }
-        const hasError = Object.keys(errors).length > 0;
-        if (validate && hasError) setFieldErrors(errors)
-        return hasError
-    }
     const openNewFeature = () => {
         openChild(<ChildViewer title='Les Informations sur la variante'>
             <FeatureInfo feature={(getNewFeature())} onChange={(f) => {
@@ -257,12 +258,44 @@ function Page() {
             background: '#3455'
         })
     }
+
+    function isFilledProduct(validate: boolean = true) {
+        const errors: { [key: string]: string } = {};
+        if ((!productFormState.name || productFormState.name.length < 3)) {
+            (errors.name = t('product.validation.nameRequired'));
+        }
+
+        if (!productFormState.price) {
+            (errors.price = t('product.validation.priceRequired'));
+            //   priceRef.current?.focus()
+        }
+
+        if (productFormState.barred_price && (productFormState.barred_price < (productFormState.price || 0))) {
+            errors.barred_price = t('product.validation.barredPricePositive');
+            //   barredPriceRef.current?.focus()
+        }
+        if (values.length === 0 || values?.find(v => !v.views || v.views.length === 0)) {
+            isNewProduct && (errors.images = t('product.validation.imageRequired'));
+        }
+
+        const e: any = errors
+        const hasError = Object.keys(errors).length > 0;
+        if (!validate) {
+            for (const k of Object.keys(errors)) {
+                e[k] = ''
+            }
+        }
+        setFieldErrors(e)
+        return !hasError
+    }
+
     // --- 🚀 Itération 1: handleSave (Création et Update Simple) ---
-    const creatProduct = async () => {
+    const createProduct = async () => {
+        if (!isFilledProduct()) return
 
         createProductMutation.mutate({
             product: productFormState,
-            views: values[0]?.views || []
+            views: values[0].views || []
         }, {
             onSuccess: (data) => {
                 if (!data?.product?.id) return
@@ -273,8 +306,7 @@ function Page() {
                 setFeaturesFromState(data.product.features || [])
                 setFieldErrors({});
                 setValues(data.product.features?.find(f => f.id == data.product?.default_feature_id)?.values || [])
-                replaceLocation(`/products/${data.product.id}`); // Mettre à jour l'URL
-                // toast.success(data.message || t('product.createdSuccess'));
+                replaceLocation(`/products/${data.product.id}`);
             },
             onError: (error: ApiError) => {
                 logger.error({ error }, "Product creation failed");
@@ -288,8 +320,8 @@ function Page() {
         });
     };
 
-    const hasCollected = (c: Partial<ProductInterface>) => {
-        const a = { ...c };
+    const hasCollected = () => {
+        const a = { ...s.collected };
         delete a.features
         delete a.id
         delete (a as any).product_id
@@ -299,28 +331,84 @@ function Page() {
         }
         return Object.keys(a).length > 0
     }
-    const saveRequired = async (collected: Partial<ProductInterface>) => {
+    const saveRequired = async () => {
         if (isLoadingMutation) return console.log('onLoading');
-        if (!hasCollected(collected)) return
-        if (!isFilledProduct(collected, true, Object.keys(s.collected))) return console.log('informations incomplete');
+        if (!isFilledProduct(!isNewProduct)) return console.log('informations incomplete');
+        if (isNewProduct) return
+        if (!hasCollected()) return
 
         try {
 
-            const c = { ...s.collected, product_id: productIdFromRoute, features: undefined };
+            const c = { ...s.collected, features: undefined };
             s.collected = {}
-            updateProductMutation.mutate(c, {
+            updateProductMutation.mutate({
+                data: c,
+                product_id: productIdFromRoute
+            }, {
                 onSuccess: (data) => {
                     if (!data.product?.id) return;
                     logger.info("Product updated successfully (simple)", data);
                     const updatedProduct = { ...originalProductData, ...data.product }; // Merger avec l'original pour garder les features/values
                     setOriginalProductData(updatedProduct);
-                    if (hasCollected(collected)) {
+                    if (hasCollected()) {
                         debounce(() => {
-                            saveRequired(s.collected)
+                            saveRequired()
                         }, DEBOUNCE_PRODUCT_ID, DEBOUNCE_PRODUCT_TIME)
                         return
                     }
                     s.collected = {};
+                    setFeaturesFromState(updatedProduct.features || [])
+                    setValues(updatedProduct.features?.find(f => f.id == updatedProduct.default_feature_id)?.values || [])
+                    setProductFormState(updatedProduct);
+                    // toast.success(data.message || t('product.updateSuccess'));
+                },
+                onError: (error: ApiError) => {
+                    logger.error({ error }, "Product update failed (simple)");
+                    if (error.status === 422 && error.body?.errors) {
+                        setFieldErrors((prev) => ({
+                            ...prev,
+                            server: error.body.errors
+                        }));
+                    } else {
+                        // toast.error(error.message || t('product.updateFailed'));
+                    }
+                }
+            });
+
+        } catch (error) { }
+    }
+
+    const updateFeaturesValues = async () => {
+        if (isLoadingMutation) return console.log('onLoading');
+        if (isNewProduct) return
+        if (!s.features) return;
+        if (!originalProductData?.features) return;
+        if (!originalProductData.id) return
+        try {
+            const f = s.features;
+            // return console.log('----------- FEATURES ------------', await api.prepareMultipleFeaturesValues({
+            //     currentFeatures: f,
+            //     initialFeatures: originalProductData.features,
+            //     product_id: originalProductData.id,
+            // }));
+
+            s.features = undefined;
+            multipleUpdateMutation.mutate({
+                currentFeatures: f,
+                initialFeatures: originalProductData.features,
+                product_id: originalProductData.id,
+            }, {
+                onSuccess: (data) => {
+                    if (!data.product?.id) return;
+                    logger.info("Features updated successfully", data);
+                    const updatedProduct = { ...originalProductData, ...data.product };
+                    setOriginalProductData(updatedProduct);
+                    if (s.features) {
+                        debounce(() => {
+                            updateFeaturesValues()
+                        }, DEBOUNCE_FEATURES_ID, DEBOUNCE_FEATURES_TIME)
+                        return
+                    }
                     setFeaturesFromState(updatedProduct.features || [])
                     setValues(updatedProduct.features?.find(f => f.id == updatedProduct.default_feature_id)?.values || [])
                     setProductFormState(updatedProduct);
@@ -339,63 +427,14 @@ function Page() {
 
         } catch (error) { }
     }
-
-    const updateFeaturesValues = async () => {
-        if (isLoadingMutation) return console.log('onLoading');
-        if (isNewProduct) return
-        if (!s.features) return;
-        if (!originalProductData?.features) return;
-        if (!originalProductData.id) return
-        try {
-            const f = s.features;
-            return console.log('----------- FEATURES ------------', await api.prepareMultipleFeaturesValus({
-                currentFeatures: f,
-                initialFeatures: originalProductData.features,
-                product_id: originalProductData.id,
-            }));
-
-            // s.features = undefined;
-            // multipleUpdateMutation.mutate({
-            //     currentFeatures:f,
-            //     initialFeatures:originalProductData.features,
-            //     product_id:originalProductData.id,
-            // }, {
-            //     onSuccess: (data) => {
-            //         if (!data.product?.id) return;
-            //         logger.info("Features updated successfully", data);
-            //         const updatedProduct = { ...originalProductData, ...data.product };
-            //         setOriginalProductData(updatedProduct);
-            //         if(s.features) {
-            //             debounce(() => {
-            //                 updateFeaturesValues()
-            //             }, DEBOUNCE_FEATURES_ID, DEBOUNCE_FEATURES_TIME)
-            //             return
-            //         }
-            //         setFeaturesFromState(updatedProduct.features||[])
-            //         setValues(updatedProduct.features?.find(f=>f.id ==updatedProduct.default_feature_id)?.values||[])
-            //         setProductFormState(updatedProduct);
-            //         setFieldErrors({});
-            //         // toast.success(data.message || t('product.updateSuccess'));
-            //     },
-            //     onError: (error: ApiError) => {
-            //         logger.error({ error }, "Product update failed (simple)");
-            //         if (error.status === 422 && error.body?.errors) {
-            //             setFieldErrors(error.body.errors);
-            //         } else {
-            //             // toast.error(error.message || t('product.updateFailed'));
-            //         }
-            //     }
-            // });
-
-        } catch (error) { }
-    }
     useEffect(() => {
         !isNewProduct && s.isUpdated && (() => {
             s.isUpdated = false
             debounce(() => {
-                saveRequired(s.collected)
+                saveRequired()
             }, DEBOUNCE_PRODUCT_ID, DEBOUNCE_PRODUCT_TIME);
         })()
+        isFilledProduct(!isNewProduct)
     }, [productFormState])
 
     useEffect(() => {
@@ -404,14 +443,12 @@ function Page() {
                 updateFeaturesValues()
             }, DEBOUNCE_FEATURES_ID, DEBOUNCE_FEATURES_TIME)
         })()
+        isFilledProduct(!isNewProduct)
     }, [featuresFromState])
 
     /************************************************
      LOGIQUE DE GESTION DES VIEWS
     *************************************************/
-
-    const [values, setValues] = useState<ValueInterface[]>([] as any);
-    const [index, setindex] = useState(0);
 
     const clearValues = () => {
         return [...values].map(val => ({ ...val, views: (val.views || []).filter(view => view != NEW_VIEW) })).filter(val => val.views && val.views.length > 0);
@@ -420,18 +457,37 @@ function Page() {
         const vs = clearValues();
         setValues(vs)
     }, [index])
-
+    useEffect(() => {
+        if (!currentStore) return
+        if (!isNewProduct) {
+            const v = productFormState.features?.find(f => f.id == productFormState?.default_feature_id)?.values || []
+            setValues(v.map((a, i) => ({ ...a, index: i })));
+            return
+        }
+        if (isNewProduct) {
+            setProductFormState((prev) => ({
+                ...prev,
+                categories_id: [searchPared['catrgory_id']]
+            }))
+        }
+    }, [currentStore, myLocation])
+    useEffect(() => {
+        const v = originalProductData?.features?.find(f => f.id == originalProductData?.default_feature_id)?.values || []
+        updateValues(v.map((a, i) => ({ ...a, index: i })));
+    }, [originalProductData])
 
     // --- Rendu ---
     if (!isNewProduct && isLoadingProduct) {
         return <div className="w-full min-h-screen flex items-center justify-center"><span className='text-gray-500'>{t('common.loading')}</span></div>;
     }
-    if (!isNewProduct && isFetchError && fetchError?.status === 404) {
-        return <PageNotFound title={t('product.notFound')} description={fetchError.message} />;
+    if (!isNewProduct && isFetchError) {
+        return <div className="w-full min-h-screen flex items-center justify-center"><span className='text-gray-500'>{t('common.loading')}</span></div>;
     }
     if (!isNewProduct && !isLoadingProduct && !productFormState.id) {
-        return <PageNotFound title={t('product.notFound')} description={t('product.loadError')} />;
+        return <div className="w-full min-h-screen flex items-center justify-center"><span className='text-gray-500'>{t('common.loading')}</span></div>;
     }
+
+    const hasError = Object.keys(fieldErrors).length > 0
 
     return (
         <div className="product-detail-page w-full flex flex-col bg-gray-50 min-h-screen">
@@ -453,7 +509,6 @@ function Page() {
                             values[index]._request_mode = 'edited'
                         }
                         const vs = clearValues();
-                        s.isUpdated = true
                         updateValues(vs);
                     }} />
                     {fieldErrors.images && <p className="mt-2 text-xs text-red-600">{fieldErrors.images}</p>}
@@ -462,8 +517,7 @@ function Page() {
                 <section>
                     {!isNewProduct && <div className="image-manager no-selectable">
                         <HoriszontalSwiper values={clearValues() as any} onActiveIndexChange={(_index) => {
-                            setindex(_index)
-                            s.isViewChanged = true
+                            setindex(_index);
                         }} onDeleteValue={() => {
                             s.isUpdated = true
                             updateValues([
@@ -482,7 +536,45 @@ function Page() {
                             const currentvalue = values[index];
                             updateValues(values.map((v, i) => i == index ? lastValue : i == index - 1 ? currentvalue : v));
                             return true;
-                        }} />
+                        }} newViewRequire={(files)=>{
+                            if(!originalProductData?.default_feature_id) return;
+                            const valueData: ValueInterface = {
+                                id: Math.random().toString(32).replaceAll('.',''),
+                                feature_id: originalProductData.default_feature_id,
+                                index: 0,
+                                _request_mode:'new',
+                                views: files,
+                                text: 'Option', // Valeurs par défaut
+                            };
+                            updateValues([...values,valueData])
+                            clearValues()
+                        //    const d_f =  originalProductData?.features?.find(f=>f.id == originalProductData.default_feature_id)
+                   
+                        //    openChild(<ChildViewer title={t('value.createTitle')}> 
+                        //         { d_f && getInfoPopup({ // Utiliser getInfoPopup pour choisir le bon formulaire
+                        //             feature:d_f,
+                        //             value: valueData as ValueInterface,
+                        //             onChange: (value)=>{
+                        //                 updateValues([...values,value]);
+                        //                 openChild(null);    
+                        //             },
+                        //             onCancel: () => openChild(null),
+                        //         })||undefined}
+                        //     </ChildViewer>, { background: '#3455' });
+                        }} editValue={(vs)=>{
+                          const d_f =  originalProductData?.features?.find(f=>f.id == originalProductData.default_feature_id)
+                           openChild(<ChildViewer title={t('value.createTitle')}> 
+                                { d_f && getInfoPopup({ // Utiliser getInfoPopup pour choisir le bon formulaire
+                                    feature:d_f,
+                                    value: vs as ValueInterface,
+                                    onChange: (value)=>{
+                                        updateValues([...values,value]);
+                                        openChild(null);    
+                                    },
+                                    onCancel: () => openChild(null),
+                                })||undefined}
+                            </ChildViewer>, { background: '#3455' });
+                        }}/>
                     </div>}
                 </section>
                 {/* Utiliser grid ou flex pour organiser Nom, Description, Prix */}
@@ -535,10 +627,10 @@ function Page() {
                                         id='input-product-price'
                                         name="price"
                                         className={`block p-2 w-full rounded-md shadow-sm sm:text-sm pl-3 pr-12 ${fieldErrors.price ? 'border-red-500 ring-red-500 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'}`}
-                                        type="number"
+                                        type="text"
                                         value={productFormState.price ?? ''} // Utiliser '' si undefined
                                         placeholder="0"
-                                        min="0"
+                                        min={0}
                                         onChange={handleInputChange}
                                     />
                                     <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-sm text-gray-500">FCFA</div>
@@ -556,7 +648,7 @@ function Page() {
                                         id='input-product-barred-price'
                                         name="barred_price"
                                         className={`block p-2 w-full rounded-md shadow-sm sm:text-sm pl-3 pr-12 ${fieldErrors.barred_price ? 'border-red-500 ring-red-500 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'}`}
-                                        type="number"
+                                        type="text"
                                         value={productFormState.barred_price ?? ''} // Utiliser '' si undefined ou null
                                         placeholder={t('product.barredPricePlaceholder')}
                                         min="0"
@@ -625,11 +717,11 @@ function Page() {
                 {/* Section Variantes (Features/Values) */}
                 {!isNewProduct && productFormState.id && (
                     <section className="product-section-feature mt-4 p-4 bg-white rounded-lg shadow-sm border border-gray-200">
-                        <div className="flex justify-between items-center flex-wrap mb-3">
+                        <div className="flex items-center flex-wrap mb-3">
                             <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
                                 {t('product.variantsTitle')}
                             </h2>
-                            <span className="flex justify-between items-center flex-wrap ">
+                            <span className="flex items-center flex-wrap ">
                                 <span className='text-sm ml-2 font-normal text-gray-500'>({(featuresFromState?.filter(f => !f.is_default).length || 0)} / {FEATURE_LIMIT})</span>
                                 <Indicator title={t('product.variantsTooltipTitle')} description={t('product.variantsTooltipDesc', { limit: FEATURE_LIMIT })} />
                             </span>
@@ -671,8 +763,32 @@ function Page() {
                         </div>
                     </section>
                 )}
-
-                {/* Bouton Flottant (déplacé depuis la fin) */}
+                {/* Section Actions Basse (Supprimer, etc. en mode édition) */}
+                {!isNewProduct && productFormState.id && (
+                    <VisibilityControl
+                        isVisible={!!originalProductData?.is_visible}
+                        title={t('product.visibilityTitle')}
+                        onSetVisibility={handleVisibility}
+                        onDeleteRequired={handleDelete} // Utilise la fonction simulée
+                        isLoading={false}
+                        t={t}
+                    />
+                )}
+                {
+                    isNewProduct && <CreateControl
+                        onCancel={() => {
+                            history.back();
+                        }}
+                        onCreate={() => {
+                            createProduct()
+                        }}
+                        canCreate={!hasError}
+                        t={t}
+                        title={t('product.createTitle')}
+                        isLoading={isLoadingMutation}
+                    />
+                }
+                {/* Flottant LOADING */}
                 <div className={`fixed bottom-4 right-4 left-4 sm:left-auto sm:w-auto z-50 transition-opacity duration-300 ${isLoadingMutation || isNewProduct ? 'opacity-100' : 'opacity-0 pointer-events-none'}`}>
                     {isLoadingMutation}
                 </div>
@@ -707,12 +823,11 @@ const Settings = [
     // Garder la structure mais adapter les clés i18n pour 'show'
     { name: 'price-stock', showKey: 'productSettings.priceStock', url: '/res/icons/money.png', color: '#4CAF50', shadow: '#388E3C' },
     { name: 'details', showKey: 'productSettings.details', url: '/res/icons/details.png', color: '#607D8B', shadow: '#455A64' },
-    { name: 'promo', showKey: 'productSettings.promo', url: '/res/icons/promo.png', color: '#FF9800', shadow: '#F57C00' },
+    // { name: 'promo', showKey: 'productSettings.promo', url: '/res/icons/promo.png', color: '#FF9800', shadow: '#F57C00' },
     { name: 'inventory', showKey: 'productSettings.inventory', url: '/res/icons/inventory.png', color: '#3F51B5', shadow: '#303F9F' }, // Caché si non pertinent
-    { name: 'affiliation', showKey: 'productSettings.affiliation', url: '/res/icons/affiliation.png', color: '#9C27B0', shadow: '#7B1FA2' }, // Caché si non pertinent
+    // { name: 'affiliation', showKey: 'productSettings.affiliation', url: '/res/icons/affiliation.png', color: '#9C27B0', shadow: '#7B1FA2' }, // Caché si non pertinent
     { name: 'show-stats', showKey: 'productSettings.stats', url: '/res/icons/stats.png', color: '#2196F3', shadow: '#1976D2' },
     { name: 'comments', showKey: 'productSettings.comments', url: '/res/icons/comments.png', color: '#FFC107', shadow: '#FFA000' },
-    { name: 'delete', showKey: 'productSettings.delete', url: '/res/icons/delete.png', color: '#F44336', shadow: '#D32F2F' },
 ];
 
 function ProductSettings({ onSelected }: { onSelected: (type: string) => void }) {

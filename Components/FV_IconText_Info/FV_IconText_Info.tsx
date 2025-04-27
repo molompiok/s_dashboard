@@ -93,7 +93,7 @@ function FV_IconText_Info({ value: initialValue, feature, onChange, onCancel }: 
 
     const handleConfirm = () => {
         if (validateValue()) {
-            onChange(v); // Envoyer l'état local mis à jour
+            onChange(v);
         }
     };
 
@@ -101,6 +101,7 @@ function FV_IconText_Info({ value: initialValue, feature, onChange, onCancel }: 
     const iconUrl = localIconPreview ?? (typeof v.icon?.[0] === 'string' ? getImg(v.icon[0], 'contain', useStore.getState().currentStore?.url) : undefined);
     const showIconPlaceholder = !iconUrl;
     const showIconUpload = feature.type === 'icon' || feature.type === 'icon_text';
+
 
     return (
         // Utiliser flex flex-col gap-4 ou 5, padding
@@ -114,7 +115,7 @@ function FV_IconText_Info({ value: initialValue, feature, onChange, onCancel }: 
                      <label htmlFor='icon-text-icon-input' className={`relative block w-36 h-36 rounded-lg cursor-pointer overflow-hidden group bg-gray-100 border ${imageError ? 'border-red-500' : 'border-gray-300'} hover:bg-gray-200`}>
                           <div
                               className="absolute inset-0 bg-contain bg-center bg-no-repeat"
-                              style={{ backgroundImage: iconUrl ?? getImg('/res/empty/drag-and-drop.png', '80%') }}
+                              style={{ background: getImg(iconUrl) }}
                           ></div>
                            {showIconPlaceholder && (
                               <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-400 group-hover:text-blue-500 p-2 text-center">
@@ -146,7 +147,7 @@ function FV_IconText_Info({ value: initialValue, feature, onChange, onCancel }: 
                         ref={textRef}
                         id="icon-text-name-input"
                         name="text" // Important
-                        className={`block w-full rounded-md shadow-sm sm:text-sm h-10 ${textError ? 'border-red-500 ring-red-500 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'}`}
+                        className={`block px-4 w-full rounded-md shadow-sm sm:text-sm h-10 ${textError ? 'border-red-500 ring-red-500 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'}`}
                         placeholder={t('value.namePlaceholder')} 
                         type="text"
                         value={v.text || ''}
@@ -204,7 +205,7 @@ function IconTextValue({ value, feature, onRemove, onClick }: { onClick?: () => 
               {(feature?.type?.includes('icon')) && (
                  <div
                      className="icon-value w-12 h-12 rounded-md bg-contain bg-center bg-no-repeat bg-gray-100 mb-1" // Utiliser contain
-                     style={{ backgroundImage: getImg(icon, 'contain', currentStore?.url) || getImg('/res/empty/empty-image.jpg', 'contain') }} // Placeholder si pas d'icône
+                     style={{ background: getImg(icon, 'contain', currentStore?.url) || getImg('/res/empty/empty-image.jpg', 'contain') }} // Placeholder si pas d'icône
                  ></div>
               )}
              {/* Texte */}
