@@ -32,8 +32,8 @@ import {
     CreateCommentParams, CreateCommentResponse, GetCommentForOrderItemParams, GetCommentForOrderItemResponse,
     GetCommentsParams, GetCommentsResponse, UpdateCommentParams, UpdateCommentResponse, DeleteCommentParams, DeleteCommentResponse,
     AddFavoriteParams, AddFavoriteResponse, GetFavoritesParams, GetFavoritesResponse, UpdateFavoriteParams, UpdateFavoriteResponse, DeleteFavoriteParams, DeleteFavoriteResponse,
-    CreateAddressParams, AddressResponse, GetAddressesParams, GetAddressesResponse, UpdateAddressParams, DeleteAddressParams, UserAddressInterface,
-    CreatePhoneParams, PhoneResponse, GetPhonesParams, GetPhonesResponse, UpdatePhoneParams, DeletePhoneParams, UserPhoneInterface,
+    CreateAddressParams, AddressResponse, GetAddressesParams, GetAddressesResponse, UpdateAddressParams, DeleteAddressParams,
+    CreatePhoneParams, PhoneResponse, GetPhonesParams, GetPhonesResponse, UpdatePhoneParams, DeletePhoneParams,
     UserFilterType, GetUsersResponse,
     GetCollaboratorsParams, GetCollaboratorsResponse, CreateCollaboratorParams, CreateCollaboratorResponse, UpdateCollaboratorParams, UpdateCollaboratorResponse, DeleteCollaboratorParams, RemoveCollaboratorResponse, // Utiliser CollaboratorType
     GetInventoriesParams, GetInventoriesResponse, GetInventoryResponse, CreateInventoryParams, InventoryResponse, UpdateInventoryParams, DeleteInventoryParams, DeleteInventoryResponse, Inventory, // Utiliser Inventory
@@ -47,6 +47,7 @@ import { useStore } from '../pages/stores/StoreStore'; // Pour l'URL du store
 import logger from './Logger';
 import { CommentInterface, FeatureInterface } from '../Interfaces/Interfaces';
 import { useTranslation } from 'react-i18next';
+
 
 
 // --- Client TanStack Query (inchangé) ---

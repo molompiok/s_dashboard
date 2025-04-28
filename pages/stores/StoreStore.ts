@@ -50,6 +50,7 @@ const useStore = create(combine({
         "expire_at": "2025-05-02T15:18:52.073+00:00",
         "disk_storage_limit_gb": 1,
         "is_active": false,
+        currency:'cfa',
         "created_at": "2025-04-18T15:18:52.119+00:00",
         "updated_at": "2025-04-18T15:18:52.120+00:00",
         "currentApi": {

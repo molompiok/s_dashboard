@@ -44,7 +44,7 @@ function Page() {
     // ✅ Utiliser le hook pour récupérer les détails
     const { data: command, isLoading, isError, error: apiError } = useGetOrderDetails(
         {
-            order_id:command_id
+            order_id: command_id
         },
         { enabled: !!currentStore && !!command_id }
     );
@@ -70,11 +70,11 @@ function Page() {
                         logger.info(`Received SSE update for current order ${command_id}. Invalidating...`);
                         queryClient.invalidateQueries({ queryKey: ['orderDetails', command_id] });
                     } else {
-                         logger.debug(`Received SSE update for different order ${data.id}. Ignoring.`);
+                        logger.debug(`Received SSE update for different order ${data.id}. Ignoring.`);
                     }
                 });
             } catch (err) {
-                 logger.error({ channel, orderId: command_id, error: err }, "Failed to subscribe to order update SSE channel");
+                logger.error({ channel, orderId: command_id, error: err }, "Failed to subscribe to order update SSE channel");
             }
         }
         subscribe();
@@ -114,12 +114,14 @@ function Page() {
                 <h2 className="text-xl font-semibold text-gray-800 mb-0">{t('order.customerInfoTitle')}</h2>
                 {command.user && <CommandUser command={command} user={command.user} />}
 
-                <div className="flex justify-between items-baseline mb-0 mt-4"> {/* Ajusté margin */}
-                    <h2 className="text-xl font-semibold text-gray-800">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-baseline gap-2 mb-0 mt-4">
+                    <h2 className="text-lg sm:text-xl font-semibold text-gray-800">
                         {t('order.productListTitle')}
-                        <span className="text-sm font-medium text-gray-500 ml-1">({t('dashboard.itemCount', { count: command.items?.length || 0 })})</span>
+                        <span className="text-sm font-medium text-gray-500 ml-1">
+                            ({t('dashboard.itemCount', { count: command.items?.length || 0 })})
+                        </span>
                     </h2>
-                    <span className="text-lg font-semibold text-gray-700">
+                    <span className="text-base sm:text-lg font-semibold text-gray-700">
                         {t('order.totalLabel')}: {Number(command.total_price || 0).toLocaleString()} {command.currency}
                     </span>
                 </div>
@@ -127,8 +129,10 @@ function Page() {
                     {command.items?.map((item) => <CommandProduct key={item.id} item={item} />)}
                 </div>
 
-                <div className="flex justify-between items-center mb-0 mt-4"> {/* Ajusté margin */}
-                    <h2 className="text-xl font-semibold text-gray-800">{t('order.statusEvolutionTitle')}</h2>
+                <div className="flex flex-col min-[360px]:flex-row justify-between items-start sm:items-center gap-2 mb-0 mt-4">
+                    <h2 className="text-lg sm:text-xl font-semibold text-gray-800">
+                        {t('order.statusEvolutionTitle')}
+                    </h2>
                     <button
                         onClick={handleOpenStatusUpdate}
                         className="text-sm text-blue-600 hover:text-blue-800 px-3 py-1 rounded border border-blue-300 hover:bg-blue-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
@@ -149,12 +153,12 @@ function Page() {
 // =========================================
 
 // --- Composant CommandTop ---
-export  function CommandTop({ command }: { command?: Partial<CommandInterface> }) {
+export function CommandTop({ command }: { command?: Partial<CommandInterface> }) {
     const { t } = useTranslation();
     const commandId = command?.id ?? '';
     const commandIdShort = getId(commandId);
     const [copiedId, setCopiedId] = useState(false);
-    const {openChild} = useChildViewer()
+    const { openChild } = useChildViewer()
     const handleCopy = (textToCopy: string | undefined) => {
         if (!textToCopy) return;
         copyToClipboard(textToCopy, () => {
@@ -168,11 +172,11 @@ export  function CommandTop({ command }: { command?: Partial<CommandInterface> }
     return (
         <div className="w-full flex flex-wrap items-start gap-x-6 gap-y-4 p-4 bg-white rounded-lg shadow-sm border border-gray-200">
             {/* QR Code & ID */}
-            <div className="flex items-center gap-4 flex-shrink-0" onClick={()=>{
+            <div className="flex items-center gap-4 flex-shrink-0" onClick={() => {
                 openChild(<ChildViewer>
                     <Receipt command={command} i18nIsDynamicList />
                 </ChildViewer>,
-                 { background: '#3455' }
+                    { background: '#3455' }
                 )
             }}>
                 <QRCodeCanvas value={qrCodeValue} size={80} bgColor="#ffffff" fgColor="#374151" level="Q" className="border border-gray-200 rounded p-1" />
@@ -207,7 +211,7 @@ export  function CommandTop({ command }: { command?: Partial<CommandInterface> }
 }
 
 // --- Composant PaymentMethodElement ---
-export  function PaymentMethodElement({ paymentMethod }: { paymentMethod?: PaymentMethod }) {
+export function PaymentMethodElement({ paymentMethod }: { paymentMethod?: PaymentMethod }) {
     const { t } = useTranslation();
     let Icon = IoCard;
     let textKey = 'order.paymentMethod.card';
@@ -225,7 +229,7 @@ export  function PaymentMethodElement({ paymentMethod }: { paymentMethod?: Payme
 }
 
 // --- Composant CommandUser ---
-export  function CommandUser({ user, command }: { command: Partial<CommandInterface>, user: Partial<UserInterface> }) {
+export function CommandUser({ user, command }: { command: Partial<CommandInterface>, user: Partial<UserInterface> }) {
     const { t } = useTranslation();
     const maskedPhone = command.phone_number && command.formatted_phone_number
         ? IMask.pipe(command.phone_number, { mask: command.formatted_phone_number })
@@ -238,45 +242,50 @@ export  function CommandUser({ user, command }: { command: Partial<CommandInterf
     const mailLink = user.email ? `mailto:${user.email}?subject=${t('order.emailSubject', { ref: command.reference ?? command.id })}` : undefined;
 
     return (
-        <div className="flex flex-col sm:flex-row items-start gap-4 p-4 bg-white rounded-lg shadow-sm border border-gray-200">
-            <div className="w-20 h-20 rounded-xl flex-shrink-0 bg-cover bg-center bg-gray-200" style={{ backgroundImage: getImg(user.photo?.[0], '/res/user_placeholder.png') }}></div>
-            <div className="flex flex-col gap-3 flex-grow min-w-0">
+        <div className="flex flex-col min-[420px]:flex-row max-[420px]:items-center items-start gap-4 p-4 bg-white rounded-lg shadow-min-[500px] border border-gray-200">
+            <div
+                className={`w-24 h-24 flex items-center ${user.photo?.[0] ? '' : 'gb-gray-300'} font-bold text-gray-500 justify-center text-4xl rounded-full object-cover border-4 border-white shadow`}
+                style={{ background: user.photo?.[0] ? getImg(user.photo[0], undefined,) : 'var(--color-gray-100)' }}
+            >
+                {!user.photo?.[0] && (user.full_name?.substring(0, 2).toUpperCase() || '?')}
+            </div>
+            <div className="max-[420px]:items-centerflex flex-col gap-3 flex-grow min-w-0">
                 <h2 className="text-lg font-semibold text-gray-800 truncate" title={user.full_name}>{user.full_name || t('common.anonymous')}</h2>
                 {/* Téléphone */}
                 {maskedPhone && (
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-2">
-                        <a href={telLink} className="flex items-center gap-2 text-sm text-gray-700 hover:text-blue-600 min-w-0">
+                    <div className="flex flex-col min-[500px]:flex-row min-[500px]:items-center min-[500px]:justify-between gap-1 min-[500px]:gap-2">
+                        <a href={telLink} className="flex items-center gap-2 text-min-[500px] text-gray-700 hover:text-blue-600 min-w-0">
                             <IoCall className="w-4 h-4 text-gray-400 flex-shrink-0" />
                             <span className="truncate">{maskedPhone}</span>
                         </a>
-                        <div className="flex items-center gap-2 mt-1 sm:mt-0 flex-shrink-0">
-                            {telLink && <a href={telLink} title={t('order.callAction')} target="_blank" rel="noreferrer" className="p-1 rounded-full hover:bg-gray-100"><img src={getImg('/res/social/telephone.png')} alt="Call" className="w-5 h-5"/></a>}
-                            {waLink && <a href={waLink} title={t('order.whatsappAction')} target="_blank" rel="noreferrer" className="p-1 rounded-full hover:bg-gray-100"><img src={getImg('/res/social/social.png')} alt="WhatsApp" className="w-5 h-5"/></a>}
-                            {tgLink && <a href={tgLink} title={t('order.telegramAction')} target="_blank" rel="noreferrer" className="p-1 rounded-full hover:bg-gray-100"><img src={getImg('/res/social/telegram.png')} alt="Telegram" className="w-5 h-5"/></a>}
+                        <div className="flex items-center gap-2 mt-1 min-[500px]:mt-0 flex-shrink-0">
+                            {telLink && <a href={telLink} title={t('order.callAction')} target="_blank" rel="noreferrer" className="p-1 rounded-full hover:bg-gray-100"><img src={'/res/social/telephone.png'} alt="Call" className="w-5 h-5" /></a>}
+                            {waLink && <a href={waLink} title={t('order.whatsappAction')} target="_blank" rel="noreferrer" className="p-1 rounded-full hover:bg-gray-100"><img src={'/res/social/social.png'} alt="WhatsApp" className="w-5 h-5" /></a>}
+                            {tgLink && <a href={tgLink} title={t('order.telegramAction')} target="_blank" rel="noreferrer" className="p-1 rounded-full hover:bg-gray-100"><img src={'/res/social/telegram.png'} alt="Telegram" className="w-5 h-5" /></a>}
                         </div>
                     </div>
                 )}
                 {/* Email */}
-                 {user.email && (
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-2">
-                        <a href={mailLink} className="flex items-center gap-2 text-sm text-gray-700 hover:text-blue-600 min-w-0">
+                {user.email && (
+                    <div className="flex flex-col min-[500px]:flex-row min-[500px]:items-center min-[500px]:justify-between gap-1 min-[500px]:gap-2">
+                        <a href={mailLink} className="flex items-center gap-2 text-min-[500px] text-gray-700 hover:text-blue-600 min-w-0">
                             <IoMail className="w-4 h-4 text-gray-400 flex-shrink-0" />
                             <span className="truncate">{user.email}</span>
                         </a>
-                        <div className="flex items-center gap-2 mt-1 sm:mt-0 flex-shrink-0">
-                           {mailLink && <a href={mailLink} title={t('order.emailAction')} target="_blank" rel="noreferrer" className="p-1 rounded-full hover:bg-gray-100"><img src={getImg('/res/social/gmail.png')} alt="Email" className="w-5 h-5"/></a>}
+                        <div className="flex items-center gap-2 mt-1 min-[500px]:mt-0 flex-shrink-0">
+                            {mailLink && <a href={mailLink} title={t('order.emailAction')} target="_blank" rel="noreferrer" className="p-1 rounded-full hover:bg-gray-100"><img src={'/res/social/gmail.png'} alt="Email" className="w-5 h-5" /></a>}
                         </div>
                     </div>
-                 )}
+                )}
                 {/* Adresse */}
                 {(command.delivery_address || command.pickup_address) && (
-                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 sm:gap-2">
-                        <a href={mapUrl} target="_blank" rel="noreferrer" className="flex items-start gap-2 text-sm text-gray-700 hover:text-blue-600 min-w-0">
+                    <div className="flex flex-col min-[500px]:flex-row min-[500px]:items-center min-[500px]:justify-between gap-1 min-[500px]:gap-2">
+                        <a href={mapUrl} target="_blank" rel="noreferrer" className="flex items-start gap-2 text-min-[500px] text-gray-700 hover:text-blue-600 min-w-0">
                             <IoLocationSharp className="w-4 h-4 text-gray-400 flex-shrink-0 mt-0.5" />
                             <span className="flex-grow">{command.delivery_address || command.pickup_address}</span>
                         </a>
-                        <div className="flex items-center gap-2 mt-1 sm:mt-0 flex-shrink-0">
-                           {mapUrl && <a href={mapUrl} title={t('order.mapAction')} target="_blank" rel="noreferrer" className="p-1 rounded-full hover:bg-gray-100"><img src={getImg('/res/social/maps.png')} alt="Map" className="w-5 h-5"/></a>}
+                        <div className="flex items-center gap-2 mt-1 min-[500px]:mt-0 flex-shrink-0">
+                            {mapUrl && <a href={mapUrl} title={t('order.mapAction')} target="_blank" rel="noreferrer" className="p-1 rounded-full hover:bg-gray-100"><img src={'/res/social/maps.png'} alt="Map" className="w-5 h-5" /></a>}
                         </div>
                     </div>
                 )}
@@ -295,7 +304,7 @@ export function CommandProduct({ item }: { item: CommandItemInterface }) {
     // Simplification: Accès plus direct à l'image via le modèle préchargé
     const imageUrl = item.product?.features?.find(f => f.is_default)?.values?.[0]?.views?.[0] ?? item.product?.features?.[0]?.values?.[0]?.views?.[0];
 
-     const handleCopy = (textToCopy: string | undefined) => {
+    const handleCopy = (textToCopy: string | undefined) => {
         if (!textToCopy) return;
         copyToClipboard(textToCopy, () => {
             setCopiedId(true);
@@ -304,42 +313,41 @@ export function CommandProduct({ item }: { item: CommandItemInterface }) {
     };
 
     return (
-        <div className={`relative p-3 rounded-xl flex flex-col sm:flex-row items-start gap-3 shadow-sm border ${
-             isReturn ? 'bg-red-50 border-red-200' : 'bg-white border-gray-200'
-        }`}>
+        <div className={`relative p-3 pb-8 rounded-xl flex flex-col sm:flex-row items-start gap-3 shadow-sm border ${isReturn ? 'bg-red-50 border-red-200' : 'bg-white border-gray-200'
+            }`}>
             {/* Image */}
             <div
                 className="w-16 h-16 md:w-20 md:h-20 rounded-lg flex-shrink-0 bg-cover bg-center bg-gray-200"
-                style={{ backgroundImage: getImg(imageUrl, undefined, currentStore?.url) }} // Passer URL base store pour images relatives
+                style={{ background: getImg(imageUrl, undefined, currentStore?.url) }} // Passer URL base store pour images relatives
             ></div>
             {/* Infos */}
             <div className="flex-grow flex flex-col gap-2 min-w-0">
-                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-1">
-                     <div className="flex-grow min-w-0">
+                <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-1">
+                    <div className="flex-grow min-w-0">
                         <h2 className='font-semibold text-base text-gray-800 truncate' title={item.product?.name}>
                             {item.product?.name ?? t('common.unknownProduct')}
                         </h2>
                         <p className='text-xs text-gray-500 mt-0.5 line-clamp-2' title={markdownToPlainText(item.product?.description || '')}>
-                             {markdownToPlainText(item.product?.description || '')}
+                            {markdownToPlainText(item.product?.description || '')}
                         </p>
                         <p className='text-xs text-gray-400 mt-0.5 flex items-center gap-1 group cursor-pointer'
-                             title={t('common.copyId')}
-                             onClick={() => handleCopy(getId(item?.product_id))}>
+                            title={t('common.copyId')}
+                            onClick={() => handleCopy(getId(item?.product_id))}>
                             ID: {getId(item.product_id)}
-                             <IoCopyOutline className={`w-3 h-3 transition-all ${copiedId ? 'text-green-500 scale-110' : 'text-gray-400 opacity-0 group-hover:opacity-60'}`} />
+                            <IoCopyOutline className={`w-3 h-3 transition-all ${copiedId ? 'text-green-500 scale-110' : 'text-gray-400 opacity-0 group-hover:opacity-60'}`} />
                         </p>
-                     </div>
+                    </div>
                     <div className="flex flex-col items-start sm:items-end flex-shrink-0 mt-1 sm:mt-0">
                         <h3 className='text-xs text-gray-600 whitespace-nowrap'>
-                             {item.quantity} <IoCloseOutline className="inline -mt-px" /> {Number(item.price_unit || 0).toLocaleString()} {item.currency}
-                         </h3>
-                         <h2 className='text-sm font-medium text-gray-800 whitespace-nowrap flex items-center gap-1'>
-                             <IoPricetag className="w-3 h-3 text-gray-400" /> {(item.quantity * (item.price_unit || 0)).toLocaleString()} {item.currency}
-                         </h2>
+                            {item.quantity} <IoCloseOutline className="inline -mt-px" /> {Number(item.price_unit || 0).toLocaleString()} {item.currency}
+                        </h3>
+                        <h2 className='text-sm font-medium text-gray-800 whitespace-nowrap flex items-center gap-1'>
+                            <IoPricetag className="w-3 h-3 text-gray-400" /> {(item.quantity * (item.price_unit || 0)).toLocaleString()} {item.currency}
+                        </h2>
                     </div>
-                 </div>
-                 {/* Variantes */}
-                 {item.bind_name && typeof item.bind_name === 'object' && Object.keys(item.bind_name).length > 0 && ( // Vérifier typeof object
+                </div>
+                {/* Variantes */}
+                {item.bind_name && typeof item.bind_name === 'object' && Object.keys(item.bind_name).length > 0 && ( // Vérifier typeof object
                     <ul className="flex items-center flex-wrap gap-x-3 gap-y-1 mt-1">
                         {Object.entries(item.bind_name).map(([key, value]) => {
                             // Extraction plus robuste des infos de la clé et valeur
@@ -348,31 +356,31 @@ export function CommandProduct({ item }: { item: CommandItemInterface }) {
                             const valueKey = typeof value === 'string' ? null : (value as ValueInterface)?.key;
                             const valueIcon = typeof value === 'string' ? null : (value as ValueInterface)?.icon?.[0];
 
-                             if (!featureName || !valueText) return null; // Ne pas afficher si infos manquantes
+                            if (!featureName || !valueText) return null; // Ne pas afficher si infos manquantes
 
-                             return (
+                            return (
                                 <li key={key} className="flex items-center border border-gray-200 rounded text-xs leading-none max-w-full">
                                     <span className='bg-gray-100 text-gray-600 px-1.5 py-1 rounded-l'>{limit(featureName, 12)}</span>
                                     {valueIcon && <span className='w-5 h-5 rounded mx-1 bg-cover bg-center' style={{ backgroundImage: getImg(valueIcon) }}></span>}
                                     {valueKey && featureType === FeatureType.COLOR && !valueIcon && <span className='w-3 h-3 rounded-full mx-1.5 border border-gray-300' style={{ backgroundColor: valueKey }}></span>}
                                     <span className='text-gray-800 px-1.5 py-1 truncate rounded-r' title={valueText || undefined}>{limit(valueText, 16)}</span>
                                 </li>
-                             );
+                            );
                         })}
                     </ul>
-                 )}
+                )}
             </div>
-             {isReturn && <span className='absolute top-2 right-2'><OrderStatusElement status={item.status?.toUpperCase() as any} /></span>}
-             <a href={`/products/${item.product_id}`} className="absolute bottom-1 right-1 px-2 py-0.5 rounded-lg border border-gray-200 text-xs text-blue-600 bg-white/80 backdrop-blur-sm hover:bg-blue-50 hover:border-blue-300 cursor-pointer flex items-center gap-1">
-                 {t('order.viewProduct')}
-                 <IoChevronForward className="w-3 h-3"/>
-             </a>
+            {isReturn && <span className='absolute top-2 right-2'><OrderStatusElement status={item.status?.toUpperCase() as any} /></span>}
+            <a href={`/products/${item.product_id}`} className="absolute bottom-1 right-1 px-2 py-0.5 rounded-lg border border-gray-200 text-xs text-blue-600 bg-white/80 backdrop-blur-sm hover:bg-blue-50 hover:border-blue-300 cursor-pointer flex items-center gap-1">
+                {t('order.viewProduct')}
+                <IoChevronForward className="w-3 h-3" />
+            </a>
         </div>
     );
 }
 
 // --- Composant CommandStatusHistory ---
-export  function CommandStatusHistory({ events, low }: { events: EventStatus[], low: boolean }) {
+export function CommandStatusHistory({ events, low }: { events: EventStatus[], low: boolean }) {
     const { t } = useTranslation(); // ✅ i18n
     // S'assurer que les événements sont triés du plus récent au plus ancien
     const sortedEvents = useMemo(() => [...events].sort((a, b) => DateTime.fromISO(b.change_at).toMillis() - DateTime.fromISO(a.change_at).toMillis()), [events]);
@@ -397,31 +405,31 @@ export  function CommandStatusHistory({ events, low }: { events: EventStatus[], 
                         )}
                         {/* Step Col */}
                         <div className="flex flex-col items-center self-stretch">
-                             {/* Icône (utiliser une icône plus pertinente peut-être) */}
-                             <span className="flex items-center justify-center w-6 h-6 rounded-full text-white text-xs z-10 shadow" style={{ backgroundColor: (statusColors as any)[k.status.toUpperCase()] ?? '#9CA3AF' }}>
+                            {/* Icône (utiliser une icône plus pertinente peut-être) */}
+                            <span className="flex items-center justify-center w-6 h-6 rounded-full text-white text-xs z-10 shadow" style={{ backgroundColor: (statusColors as any)[k.status.toUpperCase()] ?? '#9CA3AF' }}>
                                 <IoCheckmarkCircle />
-                             </span>
-                             {/* Barre */}
-                             {i < arr.length - 1 && <div className="w-0.5 flex-grow bg-gray-300 my-1"></div>}
+                            </span>
+                            {/* Barre */}
+                            {i < arr.length - 1 && <div className="w-0.5 flex-grow bg-gray-300 my-1"></div>}
                         </div>
                         {/* Info Col */}
                         <div className="flex-grow pb-6">
-                             <div className="flex justify-between items-center mb-1 flex-wrap gap-x-2"> {/* flex-wrap pour mobile */}
+                            <div className="flex justify-between items-center mb-1 flex-wrap gap-x-2"> {/* flex-wrap pour mobile */}
                                 <OrderStatusElement status={k.status as any} />
                                 {low && (
-                                     <div className="text-right">
-                                         <span className="block text-xs font-medium text-gray-700">{formattedDate}</span>
-                                         <span className="block text-xs text-gray-500">{formattedTime}</span>
-                                     </div>
+                                    <div className="text-right">
+                                        <span className="block text-xs font-medium text-gray-700">{formattedDate}</span>
+                                        <span className="block text-xs text-gray-500">{formattedTime}</span>
+                                    </div>
                                 )}
-                             </div>
-                             {k.message && <p className="text-sm text-gray-600 mt-1">{k.message}</p>}
-                              {/* Afficher l'acteur du changement */}
-                              {k.user_provide_change_id && k.user_role && (
-                                   <p className="text-xs text-gray-400 mt-1">
-                                       {t('order.statusChangedBy', { role: t(`roles.${k.user_role}`, k.user_role) })}
-                                   </p>
-                              )}
+                            </div>
+                            {k.message && <p className="text-sm text-gray-600 mt-1">{k.message}</p>}
+                            {/* Afficher l'acteur du changement */}
+                            {k.user_provide_change_id && k.user_role && (
+                                <p className="text-xs text-gray-400 mt-1">
+                                    {t('order.statusChangedBy', { role: t(`roles.${k.user_role}`, k.user_role) })}
+                                </p>
+                            )}
                         </div>
                     </div>
                 );
@@ -431,72 +439,72 @@ export  function CommandStatusHistory({ events, low }: { events: EventStatus[], 
 }
 
 // --- Composant Popup StatusUpdatePopup ---
-export  function StatusUpdatePopup({ currentStatus, orderId, onClose, mutation }: {
+export function StatusUpdatePopup({ currentStatus, orderId, onClose, mutation }: {
     currentStatus: OrderStatus;
     orderId: string;
     onClose: () => void;
     mutation: UseMutationResult<any, ApiError, { user_order_id: string, status: OrderStatus }>;
 }) {
-     const { t } = useTranslation();
+    const { t } = useTranslation();
 
-     // TODO: Implémenter la logique pour déterminer les statuts valides
-     const getValidNextStatuses = (current: OrderStatus): OrderStatus[] => {
+    // TODO: Implémenter la logique pour déterminer les statuts valides
+    const getValidNextStatuses = (current: OrderStatus): OrderStatus[] => {
         // Logique de transition à implémenter ici basées sur les règles backend
         // Exemple simplifié :
-         switch (current) {
-             case OrderStatus.PENDING:
-                 return [OrderStatus.CONFIRMED, OrderStatus.CANCELED];
-             case OrderStatus.CONFIRMED:
-                  // Assumer que with_delivery détermine si 'Shipped' ou 'ReadyForPickup' est possible
-                 // return [OrderStatus.SHIPPED, OrderStatus.READY_FOR_PICKUP, OrderStatus.CANCELED];
-                 return [OrderStatus.DELIVERED, OrderStatus.PICKED_UP, OrderStatus.CANCELED]; // Simplifié pour S0?
-              case OrderStatus.DELIVERED:
-                  return [OrderStatus.RETURNED]; // Seul un retour possible?
-              // Ajouter tous les autres cas...
-             default:
-                 return []; // Ne peut pas changer depuis CANCELED, RETURNED, etc.
-         }
-     };
+        switch (current) {
+            case OrderStatus.PENDING:
+                return [OrderStatus.CONFIRMED, OrderStatus.CANCELED];
+            case OrderStatus.CONFIRMED:
+                // Assumer que with_delivery détermine si 'Shipped' ou 'ReadyForPickup' est possible
+                // return [OrderStatus.SHIPPED, OrderStatus.READY_FOR_PICKUP, OrderStatus.CANCELED];
+                return [OrderStatus.DELIVERED, OrderStatus.PICKED_UP, OrderStatus.CANCELED]; // Simplifié pour S0?
+            case OrderStatus.DELIVERED:
+                return [OrderStatus.RETURNED]; // Seul un retour possible?
+            // Ajouter tous les autres cas...
+            default:
+                return []; // Ne peut pas changer depuis CANCELED, RETURNED, etc.
+        }
+    };
 
-     const validStatuses = getValidNextStatuses(currentStatus);
+    const validStatuses = getValidNextStatuses(currentStatus);
 
-     const handleUpdate = (newStatus: OrderStatus) => {
-         mutation.mutate(
-             { user_order_id: orderId, status: newStatus },
-             { onSuccess: onClose, onError: onClose } // Fermer même en cas d'erreur? Ou afficher erreur?
-         );
-     };
+    const handleUpdate = (newStatus: OrderStatus) => {
+        mutation.mutate(
+            { user_order_id: orderId, status: newStatus },
+            { onSuccess: onClose, onError: onClose } // Fermer même en cas d'erreur? Ou afficher erreur?
+        );
+    };
 
-     return (
-         <div className="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full">
-             <h3 className="text-lg font-medium text-gray-900 mb-4">{t('order.updateStatusTitle')}</h3>
-             <div className='flex flex-wrap gap-3 justify-center'>
-                 {Object.values(OrderStatus).map((k) => {
-                     const isValidNext = validStatuses.includes(k);
-                     const isCurrent = k === currentStatus;
-                     return (
-                         <button
-                             key={k}
-                             type="button"
-                             onClick={() => handleUpdate(k)}
-                              // Désactiver si ce n'est pas une transition valide ou si c'est le statut actuel ou si mutation en cours
-                             disabled={!isValidNext || isCurrent || mutation.isPending}
-                             className={`disabled:opacity-50 disabled:cursor-not-allowed transition ${isCurrent ? 'ring-2 ring-offset-1 ring-blue-500' : ''}`}
-                         >
+    return (
+        <div className="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full">
+            <h3 className="text-lg font-medium text-gray-900 mb-4">{t('order.updateStatusTitle')}</h3>
+            <div className='flex flex-wrap gap-3 justify-center'>
+                {Object.values(OrderStatus).map((k) => {
+                    const isValidNext = validStatuses.includes(k);
+                    const isCurrent = k === currentStatus;
+                    return (
+                        <button
+                            key={k}
+                            type="button"
+                            onClick={() => handleUpdate(k)}
+                            // Désactiver si ce n'est pas une transition valide ou si c'est le statut actuel ou si mutation en cours
+                            disabled={!isValidNext || isCurrent || mutation.isPending}
+                            className={`disabled:opacity-50 disabled:cursor-not-allowed transition ${isCurrent ? 'ring-2 ring-offset-1 ring-blue-500' : ''}`}
+                        >
                             <OrderStatusElement status={k as any} isSelected={isCurrent} />
-                         </button>
-                     );
-                 })}
-             </div>
-             {mutation.isError && (
-                  <p className="text-red-600 text-sm mt-4">{mutation.error.message || t('error_occurred')}</p>
-             )}
-             <button
-                 onClick={onClose}
-                 className="mt-6 w-full text-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
-             >
-                 {t('common.cancel')}
-             </button>
-         </div>
-     );
+                        </button>
+                    );
+                })}
+            </div>
+            {mutation.isError && (
+                <p className="text-red-600 text-sm mt-4">{mutation.error.message || t('error_occurred')}</p>
+            )}
+            <button
+                onClick={onClose}
+                className="mt-6 w-full text-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+            >
+                {t('common.cancel')}
+            </button>
+        </div>
+    );
 }

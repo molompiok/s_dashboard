@@ -61,10 +61,9 @@ export function HomeStat() {
 
     return (
         // Conteneur principal avec grid et breakpoints Tailwind
-        <div className="w-full grid grid-cols-1 sm:grid-cols-2 gap-5 p-5 bg-gradient-to-br from-gray-50 to-slate-200/25 rounded-2xl">
-
+        <div className="w-full grid grid-cols-1 min-[420px]:grid-cols-2 gap-5 p-2 bg-gradient-to-br from-gray-50 to-slate-200/25 rounded-2xl">
             {/* Account Total Card - md:col-span-2 pour occuper toute la largeur sur md+ */}
-            <div className={`relative bg-white/95 shadow-md rounded-xl p-5 transition duration-100 ease-in-out ${openPeriod ? '' : 'hover:scale-99'} sm:col-span-2`}>
+            <div className="relative bg-white/95 shadow-md rounded-xl p-5 transition duration-100 ease-in-out min-[420px]:col-span-2">
                 <div className="flex justify-between items-center mb-4">
                     {/* 🌍 i18n */}
                     <h3 className="text-slate-600 text-sm font-semibold flex items-center gap-1">
@@ -117,7 +116,7 @@ export function HomeStat() {
             </div>
 
             {/* Visits Card */}
-            <div className="relative bg-white/95 shadow-md rounded-xl p-5 transition duration-100 ease-in-out hover:scale-99">
+            <div className="relative bg-white/95 shadow-md rounded-xl p-5 transition duration-100 ease-in-out">
                 <div className="flex justify-between items-center mb-4">
                     {/* 🌍 i18n */}
                     <h3 className="text-slate-600 text-sm font-semibold flex items-center gap-1">
@@ -140,7 +139,7 @@ export function HomeStat() {
             </div>
 
             {/* Orders Card */}
-            <div className="relative bg-white/95 shadow-md rounded-xl p-5 transition duration-100 ease-in-out hover:scale-99">
+            <div className="relative bg-white/95 shadow-md rounded-xl p-5 transition duration-100 ease-in-out">
                 <div className="flex justify-between items-center mb-4">
                     {/* 🌍 i18n */}
                     <h3 className="text-slate-600 text-sm font-semibold flex items-center gap-1">

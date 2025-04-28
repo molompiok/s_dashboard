@@ -1,281 +1,283 @@
-import { IoChevronDown, IoChevronForward, IoFilterSharp, IoSearch } from 'react-icons/io5'
-import './ClientList.css'
-import { UserFilterType, UserInterface } from '../../Interfaces/Interfaces'
-import { useEffect, useState } from 'react'
-import { OrderStatusElement } from '../Status/Satus'
+// Components/ClientList/ClientList.tsx
+// import './ClientList.css'; // ❌ Supprimer
 
+import { IoChevronDown, IoSearch } from 'react-icons/io5';
+import { UserFilterType, UserInterface } from '../../Interfaces/Interfaces';
+import { useEffect, useState } from 'react';
+import { OrderStatusElement } from '../Status/Satus'; // Peut-être renommer/généraliser?
 import { DateRange, DayPicker } from "react-day-picker";
-import "react-day-picker/style.css";
-import { ClientCall, debounce } from '../Utils/functions'
-export { ClientList }
-import { getImg } from '../Utils/StringFormater'
-import { getTransmit, useStore } from '../../pages/stores/StoreStore'
-import { useClientStore } from '../../pages/users/clients/ClientStore'
-import { ClientStatusColor } from '../Utils/constants'
+import "react-day-picker/style.css"; // Garder CSS DayPicker
+import { ClientCall, debounce } from '../Utils/functions';
+import { getImg } from '../Utils/StringFormater';
+// import { getTransmit, useStore } from '../../pages/stores/StoreStore'; // Transmit non pertinent ici a priori
+import { useStore } from '../../pages/stores/StoreStore';
+// import { useClientStore } from '../../pages/users/clients/ClientStore'; // Remplacé par hook API
+import { useGetUsers } from '../../api/ReactSublymusApi'; // ✅ Importer hook API
+import { ClientStatusColor } from '../Utils/constants'; // Garder pour les couleurs spécifiques client?
+import { useTranslation } from 'react-i18next'; // ✅ i18n
+import { DateTime } from 'luxon';
+import { DateFilterComponent } from '../CommandesList/CommandesList';
+import IMask from 'imask';
 
+export { ClientList };
 
-function ClientList({ product_id, user_id }: { user_id?: string, product_id?: string }) {
-  const [filter, setFilter] = useState<UserFilterType>({});
-  const { fetchClients } = useClientStore()
-  const { currentStore } = useStore();
-  const [clients, setClients] = useState<UserInterface[]>([])
+// Définir les statuts clients valides (si applicable, sinon utiliser un filtre texte)
+const VALID_CLIENT_STATUS = ['NEW', 'CLIENT', 'PREMIUM', 'BANNED'] as const;
+type ValidClientStatus = typeof VALID_CLIENT_STATUS[number];
 
-  const [s] = useState({
-    isUpdated: false,
+function ClientList({ product_id, user_id }: { user_id?: string; product_id?: string }) {
+  const { t } = useTranslation(); // ✅ i18n
+  // L'état du filtre local
+  const [filter, setFilter] = useState<UserFilterType>({
+    // with_client_role: true, // Toujours filtrer par client ici
+    order_by: 'date_desc' // Ordre par défaut
   });
-  const fetchCmd = () => {
-    debounce(() => {
-      const d = filter.max_date ? new Date(filter.max_date) : undefined;
-      if(d) d.setDate(d.getDate() + 1);
-      fetchClients({
-        ...filter,
-        max_date: d && (d.toISOString())
-      }).then(res => {
-        s.isUpdated = false;
-        if (!res?.list) return
-        setClients(res.list);
-      });
-    }, 'filter-command', 300)
-  }
+  const { currentStore } = useStore();
 
-  useEffect(()=>{
-    fetchCmd()
-  },[currentStore, filter])
-  useEffect(() => {
-    if (!currentStore) return
+  const { data: clientsData, isLoading, isError, error: apiError } = useGetUsers(
+    {
+      ...filter,
+      // Passer les filtres spécifiques à ce composant si nécessaire
+      // Ex: Si product_id ou user_id étaient utilisés pour filtrer les clients (ce qui semble étrange ici)
+      // product_id: product_id,
+      with_phones: true,
+      user_id: user_id
+    },
+    { enabled: !!currentStore } // Activer seulement si store chargé
+  );
+  const clients = clientsData?.list ?? [];
+  const clientsMeta = clientsData?.meta;
 
-    const transmit = getTransmit(currentStore.url)
-    console.log(currentStore.id);
-
-    // const subscription = transmit?.subscription(`store/${currentStore.id}/new_command`)
-    const subscription = transmit?.subscription(`store/${'d3d8dfcf-b84b-49ed-976d-9889e79e6306'}/new_command`)
-
-    async function subscribe() {
-      if (!subscription) return
-      await subscription.create()
-      subscription.onMessage<{ update: string }>((data) => {
-        console.log(`@@@@@@@  command  @@@@@@@@@@@@  ${JSON.stringify(data)} @@@@@@@@@@@@@@@@@@@`);
-        fetchCmd()
-      })
-    }
-
-    subscribe().catch(console.error)
-
-    return () => {
-      subscription?.delete() // 🔴 Ferme la connexion à l'ancien store lorsqu'on change
-    }
-  }, [currentStore])
-
-  const accuDate: string[] = []
+  // --- Logique d'affichage des dates (inchangée) ---
+  const accuDate: string[] = [];
   const getDate = (date: string) => {
-    const d = new Date(date).toLocaleDateString('fr', {
-      day: 'numeric',
-      month: 'long',
-      year: 'numeric'
-    })
-    return d
-  }
+    if (!date) return '';
+    try {
+      return new Date(date).toLocaleDateString(t('common.locale'), { // Utiliser locale i18n
+        day: 'numeric', month: 'long', year: 'numeric'
+      });
+    } catch { return 'Date invalide'; }
+  };
 
-  return <div className="client-list">
-    <div className="top">
+  console.log(clients);
 
-      <div className="client-search">
-        <h2>List des Clients</h2>
-        <label htmlFor="client-search-input" className='label-icon-right'>
-          <input
-            className={"editor "}
-            placeholder="Nom, Email, #id"
-            id="client-search-input"
-            type="text"
-            value={filter.search || ''}
-            onChange={(e) => {
-              const search = e.currentTarget.value;
-              s.isUpdated = true;
-              setFilter((prev) => ({ ...prev, search }));
-            }}
-          />
-          <IoSearch />
-        </label>
-      </div>
-    </div>
-    <ClientsFilters filter={filter} setFilter={(filter) => {
-      s.isUpdated = true;
-      setFilter(filter)
-    }} />
-    <div className="list">
-      {
-        clients.length == 0 && <div className="column-center"><div className="icon-160" style={{ background: getImg('/res/empty/search.png') }}></div>Aucune commande trouvée</div>
-      }
-      {clients.map((a, i) => {
-        const d = getDate(a.created_at);
-
-        const inner = accuDate.includes(d) 
-        !inner && accuDate.push(d)
-        const h = !inner && <h3 className='date'>{d}</h3>
-        return <div key={a.id}>
-          {!filter.order_by?.includes('price') && h}
-          <a href={`/users/clients/${a.id}`}>
-            <div key={a.id} className="client-item">
-              <div className="row">
-              <div
-                className="client-photo"
-                style={{
-                  background: a.photo?.[0] && getImg(a.photo[0]),
-                  backgroundColor: a.photo?.[0] ? 'transparent' : '#e6e6e6',
-                }}
-              >{a.photo?.[0] ? '' : a.full_name?.substring(0, 2).toUpperCase()}</div>
-              <div className="client-info">
-                <p className="client-full_name">{a.full_name}</p>
-                <p className="client-email">{a.email}</p>
-                <p className="client-phone">{a.phone||('+7 (999) 862-74-41')}</p>
-              </div>
-              </div>
-              <div className="row" style={{width:'100%'}}>
-              <span className='client-date ' style={{margin:'auto'}}>{new Date(a.created_at).toLocaleDateString('fr',{month:'short','day':'numeric', year:'2-digit'})}</span>
-              <div className="client-status" style={{ backgroundColor: '#4CAF5033', color:'#4CAF50' }}>
-                {a.status||'CLIENT'}
-              </div>
-              </div>
-            </div>
-          </a>
-        </div>
-      })}
-    </div>
-  </div>
-}
-
-function ClientsFilters({ filter, setFilter }: { filter: UserFilterType, setFilter: (filter: UserFilterType) => any }) {
-
-  const [currentFilter, setCurrentFilter] = useState('');
-  console.log('currentFilter', currentFilter);
-
-  return <div className="filters no-selectable">
-    <div className="onglet">
-      <div className={`status-filter ${currentFilter == 'status' ? 'active' : ''} ${filter.status ? 'collected' : ''}`} onClick={() => {
-        setCurrentFilter(currentFilter == 'status' ? '' : 'status');
-      }}><span>Status</span> <IoChevronDown /></div>
-      <div className={`order-filter ${currentFilter == 'order' ? 'active' : ''} ${filter.order_by ? 'collected' : ''}`} onClick={() => {
-        setCurrentFilter(currentFilter == 'order' ? '' : 'order');
-      }}><span>Ordre</span> <IoChevronDown /></div>
-      <div className={`date-filter ${currentFilter == 'date' ? 'active' : ''} ${filter.min_date || filter.max_date ? 'collected' : ''}`} onClick={() => {
-        setCurrentFilter(currentFilter == 'date' ? '' : 'date');
-      }}><span>Date</span> <IoChevronDown /></div>
-    </div>
-    <div className="chose">
-      <StatusFilterComponent active={currentFilter == 'status'} status={filter.status} setStatus={(status) => {
-        setFilter({
-          ...filter,
-          status
-        })
-      }} />
-      <OrderFilterComponent active={currentFilter == 'order'} order={filter.order_by} setOrder={(order_by) => {
-        setFilter({
-          ...filter,
-          order_by
-        })
-      }} />
-      <DateFilterComponent date={[filter.min_date, filter.max_date]} setDate={(date) => {
-        setFilter({
-          ...filter,
-          min_date: date?.[0],
-          max_date: date?.[1]
-        })
-      }} active={currentFilter == 'date'} />
-    </div>
-  </div>
-}
-
-function StatusFilterComponent({ status: _status, setStatus, active }: { active: boolean, status: string[] | undefined, setStatus: (status: string[] | undefined) => void }) {
-  const status = _status || []
-  return <div className={`status-filter-component ${active ? 'active' : ''}`}>
-    {
-      Object.keys(ClientStatusColor).map(s => (
-        <span key={s} onClick={() => {
-          const list = status.includes(s) ?
-            status.filter(f => f != s) :
-            [...status, s]
-
-          setStatus(list.length > 0 ? list : undefined)
-        }}><OrderStatusElement background={status.includes(s) ? undefined : 'transparent'} color={status.includes(s) ? (ClientStatusColor as any)[s] : 'var(--discret-1)'} status={s as any} /></span>
-      ))
-    }
-  </div>
-}
-
-export function OrderFilterComponent({ order: _order, setOrder, active }: { active: boolean, order: string | undefined, setOrder: (order: UserFilterType['order_by'] | undefined) => void }) {
-  const order = _order
-  const MapOder = {
-    'date_desc': 'Plus Recent',
-    'date_asc': 'Plus Ancien',
-    'full_name_desc': 'Nom croissant',
-    'full_name_asc': 'Nom decroissant'
-  }
-
-  return <div className={`order-filter-component ${active ? 'active' : ''}`}>
-    {
-      (["date_desc", "date_asc", "full_name_desc", "full_name_asc"] as const).map(o => (
-        <span key={o} className={o == order ? 'order' : ''} onClick={() => {
-          setOrder(order == o ? undefined : o);
-        }}>
-          {MapOder[o]}
-        </span>
-      ))
-    }
-  </div>
-}
-
-export function DateFilterComponent({ date, setDate, active }: { active: boolean, date: [string | undefined, string | undefined,] | undefined, setDate: (date: [string | undefined, string | undefined,] | undefined) => void }) {
-  const currentDate = ClientCall(Date.now, 0)
-  const [selected, setSelected] = useState<DateRange | undefined>(date && { from: new Date(date[0] || date[1] || currentDate), to: new Date(date[1] || date[0] || currentDate) });
-  const [marge, setMarge] = useState('')
-
-
-  const MapMargeName = {
-    '3_days': '3 jours',
-    '7_days': '7 jours',
-    '1_month': '1 mois',
-    'all': 'Tout'
-  }
-  const MapMarge = {
-    '3_days': [ClientCall(() => new Date(currentDate - 3 * 24 * 60 * 60 * 1000).toISOString()), ClientCall(() => new Date(currentDate).toISOString())],
-    '7_days': [ClientCall(() => new Date(currentDate - 7 * 24 * 60 * 60 * 1000).toISOString()), ClientCall(() => new Date(currentDate).toISOString())],
-    '1_month': [ClientCall(() => new Date(currentDate - 30 * 24 * 60 * 60 * 1000).toISOString()), ClientCall(() => new Date(currentDate).toISOString())],
-    'all': undefined
-  }
 
   return (
-    <div className={`date-filter-component ${active ? 'active' : ''}`}>
-      <div className="dates">
-        {
-          (['3_days', '7_days', '1_month', 'all'] as const).map(d => (
-            <span key={d} className={(d == marge || (date == undefined && d == 'all')) ? 'marge' : ''} onClick={() => {
-              setMarge(d == marge ? '' : d);
-              setDate(MapMarge[d] as any);
-              setSelected(d == 'all' ? undefined : { from: new Date(MapMarge[d]?.[0] || currentDate), to: new Date(MapMarge[d]?.[1] || currentDate) })
-            }}>{MapMargeName[d]}</span>
-          ))
-        }
+    // Utiliser flex flex-col gap-4
+    <div className="client-list w-full flex flex-col gap-4">
+      {/* Barre supérieure Titre + Recherche */}
+      {/* Utiliser flex justify-between items-center flex-wrap gap-4 */}
+      <div className="top w-full flex justify-between items-center flex-wrap gap-4 p-2">
+        <h2 className="text-lg font-semibold text-gray-700 whitespace-nowrap">{t('clientList.title')}</h2>
+        <label htmlFor="client-search-input" className='relative w-full sm:w-auto sm:max-w-xs ml-auto'>
+          <input
+            className="w-full pl-3 pr-10 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
+            placeholder={t('clientList.searchPlaceholder')}
+            id="client-search-input"
+            type="text"
+            defaultValue={filter.search || ''}
+            onChange={(e) => {
+              const search = e.target.value;
+              debounce(() => setFilter(prev => ({ ...prev, search: search || undefined, page: 1 })), 'client-search', 400);
+            }}
+          />
+          <IoSearch className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
+        </label>
       </div>
-      <DayPicker
-        captionLayout="dropdown"
-        defaultMonth={new Date()}
-        startMonth={new Date(2025, 2)}
-        endMonth={new Date()}
-        animate
-        mode="range"
-        selected={selected}
-        onSelect={(d) => {
-          setSelected(d);
-          console.log(d);
-          setDate([d?.from?.toISOString(), d?.to?.toISOString()]);
-          setMarge('')
-        }}
-        styles={{
-          selected: {
-            color: '#345'
-          }
-        }}
-      />
+
+      {/* Filtres */}
+      <ClientsFilters filter={filter} setFilter={setFilter} />
+
+      {/* Liste des clients */}
+      {/* Utiliser flex flex-col gap-3 */}
+      <div className="list w-full flex flex-col gap-3">
+        {isLoading && <div className="p-6 text-center text-gray-500">{t('common.loading')}</div>}
+        {isError && <div className="p-6 text-center text-red-500">{apiError?.message || t('error_occurred')}</div>}
+        {!isLoading && !isError && clients.length === 0 && (
+          <div className="flex flex-col items-center justify-center p-10 text-center text-gray-500">
+            <div className="w-40 h-40 bg-contain bg-center bg-no-repeat mb-4 opacity-70" style={{ backgroundImage: getImg('/res/empty/users.png') }}></div>
+            {t('clientList.noClientsFound')}
+          </div>
+        )}
+        {!isLoading && !isError && clients.map((client) => {
+          const d = getDate(client.created_at);
+          const isNewDate = !accuDate.includes(d);
+          if (isNewDate) accuDate.push(d);
+          const dateHeader = isNewDate && !filter.order_by?.includes('name') && ( // Afficher date si pas trié par nom
+            <h3 className='my-3 font-semibold text-sm text-gray-600 px-2'>{d}</h3>
+          );
+          return (
+            <div key={client.id}>
+              {dateHeader}
+              {/* Rendre l'item client cliquable */}
+              <a href={`/users/clients/${client.id}`}>
+                <ClientItem client={client} />
+              </a>
+            </div>
+          );
+        })}
+      </div>
+      {/* TODO: Ajouter Pagination basée sur clientsMeta */}
+    </div>
+  );
+}
+
+// --- Composant ClientItem ---
+function ClientItem({ client }: { client: UserInterface }) {
+  const { t } = useTranslation(); // ✅ i18n
+  const clientStatus = client.status ?? 'CLIENT'; // Statut par défaut
+  // Utiliser les couleurs définies pour les statuts client
+  const statusColor = (ClientStatusColor as any)[clientStatus] ?? ClientStatusColor['CLIENT'];
+  const statusBgColor = `${statusColor}20`; // Ajouter de la transparence pour le fond
+
+  const displayPhone = client.user_phones?.[0] ? IMask.pipe(client.user_phones?.[0]?.phone_number || '', { mask: client.user_phones?.[0]?.format || '' }) : t('common.notProvided');
+
+  return (
+    // Utiliser flex, items-center, gap, p, rounded, bg, hover
+    <div className="client-item flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 p-3 rounded-lg bg-white shadow-sm border border-transparent hover:border-gray-200 transition duration-150 cursor-pointer">
+      {/* Photo/Initials */}
+      <div className="flex items-center gap-3 flex-shrink-0">
+        <div
+          className="client-photo w-10 h-10 rounded-full bg-cover bg-center bg-gray-200 text-gray-500 font-medium text-sm flex items-center justify-center" // Styles pour initiales
+          style={{ background: client.photo?.[0] ? getImg(client.photo[0], undefined,) : 'none' }}
+        >
+          {!client.photo?.[0] && (client.full_name?.substring(0, 2).toUpperCase() || '?')}
+        </div>
+        {/* Info Principale (Nom, Email, Téléphone) */}
+        {/* Utiliser flex flex-col, min-w-0 */}
+        <div className="client-info flex flex-col min-w-0">
+          <p className="client-full_name text-sm font-medium text-gray-800 truncate" title={client.full_name}>{client.full_name || t('common.anonymous')}</p>
+          <p className="client-email text-xs text-gray-500 truncate" title={client.email}>{client.email}</p>
+          <p className="client-phone text-xs text-gray-500 truncate block sm:hidden" title={displayPhone}>{displayPhone}</p>
+        </div>
+      </div>
+
+      {/* Téléphone (caché sur mobile) */}
+      <p className="client-phone text-xs text-gray-500 truncate hidden sm:block w-32 flex-shrink-0" title={displayPhone}>{displayPhone}</p>
+
+      {/* Date d'inscription (caché sur mobile) */}
+      <span className='client-date hidden md:block text-xs text-gray-500 whitespace-nowrap w-20 flex-shrink-0 text-right'>
+        {DateTime.fromISO(client.created_at).setLocale(t('common.locale')).toFormat('dd MMM yy')}
+      </span>
+
+      {/* Statut Client (toujours visible, aligné à droite sur mobile) */}
+      <div className="client-status w-full sm:w-auto sm:ml-auto flex justify-end flex-shrink-0">
+        <span className="px-2.5 py-0.5 rounded-full text-xs font-medium capitalize" style={{ backgroundColor: statusBgColor, color: statusColor }}>
+          {t(`clientStatus.${clientStatus.toLowerCase()}`, clientStatus)}
+        </span>
+      </div>
+    </div>
+  );
+}
+
+
+// --- Composant ClientsFilters (Similaire à CommandesFilters mais adapté) ---
+function ClientsFilters({ filter, setFilter }: { filter: UserFilterType, setFilter: (filter: UserFilterType) => void }) {
+  const { t } = useTranslation(); // ✅ i18n
+  const [currentFilter, setCurrentFilter] = useState('');
+
+  const handleFilterChange = (newFilterData: Partial<UserFilterType>) => {
+    setFilter({ ...filter, ...newFilterData, page: 1 }); // Reset page
+  };
+  const toggleFilter = (filterName: string) => {
+    setCurrentFilter(current => current === filterName ? '' : filterName);
+  };
+
+  return (
+    <div className="filters no-select w-full flex flex-col mb-0 text-sm"> {/* Taille texte globale */}
+      <div className="onglet w-full flex items-center p-2 gap-3 overflow-x-auto overflow-y-hidden rounded-xl scrollbar-hide border-b border-gray-200">
+        {/* Bouton Status */}
+        <div onClick={() => toggleFilter('status')} className={`inline-flex items-center border rounded-lg px-2 py-0.5 cursor-pointer transition duration-200 whitespace-nowrap ${filter.status && filter.status.length > 0 ? 'text-blue-600 bg-blue-100/60 border-blue-200' : 'text-gray-600 border-gray-300'} ${currentFilter === 'status' ? '!bg-blue-100/80 !border-blue-300' : 'hover:bg-gray-100'}`}>
+          <span>{t('clientList.filters.status')}</span>
+          <IoChevronDown className={`ml-2 transition-transform duration-200 ${currentFilter === 'status' ? 'rotate-180' : ''}`} />
+        </div>
+        {/* Bouton Ordre */}
+        <div onClick={() => toggleFilter('order')} className={`inline-flex items-center border rounded-lg px-2 py-0.5 cursor-pointer transition duration-200 whitespace-nowrap ${filter.order_by ? 'text-blue-600 bg-blue-100/60 border-blue-200' : 'text-gray-600 border-gray-300'} ${currentFilter === 'order' ? '!bg-blue-100/80 !border-blue-300' : 'hover:bg-gray-100'}`}>
+          <span>{t('clientList.filters.order')}</span>
+          <IoChevronDown className={`ml-2 transition-transform duration-200 ${currentFilter === 'order' ? 'rotate-180' : ''}`} />
+        </div>
+        {/* Bouton Date */}
+        <div onClick={() => toggleFilter('date')} className={`inline-flex items-center border rounded-lg px-2 py-0.5 cursor-pointer transition duration-200 whitespace-nowrap ${filter.min_date || filter.max_date ? 'text-blue-600 bg-blue-100/60 border-blue-200' : 'text-gray-600 border-gray-300'} ${currentFilter === 'date' ? '!bg-blue-100/80 !border-blue-300' : 'hover:bg-gray-100'}`}>
+          <span>{t('clientList.filters.date')}</span>
+          <IoChevronDown className={`ml-2 transition-transform duration-200 ${currentFilter === 'date' ? 'rotate-180' : ''}`} />
+        </div>
+      </div>
+      {/* Conteneur des options */}
+      <div className="mt-2">
+        <ClientStatusFilterComponent // Nouveau composant pour status client
+          active={currentFilter === 'status'}
+          status={filter.status}
+          setStatus={(status) => handleFilterChange({ status })} />
+        <ClientOrderFilterComponent // Nouveau composant pour tri client
+          active={currentFilter === 'order'}
+          order={filter.order_by}
+          setOrder={(order_by) => handleFilterChange({ order_by })} />
+        <DateFilterComponent
+          active={currentFilter === 'date'}
+          date={[filter.min_date, filter.max_date]}
+          setDate={(date) => handleFilterChange({ min_date: date?.[0], max_date: date?.[1] })} />
+      </div>
+    </div>
+  );
+}
+
+// --- Composant ClientStatusFilterComponent ---
+function ClientStatusFilterComponent({ status: currentStatus, setStatus, active }: { active: boolean, status: string[] | undefined, setStatus: (status: string[] | undefined) => void }) {
+  const { t } = useTranslation();
+  const statusList = currentStatus || [];
+
+  const toggleStatus = (s: ValidClientStatus) => {
+    const newList = statusList.includes(s) ? statusList.filter(f => f !== s) : [...statusList, s];
+    setStatus(newList.length > 0 ? newList : undefined);
+  };
+
+  return (
+    <div className={`gap-1.5 flex flex-wrap transition-all duration-200 ease-in-out overflow-hidden ${active ? 'h-auto opacity-100 visible p-4 border-t border-gray-200 -mt-px' : 'h-0 opacity-0 invisible p-0'}`}>
+      {(VALID_CLIENT_STATUS).map(s => {
+        const color = (ClientStatusColor as any)[s] ?? '#6B7280'; // Gris par défaut
+        const bgColor = `${color}20`;
+        const isSelected = statusList.includes(s);
+        return (
+          <button
+            type="button"
+            key={s}
+            onClick={() => toggleStatus(s)}
+            // Appliquer styles conditionnels pour sélection
+            className={`px-2.5 py-1 rounded-full text-xs font-medium border transition ${isSelected ? 'ring-1 ring-offset-1 ring-blue-400' : 'hover:opacity-80'}`}
+            style={{ color: color, backgroundColor: bgColor, borderColor: `${color}40` }}
+          >
+            {t(`clientStatus.${s.toLowerCase()}`, s)}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
+// --- Composant ClientOrderFilterComponent ---
+function ClientOrderFilterComponent({ order, setOrder, active }: { active: boolean, order: UserFilterType['order_by'], setOrder: (order: UserFilterType['order_by'] | undefined) => void }) {
+  const { t } = useTranslation();
+  // Mapping des clés aux traductions
+  const MapOrder: Record<string, string> = { // Utiliser string comme clé pour le map
+    'date_desc': t('clientList.filters.orderValues.date_desc'),
+    'date_asc': t('clientList.filters.orderValues.date_asc'),
+    'full_name_asc': t('clientList.filters.orderValues.name_asc'), // Ajusté clé
+    'full_name_desc': t('clientList.filters.orderValues.name_desc'), // Ajusté clé
+  };
+  type OrderKey = keyof typeof MapOrder;
+
+  return (
+    <div className={`gap-1.5 flex flex-wrap transition-all duration-200 ease-in-out overflow-hidden ${active ? 'h-auto opacity-100 visible p-4 border-t border-gray-200 -mt-px' : 'h-0 opacity-0 invisible p-0'}`}>
+      {(["date_desc", "date_asc", "full_name_asc", "full_name_desc"] as const).map((o: OrderKey) => (
+        <button
+          type="button"
+          key={o}
+          className={`px-2 py-0.5 border rounded-lg text-sm cursor-pointer ${o === order ? 'bg-primary-100/60 text-primary border-primary-300/50' : 'border-gray-300 text-gray-500 hover:bg-gray-100'}`}
+          onClick={() => setOrder(order === o ? undefined : o as any)}
+        >
+          {MapOrder[o]}
+        </button>
+      ))}
     </div>
   );
 }

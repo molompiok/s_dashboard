@@ -1,225 +1,233 @@
+// pages/users/+Page.tsx (Ou le nom correspondant)
+// ❌ Supprimer les imports CSS
 
-import React, { useEffect, useState } from 'react';
-import './+Page.css'
-
-
-const tasks = [
-  { title: 'Food concept', date: 'Mon', time: '13:00 PM' },
-  { title: 'Landing page UI illustration', date: 'Wed', time: '10:00 AM' },
-];
-
-const teamMembers = [
-  { name: 'Arlene McCoy', role: 'UI Designer' },
-  { name: 'Annette Black', role: 'Developer' },
-  { name: 'Robert Fox', role: 'Analyst' },
-  { name: 'Kathryn Murphy', role: 'UX Researcher' },
-];
-
-const schedule = [
-  { day: 'Sun', task: 'Makanyuk app', start: '09:00', end: '12:00', color: '#a3bffa' },
-  { day: 'Mon', task: 'Food concept', start: '13:00', end: '15:00', color: '#f3a5b1' },
-  { day: 'Wed', task: 'Website design', start: '10:00', end: '14:00', color: '#f6d365' },
-];
-export default function Page() {
-
-
-  return <div className="clients">
-    <App />
-  </div>
-}
-
-
-import { FiSearch, FiUsers, FiBriefcase, FiTrendingUp, FiUsers as FiTeam, FiCalendar, FiBell, FiChevronRight, FiMenu } from 'react-icons/fi';
-import { ClientList } from '../../Components/ClientList/ClientList';
-import { Topbar } from '../../Components/TopBar/TopBar';
-import { useApp } from '../../renderer/AppStore/UseApp';
-import { useStore } from '../stores/StoreStore';
-import { useClientStore } from './clients/ClientStore';
+import React, { useEffect, useState, useMemo } from 'react';
+import { FiUsers, FiBriefcase } from 'react-icons/fi'; // Importer les icônes spécifiques
+import { Topbar } from '../../Components/TopBar/TopBar'; // Garder Topbar
+// import { useApp } from '../../renderer/AppStore/UseApp'; // Remplacé par useGetStats
+import { useGetStats } from '../../api/ReactSublymusApi'; // ✅ Hook pour les stats
+// import { useStore } from '../stores/StoreStore'; // Gardé si besoin pour currentStore
+import { useClientStore } from './clients/ClientStore'; // Sera remplacé par hook API
+import { useGetUsers } from '../../api/ReactSublymusApi'; // ✅ Hook pour les users
 import { UserInterface } from '../../Interfaces/Interfaces';
 import { getImg } from '../../Components/Utils/StringFormater';
+import { useTranslation } from 'react-i18next'; // ✅ i18n
+import logger from '../../api/Logger';
 
-const App = () => {
+// Interface simplifiée pour les cartes de stats (pour la clarté)
+interface StatCardInfo {
+    id: string;
+    titleKey: string; // Clé i18n pour le titre
+    count?: number;
+    gradient: string; // Classes Tailwind pour le dégradé
+    icon: React.ReactElement;
+    details: { labelKey: string; value?: string | number }[]; // Clés i18n pour les labels
+    link: string; // Lien du bouton "Voir tout"
+}
 
-  const { fetchUsersStats, userStats } = useApp()
-  const { fetchClients } = useClientStore()
-  const { currentStore } = useStore()
+export default function Page() {
+    const { t } = useTranslation(); // ✅ i18n
+    // const { fetchUsersStats, userStats } = useApp(); // Remplacé par hook
+    // const { fetchClients } = useClientStore(); // Remplacé par hook
+    // const { currentStore } = useStore(); // Utilisé par les hooks API via useApi()
 
-  const [clientPrev, setClientPrev] = useState<Partial<UserInterface>[]>([])
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    // ✅ Récupérer les stats globales (similaire à HomeStat)
+    const { data: statsApiData, isLoading: isLoadingStats } = useGetStats(
+        { stats: ['visits_stats', 'order_stats'] } // Adapter les stats nécessaires
+        // { enabled: !!currentStore } // Activé par défaut si useApi ne throw pas
+    );
+    // Extraire les données de stats nécessaires (exemple)
+    const userStats = useMemo(() => {
+        // TODO: Mapper statsApiData aux valeurs attendues par les cartes (totalClients, activeUsers, etc.)
+        // Pour l'instant, on utilise des placeholders ou les données brutes si possible
+         return {
+              totalClients: statsApiData?.visits_stats?.length, // Exemple très simplifié
+              ratedUsersCount: undefined, // Placeholder
+              activeUsers: undefined, // Placeholder
+              onlineClients: undefined, // Placeholder
+              averageSatisfaction: undefined // Placeholder
+         };
+    }, [statsApiData]);
 
-  useEffect(() => {
-    fetchUsersStats({
-      with_active_users: true,
-      with_online_clients: true,
-      with_satisfied_clients: true,
-      with_total_clients: true
-    })
-    fetchClients({}).then((res) => {
-      setClientPrev(res?.list || [])
-    })
-  }, [currentStore]);
 
-  console.log(userStats);
+    // ✅ Récupérer la liste des clients (première page)
+    const { data: clientsData, isLoading: isLoadingClients } = useGetUsers(
+        // { role: 'client', limit: 5}, // Fetch 5 clients pour la preview
+        // { enabled: !!currentStore }
+    );
+    const clientPrev = clientsData?.list ?? [];
 
-  const stats = [
-    {
-      id: 'client',
-      title: 'Clients',
-      count: userStats?.totalClients,
-      color: 'linear-gradient(135deg, #f5c6cb, #f3a5b1)',
-      icon: <FiUsers />,
-      users: [
-        { name: 'John Doe', avatar: '#e6e6e6' },
-        { name: 'Jane Smith', avatar: '#e6e6e6' },
-        { name: 'Alex Brown', avatar: '#e6e6e6' },
-      ],
-      details: [
-        { label: 'commentaire', value: userStats?.ratedUsersCount },
-        { label: 'Actifs', value: userStats?.activeUsers },
-        { label: 'en ligne', value: userStats?.onlineClients },
-        { label: 'Satisfaction', value: `${((userStats?.averageSatisfaction || 0) / 5) * 100}%` },
-      ],
-    },
-    {
-      id: 'collab',
-      title: 'Collaborateurs',
-      count: 17,
-      color: 'linear-gradient(135deg, #c3cfe2, #a3bffa)',
-      icon: <FiBriefcase />,
-      users: [
-        { name: 'Arlene McCoy', avatar: '#e6e6e6' },
-        { name: 'Annette Black', avatar: '#e6e6e6' },
-        { name: 'Robert Fox', avatar: '#e6e6e6' },
-      ],
-      details: [
-        { label: 'En mission', value: '14' },
-        { label: 'Disponibles', value: '3' },
-        { label: 'Projets terminés', value: '45' },
-        { label: 'Heures travaillées', value: '320h' },
-      ],
-    },
-    // {
-    //   title: 'Promoteurs',
-    //   count: 12,
-    //   color: 'linear-gradient(135deg, #f5e1a4, #f6d365)',
-    //   icon: <FiTrendingUp />,
-    //   users: [
-    //     { name: 'Mark Wilson', avatar: '#e6e6e6' },
-    //     { name: 'Sarah Lee', avatar: '#e6e6e6' },
-    //     { name: 'Tom Harris', avatar: '#e6e6e6' },
-    //   ],
-    //   details: [
-    //     { label: 'Investissements', value: '$150K' },
-    //     { label: 'Projets soutenus', value: '8' },
-    //     { label: 'Retour attendu', value: '15%' },
-    //     { label: 'Engagements actifs', value: '5' },
-    //   ],
-    // },
-    // {
-    //   title: 'Équipes',
-    //   count: 5,
-    //   color: 'linear-gradient(135deg, #b5f5ec, #81e6d9)',
-    //   icon: <FiTeam />,
-    //   users: [
-    //     { name: 'Team Alpha', avatar: '#e6e6e6' },
-    //     { name: 'Team Beta', avatar: '#e6e6e6' },
-    //     { name: 'Team Gamma', avatar: '#e6e6e6' },
-    //   ],
-    //   details: [
-    //     { label: 'Membres moyens', value: '4' },
-    //     { label: 'Projets actifs', value: '3' },
-    //     { label: 'Tâches en cours', value: '25' },
-    //     { label: 'Performance', value: '88%' },
-    //   ],
-    // },
-  ];
+    // ✅ Récupérer la liste des collaborateurs (première page)
+     const { data: collaboratorsData, isLoading: isLoadingCollabs } = useGetUsers(
+        //  { role: 'collaborator', limit: 5 }, // Fetch 5 collaborateurs
+         // { enabled: !!currentStore }
+     );
+     const collaboratorPrev = collaboratorsData?.list ?? [];
 
-  return (
-    <div className="users-pages">
-      <Topbar />
-      {/* Stats Cards */}
-      <div className="stats-container">
-        {stats.map((stat, index) => (
-          <div key={index} className="stat-card" style={{ background: stat.color }}>
-            <div className="stat-header">
-              <div className="stat-icon">{stat.icon}</div>
-              <div className="stat-title-count">
-                <h2>{stat.title}</h2>
-                <p className="stat-count">{stat.count}</p>
-              </div>
-            </div>
-            <div className="stat-users">
-              {clientPrev.map((user, idx) => (
-                <div key={idx} className="user-avatar"
-                  style={{ background: user.photo?.[0]?getImg(user.photo[0]):'#3455' }}
-                  title={user.full_name}
-                >{!user.photo?.[0] && user.full_name?.substring(0,2).toUpperCase()}</div>
-              ))}
-            </div>
-            <div className="stat-details">
-              {stat.details.map((detail, idx) => (
-                <div key={idx} className="detail-item">
-                  <span className="detail-label">{detail.label}:</span>
-                  <span className="detail-value">{detail.value}</span>
-                </div>
-              ))}
-            </div>
-            <button className="view-all-btn" onClick={() => {
-              window.location.assign(`/users/clients`)
-            }}>Voir tout</button>
-          </div>
-        ))}
-      </div>
 
-      {/* Additional Sections */}
-      <div className="additional-sections">
-        {/* Team Members */}
-        <div className="team-section">
-          <h3>Membres de l'équipe</h3>
-          <div className="team-list">
-            {clientPrev.map((member, index) => (
-              <div key={index} className="team-member">
-                <div className="avatar"></div>
-                <div>
-                  <p className="member-name">{member.full_name}</p>
-                  <a className="member-role">{member.email}</a>
-                </div>
-              </div>
-            ))}
-          </div>
+    // Définition des cartes de stats (avec clés i18n)
+    const statsCards: StatCardInfo[] = [
+        {
+            id: 'client',
+            titleKey: 'usersPage.stats.clientsTitle',
+            count: userStats?.totalClients,
+            // Utiliser les classes de dégradé Tailwind
+            gradient: 'from-pink-200 to-rose-300',
+            icon: <FiUsers />,
+            details: [
+                { labelKey: 'usersPage.stats.rated', value: userStats?.ratedUsersCount ?? 'N/A' },
+                { labelKey: 'usersPage.stats.active', value: userStats?.activeUsers ?? 'N/A' },
+                { labelKey: 'usersPage.stats.online', value: userStats?.onlineClients ?? 'N/A' },
+                { labelKey: 'usersPage.stats.satisfaction', value: `${userStats?.averageSatisfaction ? (userStats.averageSatisfaction / 5 * 100).toFixed(0) + '%' : 'N/A'}` },
+            ],
+            link: '/users/clients'
+        },
+        {
+            id: 'collab',
+            titleKey: 'usersPage.stats.collaboratorsTitle',
+            count: collaboratorsData?.meta?.total ?? undefined, // Utiliser le total de la pagination
+            gradient: 'from-slate-300 to-sky-300',
+            icon: <FiBriefcase />,
+            details: [
+                 // Remplacer par des stats réelles si disponibles
+                { labelKey: 'usersPage.stats.onMission', value: 'N/A' },
+                { labelKey: 'usersPage.stats.available', value: 'N/A' },
+                { labelKey: 'usersPage.stats.projectsDone', value: 'N/A' },
+                { labelKey: 'usersPage.stats.hoursWorked', value: 'N/A' },
+            ],
+             link: '/users/collaborators' // Lien vers la page collaborateurs
+        },
+        // Ajouter d'autres cartes si nécessaire
+    ];
+
+    const isLoading = isLoadingStats || isLoadingClients || isLoadingCollabs;
+
+    return (
+         // Utiliser flex flex-col
+        <div className="users-pages w-full flex flex-col min-h-screen bg-gray-100">
+            <Topbar  title={t('usersPage.title')} search={false} /> {/* Titre pour la page */}
+            <main className="flex-grow p-4 md:p-6 lg:p-8"> {/* Ajouter padding */}
+                 {/* Cartes de Stats */}
+                 {/* Utiliser grid, gap, mb */}
+                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-6">
+                     {isLoading && Array.from({ length: 2 }).map((_, i) => <StatCardSkeleton key={i} />)}
+                     {!isLoading && statsCards.map((stat) => (
+                         <StatCard key={stat.id} stat={stat} clientPreviews={clientPrev} collabPreviews={collaboratorPrev} />
+                     ))}
+                 </div>
+
+                {/* Autres Sections (Liste complète des clients/collaborateurs?) */}
+                 {/* Cette section pourrait être remplacée par une navigation vers les pages dédiées */}
+                 {/* Ou afficher une table/liste ici */}
+                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                     {/* Afficher la liste des clients ici? */}
+                     {/* <ClientList initialClients={clientPrev} /> */}
+                     {/* Afficher la liste des collaborateurs ici? */}
+                 </div>
+                 {/* Afficher le planning / tâches si pertinent */}
+                 {/* ... */}
+
+            </main>
         </div>
+    );
+}
 
-        {/* Schedule */}
-        {/* <div className="schedule-section">
-            <h3>Planning</h3>
-            <div className="schedule">
-              {schedule.map((event, index) => (
-                <div key={index} className="schedule-item">
-                  <p>{event.day}</p>
-                  <div className="schedule-task" style={{ backgroundColor: event.color }}>
-                    <span>{event.task}</span>
-                    <span>{event.start} - {event.end}</span>
-                  </div>
+// --- Composant StatCard ---
+interface StatCardProps {
+    stat: StatCardInfo;
+    clientPreviews: Partial<UserInterface>[];
+    collabPreviews: Partial<UserInterface>[];
+}
+function StatCard({ stat, clientPreviews, collabPreviews }: StatCardProps) {
+    const { t } = useTranslation();
+    // Choisir les bons avatars à afficher
+    const usersToDisplay = stat.id === 'client' ? clientPreviews : collabPreviews;
+
+    return (
+        // Utiliser p-5, rounded-2xl, shadow, text-gray-800, transition
+        <div className={`stat-card p-5 rounded-2xl shadow-md text-gray-800 transition transform hover:-translate-y-1 bg-gradient-to-br ${stat.gradient}`}>
+            {/* En-tête */}
+            <div className="flex items-center gap-4 mb-4">
+                {/* Icône */}
+                 {/* Utiliser text-3xl ou 4xl */}
+                 <div className="stat-icon text-4xl opacity-80">{stat.icon}</div>
+                 {/* Titre et Compte */}
+                <div className="stat-title-count flex-1 min-w-0">
+                    <h2 className="text-lg font-medium truncate">{t(stat.titleKey)}</h2> 
+                    {stat.count !== undefined && (
+                        <p className="text-3xl font-bold mt-1">{stat.count}</p>
+                    )}
                 </div>
-              ))}
             </div>
-          </div> */}
+            {/* Avatars */}
+            <div className="flex gap-1 mb-4 -space-x-2"> {/* Chevauchement des avatars */}
+                {usersToDisplay.slice(0, 4).map((user, idx) => ( // Limiter à 4 avatars
+                    <div key={idx} className="w-8 h-8 rounded-full border-2 border-white bg-cover bg-center bg-gray-300 flex items-center justify-center text-white text-xs font-bold"
+                        style={{ backgroundImage: user.photo?.[0] ? getImg(user.photo[0]) : undefined }}
+                        title={user.full_name}
+                    >
+                        {!user.photo?.[0] && user.full_name?.substring(0, 2).toUpperCase()}
+                    </div>
+                ))}
+                 {usersToDisplay.length > 4 && (
+                     <div className="w-8 h-8 rounded-full border-2 border-white bg-gray-200 flex items-center justify-center text-gray-500 text-xs font-bold">
+                         +{usersToDisplay.length - 4}
+                     </div>
+                 )}
+            </div>
+            {/* Détails */}
+             {/* Utiliser grid grid-cols-2 gap-x-4 gap-y-2 mb-4 */}
+            <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 mb-4">
+                {stat.details.map((detail, idx) => (
+                    <div key={idx} className="flex justify-between text-xs">
+                         <span className="text-gray-600">{t(detail.labelKey)}:</span> 
+                         <span className="font-medium text-gray-800">{detail.value ?? '-'}</span> 
+                    </div>
+                ))}
+            </div>
+            {/* Bouton Voir Tout */}
+            <a href={stat.link} className="block w-full bg-white/40 hover:bg-white/60 text-center text-gray-700 font-medium py-1.5 px-3 rounded-full text-xs transition">
+                {t('common.seeAll')} 
+             </a>
+        </div>
+    );
+}
 
-        {/* Tasks */}
-        {/* <div className="tasks-section">
-            <h3>Aujourd'hui</h3>
-            {tasks.map((task, index) => (
-              <div key={index} className="task-item">
-                <div>
-                  <p className="task-title">{task.title}</p>
-                  <p className="task-time">{task.date} • {task.time}</p>
+// --- Composant StatCardSkeleton ---
+function StatCardSkeleton() {
+    return (
+        <div className="stat-card p-5 rounded-2xl shadow-md bg-gray-200 animate-pulse">
+            <div className="flex items-center gap-4 mb-4">
+                <div className="w-10 h-10 rounded-lg bg-gray-300"></div>
+                <div className="flex-1">
+                    <div className="h-5 w-3/5 bg-gray-300 rounded mb-1.5"></div>
+                    <div className="h-8 w-1/3 bg-gray-300 rounded"></div>
                 </div>
-                <FiChevronRight className="task-arrow" />
-              </div>
-            ))}
-          </div> */}
-
-      </div>
-    </div>
-  );
-};
+            </div>
+            <div className="flex gap-1 mb-4 -space-x-2">
+                <div className="w-8 h-8 rounded-full bg-gray-300 border-2 border-gray-200"></div>
+                <div className="w-8 h-8 rounded-full bg-gray-300 border-2 border-gray-200"></div>
+                <div className="w-8 h-8 rounded-full bg-gray-300 border-2 border-gray-200"></div>
+            </div>
+            <div className="grid grid-cols-2 gap-x-4 gap-y-1.5 mb-4">
+                <div className="flex justify-between text-xs">
+                    <div className="h-3 w-16 bg-gray-300 rounded"></div>
+                    <div className="h-3 w-8 bg-gray-300 rounded"></div>
+                </div>
+                 <div className="flex justify-between text-xs">
+                    <div className="h-3 w-14 bg-gray-300 rounded"></div>
+                    <div className="h-3 w-6 bg-gray-300 rounded"></div>
+                </div>
+                 <div className="flex justify-between text-xs">
+                    <div className="h-3 w-12 bg-gray-300 rounded"></div>
+                    <div className="h-3 w-10 bg-gray-300 rounded"></div>
+                </div>
+                 <div className="flex justify-between text-xs">
+                    <div className="h-3 w-16 bg-gray-300 rounded"></div>
+                    <div className="h-3 w-7 bg-gray-300 rounded"></div>
+                </div>
+            </div>
+            <div className="w-full h-7 bg-gray-300 rounded-full"></div>
+        </div>
+    );
+}

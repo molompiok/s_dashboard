@@ -27,11 +27,129 @@
         "optionalField": "Optionnel",
         "required": "Requis",
         "ok": "OK",
-        "verify":"Verifier",
+        "verify": "Verifier",
         "moveUp": "Monter",
         "moveDown": "Descendre",
         "imageError": "Image non chargée",
-        "visible": "Visibilité"
+        "visible": "Visibilité",
+        "notProvided": "Non fourni",
+        "locale": "fr-FR",
+        "open": "Ouvrir",
+        "seeLess": "Voir moins"
+    },
+    "clientList": {
+        "title": "Liste des Clients",
+        "searchPlaceholder": "Rechercher par Nom, Email, #id...",
+        "noClientsFound": "Aucun client trouvé.",
+        "filters": {
+            "status": "Statut",
+            "order": "Trier par",
+            "date": "Date d'inscription",
+            "orderValues": {
+                "date_desc": "Plus Récent",
+                "date_asc": "Plus Ancien",
+                "name_asc": "Nom (A-Z)",
+                "name_desc": "Nom (Z-A)"
+            }
+        }
+    },
+    "usersPage": {
+        "title": "Gestion des Utilisateurs",
+        "stats": {
+            "clientsTitle": "Clients",
+            "collaboratorsTitle": "Collaborateurs",
+            "rated": "Commentaires",
+            "active": "Actifs",
+            "online": "En ligne",
+            "satisfaction": "Satisfaction",
+            "onMission": "En mission",
+            "available": "Disponibles",
+            "projectsDone": "Projets Finis",
+            "hoursWorked": "Heures"
+        },
+        "details": {
+            "avgRating": "Note Moyenne",
+            "commentsCount": "Avis Laissés",
+            "productsBought": "Produits Achetés",
+            "ordersCount": "Commandes Passées",
+            "lastVisit": "Dernière Visite",
+            "totalSpent": "Total Dépensé"
+        }
+    },
+    "clientDetail": {
+        "statusLabel": "Statut Client",
+        "memberSinceLabel": "Membre Depuis",
+        "activityChartTitle": "Activité Récente"
+    },
+    "clientStatus": {
+        "new": "Nouveau",
+        "client": "Client",
+        "premium": "Premium",
+        "banned": "Banni"
+    },
+    "userComments": {
+        "pageTitle": "Commentaires de {{name}}",
+        "listTitle": "Commentaires de l'utilisateur",
+        "noCommentsTitle": "Aucun commentaire pour le moment",
+        "noCommentsDesc": "Les commentaires laissés par cet utilisateur sur vos produits seront listés ici."
+    },
+    "storesPage": {
+        "title": "Mes Boutiques",
+        "addStoreButton": "Créer une boutique",
+        "searchPlaceholder": "Rechercher par nom...",
+        "statusFilter": {
+            "all": "Toutes",
+            "active": "Actives",
+            "inactive": "Inactives"
+        },
+        "actions": {
+            "stop": "Stopper",
+            "makeAvailable": "Rendre Disponible",
+            "settings": "Paramètres",
+            "security": "Sécurité"
+        },
+        "limits": {
+            "disk": "Disque SSD",
+            "collaborators": "Collaborateurs",
+            "products": "Produits",
+            "salesPoints": "Points de Vente",
+            "countries": "Pays"
+        },
+        "viewAllButton": "Gérer",
+        "noStoresFound": "Vous n'avez pas encore créé de boutique.",
+        "noDescription": "Pas de description",
+        "status": {
+            "active": "Active",
+            "inactive": "Inactive",
+            "makeAvailable": "Rendre Disponible",
+            "settings": "Paramètres",
+            "security": "Sécurité"
+        }
+    },
+    "productComments": {
+        "pageTitle": "Commentaires - {{name}}",
+        "listTitle": "Commentaires sur le Produit",
+        "noCommentsTitle": "Aucun commentaire pour le moment",
+        "noCommentsDesc": "Soyez le premier à laisser un avis sur ce produit !"
+    },
+    "navigation": {
+        "home": "Accueil",
+        "products": "Produits",
+        "categories": "Catégories",
+        "teams": "Équipes",
+        "orders": "Commandes",
+        "inventory": "Inventaire",
+        "stores": "Boutiques",
+        "settings": "Paramètres",
+        "stats": "Statistiques"
+    },
+    "topbar": {
+        "welcomeMessage": "Bienvenue, {{name}} !",
+        "defaultUser": "Utilisateur",
+        "globalSearchTitle": "Recherche Globale",
+        "searchAction": "Rechercher",
+        "notifications": "Notifications",
+        "viewNotifications": "Voir les notifications"
     },
     "validationFailed": "La validation des données a échoué.",
     "unauthorized_action": "Vous n’avez pas la permission d’effectuer cette action.",
@@ -308,6 +426,25 @@
         "unlimitedStockShort": "Illimité"
     },
     "detail": {
+        "pageTitle": "Détails - {{name}}",
+        "sectionTitle": "Détails du Produit",
+        "addTooltipTitle": "Ajouter un Détail",
+        "addTooltipDesc": "Ajoutez des sections avec images et textes pour enrichir votre page produit (max: {{limit}}).",
+        "addButton": "Ajouter un détail",
+        "emptyTitle": "Enrichissez votre produit !",
+        "emptyDesc": "Ajoutez des sections 'détail' avec images et descriptions pour mieux présenter les avantages et caractéristiques de votre produit.",
+        "emptyLink": "Voir des exemples",
+        "untitled": "Détail sans titre",
+        "noDescription": "Aucune description.",
+        "confirmDelete": "Supprimer ce détail {{title}} ?",
+        "thisDetail": "ce détail",
+        "addPopupTitle": "Ajouter un Nouveau Détail",
+        "editPopupTitle": "Modifier le Détail",
+        "imageLabel": "Image / Vidéo du Détail",
+        "selectImagePrompt": "Choisir une image ou vidéo",
+        "titleLabel": "Titre du Détail",
+        "titlePlaceholder": "Ex: Matériaux de Qualité",
+        "descriptionLabel": "Description du Détail",
         "createdSuccess": "Détail créé avec succès.",
         "creationFailed": "La création du détail a échoué.",
         "idOrProductIdRequired": "L'identifiant du détail ou du produit est requis.",
@@ -317,7 +454,10 @@
         "updateFailed": "La mise à jour du détail a échoué.",
         "deleteSuccess": "Détail supprimé avec succès.",
         "deleteFailed": "La suppression du détail a échoué.",
-        "idRequired": "L'identifiant du détail est requis."
+        "idRequired": "L'identifiant du détail est requis.",
+        "validation": {
+            "titleRequired": "Le titre du détail est requis."
+        }
     },
     "favorite": {
         "alreadyExists": "Ce produit est déjà dans vos favoris.",
@@ -469,7 +609,12 @@
         "updateFailed": "La mise à jour du commentaire a échoué.",
         "cannotDeleteOthers": "Vous ne pouvez supprimer que vos propres commentaires ou avoir les permissions de modération.",
         "deleteSuccess": "Commentaire supprimé avec succès.",
-        "deleteFailed": "La suppression du commentaire a échoué."
+        "deleteFailed": "La suppression du commentaire a échoué.",
+        "viewAlt": "Image commentaire",
+        "deleteLabel": "Supprimer le commentaire",
+        "thisComment": "ce commentaire",
+        "confirmDelete": "Supprimer le commentaire \"{{title}}\" ?",
+        "thumbAlt": "Miniature commentaire"
     },
     "receipt": {
         "title": "Reçu de Commande",
@@ -513,29 +658,70 @@
         "saveButton": "Enregistrer Prix/Stock",
         "editValuePopupTitle": "Modifier Prix/Stock pour {{name}}"
     },
-    "detail": {
-        "pageTitle": "Détails - {{name}}",
-        "sectionTitle": "Détails du Produit",
-        "addTooltipTitle": "Ajouter un Détail",
-        "addTooltipDesc": "Ajoutez des sections avec images et textes pour enrichir votre page produit (max: {{limit}}).",
-        "addButton": "Ajouter un détail",
-        "emptyTitle": "Enrichissez votre produit !",
-        "emptyDesc": "Ajoutez des sections 'détail' avec images et descriptions pour mieux présenter les avantages et caractéristiques de votre produit.",
-        "emptyLink": "Voir des exemples",
-        "untitled": "Détail sans titre",
-        "noDescription": "Aucune description.",
-        "confirmDelete": "Supprimer ce détail {{title}} ?",
-        "thisDetail": "ce détail",
-        "addPopupTitle": "Ajouter un Nouveau Détail",
-        "editPopupTitle": "Modifier le Détail",
-        "imageLabel": "Image / Vidéo du Détail",
-        "selectImagePrompt": "Choisir une image ou vidéo",
-        "titleLabel": "Titre du Détail",
-        "titlePlaceholder": "Ex: Matériaux de Qualité",
-        "descriptionLabel": "Description du Détail",
-        "validation": {
-            "titleRequired": "Le titre du détail est requis."
-        }
+    "themeCard": {
+     "free": "Gratuit",
+     "selectButton": "Choisir"
+ },
+    "themeManager": {
+    "currentThemeTitle": "Thème Actuel",
+    "changeThemeButton": "Changer de thème",
+    "activeStatus": "Actif",
+    "customizeOptions": "Options de Personnalisation",
+    "availableThemesTitle": "Thèmes Disponibles",
+    "noOtherThemes": "Aucun autre thème disponible pour le moment.",
+    "noThemeAssigned": "Aucun thème n'est actuellement assigné à cette boutique."
+ },
+ "themeOptions": { 
+    "color": "Couleurs",
+    "text": "Textes & Polices",
+    "layout": "Mise en page",
+    "ads": "Publicités",
+    "faq": "FAQ",
+    "blog": "Blog"
+ },
+  "themeFeatures": { 
+     "multi_category": "Multi-catégories",
+     "responsive": "Responsive",
+     "product_zoom": "Zoom Produit",
+     "3d_viewer": "Visionneuse 3D",
+     "ar_support": "Support AR",
+     "marketplace_layout": "Layout Marketplace",
+     "single_product_focus": "Focus Produit Unique",
+     "food": "Alimentation",
+     "real_estate": "Immobilier"
+ },
+ {
+    "themeManager": {
+       "currentThemeTitle": "Thème Actuel",
+       "changeThemeButton": "Changer de thème",
+       "activeStatus": "Actif",
+       "customizeOptions": "Options de Personnalisation",
+       "availableThemesTitle": "Thèmes Disponibles",
+       "noOtherThemes": "Aucun autre thème disponible pour le moment.",
+       "noThemeAssigned": "Aucun thème n'est actuellement assigné à cette boutique."
+    },
+    "themeOptions": { // Labels pour les boutons de personnalisation
+       "color": "Couleurs",
+       "text": "Textes & Polices",
+       "layout": "Mise en page",
+       "ads": "Publicités",
+       "faq": "FAQ",
+       "blog": "Blog"
+    },
+     "themeFeatures": { // Tags pour les features des thèmes
+        "multi_category": "Multi-catégories",
+        "responsive": "Responsive",
+        "product_zoom": "Zoom Produit",
+        "3d_viewer": "Visionneuse 3D",
+        "ar_support": "Support AR",
+        "marketplace_layout": "Layout Marketplace",
+        "single_product_focus": "Focus Produit Unique",
+        "food": "Alimentation",
+        "real_estate": "Immobilier"
+    },
+    "themeCard": {
+        "free": "Gratuit",
+        "selectButton": "Choisir" // Ou "Aperçu"
     },
     "pagination": {
         "pageInfo": "Page {{currentPage}} sur {{lastPage}}",
@@ -575,6 +761,8 @@
             "order": "Ordre",
             "price": "Prix",
             "date": "Date",
+            "totalOrders": "Commandes",
+            "visits": "Visites",
             "statusValues": {
                 "pending": "En attente",
                 "confirmed": "Confirmée",

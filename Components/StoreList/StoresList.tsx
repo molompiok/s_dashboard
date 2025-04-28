@@ -1,118 +1,90 @@
-import { Swiper, SwiperSlide } from "swiper/react";
-import { useWindowSize } from "../../Hooks/useWindowSize";
-import { useEffect, useState } from "react";
-import { Navigation, Pagination } from "swiper/modules";
-import { StoreItem } from "../StoreItem/StoreItem";
-import { Swiper as SwiperType } from 'swiper/types';
-import { AnnimationType } from "../../Interfaces/Interfaces";
+// Components/StoreList/StoresList.tsx
 
-import './StoresList.css'
+import { Swiper, SwiperSlide } from 'swiper/react';
+import { Navigation, Pagination as SwiperPagination } from 'swiper/modules'; // Renommer Pagination
+import { StoreInterface } from '../../Interfaces/Interfaces';
+import { StoreItemCard, StoreItemSkeletonCard } from './StoreItemCard'; // Importer la carte et son skeleton
+import { IoChevronBack, IoChevronForward } from 'react-icons/io5';
+import { useTranslation } from 'react-i18next';
+
+// Importer CSS Swiper (une seule fois dans l'app)
 import 'swiper/css';
-import 'swiper/css/pagination';
 import 'swiper/css/navigation';
-import { IoAdd, IoStorefront } from "react-icons/io5";
-import { useApp } from "../../renderer/AppStore/UseApp";
-import { StoreCreate } from "../../pages/StoreCreate/StoreCreate";
-import { useStore } from "../../pages/stores/StoreStore";
+import 'swiper/css/pagination';
 
+interface StoresListProps {
+    stores: StoreInterface[];
+    isLoading: boolean;
+    selectedStoreId?: string;
+    onSelectStore: (store: StoreInterface) => void;
+    viewAllUrl?: string; // URL optionnelle pour "Voir tout"
+}
 
-export {StoresList}
+export function StoresList({ stores, isLoading, selectedStoreId, onSelectStore, viewAllUrl }: StoresListProps) {
+    const { t } = useTranslation();
 
-function StoresList({index, setIndex,managedIndex}:{managedIndex:number,index:number, setIndex:(store:number)=>void}) {
-    const size = useWindowSize();
-    const [swiperRef, setSwiperRef] = useState<SwiperType | null>(null);
-    const [animation, setAnnimation] = useState<AnnimationType | null>(null);
-    const { openChild} = useApp() 
-    const  {fetchOwnerStores, stores} = useStore();
+    // Calcul slidesPerView basé sur la largeur (à affiner)
+    const getSlidesPerView = () => {
+        if (typeof window === 'undefined') return 3; // SSR fallback
+        const width = window.innerWidth;
+        if (width < 640) return 1.5; // sm
+        if (width < 768) return 2.5; // md
+        if (width < 1024) return 3.5; // lg
+        return 4.5; // xl+
+    };
 
-    let s = size.width;
-    
-    const n = s < 550 ? (
-      ((s - 260) / 490) * 1 + 1
-    ) : s < 750 ? (
-      ((s - 260) / 490) * 1 + 0.7
-    ) : 2;
-  
-    const p = s < 750 ? 30 : 50
-  
-    const [id, setId] = useState(0)
-    const [animus, setAnimus] = useState(0)
-    useEffect(() => {
-      let i = 0;
-      clearInterval(id)
-      const _id = setInterval(() => {
-        i++;
-        if (!swiperRef) return clearInterval(_id);
-        if (i > 20) clearInterval(_id);
-        setAnnimation({
-          realIndex: swiperRef.realIndex,
-          slidesGrid: swiperRef.slidesGrid,
-          translate: swiperRef.translate,
-          size: (swiperRef as any).size
-        })
-      }, 100);
-      setId(_id as any);
-      return () => {
-        clearInterval(id);
-      }
-    }, [animus]);
-  
-    useEffect(()=>{
-      setTimeout(() => {
-        swiperRef && swiperRef.slideTo(index)
-      }, 300);
-      
-    },[swiperRef]);
-    
-    useEffect(()=>{
-      fetchOwnerStores({});
-    },[])
-    return <Swiper
-      onActiveIndexChange={(_swiper) => {
-        setIndex(_swiper.realIndex)
-      }}
-      onSliderMove={(s) => {
-        setAnnimation({
-          realIndex: s.realIndex,
-          slidesGrid: s.slidesGrid,
-          translate: s.translate,
-          size: (s as any).size
-        });
-        setAnimus(animus + 1);
-      }}
-      onSwiper={s => { setSwiperRef(s), setAnnimation(s as any) }}
-      slidesPerView={n}
-      centeredSlides={true}
-      spaceBetween={p}
-      pagination={{
-        type: 'fraction',
-      }}
-      // navigation={true}
-      modules={[Pagination]}
-      className="stores-list no-selectable"
-    >
-      {
-        stores?.list.map((s, i) => (
-          <SwiperSlide key={i} onClick={() => {
-            swiperRef?.slideTo(i)
-          }}>
-            {swiperRef && animation && <StoreItem active={managedIndex ==i} animation={animation} index={index} swiper={swiperRef} store={s} />}
-          </SwiperSlide>
-        ))
-      }{
-        <SwiperSlide onClick={() => {
-          swiperRef?.slideTo(stores?.list.length||0)
-        }}>
-          {
-          swiperRef && animation && <div className="add-new-store" onClick={()=>{
-            openChild(<StoreCreate back={true}/>,{
-              back:true,
-            })
-          }}>
-              <IoStorefront/>
-              <span><IoAdd/>Ajouter une nouvelle boutique</span>
-          </div> }
-        </SwiperSlide>
-      }
-    </Swiper>
-  }
+    return (
+        <div className="relative w-full group"> {/* Group pour afficher boutons nav au survol */}
+            <Swiper
+                modules={[Navigation, SwiperPagination]}
+                spaceBetween={16} // gap-4
+                slidesPerView={getSlidesPerView()}
+                navigation={{ // Activer navigation Swiper
+                    nextEl: '.swiper-button-next-store', // Sélecteurs CSS personnalisés
+                    prevEl: '.swiper-button-prev-store',
+                }}
+                pagination={{ clickable: true }} // Activer pagination simple
+                className="stores-swiper pb-10" // Ajouter pb pour pagination
+            >
+                {isLoading ? (
+                    // Afficher les skeletons pendant le chargement
+                    Array.from({ length: 5 }).map((_, i) => (
+                        <SwiperSlide key={`skel-${i}`} className="pb-1"> {/* pb pour ombre */}
+                            <StoreItemSkeletonCard />
+                        </SwiperSlide>
+                    ))
+                ) : (
+                     // Afficher les stores réels
+                     stores.map((store) => (
+                         <SwiperSlide key={store.id} className="pb-1">
+                             <StoreItemCard
+                                 store={store}
+                                 isSelected={store.id === selectedStoreId}
+                                 onClick={() => onSelectStore(store)}
+                             />
+                         </SwiperSlide>
+                     ))
+                )}
+                {/* Slide optionnelle pour "Voir tout" */}
+                {viewAllUrl && !isLoading && stores.length > 0 && (
+                     <SwiperSlide className="h-full flex pb-1">
+                         <a href={viewAllUrl} className="flex flex-col items-center justify-center w-full h-full bg-gray-100 rounded-xl text-gray-500 hover:bg-blue-50 hover:text-blue-600 transition border border-gray-200 hover:border-blue-300">
+                             <IoChevronForward className="w-8 h-8 mb-2" />
+                             <span className="text-sm font-medium">{t('storesPage.viewAllButton')}</span> 
+                         </a>
+                     </SwiperSlide>
+                )}
+            </Swiper>
+
+             {/* Boutons de Navigation Personnalisés (apparaissent au survol du conteneur) */}
+             {/* Bouton Précédent */}
+             <button className="swiper-button-prev-store absolute top-1/2 left-0 transform -translate-y-1/2 z-10 p-2 bg-white/70 hover:bg-white rounded-full shadow-md text-gray-600 hover:text-gray-900 opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-0" aria-label={t('pagination.previous')}>
+                 <IoChevronBack className="w-5 h-5" />
+             </button>
+              {/* Bouton Suivant */}
+             <button className="swiper-button-next-store absolute top-1/2 right-0 transform -translate-y-1/2 z-10 p-2 bg-white/70 hover:bg-white rounded-full shadow-md text-gray-600 hover:text-gray-900 opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-0" aria-label={t('pagination.next')}>
+                 <IoChevronForward className="w-5 h-5" />
+             </button>
+        </div>
+    );
+}

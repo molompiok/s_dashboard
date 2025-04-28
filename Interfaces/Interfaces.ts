@@ -1,3 +1,4 @@
+
 export const JsonRole = {
   filter_client: '',
   ban_client: '',
@@ -33,42 +34,65 @@ export type ListType<T> = {
     current_page: number,
     last_page: number,
     first_page: number,
-    first_page_url: string|null,
-    last_page_url: string|null,
-    next_page_url: string|null,
-    previous_page_url: string|null
+    first_page_url: string | null,
+    last_page_url: string | null,
+    next_page_url: string | null,
+    previous_page_url: string | null
   }
 }
 
+export interface ThemeInterface {
+  id: string
+  name: string
+  slug: string
+  description: string | null
+  preview_images: string[]
+  features: string[] | null
+  docker_image_name: string
+  docker_image_tag: string
+  internal_port: number
+  source_path: string | null
+  is_public: boolean
+  is_active: boolean
+  is_running: boolean
+  is_default: boolean
+  is_premium: boolean
+  price: number
+  creator_id: string | null
+  createdAt: string
+  updatedAt: string
+  isFree:boolean
+}
+
 export type CategorySortOptions =
-    | 'name_asc'
-    | 'name_desc'
-    | 'created_at_desc'
-    | 'created_at_asc'
-    | 'product_count_desc' // Si le compte produit est disponible et triable
-    | 'product_count_asc'; // Si le compte produit est disponible et triable
+  | 'name_asc'
+  | 'name_desc'
+  | 'created_at_desc'
+  | 'created_at_asc'
+  | 'product_count_desc' // Si le compte produit est disponible et triable
+  | 'product_count_asc'; // Si le compte produit est disponible et triable
 
 // Interface pour les filtres de la liste des catégories
 export interface CategoryFilterType {
-    // Filtres de recherche/identification
-    search?: string;           // Recherche textuelle (nom, description)
-    category_id?: string;      // Filtrer par un ID spécifique (pourrait être utilisé par getCategoryById mais inclus ici pour la complétude)
-    slug?: string;             // Filtrer par slug spécifique
-    parent_id?: string | null; // Filtrer par catégorie parente (null pour les catégories racines)
+  // Filtres de recherche/identification
+  search?: string;           // Recherche textuelle (nom, description)
+  category_id?: string;      // Filtrer par un ID spécifique (pourrait être utilisé par getCategoryById mais inclus ici pour la complétude)
+  slug?: string;             // Filtrer par slug spécifique
+  parent_id?: string | null; // Filtrer par catégorie parente (null pour les catégories racines)
 
-    // Filtres d'affichage
-    with_product_count?: boolean; // Inclure le nombre de produits associés
-    is_visible?: boolean;         // Filtrer par statut de visibilité (si applicable)
+  // Filtres d'affichage
+  with_product_count?: boolean; // Inclure le nombre de produits associés
+  is_visible?: boolean;         // Filtrer par statut de visibilité (si applicable)
 
-    // Tri
-    order_by?: CategorySortOptions; // Option de tri
+  // Tri
+  order_by?: CategorySortOptions; // Option de tri
 
-    // Pagination
-    page?: number;
-    limit?: number;
+  // Pagination
+  page?: number;
+  limit?: number;
 
-    // Technique (optionnel, si utilisé dans le hook useGetCategories)
-    no_save?: boolean; // Pourrait indiquer de ne pas mettre à jour un store Zustand (si encore utilisé)
+  // Technique (optionnel, si utilisé dans le hook useGetCategories)
+  no_save?: boolean; // Pourrait indiquer de ne pas mettre à jour un store Zustand (si encore utilisé)
 }
 export type PeriodType = 'day' | 'week' | 'month';
 
@@ -166,7 +190,7 @@ export type FilterType = {
   page?: number,
   with_feature?: boolean,
   limit?: number,
-  is_visible?:boolean,
+  is_visible?: boolean,
   no_save?: boolean,
   min_price?: number | undefined,
   max_price?: number | undefined,
@@ -190,6 +214,11 @@ export type CommandFilterType = Partial<{
   search?: string
 }>
 export type UserFilterType = Partial<{
+  // role:'client'|'collaborator'|'admin'|'team',
+  with_client_role: boolean,
+  with_client_stats: boolean,
+  with_adresses: boolean,
+  with_phones: boolean,
   user_id: string,
   order_by?: "date_desc" | "date_asc" | "full_name_desc" | "full_name_asc" | undefined,
   page: number,
@@ -199,7 +228,6 @@ export type UserFilterType = Partial<{
   min_date: string | undefined,
   max_date: string | undefined,
   with_addresses: boolean,
-  with_phones: boolean,
   with_avg_rating: boolean,
   with_comments_count: boolean,
   with_products_bought: boolean,
@@ -237,8 +265,11 @@ export interface StoreInterface {
   cover_image: (string | Blob)[],
   domain_names: string[],
   logo: (string | File)[],
+  currency: string
   disk_storage_limit_gb: number,
   url: string,
+  current_theme_id:string
+  is_active:boolean,
   expire_at: string,
   created_at: string,
 }
@@ -247,17 +278,38 @@ export interface UserInterface {
   id: string,
   full_name: string,
   email: string,
-  phone?: string,
+  user_phones?: UserPhoneInterface[],
+  user_addresses?: UserAddressInterface[]
   password: string,
   photo?: string[] | null,
   roles?: Role[],
   token: string;
   created_at: string,
+  
   status: 'BANNED' | 'PREMIUM' | 'NEW' | 'CLIENT'
   s_type?: string;
   stats?: UserStats
 }
 
+export interface UserAddressInterface {
+  id: string;
+  user_id: string;
+  name: string;           // Label/Nom de l'adresse (ex: 'Maison', 'Bureau')
+  longitude: number;
+  latitude: number;
+  created_at: string;     // Format ISO String
+  updated_at: string;     // Format ISO String
+}
+
+export interface UserPhoneInterface {
+  id: string;
+  user_id: string;
+  phone_number: string;   // Numéro brut (ex: '07xxxxxxxx')
+  format: string | null;  // Format international suggéré (ex: '+225 07 XX XX XX XX')
+  country_code: string | null; // Code pays (ex: 'ci', 'fr', 'us') ou code indicatif ('ci_225'?)
+  created_at: string;     // Format ISO String
+  updated_at: string;     // Format ISO String
+}
 interface UserStats {
   avgRating?: number,
   commentsCount?: number,
@@ -331,7 +383,7 @@ export interface CategoryInterface {
   id: string,
   name: string,
   description: string,
-  parent_category_id?: string|null
+  parent_category_id?: string | null
   store_id: string,
   slug: string,
   product_count?: number
@@ -339,7 +391,7 @@ export interface CategoryInterface {
   icon: (string | Blob)[],
   created_at: string,
   updated_at: string
-  is_visible?:boolean
+  is_visible?: boolean
 }
 
 export interface ProductInterface {
@@ -354,13 +406,13 @@ export interface ProductInterface {
   price: number;
   rating: number,
   comment_count: number,
-  stock?:number|null
+  stock?: number | null
   is_visible: boolean,// TODO
   currency: string;
   created_at: Date;
   updated_at: Date;
   features?: FeatureInterface[]
-  categories?:CategoryInterface[]
+  categories?: CategoryInterface[]
 };
 
 
@@ -378,7 +430,7 @@ export interface ValueInterface {
   index: number;
   created_at?: string | Date;
   updated_at?: string | Date;
-  _request_mode?: 'edited'|'new'
+  _request_mode?: 'edited' | 'new'
 };
 
 export interface FeatureInterface {
@@ -396,12 +448,12 @@ export interface FeatureInterface {
   index?: number,
   multiple?: false,
   is_double?: false,
-  default?: string|null,
-  is_default:boolean,
+  default?: string | null,
+  is_default: boolean,
   created_at: string,
   updated_at: string,
   values?: ValueInterface[];
-  _request_mode?: 'edited'|'new'
+  _request_mode?: 'edited' | 'new'
 };
 // src/Interfaces/Interfaces.ts (ou un fichier similaire)
 

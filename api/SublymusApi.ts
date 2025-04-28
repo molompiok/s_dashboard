@@ -5,7 +5,9 @@ import type {
     ListType, ProductInterface, CategoryInterface, UserInterface, StoreInterface,
     CommandInterface, CommentInterface, DetailInterface, Inventory, Role, FavoriteInteraface,
     FilterType, CommandFilterType, UserFilterType, GlobalSearchType, StatsData,
-    StatParamType, EventStatus, FeatureInterface, TypeJsonRole, ValueInterface
+    StatParamType, EventStatus, FeatureInterface, TypeJsonRole, ValueInterface,
+    UserAddressInterface,
+    UserPhoneInterface
 } from '../Interfaces/Interfaces'; // Adapter le chemin
 
 export {StatParamType, UserFilterType,CommandFilterType,Inventory}
@@ -102,7 +104,7 @@ export type CreateCommentParams = { order_item_id: string, title: string, descri
 export type CreateCommentResponse = { message: string, comment: CommentInterface };
 export type GetCommentForOrderItemParams = { order_item_id: string };
 export type GetCommentForOrderItemResponse = CommentInterface | null;
-export type GetCommentsParams = { order_by?: string, page?: number, limit?: number, comment_id?: string, product_id?: string, with_users?: boolean };
+export type GetCommentsParams = { with_products?:boolean, order_by?: string, page?: number, limit?: number, comment_id?: string, product_id?: string, with_users?: boolean, user_id?:string };
 export type GetCommentsResponse = ListType<CommentInterface>;
 export type UpdateCommentResponse = { message: string, comment: CommentInterface };
 export type DeleteCommentResponse = MessageResponse;
@@ -131,27 +133,11 @@ export type PhoneType = any; // Placeholder
 
 // --- Interface pour UserAddress ---
 // Basée sur le modèle UserAddress.ts
-export interface UserAddressInterface {
-    id: string;
-    user_id: string;
-    name: string;           // Label/Nom de l'adresse (ex: 'Maison', 'Bureau')
-    longitude: number;
-    latitude: number;
-    created_at: string;     // Format ISO String
-    updated_at: string;     // Format ISO String
-}
+
 
 // --- Interface pour UserPhone ---
 // Basée sur le modèle UserPhone.ts
-export interface UserPhoneInterface {
-    id: string;
-    user_id: string;
-    phone_number: string;   // Numéro brut (ex: '07xxxxxxxx')
-    format: string | null;  // Format international suggéré (ex: '+225 07 XX XX XX XX')
-    country_code: string | null; // Code pays (ex: 'ci', 'fr', 'us') ou code indicatif ('ci_225'?)
-    created_at: string;     // Format ISO String
-    updated_at: string;     // Format ISO String
-}
+
 
 // --- Mise à jour des types Params/Response pour UserProfileApiNamespace ---
 // (Rappel des types définis dans la réponse précédente, maintenant avec les interfaces)

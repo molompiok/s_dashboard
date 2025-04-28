@@ -1,252 +1,131 @@
-// Import Swiper styles
-import 'swiper/css';
-import 'swiper/css/free-mode';
-import 'swiper/css/pagination';
-import 'swiper/css/navigation';
-import 'swiper/css/grid';
+// pages/stores/+Page.tsx
 
-import './Page.css'
-import { useWindowSize } from '../../Hooks/useWindowSize';
-import { useEffect, useState } from 'react';
-import { FreeMode } from 'swiper/modules';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { getImg } from '../../Components/Utils/StringFormater';
-
-import { Host } from '../../renderer/+config';
-import { RecentThemes, ThemeList } from '../../Components/ThemeList/ThemeList';
-import { StoresList } from '../../Components/StoreList/StoresList';
-import { IoCart, IoChevronForward, IoClose, IoDesktop, IoFingerPrint, IoPause, IoPencil, IoPeopleSharp, IoPlay, IoSettings } from 'react-icons/io5';
-import MyChart from '../index/MiniChart';
-import { Separator } from '../../Components/Separator/Separator';
-import { Progrees } from '../../Components/Progress/Pregress';
+import { useState, useEffect } from 'react';
+import { Topbar } from '../../Components/TopBar/TopBar';
+import { StoresList } from '../../Components/StoreList/StoresList'; // Swiper Horizontal
+import { SelectedStoreDetails } from '../../Components/StoreDetails/SelectedStoreDetails'; // Nouveau
+import { ThemeManager } from '../../Components/ThemeManager/ThemeManager'; // Nouveau
+import { StoreToolbar } from '../../Components/StoreList/StoreToolbar'; // Nouveau
 import { StoreInterface } from '../../Interfaces/Interfaces';
-import { useStore } from './StoreStore';
-import { ClientCall } from '../../Components/Utils/functions';
+import { useStore } from './StoreStore'; // Garder Zustand pour état global stores/currentStore
+import { useGetStores } from '../../api/ReactSublymusApi'; // Hook pour fetch la liste
+import { useTranslation } from 'react-i18next';
+import logger from '../../api/Logger';
 
-export { Page }
+export { Page };
 
+// Type pour les filtres de store (simple pour S0)
+export interface StoreFilterType {
+    search?: string;
+    page?:number,
+    limit?:number,
+    status?: 'active' | 'inactive' | 'all'; // Ex: 'active', 'inactive', 'all'
+}
 
 function Page() {
-  const a = parseInt(ClientCall(()=>localStorage.getItem('store.manage')||'0'));
-  const [index, setIndex] = useState(a);
-  const [managedIndex, setManagedIndex] = useState(a);
-  const { stores } = useStore();
+    const { t } = useTranslation();
+    // Gérer le store sélectionné globalement via Zustand
+    const { currentStore, setCurrentStore, stores: storesFromZustand } = useStore();
+    // Filtre local pour la toolbar
+    const [filter, setFilter] = useState<StoreFilterType>({ status: 'all' });
+    const [isLoadingInitialStore, setIsLoadingInitialStore] = useState(true);
 
-  const [animationKey, setAnimationKey] = useState(0);
-  const [page, setPage] = useState('p0');
+    // Utiliser React Query pour récupérer la liste des stores
+    const { data: storesData, isLoading: isLoadingList, isError, error } = useGetStores(
+        filter, // Passer les filtres
+        // { enabled: true } // Toujours activé a priori
+    );
+    const storesList = storesData?.list ?? [];
 
-  const changePage = (newPage:string) => {
-    setPage(newPage);
-    setAnimationKey(prev => prev + 1); // Change la clé pour forcer le re-render
-  };
+     // Sélectionner le premier store ou celui en mémoire au chargement
+     useEffect(() => {
+        if (isLoadingList || !storesList || storesList.length === 0) {
+             setIsLoadingInitialStore(false); // Fin du chargement même si vide/erreur
+             return;
+        };
 
-  const l = 9;
-  const h = 240;
-  const s = useWindowSize().width;
-  const n = s <= 550 ? (s - 250) / 300 + 1
-    : s < 750 && s >= 550 ? 2
-      : s < 900 && s >= 750 ? (s - 750) / 150 + 2
-        : 3
-  const p = s < 550 ? 20 : 30;
+        // Essayer de trouver le store courant dans la nouvelle liste
+         const currentStoreStillExists = currentStore && storesList.some(s => s.id === currentStore.id);
 
-  return (
-    <div className="stores">
-      <StoresList index={index} setIndex={(i) => {
-        const l = stores?.list.length||0;
-        if(i == index) return
-        else if (index == l-1 && i==l){
-          setIndex(i);
-          changePage('left');
-          return
+        if (currentStoreStillExists) {
+             // Garder le store courant s'il existe toujours
+              setIsLoadingInitialStore(false);
+              logger.debug("Current store still exists in fetched list.");
+        } else {
+            // Sinon, essayer de charger depuis localStorage
+            let storedStore = null;
+            try {
+                const storedJson = localStorage.getItem('current_store');
+                 if (storedJson) {
+                    storedStore = JSON.parse(storedJson);
+                     // Vérifier si celui du localStorage est dans la liste chargée
+                     if (!storesList.some(s => s.id === storedStore?.id)) {
+                         storedStore = null; // Invalider si plus dans la liste
+                     }
+                 }
+            } catch (e) { logger.warn("Failed to parse current_store from localStorage", e); }
+
+            // Sélectionner le store du localStorage (s'il est valide) ou le premier de la liste
+            const storeToSelect = storedStore ?? storesList[0];
+            if (storeToSelect) {
+                 logger.info("Setting current store:", { storeId: storeToSelect.id, source: storedStore ? 'localStorage' : 'firstInList' });
+                 setCurrentStore(storeToSelect);
+            } else {
+                logger.warn("No store available to select.");
+                setCurrentStore(undefined); // Aucun store à sélectionner
+            }
         }
-        else if (index == l && i ==l-1 ){
-          setIndex(i);
-          changePage('right');
-          return
-        }
-        else if (i < index) changePage('p-1');
-        else if (i > index) changePage('p1');
-        setTimeout(() => {
-          setIndex(i);
-        }, 200);
-      }} managedIndex={managedIndex} />
-      <StoreDetail key={animationKey} postion={page} store={stores?.list[index]} isActive={index == managedIndex} onActiveRequired={() => {
-        setManagedIndex(index);
-        ClientCall(()=>localStorage.setItem('store.manage',index.toString()));
-      }} />
-<CurrentTheme />
-<RecentThemes store={0} />
-      {/* {stores?.list[index] && <ThemeList store={0} />} */}
-    </div>
-  )
-}
+         setIsLoadingInitialStore(false); // Marquer la fin du chargement initial
+    }, [storesList, isLoadingList, currentStore, setCurrentStore]); // Dépendances
 
 
-function StoreDetail({ store, postion, isActive, onActiveRequired }: { onActiveRequired: () => void, postion: string, isActive?: boolean, store?: StoreInterface | null }) {
+    const handleSelectStore = (store: StoreInterface) => {
+        setCurrentStore(store);
+    };
+
+    return (
+        <div className="w-full min-h-screen flex flex-col bg-gradient-to-br from-gray-50 to-blue-50/30"> {/* Fond légèrement bleuté */}
+            <Topbar />
+            <main className="w-full max-w-7xl mx-auto p-4 md:p-6 lg:p-8 flex flex-col gap-6">
+
+                {/* Titre et Toolbar */}
+                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center gap-4">
+                     <h1 className="text-2xl font-semibold text-gray-900">{t('storesPage.title')}</h1> 
+                     <StoreToolbar filter={filter} onFilterChange={setFilter} />
+                 </div>
 
 
-  return <div className={postion}>
-    <div className={`manages-stores ${isActive ? 'active' : ''}`}>
+                {/* Liste Horizontale des Stores */}
+                <StoresList
+                    stores={storesList}
+                    isLoading={isLoadingList}
+                    selectedStoreId={currentStore?.id}
+                    onSelectStore={handleSelectStore}
+                    // Ajouter prop pour le lien "Voir tout"
+                    // viewAllUrl="/stores/manage" // Exemple d'URL
+                />
 
-      <div className="manage-side">
-        <div className="stats">
-          <div className="section commades">
-            <div className="min-info">
-              <h3><IoCart className='icon' /> {'Commandes'} <span>{'38'}</span></h3>
-            </div>
-            <MyChart color='greenLight' />
-          </div>
-          <div className="section visites">
-            <div className="min-info">
-              <h3><IoPeopleSharp className='icon' /> {'Visites'} <span>{'38'}</span></h3>
-            </div>
-            <MyChart />
-          </div>
+                {/* Détails du Store Sélectionné & Gestion Thème */}
+                {/* Afficher seulement si un store est sélectionné et après chargement initial */}
+                {isLoadingInitialStore ? (
+                     <div className="p-10 text-center text-gray-500">{t('common.loading')}...</div> // Loader simple pendant la sélection initiale
+                ) : currentStore ? (
+                    <div className="flex flex-col gap-6 mt-4"> {/* Espace après la liste */}
+                        <SelectedStoreDetails store={currentStore} />
+                        <ThemeManager store={currentStore} />
+                         {/* Ajouter InventoryManager ici si besoin */}
+                    </div>
+                ) : (
+                     // Message si aucun store n'est sélectionné ou disponible
+                     !isLoadingList && storesList.length === 0 && (
+                          <div className="text-center py-10 text-gray-500">
+                              <p>{t('storesPage.noStoresFound')}</p> 
+                              {/* Ajouter un bouton pour créer le premier store? */}
+                          </div>
+                     )
+                )}
+
+            </main>
         </div>
-        <Separator color='var(--contrast-text-color-1)' />
-        <div className="activities">
-          <div className="activity">
-            <h3>Points de ventes</h3>
-            <Progrees progress={0.2} />
-            <span>{20} / {99}</span>
-          </div>
-          <div className="activity">
-            <h3>Collaborateurs</h3>
-            <Progrees progress={0.2} />
-            <span>{2} / {10}</span>
-          </div>
-          <div className="activity">
-            <h3>Produits</h3>
-            <Progrees progress={0.2} />
-            <span>{2} / {10}</span>
-          </div>
-          <div className="activity">
-            <h3>Pays</h3>
-            <Progrees progress={0.2} />
-            <span>{2} / {10}</span>
-          </div>
-          <div className="activity">
-            <h3>Disque SSD <span>(Gb)</span></h3>
-            <Progrees progress={0.2} />
-            <span>{2} / {10}</span>
-          </div>
-        </div>
-      </div>
-      <div className="manage-side change-store">
-        <h3 className='store-name'>{'Boutique name'}</h3>
-        <p>Cliquer sur le boutton si dessous pour que l'app afficher les Informations de la boutique</p>
-        <div className="btn" onClick={onActiveRequired}>Changer de Boutique</div>
-      </div>
-      <div className="manage-side store-options">
-        <div className="play"><IoDesktop /> Rendre Disponible <IoChevronForward className='end' /></div>
-        <div className="stop"><IoClose /> Stopper <IoChevronForward className='end' /></div>
-        <div className="secur"><IoFingerPrint /> Securite <IoChevronForward className='end' /></div>
-        <div className="edit"><IoPencil /> Modifier <IoChevronForward className='end' /></div>
-        {/* <div className="stop"><IoSettings/> Parametre</div> */}
-        <div className="stting"><IoSettings /> Parametre <IoChevronForward className='end' /></div>
-      </div>
-    </div>
-
-    
-  </div>
+    );
 }
-
-function CurrentTheme() {
-  const [store, setStore] = useState<any>({})
-  const s = useWindowSize().width;
-  const n = s < 550 ? (
-    ((s - 260) / 290) * 1 + 2
-  ) : s < 750 ? 3 : 4
-  const p = s < 550 ? 20 : 30
-  return <div className="current-theme" >
-    <div className="detail-current-theme">
-      <div className="image" style={{ background: getImg('/res/store_img_5.png', 'cover') }}></div>
-      <div className="general">
-        <h2>Theme Nane Sublymus</h2>
-        <p className='theme-specialities'>{
-          ['multi category', '3d', 'AR', '3D seulement', 'food', 'immobilier'].map(f => <span key={f}>{f}</span>)
-        }</p>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <h3 style={{ whiteSpace: 'nowrap' }}>STATUS :</h3>
-          <div className="status">{'ACTIVE'}</div>
-        </div>
-      </div>
-    </div>
-    <Swiper
-      slidesPerView={n}
-      spaceBetween={p}
-      freeMode={true}
-      pagination={{
-        clickable: true,
-      }}
-      modules={[FreeMode]}
-      className="options no-selectable"
-    >
-      <SwiperSlide className="hidden"></SwiperSlide>
-      <SwiperSlide className="Color">
-        <img src={`${Host}/themes_options/colors.svg`} alt="" width={120} height={120} />
-        <span>Colors</span>
-      </SwiperSlide>
-      <SwiperSlide className="Disposition">
-        <img src={`${Host}/themes_options/text.svg`} alt="" width={120} height={120} />
-        <span>Text</span>
-      </SwiperSlide>
-      <SwiperSlide className="Text">
-        <img src={`${Host}/themes_options/disposition.svg`} alt="" width={120} height={120} />
-        <span>Disposition</span>
-      </SwiperSlide>
-      <SwiperSlide className="pub">
-        <img src={`${Host}/themes_options/pub.svg`} alt="" width={120} height={120} />
-        <span>PUB</span>
-      </SwiperSlide>
-      <SwiperSlide className="blog">
-        <img src={`${Host}/themes_options/blog.svg`} alt="" width={120} height={120} />
-        <span>FAQ</span>
-      </SwiperSlide>
-      <SwiperSlide className="FAQ">
-        <img src={`${Host}/themes_options/faq.svg`} alt="" width={120} height={120} />
-        <span>Blog</span>
-      </SwiperSlide>
-      <SwiperSlide className="hidden"></SwiperSlide>
-    </Swiper>
-  </div>
-
-}
-
-/*
-
-[En-tête]
-
---------------  recherche  discrete -------------
-|  filter (inactif) (active) (le store courrant)  
-|  [recherche par nom]   voir tout >
--------------------------------------------------
---------------   list horizontal   ---------------
-| list des store en petite card (icon, name , debut description )
-| et la cover image en background
--------------------------------------------------
-
-[section store info]
--------------------------------------------
-| | Modifier | Paramètres | Stopper | 
-| [Carte Statistiques]                   |
-| Commandes: 38 (icône)                  |
-| Visites: 38 (icône)                    |
-| Points de ventes: 20/99 (icône)        |
-| ...                                    |
------------------------------------------
-
--------------------------------------------------
-|[           ] Theme Nane Sublymus          [changer de theme]           
-|[ theme img ] multi category 3D AR 3D seulement...
-|[           ] [Badge ACTIF]     
-|      (color) (text) ( disposition ) (pub) (faq ) (blog) [horisontal]                
--------------------------------------------------
-
-[Section Thèmes]
--------------------------------------------------
-Liste des Thèmes Récemment Utilisés
-| [Thème 1] | [Thème 2] | [Thème 3] [horisontal]
--------------------------------------------------
-
-*/
