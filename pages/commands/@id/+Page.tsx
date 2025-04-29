@@ -13,8 +13,8 @@ import { useWindowSize } from '../../../Hooks/useWindowSize';
 import { useEffect, useMemo, useState } from 'react'; // Ajouter useMemo
 // import { useApp } from '../../../renderer/AppStore/UseApp'; // Supprimé si non utilisé
 import { ChildViewer } from '../../../Components/ChildViewer/ChildViewer'; // Importer le hook useChildViewer
-// import { getTransmit, useStore } from '../../stores/StoreStore'; // Assurer chemin correct
-import { useStore } from '../../../pages/stores/StoreStore';
+// import { getTransmit, useGlobalStore  } from '../../stores/StoreStore'; // Assurer chemin correct
+import { useGlobalStore } from '../../../pages/stores/StoreStore';
 import { getTransmit } from '../../../pages/stores/StoreStore';
 import { usePageContext } from '../../../renderer/usePageContext';
 import { markdownToPlainText } from '../../../Components/MarkdownViewer/MarkdownViewer';
@@ -34,7 +34,7 @@ export { Page };
 
 function Page() {
     const { t } = useTranslation(); // ✅ i18n
-    const { currentStore } = useStore();
+    const { currentStore } = useGlobalStore();
     const { openChild } = useChildViewer(); // Utiliser le hook pour ouvrir/fermer
     const size = useWindowSize();
 
@@ -298,7 +298,7 @@ export function CommandUser({ user, command }: { command: Partial<CommandInterfa
 export function CommandProduct({ item }: { item: CommandItemInterface }) {
     const { t } = useTranslation();
     const isReturn = item.status === OrderStatus.RETURNED; // Utiliser l'enum
-    const { currentStore } = useStore();
+    const { currentStore } = useGlobalStore();
     const [copiedId, setCopiedId] = useState(false);
 
     // Simplification: Accès plus direct à l'image via le modèle préchargé

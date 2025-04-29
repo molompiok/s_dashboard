@@ -3,20 +3,20 @@ import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { IoAddSharp, IoArrowForward, IoClose } from "react-icons/io5";
 import { CgExtensionAdd } from "react-icons/cg";
 import { CategoryInterface } from '../../Interfaces/Interfaces';
-import { useGetCategories } from '../../api/ReactSublymusApi'; 
-import { useStore } from '../../pages/stores/StoreStore';
+import { useGetCategories } from '../../api/ReactSublymusApi';
+import { useGlobalStore } from '../../pages/stores/StoreStore';
 import { getImg } from '../Utils/StringFormater';
-import { useTranslation } from 'react-i18next'; 
+import { useTranslation } from 'react-i18next';
 import { CategoryItemMini } from '../CategoryItem/CategoryItemMini';
 
-const CATEGORY_ITEM_MIN_WIDTH = 80; 
-const GAP_SIZE = 8; 
+const CATEGORY_ITEM_MIN_WIDTH = 80;
+const GAP_SIZE = 8;
 
 export { CategoriesList };
 
 function CategoriesList({ title }: { title?: string }) {
-    const { t } = useTranslation(); 
-    const { currentStore } = useStore();
+    const { t } = useTranslation();
+    const { currentStore } = useGlobalStore();
     const listRef = useRef<HTMLDivElement>(null);
     const [containerWidth, setContainerWidth] = useState<number>(0);
 
@@ -25,7 +25,7 @@ function CategoriesList({ title }: { title?: string }) {
         { enabled: !!currentStore }
     );
     const allCategories = categoriesData?.list ?? [];
-    const totalCategories = categoriesData?.meta?.total ?? allCategories.length; 
+    const totalCategories = categoriesData?.meta?.total ?? allCategories.length;
 
     useEffect(() => {
         if (!listRef.current) return;
@@ -39,7 +39,7 @@ function CategoriesList({ title }: { title?: string }) {
     }, []);
 
     const itemsToShow = useMemo(() => {
-        if (containerWidth === 0) return 5; 
+        if (containerWidth === 0) return 5;
         const effectiveWidth = containerWidth + GAP_SIZE;
         const itemTotalWidth = CATEGORY_ITEM_MIN_WIDTH + GAP_SIZE;
         const itemsPerRow = Math.max(1, Math.floor(effectiveWidth / itemTotalWidth));
@@ -52,7 +52,7 @@ function CategoriesList({ title }: { title?: string }) {
     return (
         <div className="w-full flex flex-col">
             <h1 className="text-lg font-semibold text-gray-800 mb-3">
-                {title || t('dashboard.categories')} 
+                {title || t('dashboard.categories')}
             </h1>
             <div
                 className="w-full flex flex-wrap items-start gap-2 min-h-[180px]" /* gap-2 (8px), min-h pour 2 lignes approx */

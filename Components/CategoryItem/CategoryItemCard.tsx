@@ -3,7 +3,7 @@
 import { CategoryInterface } from "../../Interfaces/Interfaces";
 import { IoPricetagsOutline, IoCalendarOutline, IoEyeOffOutline, IoPencil, IoTrash, IoEllipsisVertical, IoChevronForward, IoEyeOutline } from "react-icons/io5";
 import { getImg } from "../Utils/StringFormater";
-import { useStore } from "../../pages/stores/StoreStore";
+import { useGlobalStore } from "../../pages/stores/StoreStore";
 import { useTranslation } from "react-i18next";
 import { DateTime } from "luxon";
 import { useState, useEffect } from 'react'; // Ajouter useEffect
@@ -24,7 +24,7 @@ interface CategoryItemCardProps {
 
 function CategoryItemCard({ category }: CategoryItemCardProps) {
     const { t } = useTranslation();
-    const { currentStore } = useStore();
+    const { currentStore } = useGlobalStore();
     const { openChild } = useChildViewer(); // ✅ Hook pour popup
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [imgError, setImgError] = useState(false);
@@ -88,22 +88,22 @@ function CategoryItemCard({ category }: CategoryItemCardProps) {
         <div className="category-item-card relative group bg-white rounded-lg shadow-sm border border-gray-200 flex flex-col transition duration-150 hover:shadow-md hover:border-blue-300">
             {/* Image Cliquable */}
             <a href={`/categories/${category.id}`} className="block aspect-[4/3] w-full bg-gray-100 relative">
-                 {/* Gestion Erreur Image */}
-                 {!imgError ? (
-                     <img
-                         src={src || NO_PICTURE}
-                         alt={category.name}
-                         loading="lazy"
-                         className="w-full h-full object-cover block"
-                         onError={() => setImgError(true)}
-                     />
-                 ) : (
-                     <img
-                         src={NO_PICTURE}
-                         alt={t('common.imageError')}
-                         className="w-full h-full object-contain block opacity-50 p-4" 
-                     />
-                 )}
+                {/* Gestion Erreur Image */}
+                {!imgError ? (
+                    <img
+                        src={src || NO_PICTURE}
+                        alt={category.name}
+                        loading="lazy"
+                        className="w-full h-full object-cover block"
+                        onError={() => setImgError(true)}
+                    />
+                ) : (
+                    <img
+                        src={NO_PICTURE}
+                        alt={t('common.imageError')}
+                        className="w-full h-full object-contain block opacity-50 p-4"
+                    />
+                )}
                 {/* Overlay Visibilité */}
                 {!isVisible && (
                     <div className="absolute inset-0 bg-black/40 flex items-center justify-center" title={t('productList.hidden')}>
@@ -111,7 +111,7 @@ function CategoryItemCard({ category }: CategoryItemCardProps) {
                     </div>
                 )}
             </a>
-             {/* Contenu Texte */}
+            {/* Contenu Texte */}
             <div className="p-3 flex flex-col flex-grow">
                 {/* Nom & Menu Actions */}
                 <div className="flex justify-between items-start gap-2 mb-1">
@@ -132,40 +132,40 @@ function CategoryItemCard({ category }: CategoryItemCardProps) {
                             <IoEllipsisVertical />
                         </button>
                         {/* Menu déroulant */}
-                         {isMenuOpen && (
-                             <div className="absolute right-0 mt-1 w-48 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-20 py-1" role="menu" onClick={(e) => e.stopPropagation()}>
-                                 {/* Lien Voir */}
-                                 <a href={`/categories/${category.id}`} role="menuitem" className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 w-full text-left">
-                                     <IoChevronForward className="w-4 h-4" /> {t('common.view')}
-                                 </a>
-                                  {/* Action Visibilité */}
-                                  <button onClick={handleToggleVisibility} role="menuitem" className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 w-full text-left disabled:opacity-50" disabled={updateCategoryMutation.isPending}>
-                                      {isVisible ? <IoEyeOffOutline className="w-4 h-4" /> : <IoEyeOutline className="w-4 h-4" />}
-                                      {isVisible ? t('productList.setHidden') : t('productList.setVisible')}
-                                  </button>
-                                   {/* Action Supprimer */}
-                                   <button onClick={handleDelete} role="menuitem" className="flex items-center gap-2 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 w-full text-left disabled:opacity-50" disabled={deleteCategoryMutation.isPending}>
-                                       <IoTrash className="w-4 h-4" /> {t('common.delete')}
-                                   </button>
-                             </div>
-                         )}
+                        {isMenuOpen && (
+                            <div className="absolute right-0 mt-1 w-48 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-20 py-1" role="menu" onClick={(e) => e.stopPropagation()}>
+                                {/* Lien Voir */}
+                                <a href={`/categories/${category.id}`} role="menuitem" className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 w-full text-left">
+                                    <IoChevronForward className="w-4 h-4" /> {t('common.view')}
+                                </a>
+                                {/* Action Visibilité */}
+                                <button onClick={handleToggleVisibility} role="menuitem" className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 w-full text-left disabled:opacity-50" disabled={updateCategoryMutation.isPending}>
+                                    {isVisible ? <IoEyeOffOutline className="w-4 h-4" /> : <IoEyeOutline className="w-4 h-4" />}
+                                    {isVisible ? t('productList.setHidden') : t('productList.setVisible')}
+                                </button>
+                                {/* Action Supprimer */}
+                                <button onClick={handleDelete} role="menuitem" className="flex items-center gap-2 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 w-full text-left disabled:opacity-50" disabled={deleteCategoryMutation.isPending}>
+                                    <IoTrash className="w-4 h-4" /> {t('common.delete')}
+                                </button>
+                            </div>
+                        )}
                     </div>
                 </div>
-                 {/* Description */}
+                {/* Description */}
                 {category.description && (
                     <p className='text-xs text-gray-500 line-clamp-2 mb-2' title={category.description}>
                         {category.description}
                     </p>
                 )}
-                 {/* Infos Basses */}
-                 <div className="mt-auto flex flex-wrap justify-between items-center gap-x-3 gap-y-1 pt-2 border-t border-gray-100">
+                {/* Infos Basses */}
+                <div className="mt-auto flex flex-wrap justify-between items-center gap-x-3 gap-y-1 pt-2 border-t border-gray-100">
                     {/* Nb Produits */}
-                     <div className="flex items-center gap-1 text-xs text-gray-500" title={t('category.productCountTooltip')}>
+                    <div className="flex items-center gap-1 text-xs text-gray-500" title={t('category.productCountTooltip')}>
                         <IoPricetagsOutline className="w-3.5 h-3.5" />
                         <span>{category.product_count ?? 0} {t('dashboard.products')}</span>
                     </div>
-                     {/* Date Création */}
-                     <div className="flex items-center gap-1 text-xs text-gray-400" title={t('common.createdAt')}>
+                    {/* Date Création */}
+                    <div className="flex items-center gap-1 text-xs text-gray-400" title={t('common.createdAt')}>
                         <IoCalendarOutline className="w-3.5 h-3.5" />
                         <span>{createdAt}</span>
                     </div>

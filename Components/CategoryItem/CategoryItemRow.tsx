@@ -3,7 +3,7 @@
 import { CategoryInterface } from "../../Interfaces/Interfaces";
 import { IoCalendarOutline, IoChevronForward, IoEllipsisVertical, IoEyeOffOutline, IoEyeOutline, IoPencil, IoPricetagsOutline, IoTrash } from "react-icons/io5";
 import { getImg } from "../Utils/StringFormater";
-import { useStore } from "../../pages/stores/StoreStore";
+import { useGlobalStore } from "../../pages/stores/StoreStore";
 import { useTranslation } from "react-i18next";
 import { DateTime } from "luxon";
 import { useState, useEffect } from 'react'; // Ajouter useEffect
@@ -25,7 +25,7 @@ interface CategoryItemRowProps {
 
 function CategoryItemRow({ category /*, onDeleteSuccess, onVisibilityChangeSuccess */ }: CategoryItemRowProps) {
     const { t } = useTranslation();
-    const { currentStore } = useStore();
+    const { currentStore } = useGlobalStore();
     const { openChild } = useChildViewer(); // ✅ Hook pour popup
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [imgError, setImgError] = useState(false);

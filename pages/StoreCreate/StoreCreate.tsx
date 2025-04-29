@@ -6,7 +6,7 @@ import { CreateStore, StoreCollectedType } from './CreateStore';
 import { getImg } from '../../Components/Utils/StringFormater';
 import { ClientCall } from '../../Components/Utils/functions';
 import { IoChevronForward } from 'react-icons/io5';
-import { useStore } from '../stores/StoreStore';
+import { useGlobalStore } from '../stores/StoreStore';
 
 export { StoreCreate }
 
@@ -20,24 +20,24 @@ type PageType =
     'create-success' |
     'create-error';
 
-function StoreCreate({back}:{back?:boolean}) {
+function StoreCreate({ back }: { back?: boolean }) {
     const [page, setPage] = useState<PageType>('create');
     const [collected, setCollected] = useState<StoreCollectedType>()
     return <div className="store-create">
-        <Topbar back={back} search={false} notif={false} onBack={()=>{
-            ClientCall(()=>history.back())
+        <Topbar back={back} search={false} notif={false} onBack={() => {
+            ClientCall(() => history.back())
         }} />
         <div className="ctn">
             {
                 page == 'create' && <CreateStore canCancel={true} onReady={(collected) => {
                     setCollected(collected)
                     setPage('loading-create')
-                }} store={{}} onCancel={()=>{
-                    ClientCall(()=>history.back())
+                }} store={{}} onCancel={() => {
+                    ClientCall(() => history.back())
                 }} />
             }
             {
-                page == 'loading-create' && <StoreCreateLoading collected={collected||{}} onReady={(store) => {
+                page == 'loading-create' && <StoreCreateLoading collected={collected || {}} onReady={(store) => {
                     setCollected(store)
                     setPage('create-success')
                 }} onError={(error) => {
@@ -45,14 +45,14 @@ function StoreCreate({back}:{back?:boolean}) {
                 }} />
             }
             {
-                page == 'create-success' && <CasSuccess type={'create'}onDashRequired={()=>{
-                    ClientCall(()=>history.back())
-                }}/>
+                page == 'create-success' && <CasSuccess type={'create'} onDashRequired={() => {
+                    ClientCall(() => history.back())
+                }} />
             }
             {
-                page == 'create-error' && <CasError type='create' openDash={back} onDashRequired={()=>{
-                    ClientCall(()=>history.back())
-                }}/>
+                page == 'create-error' && <CasError type='create' openDash={back} onDashRequired={() => {
+                    ClientCall(() => history.back())
+                }} />
             }
             {
                 page == 'edit' && <CreateStore canCancel={true} onReady={(collected) => {
@@ -61,7 +61,7 @@ function StoreCreate({back}:{back?:boolean}) {
                 }} store={{}} />
             }
             {
-                page == 'loading-edit' && <StoreEditLoading collected={collected||{}} onReady={(store) => {
+                page == 'loading-edit' && <StoreEditLoading collected={collected || {}} onReady={(store) => {
                     setCollected(store)
                     setPage('edit-success')
                 }} onError={(error) => {
@@ -69,21 +69,21 @@ function StoreCreate({back}:{back?:boolean}) {
                 }} />
             }
             {
-                page == 'edit-success' && <CasSuccess type={'edit'} onDashRequired={()=>{
-                    ClientCall(()=>history.back())
-                }}/>
+                page == 'edit-success' && <CasSuccess type={'edit'} onDashRequired={() => {
+                    ClientCall(() => history.back())
+                }} />
             }
             {
-                page == 'edit-error' && <CasError type='edit' onDashRequired={()=>{
-                    ClientCall(()=>history.back())
-                }}/>
+                page == 'edit-error' && <CasError type='edit' onDashRequired={() => {
+                    ClientCall(() => history.back())
+                }} />
             }
         </div>
     </div>
 }
 
 
-function CasSuccess({ type ,onDashRequired}: { type: 'create' | 'edit' ,onDashRequired?:()=>void }) {
+function CasSuccess({ type, onDashRequired }: { type: 'create' | 'edit', onDashRequired?: () => void }) {
 
     return <div className="cas-success">
         <div className="success-img" style={{ background: getImg('/res/success_wave-yes.webp') }}></div>
@@ -92,17 +92,17 @@ function CasSuccess({ type ,onDashRequired}: { type: 'create' | 'edit' ,onDashRe
                 'Votre boutique a bien été créée' :
                 'Les Informations de la boutique on bien ete modifier'
         }</h2>
-        <div className="dash-btn" onClick={()=>{
+        <div className="dash-btn" onClick={() => {
             onDashRequired?.()
         }}>{
-            type == 'create' ?
-                'Ajouter un produit' :
-                'Acceder au dashboard'
-        } <IoChevronForward /></div>
+                type == 'create' ?
+                    'Ajouter un produit' :
+                    'Acceder au dashboard'
+            } <IoChevronForward /></div>
     </div>
 }
 
-function CasError({ type ,openDash,onDashRequired}: { type: 'create' | 'edit' ,openDash?:boolean,onDashRequired?:()=>void }) {
+function CasError({ type, openDash, onDashRequired }: { type: 'create' | 'edit', openDash?: boolean, onDashRequired?: () => void }) {
 
     return <div className="cas-error">
         <div className="error-img" style={{ background: getImg('/res/update_reload.png') }}></div>
@@ -112,23 +112,23 @@ function CasError({ type ,openDash,onDashRequired}: { type: 'create' | 'edit' ,o
                 'Les Informations de la boutique sont en cours de modifiations, elle s\'appliquerons dans moins de 24h'
         }</h2>
         {
-            (type == 'edit' ||( type == 'create' && openDash)) && <div className="dash-btn" onClick={()=>{
+            (type == 'edit' || (type == 'create' && openDash)) && <div className="dash-btn" onClick={() => {
                 onDashRequired?.()
             }}>Accedez au dashboard <IoChevronForward /></div>
         }
     </div>
 }
 function StoreCreateLoading({ collected, onError, onReady }: { collected: Partial<StoreCollectedType>, onReady: (collected: StoreCollectedType) => void, onError: (error: string) => void }) {
-    
-    const  { createStore } = useStore();
+
+    const { createStore } = useGlobalStore();
     const [message, setMessage] = useState('');
     const [time, setTime] = useState(0);
     // const [setp,setStep] = useState<'loading'|''>('loading')
     const [_s] = useState({
-        name:'',
-        usedName:''
+        name: '',
+        usedName: ''
     })
-    _s.name = collected.name||''
+    _s.name = collected.name || ''
     useEffect(() => {
         let i = 0;
         let s = 0;
@@ -173,21 +173,21 @@ function StoreCreateLoading({ collected, onError, onReady }: { collected: Partia
             onError('Votre Demand a bien ete enregistrer, nous vous rappelerons dans moin de 2h( en journee) (moin de 24 heurs en soiree) apres avoir Creation de la boutique')
         }, 30_000);
 
-        if(_s.usedName != collected.name){// Bug le createStore est appeler 2 fois;
-            _s.usedName = collected.name||'';
-            createStore(collected).then((store)=>{
-                console.log({store});
+        if (_s.usedName != collected.name) {// Bug le createStore est appeler 2 fois;
+            _s.usedName = collected.name || '';
+            createStore(collected).then((store) => {
+                console.log({ store });
                 clearInterval(id);
                 clearTimeout(out_id);
                 onReady(store);
-            }).catch((reason)=>{
-                console.log({reason});
+            }).catch((reason) => {
+                console.log({ reason });
                 clearInterval(id);
                 clearTimeout(out_id);
                 onError(JSON.stringify(reason));
             })
         }
-       
+
 
         return () => {
             clearInterval(id);

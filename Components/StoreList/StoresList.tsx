@@ -18,9 +18,10 @@ interface StoresListProps {
     selectedStoreId?: string;
     onSelectStore: (store: StoreInterface) => void;
     viewAllUrl?: string; // URL optionnelle pour "Voir tout"
+    newStoreRequire:() => void
 }
 
-export function StoresList({ stores, isLoading, selectedStoreId, onSelectStore, viewAllUrl }: StoresListProps) {
+export function StoresList({ stores, isLoading, selectedStoreId, onSelectStore, viewAllUrl, newStoreRequire }: StoresListProps) {
     const { t } = useTranslation();
 
     // Calcul slidesPerView basé sur la largeur (à affiner)
@@ -43,8 +44,9 @@ export function StoresList({ stores, isLoading, selectedStoreId, onSelectStore, 
                     nextEl: '.swiper-button-next-store', // Sélecteurs CSS personnalisés
                     prevEl: '.swiper-button-prev-store',
                 }}
+                style={{overflow:'visible'}}
                 pagination={{ clickable: true }} // Activer pagination simple
-                className="stores-swiper pb-10" // Ajouter pb pour pagination
+                className="stores-swiper pb-10 overflow-visible" // Ajouter pb pour pagination
             >
                 {isLoading ? (
                     // Afficher les skeletons pendant le chargement
@@ -56,7 +58,7 @@ export function StoresList({ stores, isLoading, selectedStoreId, onSelectStore, 
                 ) : (
                      // Afficher les stores réels
                      stores.map((store) => (
-                         <SwiperSlide key={store.id} className="pb-1">
+                         <SwiperSlide key={store.id} className="pb-1 h-full min-h-[220px]">
                              <StoreItemCard
                                  store={store}
                                  isSelected={store.id === selectedStoreId}

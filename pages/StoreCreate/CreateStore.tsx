@@ -8,7 +8,7 @@ import { getImg } from '../../Components/Utils/StringFormater';
 import './CreateStore.css'
 import 'swiper/css';
 import 'swiper/css/navigation';
-import { useStore } from '../stores/StoreStore';
+import { useGlobalStore } from '../stores/StoreStore';
 
 export { CreateStore, StoreCollectedType }
 
@@ -43,7 +43,7 @@ function CreateStore<T>({ store, onReady, canCancel, onCancel }: { store: Partia
 
     // const [index, setIndex] = [0,(i:number)=>0]//useState(0); TODO Optimisation, les cover_image cover_image clignote quant on scroll
     const [index, setIndex] = useState(0);
-    const { available_name } = useStore()
+    const { available_name } = useGlobalStore()
     const [progressIndex, setProgressIndex] = useState(1);
     const [swiper, setSwiper] = useState<SwiperType | null>(null)
     const [message, setMessage] = useState<{
@@ -67,7 +67,7 @@ function CreateStore<T>({ store, onReady, canCancel, onCancel }: { store: Partia
         ? collected.logo[0] :
         collected.logo[0] instanceof Blob ?
             URL.createObjectURL(collected.logo[0]) : '/res/empty/drag-and-drop.png'
-            
+
     let cover_imageImg = typeof collected.cover_image[0] == 'string'
         ? collected.cover_image[0] :
 
@@ -142,7 +142,7 @@ function CreateStore<T>({ store, onReady, canCancel, onCancel }: { store: Partia
             clearInterval(s.name_id_time)
         }
     }, [index])
-
+32
     return <>
         <h1>Cree votre boutique en ligne</h1>
         <div className="progress-store no-selectable">

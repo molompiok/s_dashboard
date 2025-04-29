@@ -5,7 +5,7 @@ import { ProductInterface } from '../../Interfaces/Interfaces';
 import { getFileType, shortNumber } from '../Utils/functions';
 import { getImg } from '../Utils/StringFormater';
 import { getDefaultValues } from '../Utils/parseData';
-import { useStore } from '../../pages/stores/StoreStore';
+import { useGlobalStore } from '../../pages/stores/StoreStore';
 import { markdownToPlainText } from '../MarkdownViewer/MarkdownViewer';
 import { useTranslation } from 'react-i18next';
 import { NO_PICTURE } from '../Utils/constants';
@@ -23,9 +23,9 @@ interface ProductItemCardProps {
     onClick?: () => void; // Remplacé par des liens/boutons internes
 }
 
-function ProductItemCard({ product ,onClick}: ProductItemCardProps) {
+function ProductItemCard({ product, onClick }: ProductItemCardProps) {
     const { t } = useTranslation();
-    const { currentStore } = useStore();
+    const { currentStore } = useGlobalStore();
     const { openChild } = useChildViewer(); // ✅ Hook pour popup
     const [imgError, setImgError] = useState(false);
     const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -93,59 +93,59 @@ function ProductItemCard({ product ,onClick}: ProductItemCardProps) {
         // Rendre comme un div cliquable globalement, mais les actions sont dans le menu
         <div className="product-item-card relative group aspect-[65/100] rounded-xl overflow-hidden shadow-sm border border-gray-100 hover:border-blue-200 hover:shadow-md transition duration-200 flex flex-col bg-white">
             {/* Conteneur Image (lien vers détail produit) */}
-            <a href={onClick?undefined: `/products/${product.id}`} className="block w-full aspect-square relative flex-shrink-0 bg-gray-100" onClick={onClick}>
-                 {/* Gestion Erreur Image */}
-                 {!imgError ? (
-                     fileType === 'image' ? (
-                         <img src={src || NO_PICTURE} alt={product.name} loading="lazy" className="w-full h-full object-cover block" onError={() => setImgError(true)} />
-                     ) : fileType === 'video' ? (
-                         <video muted autoPlay loop playsInline className="w-full h-full object-cover block" src={src || ''} onError={() => setImgError(true)} />
-                     ) : (
-                         <img src={NO_PICTURE} alt="Placeholder" className="w-full h-full object-contain block p-4 opacity-50" /> // Contain pour placeholder
-                     )
-                 ) : (
-                      <img src={NO_PICTURE} alt={t('common.imageError')} className="w-full h-full object-contain block p-4 opacity-50" />
-                 )}
+            <a href={onClick ? undefined : `/products/${product.id}`} className="block w-full aspect-square relative flex-shrink-0 bg-gray-100" onClick={onClick}>
+                {/* Gestion Erreur Image */}
+                {!imgError ? (
+                    fileType === 'image' ? (
+                        <img src={src || NO_PICTURE} alt={product.name} loading="lazy" className="w-full h-full object-cover block" onError={() => setImgError(true)} />
+                    ) : fileType === 'video' ? (
+                        <video muted autoPlay loop playsInline className="w-full h-full object-cover block" src={src || ''} onError={() => setImgError(true)} />
+                    ) : (
+                        <img src={NO_PICTURE} alt="Placeholder" className="w-full h-full object-contain block p-4 opacity-50" /> // Contain pour placeholder
+                    )
+                ) : (
+                    <img src={NO_PICTURE} alt={t('common.imageError')} className="w-full h-full object-contain block p-4 opacity-50" />
+                )}
                 {/* Indicateurs */}
                 <div className="absolute top-2 right-2 flex flex-col gap-1 z-10"> {/* z-10 pour être au dessus de l'image */}
-                    {!isVisible && ( <span title={t('productList.hidden')} className="p-1 bg-gray-500/80 text-white rounded-full shadow"><IoEyeOffOutline size={12} /></span> )}
-                    {stockStatus === 'low_stock' && ( <span title={t('productList.lowStock')} className="p-1 bg-orange-500/80 text-white rounded-full shadow"><IoWarningOutline size={12} /></span> )}
-                    {stockStatus === 'out_of_stock' && ( <span title={t('productList.outOfStock')} className="p-1 bg-red-500/80 text-white rounded-full shadow"><IoWarningOutline size={12} /></span> )}
+                    {!isVisible && (<span title={t('productList.hidden')} className="p-1 bg-gray-500/80 text-white rounded-full shadow"><IoEyeOffOutline size={12} /></span>)}
+                    {stockStatus === 'low_stock' && (<span title={t('productList.lowStock')} className="p-1 bg-orange-500/80 text-white rounded-full shadow"><IoWarningOutline size={12} /></span>)}
+                    {stockStatus === 'out_of_stock' && (<span title={t('productList.outOfStock')} className="p-1 bg-red-500/80 text-white rounded-full shadow"><IoWarningOutline size={12} /></span>)}
                 </div>
-                 {/* Menu Kebab (apparaît au survol de la carte) */}
-                 <div className="absolute top-1 left-1 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button
-                          onClick={(e) => { e.preventDefault(); e.stopPropagation(); setIsMenuOpen(!isMenuOpen); }} // Empêcher le clic sur le lien parent
-                          className="p-1.5 rounded-full text-gray-600 bg-white/70 hover:bg-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                          aria-haspopup="true" aria-expanded={isMenuOpen} title={t('common.actions')}
-                          disabled={deleteProductMutation.isPending || updateProductMutation.isPending}
-                      >
-                         <IoEllipsisVertical />
-                      </button>
-                      {/* Menu déroulant */}
-                       {isMenuOpen && (
-                           <div className="absolute left-0 mt-1 w-40 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-20 py-1" role="menu" onClick={(e) => e.stopPropagation()}>
-                               <a href={`/products/${product.id}/edit`} role="menuitem" className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 w-full text-left">
-                                   <IoPencil className="w-4 h-4" /> {t('common.edit')}
-                               </a>
-                               <button onClick={(e)=>{
+                {/* Menu Kebab (apparaît au survol de la carte) */}
+                <div className="absolute top-1 left-1 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); setIsMenuOpen(!isMenuOpen); }} // Empêcher le clic sur le lien parent
+                        className="p-1.5 rounded-full text-gray-600 bg-white/70 hover:bg-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                        aria-haspopup="true" aria-expanded={isMenuOpen} title={t('common.actions')}
+                        disabled={deleteProductMutation.isPending || updateProductMutation.isPending}
+                    >
+                        <IoEllipsisVertical />
+                    </button>
+                    {/* Menu déroulant */}
+                    {isMenuOpen && (
+                        <div className="absolute left-0 mt-1 w-40 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-20 py-1" role="menu" onClick={(e) => e.stopPropagation()}>
+                            <a href={`/products/${product.id}/edit`} role="menuitem" className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 w-full text-left">
+                                <IoPencil className="w-4 h-4" /> {t('common.edit')}
+                            </a>
+                            <button onClick={(e) => {
                                 e.preventDefault()
                                 handleToggleVisibility()
-                               }} role="menuitem" className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 w-full text-left disabled:opacity-50" disabled={updateProductMutation.isPending}>
-                                   {isVisible ? <IoEyeOffOutline className="w-4 h-4" /> : <IoEyeOutline className="w-4 h-4" />}
-                                   {isVisible ? t('productList.setHidden') : t('productList.setVisible')}
-                               </button>
-                               <button onClick={(e)=>{
+                            }} role="menuitem" className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 w-full text-left disabled:opacity-50" disabled={updateProductMutation.isPending}>
+                                {isVisible ? <IoEyeOffOutline className="w-4 h-4" /> : <IoEyeOutline className="w-4 h-4" />}
+                                {isVisible ? t('productList.setHidden') : t('productList.setVisible')}
+                            </button>
+                            <button onClick={(e) => {
                                 e.preventDefault()
                                 handleDelete()
-                               }} role="menuitem" className="flex items-center gap-2 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 w-full text-left disabled:opacity-50" disabled={deleteProductMutation.isPending}>
-                                   <IoTrash className="w-4 h-4" /> {t('common.delete')}
-                               </button>
-                          </div>
-                       )}
-                 </div>
+                            }} role="menuitem" className="flex items-center gap-2 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 w-full text-left disabled:opacity-50" disabled={deleteProductMutation.isPending}>
+                                <IoTrash className="w-4 h-4" /> {t('common.delete')}
+                            </button>
+                        </div>
+                    )}
+                </div>
             </a>
-             {/* Infos Texte */}
+            {/* Infos Texte */}
             <div className="px-3 pt-2 pb-3 flex flex-col flex-grow justify-between overflow-hidden">
                 <div>
                     <h2 className='text-base font-semibold text-gray-900 truncate'>
@@ -184,23 +184,23 @@ export function ProductItemSkeletonCard() {
             <div className="w-full aspect-square bg-gray-300"></div>
 
             {/* Infos Texte Placeholder */}
-             {/* Utiliser px-3 pt-2 pb-3 flex flex-col flex-grow justify-between */}
+            {/* Utiliser px-3 pt-2 pb-3 flex flex-col flex-grow justify-between */}
             <div className="px-3 pt-2 pb-3 flex flex-col flex-grow justify-between">
                 <div> {/* Conteneur pour prix, nom, desc */}
-                     {/* Prix Placeholder */}
-                     <div className="h-5 w-1/2 bg-gray-300 rounded mt-1"></div>
+                    {/* Prix Placeholder */}
+                    <div className="h-5 w-1/2 bg-gray-300 rounded mt-1"></div>
                     {/* Nom Placeholder */}
                     <div className="h-4 w-4/5 bg-gray-200 rounded mt-2"></div>
                     {/* Description Placeholder (2 lignes) */}
                     <div className="h-3 w-full bg-gray-200 rounded mt-1.5"></div>
                     <div className="h-3 w-5/6 bg-gray-200 rounded mt-1"></div>
                 </div>
-                 {/* Rating Placeholder */}
-                  {/* Utiliser flex gap-3 mt-2 */}
-                 <div className="flex gap-3 mt-2">
-                     <div className="h-3 w-10 bg-gray-200 rounded"></div> {/* Rating */}
-                     <div className="h-3 w-10 bg-gray-200 rounded"></div> {/* Count */}
-                 </div>
+                {/* Rating Placeholder */}
+                {/* Utiliser flex gap-3 mt-2 */}
+                <div className="flex gap-3 mt-2">
+                    <div className="h-3 w-10 bg-gray-200 rounded"></div> {/* Rating */}
+                    <div className="h-3 w-10 bg-gray-200 rounded"></div> {/* Count */}
+                </div>
             </div>
         </div>
     );

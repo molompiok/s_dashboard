@@ -9,8 +9,8 @@ import { DateRange, DayPicker } from "react-day-picker";
 import "react-day-picker/style.css"; // Garder CSS DayPicker
 import { ClientCall, debounce } from '../Utils/functions';
 import { getImg } from '../Utils/StringFormater';
-// import { getTransmit, useStore } from '../../pages/stores/StoreStore'; // Transmit non pertinent ici a priori
-import { useStore } from '../../pages/stores/StoreStore';
+// import { getTransmit, useGlobalStore  } from '../../pages/stores/StoreStore'; // Transmit non pertinent ici a priori
+import { useGlobalStore } from '../../pages/stores/StoreStore';
 // import { useClientStore } from '../../pages/users/clients/ClientStore'; // Remplacé par hook API
 import { useGetUsers } from '../../api/ReactSublymusApi'; // ✅ Importer hook API
 import { ClientStatusColor } from '../Utils/constants'; // Garder pour les couleurs spécifiques client?
@@ -32,7 +32,7 @@ function ClientList({ product_id, user_id }: { user_id?: string; product_id?: st
     // with_client_role: true, // Toujours filtrer par client ici
     order_by: 'date_desc' // Ordre par défaut
   });
-  const { currentStore } = useStore();
+  const { currentStore } = useGlobalStore();
 
   const { data: clientsData, isLoading, isError, error: apiError } = useGetUsers(
     {

@@ -9,7 +9,7 @@ import { IoChevronForward, IoStar, IoTrash } from 'react-icons/io5';
 // import { useProductStore } from '../../ProductStore'; // Remplacé
 import { Topbar } from '../../../../Components/TopBar/TopBar';
 import { ProductPreview } from '../../../../Components/ProductPreview/ProductPreview';
-import { getTransmit, useStore } from '../../../stores/StoreStore';
+import { getTransmit, useGlobalStore } from '../../../stores/StoreStore';
 import { usePageContext } from '../../../../renderer/usePageContext';
 import { PageNotFound } from '../../../../Components/PageNotFound/PageNotFound';
 import { getImg } from '../../../../Components/Utils/StringFormater';
@@ -30,7 +30,7 @@ import { UseMutationResult } from '@tanstack/react-query';
 export default function Page() {
     const { t } = useTranslation(); // ✅ i18n
     // const { comments, fetchProductComments, deleteComment } = useCommentStore(); // Remplacé
-    const { currentStore } = useStore();
+    const { currentStore } = useGlobalStore();
     // const { fetchProductBy } = useProductStore(); // Remplacé
     // const [product, setProduct] = useState<Partial<ProductInterface>>(); // Géré par React Query
     const { routeParams } = usePageContext();

@@ -8,33 +8,34 @@ import { ListType, StoreInterface } from "../../Interfaces/Interfaces";
 import { Transmit } from '@adonisjs/transmit-client'
 import { ClientCall } from "../../Components/Utils/functions";
 
-export { useStore, getTransmit }
+export { useGlobalStore, getTransmit }
 
 let transmit: Transmit | null = null;
-let baseUrl = '' 
-function getTransmit(url: string):Transmit|null {
-    if(baseUrl == url && transmit) return transmit;
+let baseUrl = ''
+function getTransmit(url: string): Transmit | null {
+    if (baseUrl == url && transmit) return transmit;
     transmit?.close();
-    baseUrl=url;
-    if(!url) return null
+    baseUrl = url;
+    if (!url) return null
     console.log(url);
-    
+
     transmit = new Transmit({
         baseUrl: url,
-        uidGenerator(){
+        uidGenerator() {
             return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-              const r = (Math.random() * 16) | 0
-              const v = c === 'x' ? r : (r & 0x3) | 0x8
-              return v.toString(16)
+                const r = (Math.random() * 16) | 0
+                const v = c === 'x' ? r : (r & 0x3) | 0x8
+                return v.toString(16)
             })
-          }
-      })
-    
+        }
+    })
+
     return transmit
 }
-const useStore = create(combine({
+const useGlobalStore = create(combine({
+    _current: undefined  as StoreInterface |undefined,
     stores: undefined as ListType<StoreInterface> | undefined,
-    currentStore:  {
+    currentStore : {
         "id": "77b0d648-3c44-4e7a-8711-fef08a72605a",
         "user_id": "a25e2381-a634-4eea-a8ed-aa60ba37a61b",
         "name": "ladona5",
@@ -42,7 +43,7 @@ const useStore = create(combine({
         "description": "Tres bonne drescription ici Boutique ladona pour vous la donner",
         "slug": "ladona5",
         "logo": [],
-        url:'http://172.25.72.235:3334',
+        url: 'http://172.25.72.235:3334',
         "cover_image": [],
         "domain_names": [],
         "current_theme_id": "caf39884-da4f-4cbb-ba23-45907f07d6c2",
@@ -50,7 +51,7 @@ const useStore = create(combine({
         "expire_at": "2025-05-02T15:18:52.073+00:00",
         "disk_storage_limit_gb": 1,
         "is_active": false,
-        currency:'cfa',
+        currency: 'cfa',
         "created_at": "2025-04-18T15:18:52.119+00:00",
         "updated_at": "2025-04-18T15:18:52.120+00:00",
         "currentApi": {
@@ -85,18 +86,19 @@ const useStore = create(combine({
             "created_at": "2025-04-17T11:08:12.160+00:00",
             "updated_at": "2025-04-17T11:09:54.329+00:00"
         }
-    } as StoreInterface |undefined,
+     } as StoreInterface |undefined,
 }, (set, get) => ({
-    async testSSE(){
-        if(!useStore.getState().currentStore?.url){
-            console.log('-------useStore.getState().currentStore?.url----',useStore.getState().currentStore);
+    async testSSE() {
+        if (!useGlobalStore.getState().currentStore?.url) {
+            console.log('-------useGlobalStore .getState().currentStore?.url----', useGlobalStore.getState().currentStore);
             return
         }
-        const response = await fetch(`${useStore.getState().currentStore?.url}/test_sse`)
-    
+        const response = await fetch(`${useGlobalStore.getState().currentStore?.url}/test_sse`)
+
     },
     async setCurrentStore(currentStore: StoreInterface | undefined) {
-        set(() => ({ currentStore }));
+        currentStore && (currentStore.url = Api_host)
+        set(() => ({currentStore:currentStore }));
         if (currentStore)
             localStorage.setItem('current_store', JSON.stringify(currentStore));
         else {
@@ -110,11 +112,13 @@ const useStore = create(combine({
             try {
                 const a = localStorage.getItem('current_store');
                 c = a && JSON.parse(a);
+                console.log(c);
+                
             } catch (error) { }
         }
         if (!c) {
-            const l = await useStore.getState().fetchOwnerStores({})
-            c = l?.list[0];
+            // const l = await useGlobalStore.getState().fetchOwnerStores({})
+            // c = l?.list[0];
         }
         return c
     },
@@ -220,18 +224,18 @@ const useStore = create(combine({
             const value = (filter as any)[key];
             value && searchParams.set(key, value);
         }
-       try {
-        const response = await fetch(`${Server_Host}/get_stores/?${searchParams}`, {
-            headers: h?.headers
-        })
-        const json = await response.json() as ListType<StoreInterface>
-        if (!json?.list) return
-        json.list.forEach(s=>s.url = s?.url||Api_host)
-        if (!filter.no_save) set(() => ({ stores: json }))
-        return json
-       } catch (error) {
-        return {list:[],meta:{}}
-       }
+        try {
+            const response = await fetch(`${Server_Host}/stores/?${searchParams}`, {
+                headers: h?.headers
+            })
+            const json = await response.json() as ListType<StoreInterface>
+            if (!json?.list) return
+            json.list.forEach(s => s.url = s?.url || Api_host)
+            if (!filter.no_save) set(() => ({ stores: json }))
+            return json
+        } catch (error) {
+            return { list: [], meta: {} }
+        }
     }
 })));
 

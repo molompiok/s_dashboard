@@ -41,28 +41,99 @@ export type ListType<T> = {
   }
 }
 
-export interface ThemeInterface {
-  id: string
-  name: string
-  slug: string
-  description: string | null
-  preview_images: string[]
-  features: string[] | null
-  docker_image_name: string
-  docker_image_tag: string
-  internal_port: number
-  source_path: string | null
-  is_public: boolean
-  is_active: boolean
-  is_running: boolean
-  is_default: boolean
-  is_premium: boolean
-  price: number
-  creator_id: string | null
-  createdAt: string
-  updatedAt: string
-  isFree:boolean
+export interface StoreFilterType {
+  search?: string;            // Recherche par nom, titre, description?
+  is_active?:boolean // Filtrer par statut actif/inactif
+  // Ajouter d'autres filtres si l'API les supporte (ex: par date d'expiration, plan, etc.)
+  page?: number;
+  limit?: number;
+  order_by?: 'name_asc' | 'name_desc' | 'created_at_asc' | 'created_at_desc' | 'expire_at_asc' | 'expire_at_desc'; // Options de tri possibles
+
+  // Technique (optionnel, si utilisé par le hook)
+  no_save?: boolean; // Pour compatibilité avec l'ancien code Zustand? Généralement pas nécessaire avec React Query.
 }
+
+export interface StoreSetting {
+  legal_name?: string;
+  legal_id?: string;
+  legal_address_street?: string;
+  legal_address_city?: string;
+  legal_address_zip?: string;
+  legal_address_country?: string; // Code ISO du pays (ex: CI, FR)
+  public_email?: string;
+  public_phone?: string;
+  default_locale?: string; // ex: 'fr', 'en'
+  currency?: string; // ex: 'XOF', 'EUR'
+  timezone?: string; // ex: 'Africa/Abidjan', 'Europe/Paris'
+}
+
+// Rappel de l'interface Store (avec ajout potentiel des relations chargées)
+export type StoreInterface = Partial<{
+  id: string;
+  user_id: string;
+  name: string;
+  title?: string; // Peut être null
+  description?: string ; // Peut être null
+  slug: string;
+  logo: (string | Blob)[],
+  favicon: (string | Blob)[],
+  cover_image: (string | Blob)[],
+  domain_names?: string[];
+  current_theme_id: string;
+  current_api_id: string; // Corrigé depuis le modèle
+  expire_at: string; // Date ISO string ou null
+  disk_storage_limit_gb: number;
+  is_active: boolean;
+  is_running?: boolean;
+  created_at: string; 
+  updated_at: string;
+  url?: string; 
+  timezone?:string,
+  currency?:string,
+  current_api?: ApiInterface; // Définir ApiInterface
+  current_theme?: ThemeInterface; // Définir ThemeInterface
+}> 
+
+export interface StoreFilterType {
+  search?: string;            // Recherche par nom, titre, description?
+  status?: 'active' | 'inactive' | 'all'; // Filtrer par statut actif/inactif
+  // Ajouter d'autres filtres si l'API les supporte (ex: par date d'expiration, plan, etc.)
+  page?: number;
+  limit?: number;
+  order_by?: 'name_asc' | 'name_desc' | 'created_at_asc' | 'created_at_desc' | 'expire_at_asc' | 'expire_at_desc'; // Options de tri possibles
+
+  // Technique (optionnel, si utilisé par le hook)
+  no_save?: boolean; // Pour compatibilité avec l'ancien code Zustand? Généralement pas nécessaire avec React Query.
+}
+
+export interface ApiInterface{
+
+}
+
+export interface ThemeInterface { // Ajout interface Theme basée sur modèle
+  id: string;
+  name: string;
+  slug: string;
+  description: string | null;
+  preview_images: string[] | null;
+  features: string[] | null;
+  docker_image_name: string;
+  docker_image_tag: string;
+  internal_port: number;
+  source_path: string | null;
+  is_public: boolean;
+  is_active: boolean;
+  is_default: boolean;
+  is_premium: boolean;
+  price: number;
+  is_free:boolean
+  creator_id: string | null;
+  createdAt: string;
+  updatedAt: string;
+  fullImageName?: string; // Getter virtuel
+}
+
+
 
 export type CategorySortOptions =
   | 'name_asc'
@@ -256,24 +327,6 @@ export interface VisiteInterface {
   is_authenticate?: boolean // si tu veux le passer temporairement côté front / debug
 }
 
-export interface StoreInterface {
-  id: string,
-  user_id: string,
-  name: string,
-  title: string
-  description: string,
-  cover_image: (string | Blob)[],
-  domain_names: string[],
-  logo: (string | File)[],
-  currency: string
-  disk_storage_limit_gb: number,
-  url: string,
-  current_theme_id:string
-  is_active:boolean,
-  expire_at: string,
-  created_at: string,
-}
-
 export interface UserInterface {
   id: string,
   full_name: string,
@@ -285,7 +338,7 @@ export interface UserInterface {
   roles?: Role[],
   token: string;
   created_at: string,
-  
+
   status: 'BANNED' | 'PREMIUM' | 'NEW' | 'CLIENT'
   s_type?: string;
   stats?: UserStats

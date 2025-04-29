@@ -9,7 +9,7 @@ import { FeatureInterface, ProductInterface, ValueInterface } from "../../../../
 // import { useProductStore } from "../../ProductStore"; // Remplacé par hooks API
 import { useGetProductList, useMultipleUpdateFeaturesValues } from '../../../../api/ReactSublymusApi'; // ✅ Hooks API
 import { usePageContext } from "../../../../renderer/usePageContext";
-import { useStore } from "../../../stores/StoreStore";
+import { useGlobalStore } from "../../../stores/StoreStore";
 // import { useApp } from "../../../../renderer/AppStore/UseApp"; // Remplacé par useChildViewer
 import { ChildViewer } from "../../../../Components/ChildViewer/ChildViewer";
 import { ValuePricing } from "../../../../Components/ValuePricing/ValuePricing"; // Formulaire prix/stock
@@ -30,7 +30,7 @@ function Page() {
     const { t } = useTranslation(); // ✅ i18n
     // const { fetchProductBy, updateProduct } = useProductStore(); // Remplacé
     const { routeParams } = usePageContext();
-    const { currentStore } = useStore();
+    const { currentStore } = useGlobalStore();
     const productId = routeParams?.['id'];
 
     // --- State ---
@@ -102,18 +102,18 @@ function Page() {
 
     // Sauvegarde toutes les features modifiées via la mutation multiple
     const saveChanges = async () => {
-        if(!product?.id) return
+        if (!product?.id) return
 
         multipleUpdateMutation.mutate({
-            product_id:product?.id,
-            currentFeatures:features,
-            initialFeatures:product?.features||[]
+            product_id: product?.id,
+            currentFeatures: features,
+            initialFeatures: product?.features || []
         }, {
             onSuccess: (updatedProductData) => {
                 logger.info("Price/stock updated successfully", { productId: product.id });
-                
-                if(!updatedProductData.product) return
-                
+
+                if (!updatedProductData.product) return
+
                 setProduct(updatedProductData.product);
                 setFeatures(updatedProductData.product.features || []);
                 setAllCombinations(getAllCombinations(updatedProductData.product as ProductInterface));
@@ -318,7 +318,7 @@ function ValueRow({ feature, value: currentValue, onValueChange }: ValueRowProps
             {/* Value Display */}
             {/* Utiliser w-1/3 sm:w-auto sm:max-w-[180px] */}
             <div className="bind-cell-value w-1/3 sm:w-auto sm:max-w-[180px] flex justify-center items-center px-2">
-                <Value feature={feature} value={{...currentValue}} />
+                <Value feature={feature} value={{ ...currentValue }} />
             </div>
             {/* Price & Stock */}
             {/* Utiliser w-1/3 sm:w-auto flex justify-end */}

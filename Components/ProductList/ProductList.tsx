@@ -5,7 +5,7 @@ import { ProductRowItem } from '../ProductItem/ProductRowItem';
 
 import { useGetProductList } from '../../api/ReactSublymusApi';
 import { useEffect, useState } from 'react';
-import { useStore } from '../../pages/stores/StoreStore';
+import { useGlobalStore } from '../../pages/stores/StoreStore';
 import { IoAppsSharp, IoListSharp, IoChevronDown, IoSearch } from 'react-icons/io5';
 import { OrderFilterComponent, PriceFilterComponent } from '../CommandesList/CommandesList';
 import { CategoryInterface, FilterType, ProductInterface } from '../../Interfaces/Interfaces';
@@ -21,11 +21,11 @@ export { ProductList };
 
 type ProductViewType = 'card' | 'row';
 
-function ProductList({ baseFilter, title, addTo }: {title?:string, addTo?:{category_id:string,text:string}|null, baseFilter?: FilterType }) {
+function ProductList({ baseFilter, title, addTo }: { title?: string, addTo?: { category_id: string, text: string } | null, baseFilter?: FilterType }) {
     const { t } = useTranslation();
     const [filter, setFilter] = useState<FilterType>(baseFilter || {});
     const [viewType, setViewType] = useState<ProductViewType>(ClientCall(function () { return localStorage.getItem('product:view_type') }) as any || 'card');
-    const { currentStore } = useStore();
+    const { currentStore } = useGlobalStore();
 
     const { data: productsData, isLoading, isError, error: apiError } = useGetProductList(
         { ...filter, with_feature: true, },
@@ -33,7 +33,7 @@ function ProductList({ baseFilter, title, addTo }: {title?:string, addTo?:{categ
     );
     const products = productsData?.list ?? [];
     const meta = productsData?.meta;
-    
+
 
     useEffect(() => {
         localStorage.setItem('product:view_type', viewType)
@@ -42,7 +42,7 @@ function ProductList({ baseFilter, title, addTo }: {title?:string, addTo?:{categ
     return (
         <div className="w-full flex flex-col  mt-2">
             <div className="flex flex-wrap justify-between items-center gap-4 mb-4">
-                <h1 className="m-0 text-xl font-semibold text-gray-800">{title||t('dashboard.products')}</h1>
+                <h1 className="m-0 text-xl font-semibold text-gray-800">{title || t('dashboard.products')}</h1>
                 <div className="flex items-center gap-2 sm:gap-4 flex-wrap">
                     <label htmlFor="product-search-input" className='relative'>
                         <input
@@ -53,7 +53,7 @@ function ProductList({ baseFilter, title, addTo }: {title?:string, addTo?:{categ
                             defaultValue={filter.search || ''}
                             onChange={(e) => {
                                 const search = e.target.value;
-                                debounce(() => setFilter((prev) => ({ ...prev, search: search || undefined, page: 1})), 'search-product', 400);
+                                debounce(() => setFilter((prev) => ({ ...prev, search: search || undefined, page: 1 })), 'search-product', 400);
                             }}
                         />
                         <IoSearch className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg" />
@@ -86,8 +86,8 @@ function ProductList({ baseFilter, title, addTo }: {title?:string, addTo?:{categ
                     ? 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 gap-4'
                     : 'flex flex-col gap-3'
                     }`}>
-                    {viewType === 'card' && addTo!==null && <AddProductCard addTo={addTo} />}
-                    {viewType === 'row' && addTo!==null && <AddProductRow addTo={addTo}/>}
+                    {viewType === 'card' && addTo !== null && <AddProductCard addTo={addTo} />}
+                    {viewType === 'row' && addTo !== null && <AddProductRow addTo={addTo} />}
                     {isLoading && (
                         viewType === 'card'
                             ? Array.from({ length: 5 }).map((_, i) => <ProductItemSkeletonCard />)
@@ -137,22 +137,22 @@ function ProductList({ baseFilter, title, addTo }: {title?:string, addTo?:{categ
     );
 }
 
-function AddProductCard({addTo}:{addTo?:{category_id:string,text:string}|null}) {
+function AddProductCard({ addTo }: { addTo?: { category_id: string, text: string } | null }) {
     const { t } = useTranslation();
     return (
-        <a href={`/products/new${addTo?.category_id?'?catrgory_id='+addTo.category_id:''}`} className=" rounded-xl overflow-hidden border-2 border-dashed border-gray-300 hover:border-blue-400 hover:bg-blue-50/50 transition duration-200 cursor-pointer flex flex-col items-center justify-center text-center p-4 text-gray-500 hover:text-blue-600">
+        <a href={`/products/new${addTo?.category_id ? '?catrgory_id=' + addTo.category_id : ''}`} className=" rounded-xl overflow-hidden border-2 border-dashed border-gray-300 hover:border-blue-400 hover:bg-blue-50/50 transition duration-200 cursor-pointer flex flex-col items-center justify-center text-center p-4 text-gray-500 hover:text-blue-600">
             <div className="w-24 h-24 mb-4">
                 <img src={'/res/empty/Empty_bag.png'} alt={t('productList.addProduct')} className='w-full h-full object-contain opacity-70' />
             </div>
-            <span className="text-sm font-medium">{addTo?.text||t('productList.addProduct')}</span>
+            <span className="text-sm font-medium">{addTo?.text || t('productList.addProduct')}</span>
         </a>
     );
 }
-function AddProductRow({addTo}:{addTo?:{category_id:string,text:string}|null}) {
+function AddProductRow({ addTo }: { addTo?: { category_id: string, text: string } | null }) {
     const { t } = useTranslation();
     return (
-        <a href={`/products/new${addTo?.category_id?'?catrgory_id='+addTo.category_id:''}`} className="flex items-center justify-center p-4 rounded-lg border-2 border-dashed border-gray-300 hover:border-blue-400 hover:bg-blue-50/50 transition duration-200 cursor-pointer text-gray-500 hover:text-blue-600">
-            <span className="text-sm font-medium">{addTo?.text||t('productList.addProduct')}</span>
+        <a href={`/products/new${addTo?.category_id ? '?catrgory_id=' + addTo.category_id : ''}`} className="flex items-center justify-center p-4 rounded-lg border-2 border-dashed border-gray-300 hover:border-blue-400 hover:bg-blue-50/50 transition duration-200 cursor-pointer text-gray-500 hover:text-blue-600">
+            <span className="text-sm font-medium">{addTo?.text || t('productList.addProduct')}</span>
         </a>
     );
 }
@@ -168,7 +168,7 @@ function ProductsFilters({ filter, setCollected }: { filter: FilterType, setColl
         setCurrentFilter(current => current === filterName ? '' : filterName);
     };
 
-    
+
     return (
         <div className="w-full flex flex-col mb-0">
             <div className="w-full flex items-center p-2 gap-3 overflow-x-auto overflow-y-hidden rounded-xl scrollbar-hide border-b border-gray-200">

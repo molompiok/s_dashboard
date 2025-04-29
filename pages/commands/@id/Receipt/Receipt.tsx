@@ -9,7 +9,7 @@ import { getImg } from '../../../../Components/Utils/StringFormater';
 import { useTranslation } from 'react-i18next'; // ✅ i18n
 import { useMemo } from 'react'; // ✅ useMemo pour calculs
 import { FaTruck } from 'react-icons/fa';
-import { useStore } from '../../../stores/StoreStore';
+import { useGlobalStore } from '../../../stores/StoreStore';
 
 export { Receipt };
 
@@ -28,7 +28,7 @@ function Receipt({ command }: { command?: Partial<CommandInterface> }) {
     const paymentMethod = command?.payment_method;
     const deliveryMode = command?.with_delivery;
 
-    const { currentStore } = useStore()
+    const { currentStore } = useGlobalStore()
     return (
         // Conteneur principal du reçu - centré, avec fond blanc, ombre, padding
         <div className="receipt-view w-full max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-6 sm:p-8 my-8 print:shadow-none print:my-0 print:p-4"> {/* Styles pour impression */}

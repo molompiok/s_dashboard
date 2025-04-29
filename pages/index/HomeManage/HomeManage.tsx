@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next'; // ✅ Importer useTranslation
 // Importer les hooks pour récupérer les données dynamiques si nécessaire
 import { useGetProductList } from '../../../api/ReactSublymusApi';
 import { useGetCategories } from '../../../api/ReactSublymusApi';
-import { useStore } from '../../stores/StoreStore'; // Pour le nombre de stores si dynamique
+import { useGlobalStore } from '../../stores/StoreStore'; // Pour le nombre de stores si dynamique
 
 export { HomeManage };
 
@@ -21,7 +21,7 @@ function HomeManage() {
     // Exemple:
     const { data: productData } = useGetProductList({ limit: 1 }); // Juste pour le count
     const { data: categoryData } = useGetCategories({ limit: 1 });
-    const { stores } = useStore();
+    const { stores } = useGlobalStore();
     const productCount = productData?.meta?.total ?? 0;
     const categoryCount = categoryData?.meta?.total ?? 0;
     const storeCount = stores?.meta.total ?? 1; // Supposant qu'il y a toujours au moins 1 store pour l'owner

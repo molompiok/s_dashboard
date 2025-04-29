@@ -3,7 +3,7 @@
 // --- Imports ---
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { usePageContext } from '../../../../renderer/usePageContext';
-import { useStore } from '../../../stores/StoreStore';
+import { useGlobalStore } from '../../../stores/StoreStore';
 // ✅ Importer les hooks API nécessaires
 import {
     useGetProductList, // Pour charger le produit
@@ -42,8 +42,8 @@ function Page() {
     const { t } = useTranslation(); // ✅ i18n
     const { openChild } = useChildViewer();
     const { routeParams } = usePageContext();
-    const { currentStore } = useStore();
-    
+    const { currentStore } = useGlobalStore();
+
     const [createRequired, setCreateRequired] = useState<Partial<DetailInterface>>()
     const { params, myLocation, replaceLocation, nextPage } = useMyLocation()
     const productId = params[1]
@@ -87,13 +87,13 @@ function Page() {
                     // Donner un ID temporaire et product_id pour la création
                     detail={detail ?? { id: `new-${v4()}`, product_id: productId }}
                     onSave={(savedDetail) => {
-                        if(isCreating){
+                        if (isCreating) {
                             setCreateRequired(savedDetail)
-                        }else{
+                        } else {
                             console.log();
-                            
-                            if(savedDetail.id){
-                                updateDetail(savedDetail.id,savedDetail)
+
+                            if (savedDetail.id) {
+                                updateDetail(savedDetail.id, savedDetail)
                             }
                         }
                         openChild(null);
@@ -114,7 +114,7 @@ function Page() {
                     onCancel={() => openChild(null)}
                     onDelete={() => {
                         deleteDetailMutation.mutate({
-                            detail_id:detailId
+                            detail_id: detailId
                         }, {
                             onSuccess: () => {
                                 logger.info(`Detail ${detailId} deleted`);
@@ -178,7 +178,7 @@ function Page() {
         return updateDetailMutation.mutateAsync({
             detail_id: detailId,
             data
-        },{
+        }, {
             onSuccess() {
                 refetchDetails();
             },
@@ -190,12 +190,12 @@ function Page() {
         }); // Utiliser la mutation
     };
 
-    useEffect(()=>{
-        if(createRequired){
+    useEffect(() => {
+        if (createRequired) {
             createDetail(createRequired)
-            setCreateRequired(undefined)       
+            setCreateRequired(undefined)
         }
-    },[createRequired])
+    }, [createRequired])
 
 
     // --- Rendu ---
@@ -295,8 +295,8 @@ function DetailItem({ detail, onDelete, onOption, onUp, onDown, canDown, canUp }
 }) {
     const { t } = useTranslation();
     const view = detail?.view?.[0];
-    const { currentStore } = useStore()
-    
+    const { currentStore } = useGlobalStore()
+
     return (
         // Utiliser bg-white, rounded-lg, shadow-sm, border, p-4, flex flex-col md:flex-row gap-4
         <div className="detail-item bg-white rounded-lg shadow-sm border border-gray-200 p-4 flex flex-col md:flex-row gap-4 items-start">
@@ -339,7 +339,7 @@ function DetailItem({ detail, onDelete, onOption, onUp, onDown, canDown, canUp }
                 {/* Description (Markdown Viewer) */}
                 {/* Ajouter une classe prose pour le style markdown si nécessaire */}
                 <div className="text-sm text-gray-600 prose prose-sm max-w-none">
-                    <MarkdownViewer key={(detail.updated_at||'')+detail.id} markdown={detail.description || t('detail.noDescription')} />
+                    <MarkdownViewer key={(detail.updated_at || '') + detail.id} markdown={detail.description || t('detail.noDescription')} />
                 </div>
             </div>
         </div>
@@ -354,7 +354,7 @@ function DetailInfo({ detail: initialDetail, onSave, onCancel }: {
     onSave: (detailData: Partial<DetailInterface>) => void; // Retourne seulement les données modifiées/nouvelles
 }) {
     const { t } = useTranslation();
-    const { currentStore } = useStore();
+    const { currentStore } = useGlobalStore();
     // État local du formulaire
     const [collected, setCollected] = useState<Partial<DetailInterface & { prevView?: string }>>({
         ...initialDetail,
@@ -446,8 +446,8 @@ function DetailInfo({ detail: initialDetail, onSave, onCancel }: {
     const viewUrlForDisplay = localPreview ? getImg(localPreview) : (typeof collected?.view?.[0] === 'string' ? getImg(collected.view[0], undefined, currentStore?.url) : getImg('/res/empty/drag-and-drop.png', '70%'));
     const showPlaceholder = !localPreview && (!collected?.view || collected.view.length === 0 || typeof collected.view[0] !== 'string');
 
-    
-    console.log('0000000000000000', viewUrlForDisplay, collected );
+
+    console.log('0000000000000000', viewUrlForDisplay, collected);
 
     return (
         // Utiliser flex flex-col gap-4 ou 5, padding

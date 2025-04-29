@@ -19,7 +19,7 @@ import { BiSolidImageAdd } from 'react-icons/bi';
 import { getFileType } from '../Utils/functions';
 import { ChildViewer } from '../ChildViewer/ChildViewer';
 import { ConfirmDelete } from '../Confirm/ConfirmDelete';
-import { useStore } from '../../pages/stores/StoreStore';
+import { useGlobalStore } from '../../pages/stores/StoreStore';
 import { getImg } from '../Utils/StringFormater';
 import { useChildViewer } from '../ChildViewer/useChildViewer';
 import { globalActionZust } from '../../renderer/AppStore/globalActionZust';
@@ -27,9 +27,9 @@ import { globalActionZust } from '../../renderer/AppStore/globalActionZust';
 export { HoriszontalSwiper }
 
 
-function HoriszontalSwiper({ values, onActiveIndexChange, onDeleteValue, goBack, forward, newViewRequire , editValue}: {editValue:(value:ValueInterface)=>void,newViewRequire:(files:Blob[]) => void, goBack: () => boolean, forward: () => boolean, onDeleteValue?: (index: number) => void, onActiveIndexChange?: (index: number) => void, values: ValueInterface[] }) {
+function HoriszontalSwiper({ values, onActiveIndexChange, onDeleteValue, goBack, forward, newViewRequire, editValue }: { editValue: (value: ValueInterface) => void, newViewRequire: (files: Blob[]) => void, goBack: () => boolean, forward: () => boolean, onDeleteValue?: (index: number) => void, onActiveIndexChange?: (index: number) => void, values: ValueInterface[] }) {
     const [swiperRef, setSwiperRef] = useState<SwiperType | null>(null);
-    const { currentStore } = useStore()
+    const { currentStore } = useGlobalStore()
     const size = useWindowSize()
     const { openChild } = useChildViewer();
 
@@ -59,7 +59,7 @@ function HoriszontalSwiper({ values, onActiveIndexChange, onDeleteValue, goBack,
                 {
                     values.sort((a, b) => b.index - a.index).map((v, index) => (
                         <SwiperSlide key={index} onClick={() => {
-                            if(index == swiperRef?.realIndex){
+                            if (index == swiperRef?.realIndex) {
                                 editValue(v);
                                 return
                             }
@@ -68,7 +68,7 @@ function HoriszontalSwiper({ values, onActiveIndexChange, onDeleteValue, goBack,
                             {
                                 v.views?.slice(0, 4).map(((i, _) => (
                                     getFileType(i) == 'image' ?
-                                        <div key={_} className={`img_${_}`}  style={{
+                                        <div key={_} className={`img_${_}`} style={{
                                             background: getImg(
                                                 typeof i == 'string' ? i
                                                     : URL.createObjectURL(i),
@@ -76,7 +76,7 @@ function HoriszontalSwiper({ values, onActiveIndexChange, onDeleteValue, goBack,
                                                 currentStore?.url : undefined
                                             )
                                         }}></div>
-                                        : <video className={`img_${_}`} key={_} muted={true} src={typeof i == 'string' ? `${currentStore?.url}${i.startsWith('/')?i:'/'+i}` : URL.createObjectURL(i)} />
+                                        : <video className={`img_${_}`} key={_} muted={true} src={typeof i == 'string' ? `${currentStore?.url}${i.startsWith('/') ? i : '/' + i}` : URL.createObjectURL(i)} />
                                 )))
                             }
                             <span className='trash' onClick={(e) => {
@@ -89,8 +89,8 @@ function HoriszontalSwiper({ values, onActiveIndexChange, onDeleteValue, goBack,
                                             onDeleteValue?.(index)
                                         }, 500);
                                     }} />
-                                </ChildViewer>,{
-                                    background:'#3455'
+                                </ChildViewer>, {
+                                    background: '#3455'
                                 })
                             }}><IoTrash /></span>
                             <div className="move">
@@ -100,7 +100,7 @@ function HoriszontalSwiper({ values, onActiveIndexChange, onDeleteValue, goBack,
                                     goBack() && setTimeout(() => {
                                         swiperRef?.slideTo(index - 1)
                                     }, 100);
-                                }}/>
+                                }} />
                                 <IoArrowForwardCircleOutline style={{ opacity: values.length - 1 == index ? '0.6' : '', marginLeft: 'auto' }} onClick={(e) => {
                                     e.stopPropagation()
                                     if (values.length - 1 == index) return
@@ -117,16 +117,16 @@ function HoriszontalSwiper({ values, onActiveIndexChange, onDeleteValue, goBack,
                     }}>
                         {
                             swiperRef?.realIndex == values.length ?
-                            <label htmlFor="add-new-value-image" className={'img'}>
-                                <input style={{display:'none'}} type="file" name="add-new-value-image" id="add-new-value-image"  onChange={(e)=>{
-                                     e.preventDefault();
-                                     const files = e.target.files;
-                                     if(!files) return
-                                     newViewRequire(Array.from(files))
-                                }}/>
-                                <BiSolidImageAdd />
-                            </label>:
-                            <div className={'img'}><BiSolidImageAdd /></div>
+                                <label htmlFor="add-new-value-image" className={'img'}>
+                                    <input style={{ display: 'none' }} type="file" name="add-new-value-image" id="add-new-value-image" onChange={(e) => {
+                                        e.preventDefault();
+                                        const files = e.target.files;
+                                        if (!files) return
+                                        newViewRequire(Array.from(files))
+                                    }} />
+                                    <BiSolidImageAdd />
+                                </label> :
+                                <div className={'img'}><BiSolidImageAdd /></div>
                         }
                     </SwiperSlide>
                 }

@@ -3,15 +3,16 @@
 import { useState, useEffect } from 'react';
 import { IoAddSharp, IoSearch } from 'react-icons/io5';
 import { useTranslation } from 'react-i18next';
-import { StoreFilterType } from '../../pages/stores/+Page'; // Importer le type
 import { debounce } from '../Utils/functions';
+import { StoreFilterType } from '../../Interfaces/Interfaces';
 
 interface StoreToolbarProps {
     filter: StoreFilterType;
     onFilterChange: (newFilter: StoreFilterType) => void;
+    newStoreRequire:() => void
 }
 
-export function StoreToolbar({ filter, onFilterChange }: StoreToolbarProps) {
+export function StoreToolbar({ filter, onFilterChange , newStoreRequire}: StoreToolbarProps) {
     const { t } = useTranslation();
     const [searchTerm, setSearchTerm] = useState(filter.search || '');
     const currentStatus = filter.status || 'all';
@@ -31,7 +32,7 @@ export function StoreToolbar({ filter, onFilterChange }: StoreToolbarProps) {
     }, [filter.search]);
 
     const handleStatusChange = (status: StoreFilterType['status']) => {
-        onFilterChange({ ...filter, status: status, page: 1 });
+        onFilterChange({ ...filter, is_active:status == 'all'?undefined:status=='active'?true:false, page: 1 });
     };
 
     return (
@@ -64,8 +65,9 @@ export function StoreToolbar({ filter, onFilterChange }: StoreToolbarProps) {
             </label>
 
              {/* Bouton Ajouter Store */}
-             <a
-                 href="/stores/new"
+             <a onClick={()=>{
+                newStoreRequire()
+             }}
                  className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
              >
                  <IoAddSharp size={18} className="-ml-1" />

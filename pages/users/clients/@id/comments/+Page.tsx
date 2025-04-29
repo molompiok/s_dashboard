@@ -1,7 +1,7 @@
 // pages/users/clients/@id/comments/+Page.tsx (Adapter chemin si nécessaire)
 
 import { useEffect, useState, useMemo } from "react"; // Ajouter useMemo
-import { getTransmit, useStore } from "../../../../stores/StoreStore";
+import { getTransmit, useGlobalStore } from "../../../../stores/StoreStore";
 // import { useClientStore } from "../../ClientStore"; // Remplacé par hook API
 import { CommentInterface, StoreInterface, UserInterface, ValueInterface } from "../../../../../Interfaces/Interfaces";
 import { usePageContext } from "../../../../../renderer/usePageContext";
@@ -30,7 +30,7 @@ import { UseMutationResult } from "@tanstack/react-query";
 export default function Page() {
     const { t } = useTranslation(); // ✅ i18n
     // const { comments, fetchClientComments, deleteComment } = useCommentStore(); // Remplacé
-    const { currentStore } = useStore();
+    const { currentStore } = useGlobalStore();
     // const { fetchClients } = useClientStore(); // Remplacé
     // const [user, setUser] = useState<Partial<UserInterface>>(); // Géré par React Query
     const { routeParams } = usePageContext();

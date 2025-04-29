@@ -3,7 +3,7 @@
 // --- Imports ---
 import { useEffect, useRef, useState, useMemo } from 'react';
 import { usePageContext } from '../../../renderer/usePageContext';
-import { useStore } from '../../stores/StoreStore';
+import { useGlobalStore } from '../../stores/StoreStore';
 import { useGetCategory, useCreateCategory, useUpdateCategory, useDeleteCategory } from '../../../api/ReactSublymusApi'; // ✅ Hooks API
 import { CategoryInterface, FilterType } from '../../../Interfaces/Interfaces';
 import { Topbar } from '../../../Components/TopBar/TopBar';
@@ -47,7 +47,7 @@ const initialEmptyCategory: Partial<CategoryInterface> = {
 function Page() {
     const { t } = useTranslation(); // ✅ i18n
     const { openChild } = useChildViewer();
-    const { currentStore } = useStore();
+    const { currentStore } = useGlobalStore();
     const { routeParams } = usePageContext();
     const { params, myLocation, replaceLocation, nextPage } = useMyLocation()
     const categoryIdFromRoute = params[1];
@@ -189,7 +189,7 @@ function Page() {
         );
     };
     // --- Validation Locale Simple (avant envoi API) ---
-    const isFilledCategory = (validate=true): boolean => {
+    const isFilledCategory = (validate = true): boolean => {
         const errors: { [key: string]: string } = {};
 
         if (!categoryFormState.name || categoryFormState.name.trim().length < 3) {
@@ -205,7 +205,7 @@ function Page() {
             errors.icon = t('category.validation.iconRequired'); // Nouvelle clé
         }
 
-        
+
         const e: any = errors
         const hasError = Object.keys(errors).length > 0;
         if (!validate) {
@@ -213,7 +213,7 @@ function Page() {
                 e[k] = ''
             }
         }
-         setFieldErrors(e)
+        setFieldErrors(e)
         return !hasError
     };
 
@@ -291,13 +291,13 @@ function Page() {
         isFilledCategory(!isNewCategory)
     }, [categoryFormState])
 
-     useEffect(()=>{
-            if(!currentStore) return
-            if(!isNewCategory){
-                console.log('RELOAD DATA REQUIRED');
-                return
-            }
-        },[currentStore,myLocation])
+    useEffect(() => {
+        if (!currentStore) return
+        if (!isNewCategory) {
+            console.log('RELOAD DATA REQUIRED');
+            return
+        }
+    }, [currentStore, myLocation])
     // --- Affichage ---
     // Afficher PageNotFound si erreur de fetch en mode édition
     if (!isNewCategory && isFetchError && fetchError?.status === 404) {
@@ -313,16 +313,16 @@ function Page() {
     }
 
     // Préparer les URLs d'image pour l'affichage (locale ou depuis serveur)
-    const viewUrl = localImagePreviews.view? getImg(localImagePreviews.view) :(typeof categoryFormState.view?.[0] === 'string' ? getImg(categoryFormState.view[0], undefined, currentStore?.url) : '');
-    const iconUrl =  localImagePreviews.icon? getImg(localImagePreviews.icon) : (typeof categoryFormState.icon?.[0] === 'string' ? getImg(categoryFormState.icon[0], 'contain', currentStore?.url) : '');
+    const viewUrl = localImagePreviews.view ? getImg(localImagePreviews.view) : (typeof categoryFormState.view?.[0] === 'string' ? getImg(categoryFormState.view[0], undefined, currentStore?.url) : '');
+    const iconUrl = localImagePreviews.icon ? getImg(localImagePreviews.icon) : (typeof categoryFormState.icon?.[0] === 'string' ? getImg(categoryFormState.icon[0], 'contain', currentStore?.url) : '');
     const showViewPlaceholder = !localImagePreviews.view && (!categoryFormState.view || categoryFormState.view.length === 0);
     const showIconPlaceholder = !localImagePreviews.icon && (!categoryFormState.icon || categoryFormState.icon.length === 0);
 
     const hasError = Object.keys(fieldErrors).length > 0
 
 
-    console.log(categoryFormState,viewUrl);
-    
+    console.log(categoryFormState, viewUrl);
+
     return (
         // Layout principal
         <div className="w-full flex flex-col bg-gray-50 min-h-screen">
@@ -489,7 +489,7 @@ function Page() {
                         }}
                         onCreate={() => {
                             createCategory()
-                        }}                  
+                        }}
                         canCreate={!hasError}
                         t={t}
                         title={t('product.createTitle')}

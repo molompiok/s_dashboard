@@ -33,8 +33,8 @@ function ClientCall(fn: Function, defaultValue?: any, ...params: any[]) {
     return defaultValue
 }
 
-const CharList = Array.from({ length: 32 }).map((_, i) => Number(i).toString(32));
-CharList.push('_');
+const CharList = Array.from({ length: 36 }).map((_, i) => Number(i).toString(36));
+CharList.push('-');
 
 function toNameString(name: string) {
 
@@ -44,7 +44,7 @@ function toNameString(name: string) {
     if (CharList.includes(n[i])) {
       _n += n[i];
     } else if (n[i] == ' ') {
-      _n += '_'
+      _n += '-'
     }
   }
   return _n

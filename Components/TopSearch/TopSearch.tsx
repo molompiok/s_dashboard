@@ -5,7 +5,7 @@ import 'swiper/css/free-mode';
 
 import { useEffect, useState } from 'react'
 import { CategoryInterface, CommandInterface, FilterType, ProductInterface } from '../../Interfaces/Interfaces'
-import { useStore } from '../../pages/stores/StoreStore'
+import { useGlobalStore } from '../../pages/stores/StoreStore'
 import { useApp, type GlobalSearchType } from '../../renderer/AppStore/UseApp'
 import { CategoryItemMini } from '../CategoryItem/CategoryItemMini'
 import { IoSearch } from 'react-icons/io5'
@@ -21,7 +21,7 @@ export { TopSearch }
 function TopSearch({ onClientSelected, onProductSelected, onCategorySelected, onCommandSelected }: { onCommandSelected?: (cammand: CommandInterface) => void, onCategorySelected?: (category: CategoryInterface) => void, onProductSelected?: (product: ProductInterface) => void, onClientSelected?: (client: any) => void }) {
     const { gobalSearch } = useApp()
     const { openChild } = useChildViewer()
-    const { currentStore } = useStore()
+    const { currentStore } = useGlobalStore()
     const [filter, setFilter] = useState<FilterType>({});
     const [data, setData] = useState<GlobalSearchType>({
         products: [],

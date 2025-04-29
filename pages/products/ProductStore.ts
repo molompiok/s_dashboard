@@ -4,7 +4,7 @@ import { combine } from "zustand/middleware";
 import { useAuthStore } from "../login/AuthStore";
 import { Api_host, Server_Host } from "../../renderer/+config";
 import { ProductInterface, ListType, FeatureInterface, ValueInterface, UpdateFeature, FilterType } from "../../Interfaces/Interfaces";
-import { useStore } from "../stores/StoreStore";
+import { useGlobalStore } from "../stores/StoreStore";
 import { EDITED_DATA, NEW_ID_START } from "../../Components/Utils/constants";
 import { features } from "process";
 
@@ -14,16 +14,16 @@ export { useProductStore }
 const useProductStore = create(combine({
     products: undefined as ListType<ProductInterface> | undefined,
 }, (set, get) => ({
-    async updateProduct(colleted: Partial<ProductInterface>,_product: Partial<ProductInterface>, initialFeatures?: Partial<FeatureInterface>[]) {
+    async updateProduct(colleted: Partial<ProductInterface>, _product: Partial<ProductInterface>, initialFeatures?: Partial<FeatureInterface>[]) {
         let features: any[] = []
-        
+
         if (initialFeatures && colleted.id) {
-            features = (await multiple_features_values(colleted, initialFeatures))?.features||[];
+            features = (await multiple_features_values(colleted, initialFeatures))?.features || [];
             _product.features = features;
         }
 
         console.log('^^^^^^^^^^^^', features);
-        
+
 
         const h = useAuthStore.getState().getHeaders();
         if (!h) {
@@ -160,7 +160,7 @@ const useProductStore = create(combine({
             }
         }
         filter.slug_product = filter.slug_product || filter.slug;
-        filter.with_feature =true
+        filter.with_feature = true
         if (!h) return
         const searchParams = new URLSearchParams({});
         for (const key in filter) {
@@ -284,7 +284,7 @@ async function multiple_features_values(product: Partial<ProductInterface>, init
                         return null;
                     }
 
-                    const field = `${newV.id.replace('.','')}:${a}_${i}`;
+                    const field = `${newV.id.replace('.', '')}:${a}_${i}`;
                     formData.append(field, v);
                     return field;
                 }).filter(Boolean); // Supprime les valeurs null ou undefined

@@ -40,29 +40,48 @@ import {
     StatParamType, GetStatsResponse,
     GlobalSearchParams, GlobalSearchResponse,
     ScaleResponse,
-    FilesObjectType
+    FilesObjectType,
+    GetStoresParams,
+    GetStoresResponse,
+    GetStoreResponse,
+    CreateStoreResponse,
+    CreateStoreParams,
+    UpdateStoreParams,
+    UpdateStoreResponse,
+    DeleteStoreResponse,
+    DeleteStoreParams,
+    ChangeThemeParams,
+    ChangeThemeResponse,
+    UpdateStoreStatusResponse,
+    UpdateStoreStatusParams,
+    StoreActionResponse,
+    StoreActionParams,
+    ManageDomainResponse,
+    ManageDomainParams,
+    AvailableNameResponse
 } from './SublymusApi'; // Importer la classe et l'erreur, et TOUS les types
 import { useAuthStore } from '../pages/login/AuthStore'; // Pour le token
-import { useStore } from '../pages/stores/StoreStore'; // Pour l'URL du store
+import { useGlobalStore } from '../pages/stores/StoreStore'; // Pour l'URL du store
 import logger from './Logger';
 import { CommentInterface, FeatureInterface } from '../Interfaces/Interfaces';
 import { useTranslation } from 'react-i18next';
+import { Api_host, Server_Host } from '../renderer/+config';
 
 
 
 // --- Client TanStack Query (inchangé) ---
 export const queryClient = new QueryClient({
-     defaultOptions: {
+    defaultOptions: {
         queries: {
             staleTime: 5 * 60 * 1000,
             refetchOnWindowFocus: false,
             retry: (failureCount, error) => {
-                 // Ne pas réessayer pour les erreurs 4xx (sauf 429 - Too Many Requests)
-                 if (error instanceof ApiError && error.status >= 400 && error.status < 500 && error.status !== 429) {
-                     return false;
-                 }
-                 // Réessayer 3 fois pour les autres erreurs
-                 return failureCount < 3;
+                // Ne pas réessayer pour les erreurs 4xx (sauf 429 - Too Many Requests)
+                if (error instanceof ApiError && error.status >= 400 && error.status < 500 && error.status !== 429) {
+                    return false;
+                }
+                // Réessayer 3 fois pour les autres erreurs
+                return failureCount < 3;
             }
         },
     },
@@ -77,41 +96,44 @@ const SublymusApiContext = createContext<SublymusApiContextType>({ api: null });
 // Provider pour l'API et TanStack Query
 interface SublymusApiProviderProps {
     children: ReactNode;
+    serverApiUrl:string
 }
-export const SublymusApiProvider: React.FC<SublymusApiProviderProps> = ({ children }) => {
-    const { user } = useAuthStore(); // Récupérer l'utilisateur (contient le token)
-    const { currentStore } = useStore(); // Récupérer le store actuel (contient l'URL)
-    const { t } = useTranslation();
-    // Mémoriser l'instance de l'API pour éviter les re-créations inutiles
-    const api = useMemo(() => {
-        const apiUrl = currentStore?.url; // Utiliser l'URL du store sélectionné
-        const token = user?.token; // Utiliser le token de l'utilisateur connecté
 
-        // Ne créer l'instance que si l'URL est disponible
-        if (apiUrl) {
-            return new SublymusApi(
-                apiUrl,
-                () => 'oat_MTk.Y1BleEpvTEhDVVQxa3lRSU1WdTk3ejBlYjIyc0ppUzVGQVYtWlU3ZzQwMzc2Njc5MDA',//user?.token ?? null,
-                (target, data) => {
-                    try {
-                        return t(target,data).toString()
-                    } catch (error) {
-                        return target
-                    }
-                }
-            ); // Passer une fonction pour obtenir le token
+export const SublymusApiProvider: React.FC<SublymusApiProviderProps> = ({ children, serverApiUrl }) => {
+    const { user } = useAuthStore();
+    const { currentStore } = useGlobalStore(); // Utiliser alias
+    const { t } = useTranslation();
+    const api = useMemo(() => {
+        const storeApiUrl = currentStore?.url; // Peut être null/undefined
+        const token = user?.token;
+
+        // Server URL est toujours requis
+
+        if (!serverApiUrl) {
+            logger.error("SublymusApiProvider: serverApiUrl prop is missing!");
+            return null;
         }
 
-
-        return null; // Pas d'API si pas d'URL
-    }, [currentStore?.url, user?.token]); // Recréer si l'URL ou le token change
-
+        
+        // Créer l'instance avec les deux URLs
+        return new SublymusApi({
+            getAuthTokenApi() {
+                return 'oat_MTk.Y1BleEpvTEhDVVQxa3lRSU1WdTk3ejBlYjIyc0ppUzVGQVYtWlU3ZzQwMzc2Njc5MDA'
+            },
+            getAuthTokenServer() {
+                return 'oat_MzU.ZVc2SUhad1A4dmh6ellfZjFrejJGcEdtOW5ZckN0OWFfN19KeEs2UTE3NzAxNjc4MzE'
+            },
+            serverUrl:Server_Host,
+            storeApiUrl:Api_host,
+            t
+        });
+    }, [currentStore?.url, serverApiUrl, user?.token]);
+    
     return (
         <QueryClientProvider client={queryClient}>
-            <SublymusApiContext.Provider value={{api}}>
+            <SublymusApiContext.Provider value={{ api }}>
                 {children}
             </SublymusApiContext.Provider>
-            {/* Outils de dev TanStack Query (optionnel) */}
             <ReactQueryDevtools initialIsOpen={false} />
         </QueryClientProvider>
     );
@@ -120,11 +142,12 @@ export const SublymusApiProvider: React.FC<SublymusApiProviderProps> = ({ childr
 // --- Hook useApi (inchangé) ---
 export const useApi = (): SublymusApi => {
     const context = useContext(SublymusApiContext);
+    
     const { t } = useTranslation();
     if (!context || !context.api) {
-        const { currentStore } = useStore.getState();
+        const { currentStore } = useGlobalStore.getState();
         if (!currentStore?.url) {
-             throw new Error(t('api.contextError.noStoreUrl'));
+            throw new Error(t('api.contextError.noStoreUrl'));
         }
         throw new Error(t('api.contextError.providerMissing'));
     }
@@ -132,6 +155,180 @@ export const useApi = (): SublymusApi => {
 };
 
 // --- Hooks Personnalisés par Namespace ---
+
+
+
+// ==================================
+// == Hooks pour Namespace STORE ==
+// ==================================
+
+// Hook pour récupérer la liste des stores de l'utilisateur (appelle s_server)
+export const useGetStoreList = (params: GetStoresParams = {}, options: { enabled?: boolean } = {}): UseQueryResult<GetStoresResponse, ApiError> => {
+    const api = useApi();
+    return useQuery<GetStoresResponse, ApiError>({
+        queryKey: ['stores', params], // Clé pour la liste des stores
+        queryFn: () => api.store.getList(params),
+        enabled: options.enabled !== undefined ? options.enabled : true,
+    });
+};
+
+// Hook pour récupérer UN store par ID (appelle s_server)
+export const useGetStore = (storeId: string | undefined, options: { enabled?: boolean } = {}): UseQueryResult<GetStoreResponse | null, ApiError> => {
+    const api = useApi();
+    return useQuery<GetStoreResponse | null, ApiError>({
+        queryKey: ['storeDetails', storeId], // Clé spécifique au détail
+        queryFn: () => storeId ? api.store.getOne({ store_id: storeId }) : Promise.resolve(null),
+        enabled: !!storeId && (options.enabled !== undefined ? options.enabled : true),
+        staleTime: 10 * 60 * 1000, // Cache plus long pour les détails d'un store
+    });
+};
+
+// Hook pour créer un store (appelle s_server)
+export const useCreateStore = (): UseMutationResult<CreateStoreResponse, ApiError, CreateStoreParams> => {
+    const api = useApi();
+    return useMutation<CreateStoreResponse, ApiError, CreateStoreParams>({
+        mutationFn: (data) => api.store.create(data),
+        onSuccess: (data) => {
+            queryClient.invalidateQueries({ queryKey: ['stores'] } as InvalidateQueryFilters); // Rafraîchir la liste
+            logger.info("Store created via mutation", data.store);
+            // Mettre à jour le store courant si c'est le premier? Logique applicative.
+        },
+        onError: (error) => { logger.error({ error }, "Failed to create store via mutation"); }
+    });
+};
+
+// Hook pour mettre à jour un store (appelle s_server)
+export const useUpdateStore = (): UseMutationResult<UpdateStoreResponse, ApiError, UpdateStoreParams> => {
+    const api = useApi();
+    return useMutation<UpdateStoreResponse, ApiError, UpdateStoreParams>({
+        mutationFn: (params) => api.store.update(params),
+        onSuccess: (data, variables) => {
+             queryClient.invalidateQueries({ queryKey: ['stores'] } as InvalidateQueryFilters); // Invalider la liste
+             queryClient.invalidateQueries({ queryKey: ['storeDetails', variables.store_id] } as InvalidateQueryFilters); // Invalider le détail
+             logger.info("Store updated via mutation", data.store);
+              // Mettre à jour le store courant dans Zustand si c'est lui qui a été modifié
+              const currentStore = useGlobalStore.getState().currentStore;
+              if (currentStore?.id === variables.store_id) {
+                  useGlobalStore.getState().setCurrentStore(data.store);
+              }
+        },
+        onError: (error) => { logger.error({ error }, "Failed to update store via mutation"); }
+    });
+};
+
+// Hook pour supprimer un store (appelle s_server)
+export const useDeleteStore = (): UseMutationResult<DeleteStoreResponse, ApiError, DeleteStoreParams> => {
+    const api = useApi();
+    return useMutation<DeleteStoreResponse, ApiError, DeleteStoreParams>({
+        mutationFn: (params) => api.store.delete(params),
+        onSuccess: (data, variables) => {
+             queryClient.invalidateQueries({ queryKey: ['stores'] } as InvalidateQueryFilters); // Invalider la liste
+             queryClient.removeQueries({ queryKey: ['storeDetails', variables.store_id] }); // Supprimer le détail du cache
+             logger.info("Store deleted via mutation", { storeId: variables.store_id });
+              // Si le store supprimé était le store courant, le désélectionner
+              const currentStore = useGlobalStore.getState().currentStore;
+              if (currentStore?.id === variables.store_id) {
+                   useGlobalStore.getState().setCurrentStore(undefined);
+                   localStorage.removeItem('current_store');
+              }
+        },
+        onError: (error) => { logger.error({ error }, "Failed to delete store via mutation"); }
+    });
+};
+
+// Hook pour changer le thème d'un store (appelle s_server)
+export const useChangeTheme = (): UseMutationResult<ChangeThemeResponse, ApiError, ChangeThemeParams> => {
+    const api = useApi();
+    return useMutation<ChangeThemeResponse, ApiError, ChangeThemeParams>({
+        mutationFn: (params) => api.store.changeTheme(params),
+        onSuccess: (data, variables) => {
+             // Invalider les détails du store pour refléter le nouveau thème
+             queryClient.invalidateQueries({ queryKey: ['storeDetails', variables.store_id] } as InvalidateQueryFilters);
+             logger.info("Store theme changed via mutation", { storeId: variables.store_id, newThemeId: data.store.current_theme_id });
+             // Mettre à jour le store courant dans Zustand si nécessaire
+        },
+        onError: (error) => { logger.error({ error }, "Failed to change store theme via mutation"); }
+    });
+};
+
+// Hook pour mettre à jour le statut (actif/inactif) d'un store (appelle s_server)
+export const useUpdateStoreStatus = (): UseMutationResult<UpdateStoreStatusResponse, ApiError, UpdateStoreStatusParams> => {
+    const api = useApi();
+    return useMutation<UpdateStoreStatusResponse, ApiError, UpdateStoreStatusParams>({
+        mutationFn: (params) => api.store.updateStatus(params),
+        onSuccess: (data, variables) => {
+             queryClient.invalidateQueries({ queryKey: ['stores'] } as InvalidateQueryFilters);
+             queryClient.invalidateQueries({ queryKey: ['storeDetails', variables.store_id] } as InvalidateQueryFilters);
+             logger.info("Store status updated via mutation", { storeId: variables.store_id, isActive: data.store.is_active });
+             // Mettre à jour le store courant dans Zustand si nécessaire
+        },
+        onError: (error) => { logger.error({ error }, "Failed to update store status via mutation"); }
+    });
+};
+
+// Hooks pour Start/Stop/Restart (appellent s_server, retournent juste un message)
+export const useStartStore = (): UseMutationResult<StoreActionResponse, ApiError, StoreActionParams> => {
+    const api = useApi();
+    return useMutation<StoreActionResponse, ApiError, StoreActionParams>({
+        mutationFn: (params) => api.store.start(params),
+        onSuccess: (data, variables) => {
+              queryClient.invalidateQueries({ queryKey: ['stores'] } as InvalidateQueryFilters);
+              queryClient.invalidateQueries({ queryKey: ['storeDetails', variables.store_id] } as InvalidateQueryFilters);
+             logger.info("Store start requested via mutation", { storeId: variables.store_id, store: data.store });
+        },
+        onError: (error) => { logger.error({ error }, "Failed to request store start via mutation"); }
+    });
+};
+export const useStopStore = (): UseMutationResult<StoreActionResponse, ApiError, StoreActionParams> => { 
+    const api = useApi();
+    return useMutation<StoreActionResponse, ApiError, StoreActionParams>({
+        mutationFn: (params) => api.store.stop(params),
+        onSuccess: (data, variables) => {
+              queryClient.invalidateQueries({ queryKey: ['stores'] } as InvalidateQueryFilters);
+              queryClient.invalidateQueries({ queryKey: ['storeDetails', variables.store_id] } as InvalidateQueryFilters);
+             logger.info("Store start requested via mutation", { storeId: variables.store_id, store: data.store });
+        },
+        onError: (error) => { logger.error({ error }, "Failed to request store start via mutation"); }
+    });
+ };
+export const useRestartStore = (): UseMutationResult<StoreActionResponse, ApiError, StoreActionParams> => {
+    const api = useApi();
+    return useMutation<StoreActionResponse, ApiError, StoreActionParams>({
+        mutationFn: (params) => api.store.restart(params),
+        onSuccess: (data, variables) => {
+              queryClient.invalidateQueries({ queryKey: ['stores'] } as InvalidateQueryFilters);
+              queryClient.invalidateQueries({ queryKey: ['storeDetails', variables.store_id] } as InvalidateQueryFilters);
+             logger.info("Store start requested via mutation",  { storeId: variables.store_id, store: data.store });
+        },
+        onError: (error) => { logger.error({ error }, "Failed to request store start via mutation"); }
+    });
+};
+
+// Hook pour gérer les domaines (exemple ajout)
+export const useAddStoreDomain = (): UseMutationResult<ManageDomainResponse, ApiError, ManageDomainParams> => {
+    const api = useApi();
+    return useMutation<ManageDomainResponse, ApiError, ManageDomainParams>({
+        mutationFn: (params) => api.store.addDomain(params),
+         onSuccess: (data, variables) => {
+             queryClient.invalidateQueries({ queryKey: ['storeDetails', variables.store_id] } as InvalidateQueryFilters);
+             logger.info("Store domain added via mutation", { storeId: variables.store_id, domain: variables.domainName });
+        },
+        onError: (error) => { logger.error({ error }, "Failed to add store domain via mutation"); }
+    });
+};
+// Ajouter useRemoveStoreDomain si nécessaire
+
+// Hook pour vérifier la disponibilité d'un nom (appelle s_server)
+export const useCheckStoreNameAvailability = (name: string | undefined, options: { enabled?: boolean } = {}): UseQueryResult<AvailableNameResponse, ApiError> => {
+     const api = useApi();
+     return useQuery<AvailableNameResponse, ApiError>({
+         queryKey: ['storeNameAvailable', name],
+         queryFn: () => name ? api.store.checkAvailableName({ name }) : Promise.resolve({ is_available_name: false }), // Ne fetch que si nom fourni
+         enabled: !!name && (options.enabled !== undefined ? options.enabled : true),
+         staleTime: 1 * 60 * 1000, // Cache court
+         refetchOnWindowFocus: false,
+     });
+};
 
 // ========================
 // == Authentification ==
@@ -169,8 +366,8 @@ export const useVerifyEmail = (): UseMutationResult<MessageResponse, ApiError, V
     return useMutation<MessageResponse, ApiError, VerifyEmailParams>({
         mutationFn: (params) => api.auth.verifyEmail(params),
         onSuccess: (data) => {
-             logger.info("Email verified via mutation", data);
-             queryClient.invalidateQueries({ queryKey: AUTH_QUERY_KEYS.me });
+            logger.info("Email verified via mutation", data);
+            queryClient.invalidateQueries({ queryKey: AUTH_QUERY_KEYS.me });
         },
         onError: (error) => { logger.error({ error }, "Email verification failed via mutation"); }
     });
@@ -195,13 +392,13 @@ export const useLogout = (): UseMutationResult<MessageResponse, ApiError, void> 
             logger.info("Logout successful via mutation", data);
             useAuthStore.setState({ user: undefined });
         },
-         onError: (error) => {
+        onError: (error) => {
             // Même en cas d'erreur (ex: token déjà invalide), on nettoie côté client
             queryClient.removeQueries({ queryKey: AUTH_QUERY_KEYS.me });
             queryClient.clear();
             useAuthStore.setState({ user: undefined });
             logger.error({ error }, "Logout failed via mutation, client state cleared anyway.");
-         }
+        }
     });
 };
 
@@ -210,15 +407,15 @@ export const useLogoutAllDevices = (): UseMutationResult<MessageResponse, ApiErr
     const logoutMutation = useLogout(); // Utiliser pour le nettoyage client
     return useMutation<MessageResponse, ApiError, void>({
         mutationFn: () => api.auth.logoutAllDevices(),
-         onSuccess: (data) => {
-             logger.info("Logout All Devices successful via mutation", data);
-             logoutMutation.mutate(); // Déclencher nettoyage client
+        onSuccess: (data) => {
+            logger.info("Logout All Devices successful via mutation", data);
+            logoutMutation.mutate(); // Déclencher nettoyage client
         },
-         onError: (error) => {
+        onError: (error) => {
             // Nettoyer côté client même si l'API échoue? Probablement oui.
             logoutMutation.mutate();
             logger.error({ error }, "Logout All Devices failed via mutation, client state cleared anyway.");
-         }
+        }
     });
 };
 
@@ -238,7 +435,7 @@ export const useUpdateUser = (): UseMutationResult<UpdateUserResponse, ApiError,
         mutationFn: (params) => api.auth.update(params),
         onSuccess: (data) => {
             queryClient.setQueryData<GetMeResponse>(AUTH_QUERY_KEYS.me, (oldData) =>
-                 oldData ? { user: { ...oldData.user, ...data.user } } : undefined
+                oldData ? { user: { ...oldData.user, ...data.user } } : undefined
             );
             logger.info("User profile updated via mutation", data.user);
             // Mettre à jour aussi le store Zustand si utilisé
@@ -249,16 +446,16 @@ export const useUpdateUser = (): UseMutationResult<UpdateUserResponse, ApiError,
 };
 
 export const useDeleteAccount = (): UseMutationResult<MessageResponse, ApiError, void> => {
-     const api = useApi();
-     const logoutMutation = useLogout();
-     return useMutation<MessageResponse, ApiError, void>({
-         mutationFn: () => api.auth.deleteAccount(),
-         onSuccess: (data) => {
-             logger.info("Account deleted via mutation", data);
-             logoutMutation.mutate(); // Nettoyer après suppression
-         },
-         onError: (error) => { logger.error({ error }, "Account deletion failed via mutation"); }
-     });
+    const api = useApi();
+    const logoutMutation = useLogout();
+    return useMutation<MessageResponse, ApiError, void>({
+        mutationFn: () => api.auth.deleteAccount(),
+        onSuccess: (data) => {
+            logger.info("Account deleted via mutation", data);
+            logoutMutation.mutate(); // Nettoyer après suppression
+        },
+        onError: (error) => { logger.error({ error }, "Account deletion failed via mutation"); }
+    });
 };
 
 // --- Fin Auth Hooks ---
@@ -336,8 +533,8 @@ export const useUpdateProduct = (): UseMutationResult<UpdateProductResponse, Api
             queryClient.invalidateQueries({ queryKey: PRODUCTS_QUERY_KEYS.lists() } as InvalidateQueryFilters);
             // Mettre à jour le cache détail
             queryClient.setQueryData<GetProductResponse>(
-                 PRODUCTS_QUERY_KEYS.details({ product_id: productId }),
-                 (oldData) => oldData ? { ...oldData, ...(data.product ?? {}) } : undefined // Merger les nouvelles données
+                PRODUCTS_QUERY_KEYS.details({ product_id: productId }),
+                (oldData) => oldData ? { ...oldData, ...(data.product ?? {}) } : undefined // Merger les nouvelles données
             );
             // Invalider aussi par slug si on l'utilise
             // queryClient.invalidateQueries({ queryKey: ['product', { slug: data.product?.slug }] });
@@ -347,12 +544,12 @@ export const useUpdateProduct = (): UseMutationResult<UpdateProductResponse, Api
 };
 
 // Hook pour supprimer un produit
-export const useDeleteProduct = (): UseMutationResult<DeleteProductResponse, ApiError, {product_id:string}> => { // string = productId
+export const useDeleteProduct = (): UseMutationResult<DeleteProductResponse, ApiError, { product_id: string }> => { // string = productId
     const api = useApi();
-    return useMutation<DeleteProductResponse, ApiError, {product_id:string}>({
+    return useMutation<DeleteProductResponse, ApiError, { product_id: string }>({
         mutationFn: (data) => api.products.delete(data.product_id),
         onSuccess: (data, params) => {
-            logger.info("Product deleted via mutation", { productId:params.product_id });
+            logger.info("Product deleted via mutation", { productId: params.product_id });
             // Invalider les listes
             queryClient.invalidateQueries({ queryKey: PRODUCTS_QUERY_KEYS.lists() } as InvalidateQueryFilters);
             // Supprimer le détail du cache
@@ -370,17 +567,17 @@ export const useMultipleUpdateFeaturesValues = (): UseMutationResult<MultipleUpd
         onSuccess: (data, variables) => {
             logger.info("Multiple features/values updated via mutation", { productId: variables.product_id });
             const productId = variables.product_id;
-             // Invalider les listes ET le détail complet du produit
+            // Invalider les listes ET le détail complet du produit
             queryClient.invalidateQueries({ queryKey: PRODUCTS_QUERY_KEYS.lists() } as InvalidateQueryFilters);
             queryClient.invalidateQueries({ queryKey: PRODUCTS_QUERY_KEYS.details({ product_id: productId }) } as InvalidateQueryFilters);
             // Invalider aussi les features/values si requêtes dédiées existent
             queryClient.invalidateQueries({ queryKey: ['features', { product_id: productId }] } as InvalidateQueryFilters);
             queryClient.invalidateQueries({ queryKey: ['featuresWithValues', { product_id: productId }] } as InvalidateQueryFilters);
 
-             // Mettre à jour le cache détail avec le produit retourné?
-             if (data.product) {
-                 queryClient.setQueryData(PRODUCTS_QUERY_KEYS.details({ product_id: productId }), data.product);
-             }
+            // Mettre à jour le cache détail avec le produit retourné?
+            if (data.product) {
+                queryClient.setQueryData(PRODUCTS_QUERY_KEYS.details({ product_id: productId }), data.product);
+            }
         },
         onError: (error) => { logger.error({ error }, "Failed multiple features/values update via mutation"); }
     });
@@ -454,7 +651,7 @@ export const useUpdateCategory = (): UseMutationResult<UpdateCategoryResponse, A
             queryClient.invalidateQueries({ queryKey: CATEGORIES_QUERY_KEYS.lists() } as InvalidateQueryFilters);
             queryClient.setQueryData<GetCategoryResponse>(CATEGORIES_QUERY_KEYS.details({ category_id: categoryId }), data.category);
             // Invalider aussi par slug si le slug a pu changer
-             queryClient.invalidateQueries({ queryKey: CATEGORIES_QUERY_KEYS.details({ slug: data.category.slug }) } as InvalidateQueryFilters);
+            queryClient.invalidateQueries({ queryKey: CATEGORIES_QUERY_KEYS.details({ slug: data.category.slug }) } as InvalidateQueryFilters);
         },
         onError: (error) => { logger.error({ error }, "Failed to update category via mutation"); }
     });
@@ -469,8 +666,8 @@ export const useDeleteCategory = (): UseMutationResult<DeleteCategoryResponse, A
             logger.info("Category deleted via mutation", { categoryId: variables.category_id });
             queryClient.invalidateQueries({ queryKey: CATEGORIES_QUERY_KEYS.lists() } as InvalidateQueryFilters);
             queryClient.removeQueries({ queryKey: CATEGORIES_QUERY_KEYS.details({ category_id: variables.category_id }) });
-             // TODO: Invalider les produits qui contenaient cette catégorie? Complexe.
-             queryClient.invalidateQueries({ queryKey: PRODUCTS_QUERY_KEYS.lists() }); // Invalidation large
+            // TODO: Invalider les produits qui contenaient cette catégorie? Complexe.
+            queryClient.invalidateQueries({ queryKey: PRODUCTS_QUERY_KEYS.lists() }); // Invalidation large
         },
         onError: (error) => { logger.error({ error }, "Failed to delete category via mutation"); }
     });
@@ -562,15 +759,15 @@ export const useGetFeatureWithValues = (
     params: { feature_id: string },
     options: { enabled?: boolean } = {}
 ): UseQueryResult<FeatureInterface | null, ApiError> => {
-     const api = useApi();
-     return useQuery<FeatureInterface | null, ApiError>({
-         queryKey: FEATURES_QUERY_KEYS.withValues(params), // Utiliser la même clé que la liste pour MAJ cache
-         queryFn: async () => {
-             const result = await api.features.getListWithValues({ ...params, limit: 1 } as any);
-             return result?.[0] ?? null;
-         },
-         enabled: !!params.feature_id && (options.enabled !== undefined ? options.enabled : true),
-     });
+    const api = useApi();
+    return useQuery<FeatureInterface | null, ApiError>({
+        queryKey: FEATURES_QUERY_KEYS.withValues(params), // Utiliser la même clé que la liste pour MAJ cache
+        queryFn: async () => {
+            const result = await api.features.getListWithValues({ ...params, limit: 1 } as any);
+            return result?.[0] ?? null;
+        },
+        enabled: !!params.feature_id && (options.enabled !== undefined ? options.enabled : true),
+    });
 };
 
 
@@ -583,11 +780,11 @@ export const useCreateValue = (): UseMutationResult<CreateValueResponse, ApiErro
             logger.info("Value created via mutation", data.value);
             // Invalider la liste des valeurs pour cette feature ET les features avec valeurs du produit
             queryClient.invalidateQueries({ queryKey: VALUES_QUERY_KEYS.lists({ feature_id: variables.data.feature_id }) } as InvalidateQueryFilters);
-             // Idéalement on connait le product_id ici pour invalider plus précisément
-             // queryClient.invalidateQueries({ queryKey: FEATURES_QUERY_KEYS.withValues({ product_id: productId }) });
-             // Invalidation large pour l'instant:
-             queryClient.invalidateQueries({ queryKey: FEATURES_QUERY_KEYS.withValues() } as InvalidateQueryFilters);
-             queryClient.invalidateQueries({ queryKey: PRODUCTS_QUERY_KEYS.details() } as InvalidateQueryFilters); // Invalider produit détail aussi
+            // Idéalement on connait le product_id ici pour invalider plus précisément
+            // queryClient.invalidateQueries({ queryKey: FEATURES_QUERY_KEYS.withValues({ product_id: productId }) });
+            // Invalidation large pour l'instant:
+            queryClient.invalidateQueries({ queryKey: FEATURES_QUERY_KEYS.withValues() } as InvalidateQueryFilters);
+            queryClient.invalidateQueries({ queryKey: PRODUCTS_QUERY_KEYS.details() } as InvalidateQueryFilters); // Invalider produit détail aussi
         },
         onError: (error) => { logger.error({ error }, "Failed to create value via mutation"); }
     });
@@ -602,11 +799,11 @@ export const useUpdateValue = (): UseMutationResult<UpdateValueResponse, ApiErro
             logger.info("Value updated via mutation", data.value);
             const valueId = variables.value_id;
             const featureId = data.value.feature_id; // Feature ID depuis la réponse
-             // Invalider la liste des valeurs pour cette feature, le détail de cette valeur et les features avec valeurs
-             queryClient.invalidateQueries({ queryKey: VALUES_QUERY_KEYS.lists({ feature_id: featureId }) } as InvalidateQueryFilters);
-             queryClient.invalidateQueries({ queryKey: VALUES_QUERY_KEYS.details({ value_id: valueId }) } as InvalidateQueryFilters);
-             queryClient.invalidateQueries({ queryKey: FEATURES_QUERY_KEYS.withValues() } as InvalidateQueryFilters);
-             queryClient.invalidateQueries({ queryKey: PRODUCTS_QUERY_KEYS.details() } as InvalidateQueryFilters);
+            // Invalider la liste des valeurs pour cette feature, le détail de cette valeur et les features avec valeurs
+            queryClient.invalidateQueries({ queryKey: VALUES_QUERY_KEYS.lists({ feature_id: featureId }) } as InvalidateQueryFilters);
+            queryClient.invalidateQueries({ queryKey: VALUES_QUERY_KEYS.details({ value_id: valueId }) } as InvalidateQueryFilters);
+            queryClient.invalidateQueries({ queryKey: FEATURES_QUERY_KEYS.withValues() } as InvalidateQueryFilters);
+            queryClient.invalidateQueries({ queryKey: PRODUCTS_QUERY_KEYS.details() } as InvalidateQueryFilters);
         },
         onError: (error) => { logger.error({ error }, "Failed to update value via mutation"); }
     });
@@ -615,30 +812,30 @@ export const useUpdateValue = (): UseMutationResult<UpdateValueResponse, ApiErro
 // Hook pour supprimer une valeur (Value)
 export const useDeleteValue = (): UseMutationResult<DeleteValueResponse, ApiError, DeleteValueParams> => {
     const api = useApi();
-     // Garder trace de la feature parente pour invalidation
-     let parentFeatureId: string | undefined;
-     return useMutation<DeleteValueResponse, ApiError, DeleteValueParams>({
-         onMutate: async (variables) => {
-              // Essayer de récupérer la valeur du cache pour obtenir featureId
-              const cachedValue = queryClient.getQueryData<GetValueResponse>(VALUES_QUERY_KEYS.details({ value_id: variables.value_id }));
-              parentFeatureId = cachedValue?.feature_id;
-         },
-         mutationFn: (params) => api.values.delete(params),
-         onSuccess: (data, variables) => {
-             logger.info("Value deleted via mutation", { valueId: variables.value_id });
-              const valueId = variables.value_id;
-              // Invalider les listes et supprimer le détail du cache
-              if (parentFeatureId) {
-                  queryClient.invalidateQueries({ queryKey: VALUES_QUERY_KEYS.lists({ feature_id: parentFeatureId }) } as InvalidateQueryFilters);
-              } else {
-                  queryClient.invalidateQueries({ queryKey: VALUES_QUERY_KEYS.lists() } as InvalidateQueryFilters); // Fallback large
-              }
-              queryClient.removeQueries({ queryKey: VALUES_QUERY_KEYS.details({ value_id: valueId }) });
-              queryClient.invalidateQueries({ queryKey: FEATURES_QUERY_KEYS.withValues() } as InvalidateQueryFilters);
-              queryClient.invalidateQueries({ queryKey: PRODUCTS_QUERY_KEYS.details() } as InvalidateQueryFilters);
-              parentFeatureId = undefined; // Reset
-         },
-         onError: (error) => { logger.error({ error }, "Failed to delete value via mutation"); parentFeatureId = undefined; }
+    // Garder trace de la feature parente pour invalidation
+    let parentFeatureId: string | undefined;
+    return useMutation<DeleteValueResponse, ApiError, DeleteValueParams>({
+        onMutate: async (variables) => {
+            // Essayer de récupérer la valeur du cache pour obtenir featureId
+            const cachedValue = queryClient.getQueryData<GetValueResponse>(VALUES_QUERY_KEYS.details({ value_id: variables.value_id }));
+            parentFeatureId = cachedValue?.feature_id;
+        },
+        mutationFn: (params) => api.values.delete(params),
+        onSuccess: (data, variables) => {
+            logger.info("Value deleted via mutation", { valueId: variables.value_id });
+            const valueId = variables.value_id;
+            // Invalider les listes et supprimer le détail du cache
+            if (parentFeatureId) {
+                queryClient.invalidateQueries({ queryKey: VALUES_QUERY_KEYS.lists({ feature_id: parentFeatureId }) } as InvalidateQueryFilters);
+            } else {
+                queryClient.invalidateQueries({ queryKey: VALUES_QUERY_KEYS.lists() } as InvalidateQueryFilters); // Fallback large
+            }
+            queryClient.removeQueries({ queryKey: VALUES_QUERY_KEYS.details({ value_id: valueId }) });
+            queryClient.invalidateQueries({ queryKey: FEATURES_QUERY_KEYS.withValues() } as InvalidateQueryFilters);
+            queryClient.invalidateQueries({ queryKey: PRODUCTS_QUERY_KEYS.details() } as InvalidateQueryFilters);
+            parentFeatureId = undefined; // Reset
+        },
+        onError: (error) => { logger.error({ error }, "Failed to delete value via mutation"); parentFeatureId = undefined; }
     });
 };
 
@@ -718,19 +915,19 @@ export const useDeleteDetail = (): UseMutationResult<DeleteDetailResponse, ApiEr
     // Garder trace du produit parent pour invalidation
     let parentProductId: string | undefined;
     return useMutation<DeleteDetailResponse, ApiError, DeleteDetailParams>({
-         onMutate: async (variables) => {
-             const cachedDetail = queryClient.getQueryData<GetDetailResponse>(DETAILS_QUERY_KEYS.details({ detail_id: variables.detail_id }));
-             parentProductId = cachedDetail?.product_id;
-         },
+        onMutate: async (variables) => {
+            const cachedDetail = queryClient.getQueryData<GetDetailResponse>(DETAILS_QUERY_KEYS.details({ detail_id: variables.detail_id }));
+            parentProductId = cachedDetail?.product_id;
+        },
         mutationFn: (params) => api.details.delete(params),
         onSuccess: (data, variables) => {
             logger.info("Detail deleted via mutation", { detailId: variables.detail_id });
-             const detailId = variables.detail_id;
-             // Invalider la liste et supprimer le détail du cache
+            const detailId = variables.detail_id;
+            // Invalider la liste et supprimer le détail du cache
             if (parentProductId) {
-                 queryClient.invalidateQueries({ queryKey: DETAILS_QUERY_KEYS.lists({ product_id: parentProductId }) } as InvalidateQueryFilters);
+                queryClient.invalidateQueries({ queryKey: DETAILS_QUERY_KEYS.lists({ product_id: parentProductId }) } as InvalidateQueryFilters);
             } else {
-                 queryClient.invalidateQueries({ queryKey: DETAILS_QUERY_KEYS.lists() } as InvalidateQueryFilters); // Fallback large
+                queryClient.invalidateQueries({ queryKey: DETAILS_QUERY_KEYS.lists() } as InvalidateQueryFilters); // Fallback large
             }
             queryClient.removeQueries({ queryKey: DETAILS_QUERY_KEYS.details({ detail_id: detailId }) });
             parentProductId = undefined;
@@ -828,8 +1025,8 @@ export const useUpdateOrderStatus = (): UseMutationResult<UpdateOrderStatusRespo
             queryClient.invalidateQueries({ queryKey: ORDERS_QUERY_KEYS.myLists() } as InvalidateQueryFilters);
             queryClient.invalidateQueries({ queryKey: ORDERS_QUERY_KEYS.allLists() } as InvalidateQueryFilters);
             queryClient.invalidateQueries({ queryKey: ORDERS_QUERY_KEYS.details({ order_id: orderId }) } as InvalidateQueryFilters);
-             // Mettre à jour directement le cache détail?
-             queryClient.setQueryData<GetOrderResponse>(ORDERS_QUERY_KEYS.details({ order_id: orderId }), data.order);
+            // Mettre à jour directement le cache détail?
+            queryClient.setQueryData<GetOrderResponse>(ORDERS_QUERY_KEYS.details({ order_id: orderId }), data.order);
         },
         onError: (error) => { logger.error({ error }, "Failed to update order status via mutation"); }
     });
@@ -924,9 +1121,9 @@ export const useCreateComment = (): UseMutationResult<CreateCommentResponse, Api
             // Invalider la liste des commentaires pour le produit et la query forItem
             queryClient.invalidateQueries({ queryKey: COMMENTS_QUERY_KEYS.lists({ product_id: data.comment.product_id }) } as InvalidateQueryFilters);
             queryClient.invalidateQueries({ queryKey: COMMENTS_QUERY_KEYS.forItem({ order_item_id: data.comment.order_item_id }) } as InvalidateQueryFilters);
-             // Invalider aussi les stats produit (rating/count)
-             queryClient.invalidateQueries({ queryKey: PRODUCTS_QUERY_KEYS.details({ product_id: data.comment.product_id }) } as InvalidateQueryFilters);
-             queryClient.invalidateQueries({ queryKey: PRODUCTS_QUERY_KEYS.lists() } as InvalidateQueryFilters); // Large
+            // Invalider aussi les stats produit (rating/count)
+            queryClient.invalidateQueries({ queryKey: PRODUCTS_QUERY_KEYS.details({ product_id: data.comment.product_id }) } as InvalidateQueryFilters);
+            queryClient.invalidateQueries({ queryKey: PRODUCTS_QUERY_KEYS.lists() } as InvalidateQueryFilters); // Large
         },
         onError: (error) => { logger.error({ error }, "Failed to create comment via mutation"); }
     });
@@ -963,15 +1160,15 @@ export const useGetComment = (
     params: { comment_id: string, with_users?: boolean },
     options: { enabled?: boolean } = {}
 ): UseQueryResult<CommentInterface | null, ApiError> => {
-     const api = useApi();
-     return useQuery<CommentInterface | null, ApiError>({
-         queryKey: COMMENTS_QUERY_KEYS.details(params),
-         queryFn: async () => {
-             const result = await api.comments.getList(params);
-             return result?.list?.[0] ?? null;
-         },
-         enabled: !!params.comment_id && (options.enabled !== undefined ? options.enabled : true),
-     });
+    const api = useApi();
+    return useQuery<CommentInterface | null, ApiError>({
+        queryKey: COMMENTS_QUERY_KEYS.details(params),
+        queryFn: async () => {
+            const result = await api.comments.getList(params);
+            return result?.list?.[0] ?? null;
+        },
+        enabled: !!params.comment_id && (options.enabled !== undefined ? options.enabled : true),
+    });
 };
 
 
@@ -990,8 +1187,8 @@ export const useUpdateComment = (): UseMutationResult<UpdateCommentResponse, Api
             queryClient.invalidateQueries({ queryKey: COMMENTS_QUERY_KEYS.details({ comment_id: commentId }) } as InvalidateQueryFilters);
             queryClient.invalidateQueries({ queryKey: COMMENTS_QUERY_KEYS.forItem({ order_item_id: orderItemId }) } as InvalidateQueryFilters);
             // Invalider stats produit
-             queryClient.invalidateQueries({ queryKey: PRODUCTS_QUERY_KEYS.details({ product_id: productId }) } as InvalidateQueryFilters);
-             queryClient.invalidateQueries({ queryKey: PRODUCTS_QUERY_KEYS.lists() } as InvalidateQueryFilters);
+            queryClient.invalidateQueries({ queryKey: PRODUCTS_QUERY_KEYS.details({ product_id: productId }) } as InvalidateQueryFilters);
+            queryClient.invalidateQueries({ queryKey: PRODUCTS_QUERY_KEYS.lists() } as InvalidateQueryFilters);
         },
         onError: (error) => { logger.error({ error }, "Failed to update comment via mutation"); }
     });
@@ -1000,31 +1197,31 @@ export const useUpdateComment = (): UseMutationResult<UpdateCommentResponse, Api
 // Hook pour supprimer un commentaire
 export const useDeleteComment = (): UseMutationResult<DeleteCommentResponse, ApiError, DeleteCommentParams> => {
     const api = useApi();
-     let commentDataForInvalidation: CommentInterface | null = null;
-     return useMutation<DeleteCommentResponse, ApiError, DeleteCommentParams>({
-         onMutate: async (variables) => {
-              commentDataForInvalidation = await queryClient.fetchQuery({ queryKey: COMMENTS_QUERY_KEYS.details({ comment_id: variables.comment_id }) });
-         },
-         mutationFn: (params) => api.comments.delete(params),
-         onSuccess: (data, variables) => {
-             logger.info("Comment deleted via mutation", { commentId: variables.comment_id });
-             const commentId = variables.comment_id;
-             const productId = commentDataForInvalidation?.product_id;
-             const orderItemId = commentDataForInvalidation?.order_item_id;
-             // Invalider listes, supprimer détail, forItem
-             queryClient.invalidateQueries({ queryKey: COMMENTS_QUERY_KEYS.lists({ product_id: productId }) } as InvalidateQueryFilters);
-             queryClient.removeQueries({ queryKey: COMMENTS_QUERY_KEYS.details({ comment_id: commentId }) });
-             if (orderItemId) {
-                 queryClient.invalidateQueries({ queryKey: COMMENTS_QUERY_KEYS.forItem({ order_item_id: orderItemId }) } as InvalidateQueryFilters);
-             }
-             // Invalider stats produit
-             if (productId) {
-                 queryClient.invalidateQueries({ queryKey: PRODUCTS_QUERY_KEYS.details({ product_id: productId }) } as InvalidateQueryFilters);
-                 queryClient.invalidateQueries({ queryKey: PRODUCTS_QUERY_KEYS.lists() } as InvalidateQueryFilters);
-             }
-             commentDataForInvalidation = null;
-         },
-         onError: (error) => { logger.error({ error }, "Failed to delete comment via mutation"); commentDataForInvalidation = null; }
+    let commentDataForInvalidation: CommentInterface | null = null;
+    return useMutation<DeleteCommentResponse, ApiError, DeleteCommentParams>({
+        onMutate: async (variables) => {
+            commentDataForInvalidation = await queryClient.fetchQuery({ queryKey: COMMENTS_QUERY_KEYS.details({ comment_id: variables.comment_id }) });
+        },
+        mutationFn: (params) => api.comments.delete(params),
+        onSuccess: (data, variables) => {
+            logger.info("Comment deleted via mutation", { commentId: variables.comment_id });
+            const commentId = variables.comment_id;
+            const productId = commentDataForInvalidation?.product_id;
+            const orderItemId = commentDataForInvalidation?.order_item_id;
+            // Invalider listes, supprimer détail, forItem
+            queryClient.invalidateQueries({ queryKey: COMMENTS_QUERY_KEYS.lists({ product_id: productId }) } as InvalidateQueryFilters);
+            queryClient.removeQueries({ queryKey: COMMENTS_QUERY_KEYS.details({ comment_id: commentId }) });
+            if (orderItemId) {
+                queryClient.invalidateQueries({ queryKey: COMMENTS_QUERY_KEYS.forItem({ order_item_id: orderItemId }) } as InvalidateQueryFilters);
+            }
+            // Invalider stats produit
+            if (productId) {
+                queryClient.invalidateQueries({ queryKey: PRODUCTS_QUERY_KEYS.details({ product_id: productId }) } as InvalidateQueryFilters);
+                queryClient.invalidateQueries({ queryKey: PRODUCTS_QUERY_KEYS.lists() } as InvalidateQueryFilters);
+            }
+            commentDataForInvalidation = null;
+        },
+        onError: (error) => { logger.error({ error }, "Failed to delete comment via mutation"); commentDataForInvalidation = null; }
     });
 };
 
@@ -1075,9 +1272,9 @@ export const useUpdateFavorite = (): UseMutationResult<UpdateFavoriteResponse, A
             logger.info("Favorite updated via mutation", data);
             queryClient.invalidateQueries({ queryKey: FAVORITES_QUERY_KEYS.lists() } as InvalidateQueryFilters);
             // Mettre à jour le cache détail si nécessaire
-             queryClient.setQueryData<UpdateFavoriteResponse | null>(FAVORITES_QUERY_KEYS.details({ favorite_id: variables.favorite_id }), (old:any) => old ? { ...old, ...data } : undefined);
+            queryClient.setQueryData<UpdateFavoriteResponse | null>(FAVORITES_QUERY_KEYS.details({ favorite_id: variables.favorite_id }), (old: any) => old ? { ...old, ...data } : undefined);
         },
-         onError: (error) => { logger.error({ error }, "Failed to update favorite via mutation"); }
+        onError: (error) => { logger.error({ error }, "Failed to update favorite via mutation"); }
     });
 };
 
@@ -1086,12 +1283,12 @@ export const useRemoveFavorite = (): UseMutationResult<DeleteFavoriteResponse, A
     const api = useApi();
     return useMutation<DeleteFavoriteResponse, ApiError, DeleteFavoriteParams>({
         mutationFn: (params) => api.favorites.remove(params),
-         onSuccess: (data, variables) => {
-             logger.info("Favorite removed via mutation", { favoriteId: variables.favorite_id });
-             queryClient.invalidateQueries({ queryKey: FAVORITES_QUERY_KEYS.lists() } as InvalidateQueryFilters);
-             queryClient.removeQueries({ queryKey: FAVORITES_QUERY_KEYS.details({ favorite_id: variables.favorite_id }) });
-         },
-         onError: (error) => { logger.error({ error }, "Failed to remove favorite via mutation"); }
+        onSuccess: (data, variables) => {
+            logger.info("Favorite removed via mutation", { favoriteId: variables.favorite_id });
+            queryClient.invalidateQueries({ queryKey: FAVORITES_QUERY_KEYS.lists() } as InvalidateQueryFilters);
+            queryClient.removeQueries({ queryKey: FAVORITES_QUERY_KEYS.details({ favorite_id: variables.favorite_id }) });
+        },
+        onError: (error) => { logger.error({ error }, "Failed to remove favorite via mutation"); }
     });
 };
 
@@ -1120,7 +1317,7 @@ export const useCreateUserAddress = (): UseMutationResult<AddressResponse, ApiEr
 };
 
 export const useGetUserAddresses = (
-     options: { enabled?: boolean } = {}
+    options: { enabled?: boolean } = {}
 ): UseQueryResult<GetAddressesResponse, ApiError> => {
     const api = useApi();
     // Ce hook récupère la liste complète pour l'utilisateur authentifié
@@ -1139,8 +1336,8 @@ export const useUpdateUserAddress = (): UseMutationResult<AddressResponse, ApiEr
             logger.info("User address updated via mutation", data.address);
             queryClient.invalidateQueries({ queryKey: USER_PROFILE_QUERY_KEYS.addresses() } as InvalidateQueryFilters);
             // Mettre à jour le cache pour cette adresse spécifique si un hook getOne existe
-             // queryClient.setQueryData(USER_PROFILE_QUERY_KEYS.addresses({ id: variables.address_id }), data.address);
-             queryClient.invalidateQueries({ queryKey: AUTH_QUERY_KEYS.me } as InvalidateQueryFilters);
+            // queryClient.setQueryData(USER_PROFILE_QUERY_KEYS.addresses({ id: variables.address_id }), data.address);
+            queryClient.invalidateQueries({ queryKey: AUTH_QUERY_KEYS.me } as InvalidateQueryFilters);
         },
         onError: (error) => { logger.error({ error }, "Failed to update user address via mutation"); }
     });
@@ -1174,7 +1371,7 @@ export const useCreateUserPhone = (): UseMutationResult<PhoneResponse, ApiError,
 };
 
 export const useGetUserPhones = (
-     options: { enabled?: boolean } = {}
+    options: { enabled?: boolean } = {}
 ): UseQueryResult<GetPhonesResponse, ApiError> => {
     const api = useApi();
     return useQuery<GetPhonesResponse, ApiError>({
@@ -1219,7 +1416,7 @@ export const useDeleteUserPhone = (): UseMutationResult<DeleteResponse, ApiError
 const USERS_QUERY_KEYS = {
     all: ['users'] as const,
     lists: (filters: UserFilterType = {}) => [...USERS_QUERY_KEYS.all, 'list', filters] as const,
-     details: (params: { user_id: string }) => [...USERS_QUERY_KEYS.all, 'detail', params] as const, // Si on ajoute un getOne
+    details: (params: { user_id: string }) => [...USERS_QUERY_KEYS.all, 'detail', params] as const, // Si on ajoute un getOne
 };
 
 // Hook pour récupérer la LISTE des utilisateurs (Admin/Collab)
@@ -1270,8 +1467,8 @@ export const useCreateCollaborator = (): UseMutationResult<CreateCollaboratorRes
         onSuccess: (data) => {
             logger.info("Collaborator created via mutation", data.role);
             queryClient.invalidateQueries({ queryKey: ROLES_QUERY_KEYS.collaborators() } as InvalidateQueryFilters);
-             // Invalider aussi la liste des users généraux?
-             queryClient.invalidateQueries({ queryKey: USERS_QUERY_KEYS.lists() } as InvalidateQueryFilters);
+            // Invalider aussi la liste des users généraux?
+            queryClient.invalidateQueries({ queryKey: USERS_QUERY_KEYS.lists() } as InvalidateQueryFilters);
         },
         onError: (error) => { logger.error({ error }, "Failed to create collaborator via mutation"); }
     });
@@ -1300,8 +1497,8 @@ export const useRemoveCollaborator = (): UseMutationResult<RemoveCollaboratorRes
         onSuccess: (data, variables) => {
             logger.info("Collaborator removed via mutation", { userId: variables.user_id });
             queryClient.invalidateQueries({ queryKey: ROLES_QUERY_KEYS.collaborators() } as InvalidateQueryFilters);
-             // Invalider aussi la liste des users généraux?
-             queryClient.invalidateQueries({ queryKey: USERS_QUERY_KEYS.lists() } as InvalidateQueryFilters);
+            // Invalider aussi la liste des users généraux?
+            queryClient.invalidateQueries({ queryKey: USERS_QUERY_KEYS.lists() } as InvalidateQueryFilters);
         },
         onError: (error) => { logger.error({ error }, "Failed to remove collaborator via mutation"); }
     });

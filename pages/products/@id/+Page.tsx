@@ -3,7 +3,7 @@
 // --- Imports ---
 import { useEffect, useState, useCallback } from 'react'; // Ajouter useCallback
 import { usePageContext } from '../../../renderer/usePageContext';
-import { useStore } from '../../stores/StoreStore';
+import { useGlobalStore } from '../../stores/StoreStore';
 // ✅ Importer les hooks API nécessaires
 import {
     useGetProductList, // Pourrait être utilisé pour charger l'original
@@ -76,16 +76,16 @@ export { Page };
 function Page() {
     const { t } = useTranslation();
     const { openChild } = useChildViewer();
-    const { currentStore } = useStore();
+    const { currentStore } = useGlobalStore();
     const { routeParams } = usePageContext();
     const { params, searchPared, myLocation, replaceLocation, nextPage } = useMyLocation()
-    
-    const productIdFromRoute = params[1]||routeParams['id'];
+
+    const productIdFromRoute = params[1] || routeParams['id'];
     const isNewProduct = productIdFromRoute === 'new';
 
 
     console.log(productIdFromRoute);
-    
+
     // --- États du Composant ---
     // État principal du formulaire
     const [productFormState, setProductFormState] = useState<Partial<ProductInterface>>(
@@ -181,7 +181,7 @@ function Page() {
         vs = vs.map((v, i) => {
             if (v.index !== i) {
                 v.index = i;
-                if(!v._request_mode){
+                if (!v._request_mode) {
                     v._request_mode = 'edited'
                 }
             }
@@ -536,45 +536,45 @@ function Page() {
                             const currentvalue = values[index];
                             updateValues(values.map((v, i) => i == index ? lastValue : i == index - 1 ? currentvalue : v));
                             return true;
-                        }} newViewRequire={(files)=>{
-                            if(!originalProductData?.default_feature_id) return;
+                        }} newViewRequire={(files) => {
+                            if (!originalProductData?.default_feature_id) return;
                             const valueData: ValueInterface = {
-                                id: Math.random().toString(32).replaceAll('.',''),
+                                id: Math.random().toString(32).replaceAll('.', ''),
                                 feature_id: originalProductData.default_feature_id,
                                 index: 0,
-                                _request_mode:'new',
+                                _request_mode: 'new',
                                 views: files,
                                 text: 'Option', // Valeurs par défaut
                             };
-                            updateValues([...values,valueData])
+                            updateValues([...values, valueData])
                             clearValues()
-                        //    const d_f =  originalProductData?.features?.find(f=>f.id == originalProductData.default_feature_id)
-                   
-                        //    openChild(<ChildViewer title={t('value.createTitle')}> 
-                        //         { d_f && getInfoPopup({ // Utiliser getInfoPopup pour choisir le bon formulaire
-                        //             feature:d_f,
-                        //             value: valueData as ValueInterface,
-                        //             onChange: (value)=>{
-                        //                 updateValues([...values,value]);
-                        //                 openChild(null);    
-                        //             },
-                        //             onCancel: () => openChild(null),
-                        //         })||undefined}
-                        //     </ChildViewer>, { background: '#3455' });
-                        }} editValue={(vs)=>{
-                          const d_f =  originalProductData?.features?.find(f=>f.id == originalProductData.default_feature_id)
-                           openChild(<ChildViewer title={t('value.createTitle')}> 
-                                { d_f && getInfoPopup({ // Utiliser getInfoPopup pour choisir le bon formulaire
-                                    feature:d_f,
+                            //    const d_f =  originalProductData?.features?.find(f=>f.id == originalProductData.default_feature_id)
+
+                            //    openChild(<ChildViewer title={t('value.createTitle')}> 
+                            //         { d_f && getInfoPopup({ // Utiliser getInfoPopup pour choisir le bon formulaire
+                            //             feature:d_f,
+                            //             value: valueData as ValueInterface,
+                            //             onChange: (value)=>{
+                            //                 updateValues([...values,value]);
+                            //                 openChild(null);    
+                            //             },
+                            //             onCancel: () => openChild(null),
+                            //         })||undefined}
+                            //     </ChildViewer>, { background: '#3455' });
+                        }} editValue={(vs) => {
+                            const d_f = originalProductData?.features?.find(f => f.id == originalProductData.default_feature_id)
+                            openChild(<ChildViewer title={t('value.createTitle')}>
+                                {d_f && getInfoPopup({ // Utiliser getInfoPopup pour choisir le bon formulaire
+                                    feature: d_f,
                                     value: vs as ValueInterface,
-                                    onChange: (value)=>{
-                                        updateValues([...values,value]);
-                                        openChild(null);    
+                                    onChange: (value) => {
+                                        updateValues([...values, value]);
+                                        openChild(null);
                                     },
                                     onCancel: () => openChild(null),
-                                })||undefined}
+                                }) || undefined}
                             </ChildViewer>, { background: '#3455' });
-                        }}/>
+                        }} />
                     </div>}
                 </section>
                 {/* Utiliser grid ou flex pour organiser Nom, Description, Prix */}

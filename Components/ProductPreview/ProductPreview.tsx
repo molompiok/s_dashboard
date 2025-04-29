@@ -1,6 +1,6 @@
 import { getDefaultValues } from "../Utils/parseData";
 import { ProductInterface } from "../../Interfaces/Interfaces";
-import { useStore } from "../../pages/stores/StoreStore";
+import { useGlobalStore } from "../../pages/stores/StoreStore";
 import { getImg } from "../Utils/StringFormater";
 import { getFileType, limit, shortNumber } from "../Utils/functions";
 import { markdownToPlainText } from "../MarkdownViewer/MarkdownViewer";
@@ -15,19 +15,19 @@ import { useTranslation } from "react-i18next";
 export { ProductPreview }
 
 function ProductPreview({ product }: { product: Partial<ProductInterface> }) {
-  const { currentStore } = useStore()
+  const { currentStore } = useGlobalStore()
   const values = getDefaultValues(product);
   const view = values[0]?.views?.[0];
-    const [imgError, setImgError] = useState(false);
+  const [imgError, setImgError] = useState(false);
 
   const defaultValues = getDefaultValues(product);
   const defaultView = defaultValues[0]?.views?.[0] || NO_PICTURE;
   const src = getImg(defaultView, undefined, currentStore?.url).match(/url\("?([^"]+)"?\)/)?.[1];
   const fileType = getFileType(defaultView);
-  const {t} = useTranslation()
+  const { t } = useTranslation()
 
-  console.log({product,defaultValues,imgError,defaultView,src,fileType});
-  
+  console.log({ product, defaultValues, imgError, defaultView, src, fileType });
+
 
   return <a href={`/products/${product.id}`} className="product-preview">
     <div className="icon-80 view">

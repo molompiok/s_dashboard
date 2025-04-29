@@ -7,7 +7,7 @@ import { Nuage } from "../Nuage"; // Garder Nuage
 import MyChart from "../MiniChart"; // Garder MiniChart
 import { useGetStats } from "../../../api/ReactSublymusApi"; // ✅ Importer le hook
 import { PeriodType, StatsData } from "../../../Interfaces/Interfaces";
-import { useStore } from "../../stores/StoreStore";
+import { useGlobalStore } from "../../stores/StoreStore";
 import { useTranslation } from "react-i18next"; // ✅ Importer useTranslation
 
 export function HomeStat() {
@@ -15,7 +15,7 @@ export function HomeStat() {
     const [eye, setEye] = useState(false);
     const compteRef = useRef<HTMLSpanElement | null>(null); // Renommer pour clarté
     const [nuageW, setNuageW] = useState(100);
-    const { currentStore } = useStore();
+    const { currentStore } = useGlobalStore();
     // const { fetchStats } = useApp(); // Supprimer l'appel Zustand
     const [period, setPeriod] = useState<PeriodType>('month');
     // const [userStats, setUserStats] = useState<StatsData>(); // Géré par React Query

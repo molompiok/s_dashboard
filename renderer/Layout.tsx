@@ -1,4 +1,5 @@
-// renderer/Layout.tsx
+// import './Layout.css'
+
 export { Layout };
 
 import React, { useEffect, useState, useMemo } from 'react'; // Ajouter useState, useMemo
@@ -8,14 +9,14 @@ import { Link } from './Link';
 import type { PageContext } from 'vike/types';
 import '../Lib/i18n'; // Garder pour initialisation i18n
 // import { useApp } from './AppStore/UseApp'; // Remplacé par useChildViewer
-import { Icons } from '../Components/Utils/constants';
 // import { StoreCreate } from '../pages/StoreCreate/StoreCreate'; // Supposé non utilisé ici directement
 import { ClientCall } from '../Components/Utils/functions';
 import { useHashWatcher } from '../Hooks/useHashWatcher';
-import { useStore } from '../pages/stores/StoreStore'; // Gardé pour fetch initial store
+import { useGlobalStore } from '../pages/stores/StoreStore'; // Gardé pour fetch initial store
 import { useTranslation } from 'react-i18next'; // Pour traduction future
 import { useChildViewer } from '../Components/ChildViewer/useChildViewer'; // Hook pour popup
 import { IoHome, IoHomeOutline, IoStorefront, IoStorefrontOutline, IoPeople, IoPeopleOutline, IoDocumentText, IoDocumentTextOutline, IoCube, IoCubeOutline, IoLayers, IoLayersOutline } from 'react-icons/io5'; // Importer directement les icônes
+
 
 // --- Styles Globaux (Peuvent aller dans index.css ou être appliqués au body via un composant global) ---
 // Ces styles doivent être appliqués une seule fois au niveau racine si possible.
@@ -44,27 +45,27 @@ body {
 */
 
 function Layout({ children, pageContext }: { children: React.ReactNode; pageContext: PageContext }) {
-  const {t}= useTranslation()
+  const { t } = useTranslation()
   return (
     <React.StrictMode>
       <PageContextProvider pageContext={pageContext}>
-         {/* Frame Principal: flex, centré, largeur max */}
+        {/* Frame Principal: flex, centré, largeur max */}
         <Frame>
           {/* Sidebar: Cachée sur mobile (inférieur à sm), largeur variable sur desktop */}
           <Sidebar>
             <Logo />
-             {/* Liens de Navigation Sidebar */}
-             {/* Utiliser directement les icônes importées */}
+            {/* Liens de Navigation Sidebar */}
+            {/* Utiliser directement les icônes importées */}
             <Link href="/" activeIcon={<IoHome className='w-5 h-5' />} defaultIcon={<IoHomeOutline className='w-5 h-5' />}>{t('navigation.home')}</Link>
             <Link href="/products" activeIcon={<IoCube className='w-5 h-5' />} defaultIcon={<IoCubeOutline className='w-5 h-5' />}>{t('navigation.products')}</Link>
-             {/* Lien Catégories ajouté */}
+            {/* Lien Catégories ajouté */}
             <Link href="/categories" activeIcon={<IoLayers className='w-5 h-5' />} defaultIcon={<IoLayersOutline className='w-5 h-5' />}>{t('navigation.categories')}</Link>
             <Link href="/users" activeIcon={<IoPeople className='w-5 h-5' />} defaultIcon={<IoPeopleOutline className='w-5 h-5' />}>{t('navigation.teams')}</Link>
             <Link href="/commands" activeIcon={<IoDocumentText className='w-5 h-5' />} defaultIcon={<IoDocumentTextOutline className='w-5 h-5' />}>{t('navigation.orders')}</Link>
-             {/* Lien Inventaire ajouté */}
-             <Link href="/inventory" activeIcon={<IoHome className='w-5 h-5' />} defaultIcon={<IoHomeOutline className='w-5 h-5' />}>{t('navigation.inventory')}</Link>
+            {/* Lien Inventaire ajouté */}
+            <Link href="/inventory" activeIcon={<IoHome className='w-5 h-5' />} defaultIcon={<IoHomeOutline className='w-5 h-5' />}>{t('navigation.inventory')}</Link>
             <Link href="/stores" activeIcon={<IoStorefront className='w-5 h-5' />} defaultIcon={<IoStorefrontOutline className='w-5 h-5' />}>{t('navigation.stores')}</Link>
-             {/* Ajouter lien Settings, Stats etc. */}
+            {/* Ajouter lien Settings, Stats etc. */}
           </Sidebar>
 
           {/* Contenu Principal */}
@@ -74,12 +75,12 @@ function Layout({ children, pageContext }: { children: React.ReactNode; pageCont
 
         {/* Bottombar: Affichée seulement sur mobile (inférieur à sm) */}
         <Bottombar>
-          <Link href="/" activeIcon={<IoHome  className='w-5 h-5'/>} defaultIcon={<IoHomeOutline  className='w-5 h-5'/>} />
-          <Link href="/products" activeIcon={<IoCube  className='w-5 h-5'/>} defaultIcon={<IoCubeOutline  className='w-5 h-5'/>} />
-           {/* Ajouter icône Commandes? */}
-           <Link href="/commands" activeIcon={<IoDocumentText  className='w-5 h-5'/>} defaultIcon={<IoDocumentTextOutline  className='w-5 h-5'/>} />
-          <Link href="/stores" activeIcon={<IoStorefront  className='w-5 h-5'/>} defaultIcon={<IoStorefrontOutline  className='w-5 h-5'/>} />
-          <Link href="/users" activeIcon={<IoPeople  className='w-5 h-5'/>} defaultIcon={<IoPeopleOutline  className='w-5 h-5'/>} />
+          <Link href="/" activeIcon={<IoHome className='w-5 h-5' />} defaultIcon={<IoHomeOutline className='w-5 h-5' />} />
+          <Link href="/products" activeIcon={<IoCube className='w-5 h-5' />} defaultIcon={<IoCubeOutline className='w-5 h-5' />} />
+          {/* Ajouter icône Commandes? */}
+          <Link href="/commands" activeIcon={<IoDocumentText className='w-5 h-5' />} defaultIcon={<IoDocumentTextOutline className='w-5 h-5' />} />
+          <Link href="/stores" activeIcon={<IoStorefront className='w-5 h-5' />} defaultIcon={<IoStorefrontOutline className='w-5 h-5' />} />
+          <Link href="/users" activeIcon={<IoPeople className='w-5 h-5' />} defaultIcon={<IoPeopleOutline className='w-5 h-5' />} />
         </Bottombar>
 
         {/* Popup Global */}
@@ -95,44 +96,55 @@ function OpenChild() {
   const hash = useHashWatcher();
 
   // Logique useEffect inchangée
-  useEffect(() => { /* ... */ }, [currentChild, hash]);
+  useEffect(() => { 
+    if (!currentChild && location.hash === "#openChild") {
+      ClientCall(() => {
+        // history.replaceState(null, "", location.pathname);
+        history.back()
+        openChild(null)
+      });
+    }
+    if(location.hash !== "#openChild") {
+      openChild(null)
+    }
+   }, [currentChild, hash]);
 
   // Conversion align/justify en classes Tailwind
-   const flexAlignment = useMemo(() => {
-       const items = alignItems === 'start' ? 'items-start' : alignItems === 'end' ? 'items-end' : 'items-center';
-       const justify = justifyContent === 'left' ? 'justify-start' : justifyContent === 'right' ? 'justify-end' : justifyContent === 'space-between' ? 'justify-between' : 'justify-center';
-       return `${items} ${justify}`;
-   }, [alignItems, justifyContent]);
+  const flexAlignment = useMemo(() => {
+    const items = alignItems === 'start' ? 'items-start' : alignItems === 'end' ? 'items-end' : 'items-center';
+    const justify = justifyContent === 'left' ? 'justify-start' : justifyContent === 'right' ? 'justify-end' : justifyContent === 'space-between' ? 'justify-between' : 'justify-center';
+    return `${items} ${justify}`;
+  }, [alignItems, justifyContent]);
 
 
-    // Rendu conditionnel Tailwind
-    return (
+  // Rendu conditionnel Tailwind
+  return (
+    <div
+      className={`fixed inset-0 z-[9999] flex transition-opacity duration-300 ${currentChild && hash === '#openChild' ? 'opacity-100 visible' : 'opacity-0 invisible'}`}
+    // Appliquer le flou via une classe dédiée si background transparent, sinon background le couvre
+    // style={{ backdropFilter: blur ? `blur(${blur}px)` : 'none' }} // Appliquer backdrop-filter
+    >
+      {/* Fond semi-transparent */}
       <div
-          className={`fixed inset-0 z-[9999] flex transition-opacity duration-300 ${currentChild && hash === '#openChild' ? 'opacity-100 visible' : 'opacity-0 invisible'}`}
-          // Appliquer le flou via une classe dédiée si background transparent, sinon background le couvre
-          // style={{ backdropFilter: blur ? `blur(${blur}px)` : 'none' }} // Appliquer backdrop-filter
-      >
-           {/* Fond semi-transparent */}
-           <div
-              className="absolute inset-0"
-              style={{ background: background || 'rgba(0,0,0,0.4)' }} // Défaut si non fourni
-              onClick={(e) => { if (e.currentTarget === e.target) openChild(null) }} // Fermer au clic sur fond
-           ></div>
-            {/* Contenu centré (ou aligné selon props) */}
-            {/* Ajouter `relative` pour que le contenu soit au-dessus du fond */}
-           <div className={`relative w-full h-full flex ${flexAlignment} p-4`}>
-               {/* Animer l'apparition du contenu */}
-                <div className={`transition-transform duration-300 ease-out ${currentChild && hash === '#openChild' ? 'scale-100 opacity-100' : 'scale-95 opacity-0'}`}>
-                    {currentChild}
-                </div>
-           </div>
+        className="absolute inset-0"
+        style={{ background: background || 'rgba(0,0,0,0.4)' }} // Défaut si non fourni
+        onClick={(e) => { if (e.currentTarget === e.target) openChild(null) }} // Fermer au clic sur fond
+      ></div>
+      {/* Contenu centré (ou aligné selon props) */}
+      {/* Ajouter `relative` pour que le contenu soit au-dessus du fond */}
+      <div className={`relative w-full h-full flex ${flexAlignment}`}>
+        {/* Animer l'apparition du contenu */}
+        <div className={`transition-transform  w-full h-full duration-300 ease-out ${currentChild && hash === '#openChild' ? 'scale-100 opacity-100' : 'scale-95 opacity-0'}`}>
+          {currentChild}
+        </div>
       </div>
-    );
+    </div>
+  );
 }
 
 // --- Composant Frame ---
 function Frame({ children }: { children: React.ReactNode }) {
-   const { blur } = useChildViewer();
+  const { blur } = useChildViewer();
   // Utiliser flex, max-w-6xl (ou 7xl), mx-auto
   // Appliquer le filtre blur ici
   return (
@@ -185,17 +197,12 @@ function Bottombar({ children }: { children: React.ReactNode }) {
 
 // --- Composant Content ---
 function Content({ children }: { children: React.ReactNode }) {
-  const { fetchOwnerStores, setCurrentStore } = useStore();
+  const {getCurrentStore } = useGlobalStore();
 
-   // Fetch initial store (logique inchangée)
-   useEffect(() => {
-        fetchOwnerStores({}).then(res => {
-            if (!res?.list) return;
-             // Sélectionner le premier store par défaut?
-             // Garder la logique de sélection du store [1] si voulue
-            setCurrentStore(res?.list[0] || res?.list[1]);
-        });
-    }, [fetchOwnerStores, setCurrentStore]); // Ajouter dépendances
+  // Fetch initial store (logique inchangée)
+  useEffect(() => {
+    getCurrentStore()
+  }, [getCurrentStore]); // Ajouter dépendances
 
   return (
     // Prend tout l'espace restant, overflow-y pour scroll vertical
@@ -205,7 +212,7 @@ function Content({ children }: { children: React.ReactNode }) {
     >
       {/* Conteneur interne pour padding, etc. */}
       <div id="page-content" className="w-full pb-24 sm:pb-8"> {/* Moins de padding bottom sur desktop */}
-         {/* <div className="corrige-le-bug-content-overflow-x" style={{ width: '1200px' }}></div> // Supprimer ce hack */}
+        {/* <div className="corrige-le-bug-content-overflow-x" style={{ width: '1200px' }}></div> // Supprimer ce hack */}
         {children}
       </div>
     </div>
@@ -218,7 +225,7 @@ function Logo() {
     // Ajouter padding et centrage pour la version sidebar réduite
     <div className="pt-5 pb-2.5 mb-2.5 flex justify-center md:justify-start"> {/* Ajuster padding/margin */}
       <a href="/" className="inline-block"> {/* Rendre cliquable */}
-        <img src={logoUrl} height={48} width={48} alt="logo" className="h-12 w-12"/> {/* Taille fixe? */}
+        <img src={logoUrl} height={48} width={48} alt="logo" className="h-12 w-12" /> {/* Taille fixe? */}
       </a>
     </div>
   );

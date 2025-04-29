@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { CategoryInterface } from "../../Interfaces/Interfaces";
 import { IoClose } from "react-icons/io5";
 import { useGetCategory } from "../../api/ReactSublymusApi";
-import { useStore } from "../../pages/stores/StoreStore";
+import { useGlobalStore } from "../../pages/stores/StoreStore";
 import { getImg } from "../Utils/StringFormater"; // Import de getImg
 import { useTranslation } from "react-i18next";
 import logger from "../../api/Logger";
@@ -29,12 +29,12 @@ function CategoryItemMini({
     onDelete
 }: CategoryItemMiniProps) {
     const { t } = useTranslation();
-    const { currentStore } = useStore();
+    const { currentStore } = useGlobalStore();
     const [category, setCategory] = useState(initialCategory);
 
     const { data: fetchedCategory, isLoading, isError } = useGetCategory({
-            category_id:!initialCategory ? category_id : undefined
-        },
+        category_id: !initialCategory ? category_id : undefined
+    },
         { enabled: !initialCategory && !!category_id }
     );
 

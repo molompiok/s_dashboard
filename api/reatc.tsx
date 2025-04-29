@@ -6,7 +6,7 @@ import { QueryClient, QueryClientProvider, useQuery, useMutation, UseQueryResult
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { SublymusApi, ApiError, BuildFormDataForFeaturesValuesParam, CreateProductParams } from './SublymusApi'; // Importer la classe et l'erreur
 import { useAuthStore } from '../pages/login/AuthStore'; // Pour le token
-import { useStore } from '../pages/stores/StoreStore'; // Pour l'URL du store
+import { useGlobalStore } from '../pages/stores/StoreStore'; // Pour l'URL du store
 import type {
     ListType, ProductInterface, CategoryInterface, UserInterface,
     CommandInterface, CommentInterface, DetailInterface, Inventory, Role, Favorite,
@@ -41,7 +41,7 @@ interface SublymusApiProviderProps {
 }
 export const SublymusApiProvider: React.FC<SublymusApiProviderProps> = ({ children }) => {
     const { user } = useAuthStore(); // Récupérer l'utilisateur (contient le token)
-    const { currentStore } = useStore(); // Récupérer le store actuel (contient l'URL)
+    const { currentStore } = useGlobalStore(); // Récupérer le store actuel (contient l'URL)
     const { t } = useTranslation();
     // Mémoriser l'instance de l'API pour éviter les re-créations inutiles
     const api = useMemo(() => {
@@ -84,7 +84,7 @@ export const useApi = (): SublymusApi => {
     const { t } = useTranslation();
     if (!context || !context.api) {
         // Tenter de récupérer le store actuel pour donner une meilleure erreur
-        const { currentStore, } = useStore.getState(); // Accès direct au store Zustand
+        const { currentStore, } = useGlobalStore.getState(); // Accès direct au store Zustand
         if (!currentStore?.url) {
             throw new Error(t('api.contextError.noStoreUrl')); // Nouvelle clé i18n
         }

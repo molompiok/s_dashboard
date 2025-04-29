@@ -4,7 +4,7 @@ import { ProductInterface, CategoryInterface } from '../../Interfaces/Interfaces
 import { getFileType, shortNumber, getId, limit, copyToClipboard } from '../Utils/functions';
 import { getImg } from '../Utils/StringFormater';
 import { getDefaultValues } from '../Utils/parseData';
-import { useStore } from '../../pages/stores/StoreStore';
+import { useGlobalStore } from '../../pages/stores/StoreStore';
 import { useTranslation } from 'react-i18next';
 import { useState, useEffect, useMemo } from 'react'; // Ajouter useEffect
 import { useDeleteProduct, useUpdateProduct, queryClient } from '../../api/ReactSublymusApi'; // ✅ Importer mutations
@@ -23,7 +23,7 @@ interface ProductRowItemProps {
 
 function ProductRowItem({ product, categoriesMap }: ProductRowItemProps) {
     const { t } = useTranslation();
-    const { currentStore } = useStore();
+    const { currentStore } = useGlobalStore();
     const { openChild } = useChildViewer(); // ✅ Hook pour popup
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [copiedId, setCopiedId] = useState(false);
@@ -55,7 +55,7 @@ function ProductRowItem({ product, categoriesMap }: ProductRowItemProps) {
         product.categories_id
             ?.map(id => categoriesMap?.get(id)?.name)
             .filter(Boolean) as string[] ?? []
-    , [product.categories_id, categoriesMap]);
+        , [product.categories_id, categoriesMap]);
 
     // --- Handlers ---
     const handleCopy = (textToCopy: string | undefined) => {
@@ -68,23 +68,23 @@ function ProductRowItem({ product, categoriesMap }: ProductRowItemProps) {
 
     const handleDelete = () => {
         setIsMenuOpen(false);
-         openChild(
-             <ChildViewer>
-                 <ConfirmDelete
-                     title={t('product.confirmDelete', { name: product.name })}
-                     onCancel={() => openChild(null)}
-                     onDelete={() => {
-                          deleteProductMutation.mutate({
-                            product_id:product.id
-                          },{
-                              onSuccess: () => { logger.info(`Product ${product.id} deleted`); openChild(null); },
-                              onError: (error) => { logger.error({ error }, `Failed to delete product ${product.id}`); openChild(null); }
-                          });
-                     }}
-                 />
-             </ChildViewer>,
-             { background: '#3455' }
-         );
+        openChild(
+            <ChildViewer>
+                <ConfirmDelete
+                    title={t('product.confirmDelete', { name: product.name })}
+                    onCancel={() => openChild(null)}
+                    onDelete={() => {
+                        deleteProductMutation.mutate({
+                            product_id: product.id
+                        }, {
+                            onSuccess: () => { logger.info(`Product ${product.id} deleted`); openChild(null); },
+                            onError: (error) => { logger.error({ error }, `Failed to delete product ${product.id}`); openChild(null); }
+                        });
+                    }}
+                />
+            </ChildViewer>,
+            { background: '#3455' }
+        );
     };
 
     const handleToggleVisibility = () => {
@@ -93,9 +93,9 @@ function ProductRowItem({ product, categoriesMap }: ProductRowItemProps) {
         setIsVisible(newVisibility); // Optimistic UI
 
         updateProductMutation.mutate({
-            product_id : product.id,
+            product_id: product.id,
             data: {
-                is_visible : newVisibility
+                is_visible: newVisibility
             }
         }, {
             onSuccess: () => { logger.info(`Product ${product.id} visibility updated to ${newVisibility}`); },
@@ -112,14 +112,14 @@ function ProductRowItem({ product, categoriesMap }: ProductRowItemProps) {
 
             {/* Image */}
             <a href={`/products/${product.id}`} className="flex-shrink-0 block w-12 h-12 sm:w-16 sm:h-16 rounded-md overflow-hidden bg-gray-100 border border-gray-200">
-                 {/* Gestion Erreur Image */}
-                { !imgError ? (
-                    fileType === 'image' ? ( <img src={src || NO_PICTURE} alt={product.name} loading="lazy" className="w-full h-full object-cover block" onError={() => setImgError(true)}/>)
-                    : fileType === 'video' ? ( <video muted autoPlay loop playsInline className="w-full h-full object-cover block" src={src || ''} onError={() => setImgError(true)} /> )
-                    : ( <img src={NO_PICTURE} alt="Placeholder" className="w-full h-full object-contain block p-2 opacity-50"/> )
-                 ) : (
-                     <img src={NO_PICTURE} alt={t('common.imageError')} className="w-full h-full object-contain block p-2 opacity-50" />
-                 )}
+                {/* Gestion Erreur Image */}
+                {!imgError ? (
+                    fileType === 'image' ? (<img src={src || NO_PICTURE} alt={product.name} loading="lazy" className="w-full h-full object-cover block" onError={() => setImgError(true)} />)
+                        : fileType === 'video' ? (<video muted autoPlay loop playsInline className="w-full h-full object-cover block" src={src || ''} onError={() => setImgError(true)} />)
+                            : (<img src={NO_PICTURE} alt="Placeholder" className="w-full h-full object-contain block p-2 opacity-50" />)
+                ) : (
+                    <img src={NO_PICTURE} alt={t('common.imageError')} className="w-full h-full object-contain block p-2 opacity-50" />
+                )}
             </a>
 
             {/* Nom & ID */}
@@ -133,8 +133,8 @@ function ProductRowItem({ product, categoriesMap }: ProductRowItemProps) {
                     ID: {getId(product.id)}
                     <IoCopyOutline className={`w-3 h-3 transition-all ${copiedId ? 'text-green-500 scale-110' : 'text-gray-400 opacity-0 group-hover:opacity-60'}`} />
                 </p>
-                 {/* Rating (peut être mis ici sur petit écran) */}
-                 <div className="flex min-[500px]:hidden flex-wrap gap-x-3 gap-y-1 mt-1 text-xs text-gray-600">
+                {/* Rating (peut être mis ici sur petit écran) */}
+                <div className="flex min-[500px]:hidden flex-wrap gap-x-3 gap-y-1 mt-1 text-xs text-gray-600">
                     <span className="inline-flex gap-1 items-center"><IoStarHalf className="text-amber-500" />{(product.rating || 0).toFixed(1)}</span>
                     <span className="inline-flex gap-1 items-center"><IoPeopleSharp />{shortNumber(product.comment_count || 0)}</span>
                 </div>
@@ -151,7 +151,7 @@ function ProductRowItem({ product, categoriesMap }: ProductRowItemProps) {
             </div>
 
             {/* Rating (caché en dessous de 500px) */}
-             <div className="hidden min-[500px]:flex min-[500px]:items-center min-[500px]:flex-col min-[850px]:flex-row flex-wrap gap-x-3 gap-y-1 text-xs text-gray-600 flex-shrink-0 w-16 justify-end">
+            <div className="hidden min-[500px]:flex min-[500px]:items-center min-[500px]:flex-col min-[850px]:flex-row flex-wrap gap-x-3 gap-y-1 text-xs text-gray-600 flex-shrink-0 w-16 justify-end">
                 <span className="inline-flex gap-1 items-center"><IoStarHalf className="text-amber-500" />{(product.rating || 0).toFixed(1)}</span>
                 <span className="inline-flex gap-1 items-center"><IoPeopleSharp />{shortNumber(product.comment_count || 0)}</span>
             </div>
@@ -165,17 +165,16 @@ function ProductRowItem({ product, categoriesMap }: ProductRowItemProps) {
             {/* Stock & Visibilité (lg+) */}
             <div className="hidden ml-4 lg:flex items-center justify-end gap-2 flex-shrink-0 w-32 text-right"> {/* justify-end */}
                 {/* Stock */}
-                <span className={`text-xs font-medium px-1.5 py-0.5 rounded whitespace-nowrap ${
-                     stockStatus === 'in_stock' ? 'bg-green-100 text-green-700' :
-                     stockStatus === 'low_stock' ? 'bg-yellow-100 text-yellow-700' :
-                     'bg-red-100 text-red-700'
-                }`} title={t(`productList.stockStatus.${stockStatus}`, { count: stockLevel })}>
-                    {stockStatus === 'in_stock' ? t('productList.inStock') : stockStatus === 'low_stock' ? t('productList.lowStockShort', { count: stockLevel }) : t('productList.outOfStock')} 
+                <span className={`text-xs font-medium px-1.5 py-0.5 rounded whitespace-nowrap ${stockStatus === 'in_stock' ? 'bg-green-100 text-green-700' :
+                        stockStatus === 'low_stock' ? 'bg-yellow-100 text-yellow-700' :
+                            'bg-red-100 text-red-700'
+                    }`} title={t(`productList.stockStatus.${stockStatus}`, { count: stockLevel })}>
+                    {stockStatus === 'in_stock' ? t('productList.inStock') : stockStatus === 'low_stock' ? t('productList.lowStockShort', { count: stockLevel }) : t('productList.outOfStock')}
                 </span>
-                 {/* Visibilité */}
-                 <button onClick={handleToggleVisibility} title={isVisible ? t('productList.setHidden') : t('productList.setVisible')} className="p-1 rounded-full hover:bg-gray-100">
-                     {isVisible ? <IoEyeOutline className="w-4 h-4 text-green-500" /> : <IoEyeOffOutline className="w-4 h-4 text-gray-400" />}
-                 </button>
+                {/* Visibilité */}
+                <button onClick={handleToggleVisibility} title={isVisible ? t('productList.setHidden') : t('productList.setVisible')} className="p-1 rounded-full hover:bg-gray-100">
+                    {isVisible ? <IoEyeOutline className="w-4 h-4 text-green-500" /> : <IoEyeOffOutline className="w-4 h-4 text-gray-400" />}
+                </button>
             </div>
 
             {/* Actions Menu */}
@@ -184,22 +183,22 @@ function ProductRowItem({ product, categoriesMap }: ProductRowItemProps) {
                     <IoEllipsisVertical />
                 </button>
                 {isMenuOpen && (
-                     <div className="absolute right-0 mt-1 w-48 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-20 py-1" role="menu" onClick={(e) => e.stopPropagation()}>
+                    <div className="absolute right-0 mt-1 w-48 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-20 py-1" role="menu" onClick={(e) => e.stopPropagation()}>
                         {/* Lien Modifier */}
-                         <a href={`/products/${product.id}`} role="menuitem" className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 w-full text-left">
-                             <IoPencil className="w-4 h-4" /> {t('common.edit')}
-                         </a>
-                          {/* Action Visibilité */}
-                          <button onClick={handleToggleVisibility} role="menuitem" className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 w-full text-left disabled:opacity-50" disabled={updateProductMutation.isPending}>
-                              {isVisible ? <IoEyeOffOutline className="w-4 h-4" /> : <IoEyeOutline className="w-4 h-4" />}
-                              {isVisible ? t('productList.setHidden') : t('productList.setVisible')}
-                          </button>
-                           {/* Action Supprimer */}
-                           <button onClick={handleDelete} role="menuitem" className="flex items-center gap-2 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 w-full text-left disabled:opacity-50" disabled={deleteProductMutation.isPending}>
-                               <IoTrash className="w-4 h-4" /> {t('common.delete')}
-                           </button>
+                        <a href={`/products/${product.id}`} role="menuitem" className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 w-full text-left">
+                            <IoPencil className="w-4 h-4" /> {t('common.edit')}
+                        </a>
+                        {/* Action Visibilité */}
+                        <button onClick={handleToggleVisibility} role="menuitem" className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 w-full text-left disabled:opacity-50" disabled={updateProductMutation.isPending}>
+                            {isVisible ? <IoEyeOffOutline className="w-4 h-4" /> : <IoEyeOutline className="w-4 h-4" />}
+                            {isVisible ? t('productList.setHidden') : t('productList.setVisible')}
+                        </button>
+                        {/* Action Supprimer */}
+                        <button onClick={handleDelete} role="menuitem" className="flex items-center gap-2 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 w-full text-left disabled:opacity-50" disabled={deleteProductMutation.isPending}>
+                            <IoTrash className="w-4 h-4" /> {t('common.delete')}
+                        </button>
                     </div>
-                 )}
+                )}
             </div>
         </div>
     );

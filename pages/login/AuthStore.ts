@@ -3,12 +3,12 @@ import { create } from "zustand";
 import { UserInterface } from "../../Interfaces/Interfaces";
 import { Api_host, Host } from "../../renderer/+config";
 import { combine } from "zustand/middleware";
-import { useStore } from "../stores/StoreStore";
+import { useGlobalStore } from "../stores/StoreStore";
 
 export const useAuthStore = create(combine({
-    user: undefined as UserInterface|undefined,
-},(set) => ({
-    async updateUser({ name, photos,user_id }:{user_id?:string,name?:string,photos?:(string|Blob)[]}) {
+    user: undefined as UserInterface | undefined,
+}, (set) => ({
+    async updateUser({ name, photos, user_id }: { user_id?: string, name?: string, photos?: (string | Blob)[] }) {
 
         const fromData = new FormData();
         if (name) fromData.append('name', name);
@@ -17,7 +17,7 @@ export const useAuthStore = create(combine({
         } else {
             return
         }
-        user_id && fromData.append('id',user_id)
+        user_id && fromData.append('id', user_id)
         fromData.append('photos', '["photos_0"]');
         const response = await fetch(`${Host}/edit_me`, {
             method: 'POST',
@@ -105,17 +105,16 @@ export const useAuthStore = create(combine({
     getHeaders() {
         let user = useAuthStore.getState().user as UserInterface;
         if (!user) return
-        
-        const store = useStore.getState().currentStore;
-        console.log({store});
-        
-        if(!store) return;
-        store.url = store?.url||Api_host
-        
+
+        const store = useGlobalStore.getState().currentStore;
+        console.log({ store });
+
+        if (!store) return;
+        store.url = store?.url || Api_host
+
         const headers = new Headers();
-        headers.append("Authorization", `Bearer ${
-            'oat_MQ.OEt4d1ZlWFNKZndjb0xHV2EtUkd2SXByQ01PTTRVVVp3RjkwaVJDczIzMDM0MDE5MjU'// a recuperer dynamiquement
-        }`);
-        return {headers ,user,store}
+        headers.append("Authorization", `Bearer ${'oat_MQ.OEt4d1ZlWFNKZndjb0xHV2EtUkd2SXByQ01PTTRVVVp3RjkwaVJDczIzMDM0MDE5MjU'// a recuperer dynamiquement
+            }`);
+        return { headers, user, store }
     }
 })));

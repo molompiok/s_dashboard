@@ -6,7 +6,7 @@ import { PeriodType, StatsData, UserInterface } from '../../../../Interfaces/Int
 import { CommandeList } from '../../../../Components/CommandesList/CommandesList'; // Garder CommandeList
 import { Mail, Phone, Star, ShoppingCart, MessageCircle, CreditCard, CalendarClock, UserCircle } from 'lucide-react'; // Utiliser Lucide
 import { usePageContext } from '../../../../renderer/usePageContext';
-import { getTransmit, useStore } from '../../../stores/StoreStore'; // Garder Store
+import { getTransmit, useGlobalStore } from '../../../stores/StoreStore'; // Garder Store
 // import { useClientStore } from '../ClientStore'; // Remplacé par hooks API
 import { useGetUsers, useGetStats } from '../../../../api/ReactSublymusApi'; // ✅ Importer hooks API
 import IMask from 'imask';
@@ -27,7 +27,7 @@ export { Page };
 function Page() {
     const { t, i18n } = useTranslation(); // ✅ i18n
     const { routeParams } = usePageContext();
-    const { currentStore } = useStore();
+    const { currentStore } = useGlobalStore();
     const userId = routeParams?.['id'];
     const { nextPage } = useMyLocation()
     // --- State ---
@@ -150,7 +150,7 @@ function Page() {
                         >
                             {!user.photo?.[0] && (user.full_name?.substring(0, 2).toUpperCase() || '?')}
                         </div>
-                        
+
                         {/* Statut Badge (optionnel) */}
                         <span
                             className="absolute bottom-1 right-1 block h-4 w-4 rounded-full ring-2 ring-white"

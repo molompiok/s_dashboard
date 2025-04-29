@@ -1,5 +1,7 @@
 {
     "common": {
+        "creating": "Création...",
+        "next": "Suivant",
         "loading": "Chargement...",
         "error": "Erreur",
         "success": "Succès",
@@ -19,6 +21,7 @@
         "anonymous": "Anonyme",
         "copy": "Copier",
         "copyId": "Copier l'ID",
+        "copied": "Copié !",
         "unknownProduct": "Produit inconnu",
         "add": "Ajouter",
         "actions": "Actions",
@@ -31,12 +34,109 @@
         "moveUp": "Monter",
         "moveDown": "Descendre",
         "imageError": "Image non chargée",
-        "visible": "Visibilité",
+        "visibility": "Visibilité",
+        "visible": "Visible",
+        "hidden": "Caché",
         "notProvided": "Non fourni",
         "locale": "fr-FR",
         "open": "Ouvrir",
-        "seeLess": "Voir moins"
+        "seeLess": "Voir moins",
+        "saveChanges": "Enregistrer les modifications",
+        "select": "Sélectionner...",
+        "noOptions": "Aucune option"
     },
+    "settingsRegional": {
+        "description": "Configurez la langue et la devise par défaut de votre boutique.",
+        "defaultLocaleLabel": "Langue par défaut",
+        "defaultLocaleHelp": "Langue principale de votre boutique et utilisée si la détection automatique échoue.",
+        "defaultCurrencyLabel": "Devise par défaut",
+        "defaultCurrencyHelp": "Devise affichée par défaut pour vos produits. D'autres devises peuvent être activées via les options de paiement."
+    },
+    "dangerZone": {
+        "description": "Actions irréversibles concernant votre boutique.",
+        "deleteStoreTitle": "Supprimer la Boutique",
+        "deleteWarning": "Cette action est définitive et supprimera toutes les données de votre boutique (produits, commandes, clients...).",
+        "confirmLabel": "Pour confirmer, veuillez taper le nom de votre boutique : {{name}}",
+        "deleteButtonConfirm": "Supprimer définitivement cette boutique",
+        "deleteSuccessMessage": "La demande de suppression de la boutique a été enregistrée."
+    },
+    "domains": {
+        "description": "Gérez les adresses web (domaines) de votre boutique.",
+        "sublymusDomainLabel": "Votre Domaine Sublymus",
+        "sublymusDomainHelp": "Votre boutique est toujours accessible via cette adresse.",
+        "customDomainsLabel": "Domaines Personnalisés",
+        "noCustomDomains": "Aucun domaine personnalisé ajouté.",
+        "addPlaceholder": "votredomaine.com",
+        "dnsInstructionsTitle": "Instructions DNS",
+        "dnsInstructions1": "Pour connecter votre domaine personnalisé, vous devez configurer ses enregistrements DNS chez votre fournisseur de domaine (OVH, GoDaddy, etc.).",
+        "dnsInstructions2": "Créez un enregistrement de type",
+        "dnsInstructions3": "pointant vers",
+        "dnsInstructions4": "La propagation des DNS peut prendre jusqu'à 48 heures.",
+        "confirmDelete": "Supprimer le domaine {{domain}} de cette boutique ?",
+        "validation": {
+            "nameRequired": "Le nom de domaine est requis.",
+            "invalidFormat": "Le format du nom de domaine est invalide.",
+            "alreadyExists": "Ce domaine est déjà ajouté à cette boutique."
+        }
+    },
+    "settingsAppearance": {
+        "description": "Personnalisez l'apparence visuelle de votre boutique.",
+        "logoLabel": "Logo de la Boutique",
+        "changeLogo": "Changer le logo",
+        "uploadLogo": "Télécharger un logo",
+        "logoHelp": "Format recommandé : PNG, SVG, ou JPG carré (min. 200x200px).",
+        "faviconLabel": "Favicon",
+        "changeFavicon": "Changer le favicon",
+        "uploadFavicon": "Télécharger un favicon",
+        "faviconHelp": "Icône affichée dans l'onglet du navigateur. Format ICO, PNG ou SVG (32x32px recommandé).",
+        "coverLabel": "Image de Couverture",
+        "changeCover": "Changer l'image",
+        "uploadCover": "Télécharger une image",
+        "coverHelp": "Image principale pour les bannières ou l'en-tête. Format JPG, PNG, WEBP (Ratio 16:9 ou 3:1 recommandé)."
+    },
+    "subscriptionPlan": {
+        "description": "Consultez les détails de votre abonnement actuel et gérez votre forfait.",
+        "statusExpired": "Abonnement Expiré !",
+        "expiredMessage": "Votre boutique n'est peut-être plus accessible. Veuillez renouveler votre abonnement.",
+        "statusExpiresSoon": "Votre abonnement expire bientôt !",
+        "expiresSoonMessage": "Pensez à renouveler votre abonnement pour éviter toute interruption de service.",
+        "currentPlanLabel": "Forfait Actuel",
+        "renewButton": "Renouveler",
+        "changeButton": "Changer de Forfait",
+        "expiresOnLabel": "Expire le",
+        "planLimitsTitle": "Limites du Forfait Actuel",
+        "limitItem": "{{item}} : {{limit, number}}",
+        "limitItem_unlimited": "{{item}} : Illimité",
+        "changePlanAction": "Action de changement de plan à implémenter (ex: redirection vers /billing)."
+    },
+    "settingsPage": {
+        "title": "Paramètres - {{name}}",
+        "sidebar": {
+            "general": "Général",
+            "appearance": "Apparence",
+            "plan": "Forfait & Abonnement",
+            "domains": "Domaines",
+            "legal": "Infos Légales & Contact",
+            "regional": "Options Régionales",
+            "danger": "Zone de Danger"
+        }
+    },
+    "settingsGeneral": {
+    "description": "Configurez les informations générales de votre boutique.",
+    "nameLabel": "Nom de la boutique",
+    "titleLabel": "Titre de la boutique (SEO)",
+    "titleHelp": "Affiché dans l'onglet du navigateur et les résultats de recherche.",
+    "storeDescriptionLabel": "Description courte de la boutique",
+    "storeDescriptionHelp": "Utilisée pour le référencement (méta description).",
+    "timezoneLabel": "Fuseau Horaire",
+    "timezoneHelp": "Assure l'exactitude des heures de commande et de planification.",
+    "statusLabel": "Statut de la Boutique",
+    "statusHelp": "Le statut est déterminé par votre abonnement.",
+    "validation": {
+      "nameRequired": "Le nom de la boutique est requis (3 caractères min).",
+      "titleRequired": "Le titre de la boutique est requis (3 caractères min)."
+    }
+  },
     "clientList": {
         "title": "Liste des Clients",
         "searchPlaceholder": "Rechercher par Nom, Email, #id...",
@@ -94,6 +194,7 @@
         "noCommentsDesc": "Les commentaires laissés par cet utilisateur sur vos produits seront listés ici."
     },
     "storesPage": {
+        "notFound": "Boutique non trouvée.",
         "title": "Mes Boutiques",
         "addStoreButton": "Créer une boutique",
         "searchPlaceholder": "Rechercher par nom...",
@@ -160,6 +261,7 @@
     "error_occurred": "Une erreur est survenue. Veuillez réessayer plus tard.",
     "invalid_value": "La valeur du champ \"{{ key }}\" est invalide : {{ value }}",
     "api": {
+        "missingParam": "Le paramètre '{{param}}' est requis.",
         "apiUrlRequired": "L'URL de l'API est requise pour initialiser le client.",
         "parseError": "Erreur lors de l'analyse de la réponse de l'API.",
         "networkError": "Erreur réseau ou impossible de joindre l'API.",
@@ -176,6 +278,25 @@
         "contextError": {
             "noStoreUrl": "Erreur : Impossible d'initialiser l'API. Aucune URL de boutique sélectionnée.",
             "providerMissing": "Erreur : Le contexte de l'API Sublymus n'est pas disponible. Assurez-vous que l'application est enveloppée dans SublymusApiProvider."
+        }
+    },
+    "settingsLegal": {
+        "description": "Configurez les informations légales et de contact de votre boutique.",
+        "legalNameLabel": "Nom Légal de l'Entreprise",
+        "legalIdLabel": "Numéro d'Identification (RCCM, SIRET...)",
+        "legalIdPlaceholder": "Ex: CI-ABJ-2024-B-12345",
+        "addressTitle": "Adresse Physique de l'Entreprise",
+        "addressStreetLabel": "Rue et numéro",
+        "addressCityLabel": "Ville",
+        "addressZipLabel": "Code Postal",
+        "addressCountryLabel": "Pays",
+        "contactTitle": "Informations de Contact Publiques",
+        "publicEmailLabel": "Email de Contact",
+        "publicEmailHelp": "Affiché sur votre boutique pour les clients.",
+        "publicPhoneLabel": "Téléphone de Contact",
+        "publicPhoneHelp": "Affiché sur votre boutique.",
+        "validation": {
+            "emailInvalid": "Format d'email invalide."
         }
     },
     "auth": {
@@ -488,7 +609,34 @@
         "updateFailed": "La mise à jour du point d'inventaire a échoué.",
         "deleteSuccess": "Point d'inventaire supprimé avec succès.",
         "deleteFailed": "La suppression du point d'inventaire a échoué.",
-        "idRequired": "L'identifiant du point d'inventaire est requis."
+        "idRequired": "L'identifiant du point d'inventaire est requis.",
+        "sectionTitle": "Points de Vente / Stocks",
+        "addButton": "Ajouter un point de vente",
+        "addPopupTitle": "Ajouter un Point de Vente",
+        "editPopupTitle": "Modifier le Point de Vente",
+        "noInventories": "Aucun point de vente configuré pour le moment.",
+        "fetchError": "Erreur lors du chargement des points de vente.",
+        "nameLabel": "Nom du point de vente",
+        "namePlaceholder": "Ex: Entrepôt Principal, Boutique Centre-Ville",
+        "emailLabel": "Email de contact",
+        "emailPlaceholder": "contact@pointdevente.com",
+        "addressLabel": "Adresse / Nom",
+        "addressPlaceholder": "Ex: 123 Rue Principale, Centre Commercial...",
+        "latitudeLabel": "Latitude",
+        "longitudeLabel": "Longitude",
+        "imagesLabel": "Images du lieu",
+        "addImageButton": "Ajouter des images",
+        "confirmDelete": "Supprimer le point de vente \"{{name}}\" ?",
+        "thisInventory": "ce point de vente",
+        "validation": {
+            "nameRequired": "Le nom du point de vente est requis (3 caractères min).",
+            "emailInvalid": "L'adresse email n'est pas valide.",
+            "latitudeInvalid": "La latitude doit être un nombre entre -90 et 90.",
+            "longitudeInvalid": "La longitude doit être un nombre entre -180 et 180.",
+            "imageRequired": "Une image est requise pour le point de vente."
+        },
+        "selectImagePrompt": "Choisir une image",
+        "noEmail": "Aucun email fourni"
     },
     "collaborator": {
         "userNotFound": "Utilisateur avec l'email {{email}} non trouvé.",
@@ -659,56 +807,27 @@
         "editValuePopupTitle": "Modifier Prix/Stock pour {{name}}"
     },
     "themeCard": {
-     "free": "Gratuit",
-     "selectButton": "Choisir"
- },
-    "themeManager": {
-    "currentThemeTitle": "Thème Actuel",
-    "changeThemeButton": "Changer de thème",
-    "activeStatus": "Actif",
-    "customizeOptions": "Options de Personnalisation",
-    "availableThemesTitle": "Thèmes Disponibles",
-    "noOtherThemes": "Aucun autre thème disponible pour le moment.",
-    "noThemeAssigned": "Aucun thème n'est actuellement assigné à cette boutique."
- },
- "themeOptions": { 
-    "color": "Couleurs",
-    "text": "Textes & Polices",
-    "layout": "Mise en page",
-    "ads": "Publicités",
-    "faq": "FAQ",
-    "blog": "Blog"
- },
-  "themeFeatures": { 
-     "multi_category": "Multi-catégories",
-     "responsive": "Responsive",
-     "product_zoom": "Zoom Produit",
-     "3d_viewer": "Visionneuse 3D",
-     "ar_support": "Support AR",
-     "marketplace_layout": "Layout Marketplace",
-     "single_product_focus": "Focus Produit Unique",
-     "food": "Alimentation",
-     "real_estate": "Immobilier"
- },
- {
-    "themeManager": {
-       "currentThemeTitle": "Thème Actuel",
-       "changeThemeButton": "Changer de thème",
-       "activeStatus": "Actif",
-       "customizeOptions": "Options de Personnalisation",
-       "availableThemesTitle": "Thèmes Disponibles",
-       "noOtherThemes": "Aucun autre thème disponible pour le moment.",
-       "noThemeAssigned": "Aucun thème n'est actuellement assigné à cette boutique."
+        "free": "Gratuit",
+        "selectButton": "Choisir"
     },
-    "themeOptions": { // Labels pour les boutons de personnalisation
-       "color": "Couleurs",
-       "text": "Textes & Polices",
-       "layout": "Mise en page",
-       "ads": "Publicités",
-       "faq": "FAQ",
-       "blog": "Blog"
+    "themeManager": {
+        "currentThemeTitle": "Thème Actuel",
+        "changeThemeButton": "Changer de thème",
+        "activeStatus": "Actif",
+        "customizeOptions": "Options de Personnalisation",
+        "availableThemesTitle": "Thèmes Disponibles",
+        "noOtherThemes": "Aucun autre thème disponible pour le moment.",
+        "noThemeAssigned": "Aucun thème n'est actuellement assigné à cette boutique."
     },
-     "themeFeatures": { // Tags pour les features des thèmes
+    "themeOptions": {
+        "color": "Couleurs",
+        "text": "Textes & Polices",
+        "layout": "Mise en page",
+        "ads": "Publicités",
+        "faq": "FAQ",
+        "blog": "Blog"
+    },
+    "themeFeatures": {
         "multi_category": "Multi-catégories",
         "responsive": "Responsive",
         "product_zoom": "Zoom Produit",
@@ -719,10 +838,6 @@
         "food": "Alimentation",
         "real_estate": "Immobilier"
     },
-    "themeCard": {
-        "free": "Gratuit",
-        "selectButton": "Choisir" // Ou "Aperçu"
-    },
     "pagination": {
         "pageInfo": "Page {{currentPage}} sur {{lastPage}}",
         "totalItems": "{{total}} éléments",
@@ -731,6 +846,43 @@
         "next": "Suivant",
         "pageInfoFull": "Affichage de {{first}} à {{last}} sur {{total}} résultats",
         "pageInfoShort": "Page {{currentPage}} sur {{lastPage}}"
+    },
+    "storeCreate": {
+        "mainTitle": "Créez votre boutique en ligne",
+        "stepName": "Nom",
+        "stepLogo": "Logo",
+        "stepCover": "Couverture",
+        "stepInfo": "Infos",
+        "stepNameTitle": "Choisissez le nom de votre boutique",
+        "nameLabel": "Nom de la boutique (unique)",
+        "namePlaceholder": "Ex: ma-super-boutique",
+        "validation": {
+            "nameMinLength": "Le nom doit faire au moins 3 caractères.",
+            "nameChecking": "Vérification du nom...",
+            "nameAvailable": "Ce nom est disponible !",
+            "nameUnavailable": "Ce nom n'est pas disponible.",
+            "nameCheckError": "Erreur lors de la vérification.",
+            "logoRequired": "Le logo est requis.",
+            "coverRequired": "L'image de couverture est requise.",
+            "titleRequired": "Le titre est requis.",
+            "descriptionRequired": "La description est requise.",
+            "currentStoreName": "C'est le nom de la boutique actuelle"
+        },
+        "stepLogoTitle": "Ajoutez le logo de votre boutique",
+        "logoLabel": "Logo",
+        "logoHelpText": "Format carré recommandé (ex: 512x512px).",
+        "stepCoverTitle": "Ajoutez une image de couverture",
+        "coverLabel": "Image de couverture",
+        "coverHelpText": "Image large pour l'en-tête (ex: 1500x500px).",
+        "stepInfoTitle": "Quelques informations supplémentaires",
+        "titleLabel": "Titre de la boutique",
+        "titlePlaceholder": "Ex: Ma Super Boutique - Vêtements Tendance",
+        "descriptionLabel": "Description courte",
+        "descriptionPlaceholder": "Décrivez votre boutique en quelques mots...",
+        "googlePreviewLabel": "Aperçu Google",
+        "previewDefaultTitle": "Titre de Votre Boutique",
+        "previewDefaultDesc": "Description de votre boutique qui apparaîtra ici...",
+        "creationError": "Une erreur est survenue lors de la création."
     },
     "dashboard": {
         "home": "Accueil",

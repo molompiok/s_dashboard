@@ -15,7 +15,7 @@ import { getImg } from '../Utils/StringFormater';
 import { getFileType } from '../Utils/functions';
 import { NEW_VIEW } from '../Utils/constants';
 import { ConfirmDelete } from '../Confirm/ConfirmDelete';
-import { useStore } from '../../pages/stores/StoreStore';
+import { useGlobalStore } from '../../pages/stores/StoreStore';
 import { globalActionZust } from '../../renderer/AppStore/globalActionZust';
 import { useTranslation } from 'react-i18next';
 
@@ -29,15 +29,15 @@ function SwiperProducts({ views, setViews }: { views: (string | Blob)[], setView
   const [requireDetele, setRequireDetele] = useState(-1);
   const [mouseMove, setMouseMove] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const { currentStore } = useStore()
- 
+  const { currentStore } = useGlobalStore()
+
   const { t } = useTranslation()
   useEffect(() => {
     setLocalViews(views.length > 0 ? views : [NEW_VIEW])
   }, [views]);
 
 
-  
+
 
   useEffect(() => {
     setRequireDetele(-1);
