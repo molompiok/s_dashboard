@@ -7,7 +7,7 @@ import { IoClose, IoCloudUploadOutline, IoPencil } from 'react-icons/io5';
 import { getImg } from '../Utils/StringFormater';
 import { useGlobalStore } from '../../pages/stores/StoreStore';
 import { RiImageEditFill } from 'react-icons/ri';
-import { Comfirm } from '../Confirm/Confirm'; // Gardé
+import { Confirm } from '../Confirm/Confirm'; // Gardé
 import { ValuePricing } from '../ValuePricing/ValuePricing'; // Gardé
 import { useTranslation } from 'react-i18next'; // ✅ i18n
 import { ChildViewer } from '../ChildViewer/ChildViewer';
@@ -161,7 +161,7 @@ function FV_IconText_Info({ value: initialValue, feature, onChange, onCancel }: 
             <ValuePricing value={v} addToValue={handlePricingChange} />
 
             {/* Confirmation */}
-            <Comfirm
+            <Confirm
                 canConfirm={!textError && !imageError} // Actif si pas d'erreurs locales
                 onCancel={onCancel}
                 confirm={t('common.ok')}

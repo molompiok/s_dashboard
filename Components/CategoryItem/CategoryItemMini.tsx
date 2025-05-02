@@ -76,6 +76,7 @@ function CategoryItemMini({
         ? { href: `/categories/${category.id}` }
         : { onClick: onClick ? handleClick : undefined, role: onClick ? 'button' : undefined, tabIndex: onClick ? 0 : undefined };
 
+        
     return (
         <ContainerElement
             {...containerProps}
@@ -85,19 +86,19 @@ function CategoryItemMini({
             <div
                 className={`absolute -top-2 -right-2 flex items-center justify-center text-white text-[10px] font-semibold rounded-full shadow z-10 transition-opacity
                     ${onDelete
-                        ? 'w-6 h-6 bg-red-500 hover:bg-red-600 cursor-pointer opacity-100'
+                        ? 'w-6 h-6 bg-red-100 hover:bg-red-300 cursor-pointer opacity-100'
                         : 'min-w-[20px] h-5 px-1.5 bg-blue-400 cursor-default'
                     }`}
                 onClick={onDelete ? (e: any) => handleDelete(e) : undefined}
                 title={onDelete ? t('common.delete') : undefined}
                 {...(onDelete ? { type: 'button' } : {})}
             >
-                {onDelete ? <IoClose size={14} /> : (productCount ?? '?')}
+                {onDelete && productCount !== undefined ? <IoClose className="text-red-500" size={18} /> : (productCount ?? '?')}
             </div>
 
             {/* Image (avec style dynamique) */}
             <div
-                className="w-full aspect-square rounded bg-contain bg-center bg-no-repeat mb-1 bg-gray-100" // bg-gray-100 comme fallback
+                className="w-full aspect-square rounded bg-contain bg-center bg-no-repeat mb-1 -gray-100" // bg-gray-100 comme fallback
                 style={imageStyle} // Appliquer le style backgroundImage
             ></div>
 

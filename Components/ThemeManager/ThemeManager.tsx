@@ -6,7 +6,7 @@ import { getImg } from "../Utils/StringFormater";
 import { useGlobalStore } from "../../pages/stores/StoreStore"; // Pour l'URL de base des images?
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { FreeMode, Navigation } from 'swiper/modules'; // Ajouter Navigation
-import { IoColorPaletteOutline, IoTextOutline, IoMegaphoneOutline, IoChatbubblesOutline, IoNewspaperOutline, IoChevronForward, IoBrushOutline, IoCheckmarkCircle, IoChevronBack } from "react-icons/io5"; // Icônes pour options
+import { IoColorPaletteOutline, IoTextOutline, IoMegaphoneOutline, IoChatbubblesOutline, IoNewspaperOutline, IoChevronForward, IoBrushOutline, IoCheckmarkCircle, IoChevronBack, IoLanguageOutline, IoGlobeOutline, IoTicketOutline, IoStorefrontOutline } from "react-icons/io5"; // Icônes pour options
 // Importer le hook pour récupérer la liste des thèmes disponibles (si nécessaire)
 // import { useGetAvailableThemes } from "../../api/ReactSublymusApi"; // Exemple
 import logger from "../../api/Logger";
@@ -18,23 +18,24 @@ import 'swiper/css/navigation'; // Ajouter CSS Navigation
 import { JSX, useState } from "react";
 import { NO_PICTURE } from "../Utils/constants";
 import { Layout } from "lucide-react";
+import { useGetThemes } from "../../api/ReactSublymusApi";
+import { Server_Host } from "../../renderer/+config";
 
-// Données statiques pour les thèmes récents/disponibles (à remplacer par API)
-const recentThemesPlaceholder: Partial<ThemeInterface>[] = [
-    { id: 'theme-classy-v1', name: 'Thème Élégant', preview_images: ['/res/theme-previews/elegant.jpg'], is_free: true, is_premium: false },
-    { id: 'theme-minimal-dark', name: 'Minimaliste Sombre', preview_images: ['/res/theme-previews/minimal-dark.jpg'], is_free: false, is_premium: true, price: 15000 },
-    { id: 'theme-foodie', name: 'Saveurs Gourmandes', preview_images: ['/res/theme-previews/foodie.jpg'], is_free: true, is_premium: false },
-    { id: 'theme-techy', name: 'Gadget Zone', preview_images: ['/res/theme-previews/techy.jpg'], is_free: false, is_premium: false, price: 5000 }, // Exemple non premium payant
-];
+
 
 // Icônes pour les options de personnalisation
-const themeOptionIcons: Record<string, JSX.Element> = {
-    color: <IoColorPaletteOutline />,
-    text: <IoTextOutline />,
-    disposition: <Layout className="w-5 h-5 text-slate-600" />,
-    pub: <IoMegaphoneOutline />,
-    faq: <IoChatbubblesOutline />,
-    blog: <IoNewspaperOutline />,
+const themeSectionIcons: Record<string, JSX.Element> = {
+    general: <IoStorefrontOutline />,
+    colors: <IoColorPaletteOutline />,
+    typography: <IoTextOutline />,
+    layout: <Layout className="w-8 h-8 mb-4 text-slate-600" />,
+    header: <IoNewspaperOutline />, // Choisir une icône pertinente pour header
+    footer: <IoNewspaperOutline />, // Choisir une icône pertinente pour footer (peut être la même?)
+    plan: <IoTicketOutline />, // Icône pour la section Forfait (si on met un lien depuis ThemeManager?)
+    domains: <IoGlobeOutline />, // Icône pour Domaines
+    legal: <IoNewspaperOutline />, // Icône pour Légal
+    regional: <IoLanguageOutline />, // Icône pour Régional
+    // ... autres sections ...
 };
 
 interface ThemeManagerProps {
@@ -45,7 +46,7 @@ export function ThemeManager({ store }: ThemeManagerProps) {
     const { t } = useTranslation();
     const { currentStore: globalCurrentStore } = useGlobalStore(); // Pour l'URL base image? Ou utiliser store.url?
     // TODO: Remplacer par la vraie logique de récupération du thème actuel
-    const currentTheme: Partial<ThemeInterface> | null = { // Données Placeholder
+    const currentTheme: Partial<ThemeInterface> | null = store.currentTheme || { // Données Placeholder
         id: store.current_theme_id ?? 'theme-classy-v1',
         name: 'Thème Élégant (Actuel)',
         description: 'Un thème versatile et moderne pour mettre en valeur vos produits avec classe.',
@@ -54,32 +55,41 @@ export function ThemeManager({ store }: ThemeManagerProps) {
         is_active: true // Supposons actif s'il est le current_theme_id
     };
     // TODO: Remplacer par un appel API pour les thèmes disponibles/récents
-    // const { data: availableThemes, isLoading: isLoadingThemes } = useGetAvailableThemes();
-    const availableThemes = recentThemesPlaceholder;
-    const isLoadingThemes = false;
+    const { data: themes, isLoading: isLoadingThemes } = useGetThemes();
+
+    const availableThemes = themes?.list || [];
+    // const isLoadingThemes = false;
+
+    console.log({ currentTheme, store });
 
 
     // Options de personnalisation (peut venir de l'API du thème plus tard)
-    const customizationOptions = [
-        { key: 'color', labelKey: 'themeOptions.color', icon: themeOptionIcons.color },
-        { key: 'text', labelKey: 'themeOptions.text', icon: themeOptionIcons.text },
-        { key: 'disposition', labelKey: 'themeOptions.layout', icon: themeOptionIcons.disposition },
-        { key: 'pub', labelKey: 'themeOptions.ads', icon: themeOptionIcons.pub },
-        { key: 'faq', labelKey: 'themeOptions.faq', icon: themeOptionIcons.faq },
-        { key: 'blog', labelKey: 'themeOptions.blog', icon: themeOptionIcons.blog },
+    const customizationSections = [
+        { key: 'general',    titleKey: 'themeEditor.section.general' },
+        { key: 'colors',     titleKey: 'themeEditor.section.colors' },
+        { key: 'typography', titleKey: 'themeEditor.section.typography' },
+        { key: 'layout',     titleKey: 'themeEditor.section.layout' },
+        { key: 'header',     titleKey: 'themeEditor.section.header' },
+        { key: 'footer',     titleKey: 'themeEditor.section.footer' },
+        // Ajouter d'autres sections pertinentes de l'éditeur ici
     ];
 
+    // --- Handlers ---
     const handleOptionClick = (optionKey: string) => {
         logger.info(`Theme option clicked: ${optionKey}`);
-        // TODO: Naviguer vers l'éditeur de thème avec l'option sélectionnée
-        // Ex: navigate(`/theme/editor?store=${store.id}&option=${optionKey}`)
-        window.location.href = `/theme/editor?store=${store.id}&option=${optionKey}`; // Simple redirection pour l'instant
+        const themeId = currentTheme?.id ?? store.current_theme_id; // Utiliser l'ID chargé ou celui du store
+        if (themeId) {
+            window.location.href = `/themes/editor?store=${store.id}&theme=${themeId}&option=${optionKey}`; // Redirection vers éditeur
+        } else {
+            logger.warn("Cannot navigate to theme editor: current theme ID is missing.");
+            // Afficher un message d'erreur?
+        }
     };
 
     const handleChangeThemeClick = () => {
         logger.info(`Change theme clicked for store ${store.id}`);
         // TODO: Naviguer vers la page/modale de sélection de thème
-        window.location.href = `/theme/market?store=${store.id}`; // Simple redirection
+        window.location.href = `/themes/market?store=${store.id}`; // Simple redirection
     };
 
 
@@ -89,174 +99,201 @@ export function ThemeManager({ store }: ThemeManagerProps) {
     }
 
     const currentThemeImage = currentTheme.preview_images?.[0] ?? NO_PICTURE;
-    const currentThemeImageSrc = getImg(currentThemeImage, undefined, globalCurrentStore?.url).match(/url\("?([^"]+)"?\)/)?.[1];
-
+    const currentThemeImageSrc = getImg(currentThemeImage, undefined, Server_Host).match(/url\("?([^"]+)"?\)/)?.[1];
     return (
-        // Conteneur principal: fond blanc, rounded, shadow, border, padding, flex col
-        <div className="theme-manager bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 flex flex-col gap-6">
+        // Conteneur principal
+        <div className="theme-manager bg-white rounded-lg shadow-sm border border-gray-200 flex flex-col gap-6">
 
             {/* Section Thème Actuel */}
-            <div>
-                <h2 className="text-lg font-semibold text-gray-800 mb-4">{t('themeManager.currentThemeTitle')}</h2>
-                {/* Utiliser flex pour image et infos */}
-                <div className="flex flex-col md:flex-row gap-4 md:gap-6 items-start">
-                    {/* Image Preview */}
-                    <div className="w-full md:w-1/3 lg:w-1/4 flex-shrink-0 rounded-lg overflow-hidden shadow-md border border-gray-100 aspect-video bg-gray-100"> {/* Aspect video */}
-                        <img src={currentThemeImageSrc || NO_PICTURE} alt={currentTheme.name} className="w-full h-full object-cover" />
-                    </div>
-                    {/* Infos et Options */}
-                    <div className="flex-grow flex flex-col gap-3">
-                        {/* Nom et Bouton Changer */}
-                        <div className="flex justify-between items-baseline gap-4">
-                            <h3 className="text-xl font-semibold text-gray-900">{currentTheme.name}</h3>
-                            <button
-                                onClick={handleChangeThemeClick}
-                                className="text-sm text-blue-600 hover:text-blue-800 hover:underline flex-shrink-0"
-                            >
-                                {t('themeManager.changeThemeButton')}
-                            </button>
-                        </div>
-                        {/* Description */}
-                        {currentTheme.description && <p className="text-sm text-gray-500 line-clamp-2">{currentTheme.description}</p>}
-                        {/* Tags / Features */}
-                        {currentTheme.features && currentTheme.features.length > 0 && (
-                            <div className="flex flex-wrap gap-1.5">
-                                {currentTheme.features.map(feature => (
-                                    <span key={feature} className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
-                                        {t(`themeFeatures.${feature}`, feature)}
-                                    </span>
-                                ))}
-                            </div>
-                        )}
-                        {/* Statut */}
-                        <div className="flex items-center gap-2 text-sm font-medium text-green-600 mt-1">
-                            <IoCheckmarkCircle /> {t('themeManager.activeStatus')}
-                        </div>
-                        {/* Options de Personnalisation */}
-                        <div className="mt-2 pt-3 border-t border-gray-100">
-                            <h4 className="text-xs font-semibold text-gray-500 uppercase mb-2">{t('themeManager.customizeOptions')}</h4>
-                            {/* Utiliser grid pour les options */}
-                            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2">
-                                {customizationOptions.map(opt => (
-                                    <button
-                                        key={opt.key}
-                                        onClick={() => handleOptionClick(opt.key)}
-                                        className="flex items-center gap-2 p-2 rounded-md text-sm text-gray-700 bg-gray-50 hover:bg-blue-50 hover:text-blue-700 border border-gray-200 transition"
-                                    >
-                                        <span className="text-lg">{opt.icon}</span>
-                                        <span>{t(opt.labelKey)}</span>
-                                    </button>
-                                ))}
-                            </div>
-                        </div>
-                    </div>
+            <div className="p-4 sm:p-6 border-b border-gray-100">
+                <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-lg font-semibold text-gray-800">{t('themeManager.currentThemeTitle')}</h2>
+                    <button
+                        onClick={handleChangeThemeClick}
+                        className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1"
+                    >
+                        {t('themeManager.changeThemeButton')} <IoBrushOutline className="w-4 h-4" />
+                    </button>
                 </div>
+                {isLoadingThemes ? (
+                    <div className="flex gap-4 md:gap-6 items-start animate-pulse">
+                        <div className="w-1/3 lg:w-1/4 flex-shrink-0 rounded-lg aspect-video bg-gray-300"></div>
+                        <div className="flex-grow flex flex-col gap-3 pt-1">
+                            <div className="h-6 w-3/5 bg-gray-300 rounded"></div>
+                            <div className="h-4 w-full bg-gray-200 rounded"></div>
+                            <div className="h-4 w-4/6 bg-gray-200 rounded"></div>
+                            <div className="h-5 w-20 bg-gray-300 rounded-full mt-1"></div>
+                        </div>
+                    </div>
+                ) : currentTheme ? (
+                    <div className="flex flex-col md:flex-row gap-4 md:gap-6 items-start">
+                        <div className="w-full md:w-1/3 lg:w-1/4 flex-shrink-0 rounded-lg overflow-hidden shadow border border-gray-100 aspect-video bg-gray-100">
+                            <img src={currentThemeImageSrc || NO_PICTURE} alt={currentTheme.name} className="w-full h-full object-cover" />
+                        </div>
+                        <div className="flex-grow flex flex-col gap-2">
+                            <h3 className="text-xl font-semibold text-gray-900">{currentTheme.name}</h3>
+                            {currentTheme.description && <p className="text-sm text-gray-500 line-clamp-3">{currentTheme.description}</p>}
+                            {/* Tags / Features */}
+                            {currentTheme.features && currentTheme.features.length > 0 && (
+                                <div className="flex flex-wrap gap-1.5 mt-1">
+                                    {currentTheme.features.map(feature => (
+                                        <span key={feature} className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
+                                            {t(`themeFeatures.${feature}`, feature)}
+                                        </span>
+                                    ))}
+                                </div>
+                            )}
+                            <div className="flex items-center gap-2 text-sm font-medium text-green-600 mt-1">
+                                <IoCheckmarkCircle /> {t('themeManager.activeStatus')}
+                            </div>
+                        </div>
+                    </div>
+                ) : (
+                    <p className="text-sm text-gray-500 italic">{t('themeManager.noThemeAssigned')}</p>
+                )}
             </div>
 
-            {/* Section Thèmes Récents/Disponibles */}
-            <div className="pt-6 border-t border-gray-100">
-                <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-lg font-semibold text-gray-800">{t('themeManager.availableThemesTitle')}</h2>
-                    <a href="/theme/market" className="text-sm text-blue-600 hover:underline">{t('common.seeAll')}</a>
+            {/* Options de Personnalisation (seulement si thème actuel chargé) */}
+            {currentTheme && (
+                <div className="px-4 sm:px-6 pb-4">
+                    <h4 className="text-sm font-semibold text-gray-600 uppercase mb-3 tracking-wide">
+                        {t('themeManager.customizeOptions')}
+                    </h4>
+                    {/* Utiliser grid */}
+                    <div className="grid grid-cols-2 min-[420px]:grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+                        {customizationSections.map(opt => (
+                            <button
+                                key={opt.key}
+                                onClick={() => handleOptionClick(opt.key)}
+                                className="flex flex-col items-center justify-center gap-1.5 p-3 rounded-lg text-sm text-center text-gray-700 bg-gray-50 hover:bg-blue-50 hover:text-blue-700 border border-gray-200 hover:border-blue-200 transition aspect-square"
+                            >
+                                <span className="text-2xl text-gray-500 group-hover:text-blue-600">{themeSectionIcons[opt.key]}</span>
+                                <span className="font-medium text-xs text-center truncate w-full">
+                                    {t(opt.titleKey)}
+                                </span>
+                            </button>
+                        ))}
+                    </div>
                 </div>
-                {/* Utiliser Swiper pour la liste horizontale */}
-                <div className="relative group"> {/* Pour boutons nav Swiper */}
+            )}
+
+            {/* Section Thèmes Disponibles */}
+            <div className="px-4 sm:px-6 pb-6 border-t border-gray-100 pt-6">
+                <div className="flex justify-between items-center mb-4">
+                    <h2 className="text-base font-semibold text-gray-800">{t('themeManager.availableThemesTitle')}</h2>
+                    <a href="/themes/market" className="text-sm text-blue-600 hover:underline flex items-center gap-1">
+                        {t('common.seeAll')} <IoChevronForward />
+                    </a>
+                </div>
+                {/* Swiper Horizontal */}
+                <div className="relative group -mx-1 px-1"> {/* Padding négatif pour aligner */}
                     <Swiper
-                        modules={[Navigation]} // Ajouter FreeMode si besoin
-                        spaceBetween={16} // gap-4
-                        slidesPerView={'auto'} // S'adapte au contenu
+                        modules={[Navigation]}
+                        spaceBetween={16}
+                        slidesPerView={'auto'} // Laisser Swiper gérer
                         navigation={{
-                            nextEl: '.swiper-button-next-themes',
-                            prevEl: '.swiper-button-prev-themes',
+                            nextEl: '.swiper-button-next-themes-mngr',
+                            prevEl: '.swiper-button-prev-themes-mngr',
                         }}
-                        className="recent-themes-swiper -mx-1 px-1" // Padding négatif pour aligner avec bord
+                        className="recent-themes-swiper"
                     >
                         {isLoadingThemes ? (
-                            Array.from({ length: 4 }).map((_, i) => <SwiperSlide key={`skel-th-${i}`} className="!w-52"><ThemeCardSkeleton /></SwiperSlide>)
+                            Array.from({ length: 4 }).map((_, i) => <SwiperSlide key={`skel-th-${i}`} className="!w-48 sm:!w-52"><ThemeCardSkeleton /></SwiperSlide>)
                         ) : availableThemes.length === 0 ? (
                             <div className="text-sm text-gray-500 italic px-1">{t('themeManager.noOtherThemes')}</div>
                         ) : (
                             availableThemes.map((theme) => (
-                                <SwiperSlide key={theme.id} className="!w-52"> {/* Largeur fixe pour les cartes thème */}
-                                    <ThemeCard theme={theme} />
+                                <SwiperSlide key={theme.id} className="!w-48 sm:!w-52"> {/* Largeur fixe */}
+                                    <ThemeCard theme={theme} isCurrent={theme.id === currentTheme?.id} /> {/* Passer isCurrent */}
                                 </SwiperSlide>
                             ))
                         )}
                     </Swiper>
                     {/* Boutons Navigation Swiper */}
-                    <button className="swiper-button-prev-themes absolute top-1/2 left-0 transform -translate-y-1/2 z-10 p-2 bg-white/70 hover:bg-white rounded-full shadow-md text-gray-600 hover:text-gray-900 opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-0" aria-label={t('pagination.previous')}>
+                    <button className="swiper-button-prev-themes-mngr absolute top-1/2 left-0 transform -translate-y-1/2 -translate-x-3 z-10 p-2 bg-white/80 hover:bg-white rounded-full shadow-md text-gray-600 hover:text-gray-900 opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-0" aria-label={t('pagination.previous')}>
                         <IoChevronBack className="w-5 h-5" />
                     </button>
-                    <button className="swiper-button-next-themes absolute top-1/2 right-0 transform -translate-y-1/2 z-10 p-2 bg-white/70 hover:bg-white rounded-full shadow-md text-gray-600 hover:text-gray-900 opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-0" aria-label={t('pagination.next')}>
+                    <button className="swiper-button-next-themes-mngr absolute top-1/2 right-0 transform -translate-y-1/2 translate-x-3 z-10 p-2 bg-white/80 hover:bg-white rounded-full shadow-md text-gray-600 hover:text-gray-900 opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-0" aria-label={t('pagination.next')}>
                         <IoChevronForward className="w-5 h-5" />
                     </button>
                 </div>
             </div>
-
         </div>
     );
 }
 
-
-// --- Composant Interne ThemeCard ---
+// --- Composant Interne ThemeCard (Revu pour ce contexte) ---
 interface ThemeCardProps {
     theme: Partial<ThemeInterface>;
+    isCurrent?: boolean; // Indiquer si c'est le thème actuel
 }
 
-function ThemeCard({ theme }: ThemeCardProps) {
+export function ThemeCard({ theme, isCurrent = false }: ThemeCardProps) {
     const { t } = useTranslation();
     const { currentStore: globalCurrentStore } = useGlobalStore(); // Pour URL base image
     const [imgError, setImgError] = useState(false);
 
-    const imageUrl = theme.preview_images?.[0] ?? NO_PICTURE;
-    const imageSrc = getImg(imageUrl, undefined, globalCurrentStore?.url).match(/url\("?([^"]+)"?\)/)?.[1];
-    const is_free = theme.price === 0 || theme.is_free;
+    // Action au clic (Installer ou Personnaliser)
+    const handleClick = () => {
+        if (isCurrent) {
+            // Naviguer vers l'éditeur
+            window.location.href = `/theme/editor?store=${globalCurrentStore?.id}&theme=${theme.id}`;
+        } else {
+            // Naviguer vers la preview ou le marché avec ce thème sélectionné?
+            // Ou déclencher l'installation? Pour l'instant, navigue vers preview
+            window.location.href = `/themes/preview/${theme.id}?store=${globalCurrentStore?.id}`;
+        }
+    };
+
+    const imageSrc = theme.preview_images?.[0] ? getImg(theme.preview_images?.[0], undefined, Server_Host).match(/url\("?([^"]+)"?\)/)?.[1] : NO_PICTURE;
+    const isFree = theme.price === 0 || theme.is_premium === false; // Ajuster logique gratuit/premium
+
 
     return (
-        // Utiliser flex flex-col, bg, rounded, shadow, border, overflow-hidden, h-full
-        <div className="theme-card flex flex-col bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden h-full transition duration-150 hover:shadow-md hover:border-gray-300">
-            {/* Image Preview */}
-            <div className="aspect-video w-full bg-gray-100"> {/* Ratio 16:9 */}
-                {/* Gestion Erreur Image */}
+        <button // Rendre la carte cliquable
+            type="button"
+            onClick={handleClick}
+            className={`theme-card w-full h-full flex flex-col bg-white rounded-lg shadow-sm border overflow-hidden transition duration-150 ${isCurrent ? 'border-blue-500 ring-1 ring-blue-400' : 'border-gray-200 hover:shadow-md hover:border-gray-300'
+                }`}
+        >
+            <div className={`aspect-video w-full bg-gray-100 ${isCurrent ? 'relative' : ''}`}>
+                {isCurrent && (
+                    <span className="absolute top-1.5 left-1.5 z-10 bg-blue-600 text-white text-[10px] font-bold px-1.5 py-0.5 rounded">
+                        {t('themeManager.currentLabel')}
+                    </span>
+                )}
                 {!imgError ? (
                     <img src={imageSrc || NO_PICTURE} alt={theme.name} loading="lazy" className="w-full h-full object-cover" onError={() => setImgError(true)} />
                 ) : (
                     <img src={NO_PICTURE} alt={t('common.imageError')} className="w-full h-full object-contain p-4 opacity-50" />
                 )}
             </div>
-            {/* Infos */}
-            <div className="p-3 flex flex-col flex-grow justify-between">
-                <div>
-                    <p className='font-medium text-sm text-gray-800 truncate mb-1' title={theme.name}>{theme.name}</p>
-                    {/* Ajouter description courte si disponible */}
-                </div>
-                {/* Prix / Gratuit */}
-                <div className="flex justify-between items-center mt-2">
-                    <span className={`text-sm font-semibold ${is_free ? 'text-green-600' : 'text-blue-600'}`}>
-                        {is_free ? t('themeCard.free') : `${Number(theme.price || 0).toLocaleString()} FCFA`}
+            <div className="p-2 flex flex-col flex-grow justify-between text-left">
+                <div><p className='font-medium text-xs text-gray-800 truncate' title={theme.name}>{theme.name}</p></div>
+                <div className="flex justify-between items-center mt-1">
+                    <span className={`text-xs font-semibold ${isFree ? 'text-green-600' : 'text-blue-600'}`}>
+                        {isFree ? t('themeCard.free') : `${Number(theme.price || 0).toLocaleString()} FCFA`}
                     </span>
-                    {/* Bouton Sélectionner/Aperçu */}
-                    <button className="text-xs text-blue-600 hover:underline">{t('themeCard.selectButton')}</button>
+                    {/* Afficher "Personnaliser" si courant, "Choisir" sinon */}
+                    <span className="text-[11px] text-blue-600 font-medium group-hover:underline">
+                        {isCurrent ? t('themeManager.customizeButton') : t('themeCard.selectButton')}
+                    </span>
                 </div>
             </div>
-        </div>
+        </button>
     );
 }
 
 // --- Skeleton pour ThemeCard ---
-function ThemeCardSkeleton() {
+export function ThemeCardSkeleton() {
     return (
-        <div className="theme-card flex flex-col bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden h-full animate-pulse">
-            {/* Image Placeholder */}
+        <div className="theme-card w-full h-full flex flex-col bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden animate-pulse">
             <div className="aspect-video w-full bg-gray-300"></div>
-            {/* Infos Placeholder */}
-            <div className="p-3 flex flex-col flex-grow justify-between">
-                <div>
-                    <div className="h-4 w-3/4 bg-gray-300 rounded mb-2"></div> {/* Nom */}
-                </div>
-                <div className="flex justify-between items-center mt-2">
-                    <div className="h-4 w-16 bg-gray-200 rounded"></div> {/* Prix */}
-                    <div className="h-4 w-12 bg-gray-200 rounded"></div> {/* Bouton */}
+            <div className="p-2 flex flex-col flex-grow justify-between">
+                <div><div className="h-4 w-3/4 bg-gray-300 rounded mb-2"></div></div>
+                <div className="flex justify-between items-center mt-1">
+                    <div className="h-4 w-12 bg-gray-200 rounded"></div>
+                    <div className="h-4 w-10 bg-gray-200 rounded"></div>
                 </div>
             </div>
         </div>

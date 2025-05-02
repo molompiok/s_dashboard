@@ -33,16 +33,19 @@ const onRenderHtml: OnRenderHtmlAsync = async (pageContext): ReturnType<OnRender
   const desc = pageContext.data?.description || pageContext.config.description || 'Demo of using Vike'
   const lang = pageContext.headers?.['accept-language']?.includes('fr') ? 'fr' : 'en';
   await i18n.changeLanguage(lang);
+  const isPreviewMode = pageContext.urlOriginal.includes('preview')
+  console.log(pageContext.urlOriginal);
+
   // const logo = (pageContext.data as any)?.logoUrl || logoUrl
   const documentHtml = escapeInject`<!DOCTYPE html>
     <html lang="fr">
       <head>
+      <meta name="viewport" content="width=${isPreviewMode?'1080':'width=device-width, initial-scale=1.0'}"></meta>
         <meta charset="UTF-8" />
         <link rel="icon" href="${logoUrl}" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        
         <meta name="description" content="${desc}" />
-        <link
-      rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css"/>
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css"/>
         <title>${title}</title>
       </head>
       <body>

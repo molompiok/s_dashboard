@@ -86,8 +86,8 @@ function ProductList({ baseFilter, title, addTo }: { title?: string, addTo?: { c
                     ? 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 gap-4'
                     : 'flex flex-col gap-3'
                     }`}>
-                    {viewType === 'card' && addTo !== null && <AddProductCard addTo={addTo} />}
-                    {viewType === 'row' && addTo !== null && <AddProductRow addTo={addTo} />}
+                    {viewType === 'card'  && <AddProductCard addTo={addTo} />}
+                    {viewType === 'row'  && <AddProductRow addTo={addTo} />}
                     {isLoading && (
                         viewType === 'card'
                             ? Array.from({ length: 5 }).map((_, i) => <ProductItemSkeletonCard />)

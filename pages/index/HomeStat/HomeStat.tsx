@@ -22,7 +22,7 @@ export function HomeStat() {
     const [openPeriod, setOpenPeriod] = useState(false);
 
     // ✅ Utiliser le hook React Query pour fetch les stats
-    const { data: statsData, isLoading, isError, error } = useGetStats(
+    const { data: statsData, isLoading, isError } = useGetStats(
         { period, stats: ['visits_stats', 'order_stats'] },
         { enabled: !!currentStore } // N'activer que si currentStore existe
     );

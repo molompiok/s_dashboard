@@ -7,7 +7,7 @@ export const getImg = (img?: string | Blob, size = 'cover', _host?: string | nul
         ? img :
         img instanceof Blob ?
             URL.createObjectURL(img) : ''
-
+        
     return `no-repeat center/${size} url(${(
             _img?.startsWith('/') && _host !== null
                 ? _host || Host

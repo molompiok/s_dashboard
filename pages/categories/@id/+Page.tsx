@@ -6,7 +6,7 @@ import { usePageContext } from '../../../renderer/usePageContext';
 import { useGlobalStore } from '../../stores/StoreStore';
 import { useGetCategory, useCreateCategory, useUpdateCategory, useDeleteCategory } from '../../../api/ReactSublymusApi'; // ✅ Hooks API
 import { CategoryInterface, FilterType } from '../../../Interfaces/Interfaces';
-import { Topbar } from '../../../Components/TopBar/TopBar';
+import { BreadcrumbItem, Topbar } from '../../../Components/TopBar/TopBar';
 import { IoAdd, IoBagHandle, IoCloudUploadOutline, IoLayers, IoPencil, IoTrash } from 'react-icons/io5';
 import { RiImageEditFill } from 'react-icons/ri';
 import { FaRedo } from 'react-icons/fa';
@@ -22,7 +22,7 @@ import { PageNotFound } from '../../../Components/PageNotFound/PageNotFound'; //
 import { MarkdownEditor2 } from '../../../Components/MackdownEditor/MarkdownEditor'; // Gardé
 import { Indicator } from '../../../Components/Indicator/Indicator'; // Gardé
 import { ProductList } from '../../../Components/ProductList/ProductList'; // Gardé
-import { ClientCall, debounce } from '../../../Components/Utils/functions'; // Gardé
+import { ClientCall, debounce, limit } from '../../../Components/Utils/functions'; // Gardé
 import { useMyLocation } from '../../../Hooks/useRepalceState'; // Gardé
 import { useTranslation } from 'react-i18next'; // ✅ i18n
 import { ApiError } from '../../../api/SublymusApi'; // Importer ApiError
@@ -78,6 +78,7 @@ function Page() {
         isSuccess: isFetchSuccess,
     } = useGetCategory(
         {
+            with_product_count: true,
             category_id: isNewCategory ? undefined : categoryIdFromRoute
         }, // Fetch seulement si ce n'est pas 'new'
         { enabled: !isNewCategory && !!currentStore } // Activer si édition et store chargé
@@ -298,6 +299,28 @@ function Page() {
             return
         }
     }, [currentStore, myLocation])
+
+
+
+    const categoryName = categoryFormState?.name;
+
+    // Construire les breadcrumbs
+     const breadcrumbs: BreadcrumbItem[] = useMemo(() => {
+         const crumbs: BreadcrumbItem[] = [
+             { name: t('navigation.home'), url: '/' },
+              // Lien vers la liste principale des catégories
+             { name: t('navigation.categories'), url: '/categories' },
+         ];
+         if (isNewCategory) {
+             crumbs.push({ name: t('category.createBreadcrumb') });
+         } else if (categoryName) {
+             crumbs.push({ name: limit(categoryName, 30) });
+         } else {
+              crumbs.push({ name: t('common.loading') });
+         }
+         return crumbs;
+     }, [t, isNewCategory, categoryName]);
+
     // --- Affichage ---
     // Afficher PageNotFound si erreur de fetch en mode édition
     if (!isNewCategory && isFetchError && fetchError?.status === 404) {
@@ -326,7 +349,7 @@ function Page() {
     return (
         // Layout principal
         <div className="w-full flex flex-col bg-gray-50 min-h-screen">
-            <Topbar back={true} />
+            <Topbar back={true} breadcrumbs={breadcrumbs} />
             {/* Utiliser max-w-2xl ou 3xl pour page formulaire, gap-4 ou 6 */}
             <main className="w-full max-w-3xl mx-auto p-4 md:p-6 lg:p-8 flex flex-col gap-6 pb-24"> {/* Ajouter pb-24 pour espace bouton flottant */}
 
@@ -437,7 +460,11 @@ function Page() {
                     {/* Utiliser l'éditeur Markdown */}
                     <MarkdownEditor2
                         value={categoryFormState.description || ''}
-                        setValue={handleMarkdownChange}
+                        setValue={(value)=>{
+                            console.log({value});
+                            
+                            handleMarkdownChange(value)
+                        }}
                         error={!!fieldErrors.description} // Passer l'état d'erreur
                     />
                     {fieldErrors.description && <p className="mt-1 text-xs text-red-600">{fieldErrors.description}</p>}

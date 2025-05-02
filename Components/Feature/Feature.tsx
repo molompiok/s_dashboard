@@ -1,14 +1,11 @@
 // Components/Feature/Feature.tsx
-// import './Feature.css'; // ❌ Supprimer
 
 import { FeatureInterface, ValueInterface } from '../../Interfaces/Interfaces';
 import { IoAdd, IoClose, IoEllipsisHorizontal, IoTrash } from 'react-icons/io5';
 import { ClientCall, FeatureType } from '../Utils/functions';
-// import { useApp } from '../../renderer/AppStore/UseApp'; // Remplacé par useChildViewer
-// Importer les différents rendus de Value
 import { IconTextValue, TextValue } from '../FV_IconText_Info/FV_IconText_Info';
 import { ColorValue } from '../FV_Color_Info/FV_Color_Info';
-// Importer le popup d'édition de Feature et le popup d'édition/création de Value
+
 import { FeatureInfo } from '../FeatureInfo/FeatureInfo';
 import { ConfirmDelete } from '../Confirm/ConfirmDelete';
 import { useTranslation } from 'react-i18next'; // ✅ i18n
@@ -158,7 +155,7 @@ function Feature({ feature, setFeature, onDelete }: FeatureProps) {
                          type="button"
                          onClick={() => handleOpenValuePopup()}
                          disabled={!canAddValue}
-                         className={`add-new flex flex-col items-center justify-center w-16  sm:w-20  rounded-lg border-2 border-dashed border-gray-300 text-gray-400 hover:border-blue-400 hover:text-blue-500 transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${hashIconAdd?'h-16':'h-8 px-12'} `}
+                         className={`add-new flex flex-col items-center  justify-center w-16  sm:w-20  rounded-lg border-2 border-dashed border-gray-300 text-gray-400 hover:border-blue-400 hover:text-blue-500 transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${hashIconAdd?'h-16':'h-8 px-12'} `}
                      >
                         
                         {

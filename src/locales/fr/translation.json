@@ -1,5 +1,8 @@
 {
     "common": {
+        "saving": "Enregistrement...",
+        "stopping": "Arrêt en cours...",
+        "starting": "Démarrage...",
         "creating": "Création...",
         "next": "Suivant",
         "loading": "Chargement...",
@@ -44,6 +47,58 @@
         "saveChanges": "Enregistrer les modifications",
         "select": "Sélectionner...",
         "noOptions": "Aucune option"
+    },
+    "collaborator": {
+        "pageTitle": "Gestion des Collaborateurs",
+        "listTitle": "Membres de l'équipe",
+        "addButton": "Ajouter un membre",
+        "inviteButton": "Envoyer l'invitation",
+        "invitationSent": "Invitation envoyée à {{email}}.",
+        "invitationFailed": "Impossible d'envoyer l'invitation.",
+        "permissionsPopupTitle": "Gérer les Permissions - {{name}}",
+        "savePermissionsButton": "Enregistrer Permissions",
+        "confirmDelete": "Retirer {{name}} de l'équipe ?",
+        "noCollaborators": "Vous n'avez ajouté aucun collaborateur pour le moment.",
+        "ownerOnly": "Cette section est réservée au propriétaire de la boutique.",
+        "userNotFound": "Utilisateur avec l'email {{email}} non trouvé.",
+        "cannotAddOwner": "Vous ne pouvez pas ajouter le propriétaire comme collaborateur.",
+        "alreadyCollaborator": "Cet utilisateur est déjà un collaborateur.",
+        "createdSuccess": "Collaborateur ajouté avec succès.",
+        "creationFailed": "Impossible d'ajouter le collaborateur.",
+        "cannotEditOwnerPerms": "Vous ne pouvez pas modifier les permissions du propriétaire.",
+        "notFound": "Collaborateur non trouvé.",
+        "permsUpdateSuccess": "Permissions du collaborateur mises à jour avec succès.",
+        "permsUpdateFailed": "Impossible de mettre à jour les permissions.",
+        "listFailed": "Impossible de lister les collaborateurs.",
+        "cannotRemoveOwner": "Vous ne pouvez pas supprimer le propriétaire.",
+        "removeSuccess": "Collaborateur supprimé avec succès.",
+        "removeFailed": "Impossible de supprimer le collaborateur.",
+        "activePermissionsTooltip": "Nombre de permissions actives",
+        "permissionsCount": "{{count}} Permissions",
+        "editPermissionsButton": "Modifier les permissions",
+        "addPopupTitle": "Ajouter un Membre à l'Équipe",
+        "emailLabel": "Email du collaborateur",
+        "emailPlaceholder": "nom@exemple.com",
+        "addButtonDirect": "Ajouter le membre",
+        "addHelpS0": "L'utilisateur doit déjà avoir un compte Sublymus pour être ajouté.",
+        "validation": {
+            "emailInvalid": "Veuillez saisir une adresse email valide."
+        }
+    },
+    "permissions": {
+        "filter_client": "Voir les clients",
+        "ban_client": "Bannir des clients",
+        "filter_collaborator": "Voir les collaborateurs",
+        "ban_collaborator": "Bannir des collaborateurs",
+        "create_delete_collaborator": "Gérer les collaborateurs (ajouter/supprimer/permissions)",
+        "manage_interface": "Gérer l'apparence/thème",
+        "filter_product": "Voir les produits/catégories",
+        "edit_product": "Modifier les produits/catégories",
+        "create_delete_product": "Ajouter/Supprimer produits/catégories",
+        "manage_scene_product": "Gérer la 3D/AR des produits",
+        "chat_client": "Discuter avec les clients",
+        "filter_command": "Voir les commandes",
+        "manage_command": "Gérer les commandes (statuts, etc.)"
     },
     "settingsRegional": {
         "description": "Configurez la langue et la devise par défaut de votre boutique.",
@@ -122,21 +177,24 @@
         }
     },
     "settingsGeneral": {
-    "description": "Configurez les informations générales de votre boutique.",
-    "nameLabel": "Nom de la boutique",
-    "titleLabel": "Titre de la boutique (SEO)",
-    "titleHelp": "Affiché dans l'onglet du navigateur et les résultats de recherche.",
-    "storeDescriptionLabel": "Description courte de la boutique",
-    "storeDescriptionHelp": "Utilisée pour le référencement (méta description).",
-    "timezoneLabel": "Fuseau Horaire",
-    "timezoneHelp": "Assure l'exactitude des heures de commande et de planification.",
-    "statusLabel": "Statut de la Boutique",
-    "statusHelp": "Le statut est déterminé par votre abonnement.",
-    "validation": {
-      "nameRequired": "Le nom de la boutique est requis (3 caractères min).",
-      "titleRequired": "Le titre de la boutique est requis (3 caractères min)."
-    }
-  },
+        "description": "Configurez les informations générales de votre boutique.",
+        "nameLabel": "Nom de la boutique",
+        "titleLabel": "Titre de la boutique (SEO)",
+        "titleHelp": "Affiché dans l'onglet du navigateur et les résultats de recherche.",
+        "storeDescriptionLabel": "Description courte de la boutique",
+        "storeDescriptionHelp": "Utilisée pour le référencement (méta description).",
+        "timezoneLabel": "Fuseau Horaire",
+        "timezoneHelp": "Assure l'exactitude des heures de commande et de planification.",
+        "statusLabel": "Statut de la Boutique",
+        "statusHelp": "Le statut est déterminé par votre abonnement.",
+        "runtimeStatusLabel": "Statut d'Exécution",
+        "runtimeStatusHelpRunning": "Votre boutique est actuellement en ligne et accessible.",
+        "runtimeStatusHelpStopped": "Votre boutique est arrêtée et inaccessible par les visiteurs.",
+        "validation": {
+            "nameRequired": "Le nom de la boutique est requis (3 caractères min).",
+            "titleRequired": "Le titre de la boutique est requis (3 caractères min)."
+        }
+    },
     "clientList": {
         "title": "Liste des Clients",
         "searchPlaceholder": "Rechercher par Nom, Email, #id...",
@@ -152,6 +210,11 @@
                 "name_desc": "Nom (Z-A)"
             }
         }
+    },
+    "visibilityFilter": {
+        "all": "Tous",
+        "visible": "Visibles",
+        "hidden": "Cachées"
     },
     "usersPage": {
         "title": "Gestion des Utilisateurs",
@@ -179,7 +242,8 @@
     "clientDetail": {
         "statusLabel": "Statut Client",
         "memberSinceLabel": "Membre Depuis",
-        "activityChartTitle": "Activité Récente"
+        "activityChartTitle": "Activité Récente",
+        "pageTitle":"Profile du client"
     },
     "clientStatus": {
         "new": "Nouveau",
@@ -198,6 +262,7 @@
         "title": "Mes Boutiques",
         "addStoreButton": "Créer une boutique",
         "searchPlaceholder": "Rechercher par nom...",
+        "usageTitle": "",
         "statusFilter": {
             "all": "Toutes",
             "active": "Actives",
@@ -207,7 +272,8 @@
             "stop": "Stopper",
             "makeAvailable": "Rendre Disponible",
             "settings": "Paramètres",
-            "security": "Sécurité"
+            "security": "Sécurité",
+            "start": "Démarrer"
         },
         "limits": {
             "disk": "Disque SSD",
@@ -216,6 +282,7 @@
             "salesPoints": "Points de Vente",
             "countries": "Pays"
         },
+        "domainLabel": "Nom de domaine",
         "viewAllButton": "Gérer",
         "noStoresFound": "Vous n'avez pas encore créé de boutique.",
         "noDescription": "Pas de description",
@@ -224,7 +291,9 @@
             "inactive": "Inactive",
             "makeAvailable": "Rendre Disponible",
             "settings": "Paramètres",
-            "security": "Sécurité"
+            "security": "Sécurité",
+            "running": "En cours",
+            "stopped": "Arrêtée"
         }
     },
     "productComments": {
@@ -237,12 +306,16 @@
         "home": "Accueil",
         "products": "Produits",
         "categories": "Catégories",
-        "teams": "Équipes",
+        "users": "Utilisateurs", 
+        "clients": "Clients",
+        "collaborators": "Collaborateurs",
         "orders": "Commandes",
         "inventory": "Inventaire",
         "stores": "Boutiques",
         "settings": "Paramètres",
-        "stats": "Statistiques"
+        "themes": "Thèmes",
+        "myThemes": "Mes Thèmes",
+        "editor": "Éditeur"
     },
     "topbar": {
         "welcomeMessage": "Bienvenue, {{name}} !",
@@ -638,21 +711,6 @@
         "selectImagePrompt": "Choisir une image",
         "noEmail": "Aucun email fourni"
     },
-    "collaborator": {
-        "userNotFound": "Utilisateur avec l'email {{email}} non trouvé.",
-        "cannotAddOwner": "Vous ne pouvez pas ajouter le propriétaire comme collaborateur.",
-        "alreadyCollaborator": "Cet utilisateur est déjà un collaborateur.",
-        "createdSuccess": "Collaborateur ajouté avec succès.",
-        "creationFailed": "Impossible d'ajouter le collaborateur.",
-        "cannotEditOwnerPerms": "Vous ne pouvez pas modifier les permissions du propriétaire.",
-        "notFound": "Collaborateur non trouvé.",
-        "permsUpdateSuccess": "Permissions du collaborateur mises à jour avec succès.",
-        "permsUpdateFailed": "Impossible de mettre à jour les permissions.",
-        "listFailed": "Impossible de lister les collaborateurs.",
-        "cannotRemoveOwner": "Vous ne pouvez pas supprimer le propriétaire.",
-        "removeSuccess": "Collaborateur supprimé avec succès.",
-        "removeFailed": "Impossible de supprimer le collaborateur."
-    },
     "stats": {
         "fetchFailed": "Erreur lors de la récupération des statistiques."
     },
@@ -817,7 +875,9 @@
         "customizeOptions": "Options de Personnalisation",
         "availableThemesTitle": "Thèmes Disponibles",
         "noOtherThemes": "Aucun autre thème disponible pour le moment.",
-        "noThemeAssigned": "Aucun thème n'est actuellement assigné à cette boutique."
+        "noThemeAssigned": "Aucun thème n'est actuellement assigné à cette boutique.",
+        "currentLabel": "Actuel",
+        "customizeButton": "Personnaliser"
     },
     "themeOptions": {
         "color": "Couleurs",
@@ -826,6 +886,129 @@
         "ads": "Publicités",
         "faq": "FAQ",
         "blog": "Blog"
+    },
+    "myThemes": {
+        "pageTitle": "Mes Thèmes",
+        "noThemesYet": "Vous n'avez pas encore installé ou acquis de thème.",
+        "discoverThemesLink": "Découvrir les thèmes",
+        "installedOn": "Installé sur {{count}} boutique(s)",
+        "notInstalled": "Non installé",
+        "customizeButton": "Personnaliser",
+        "installButton": "Installer sur...",
+        "selectStoreToCustomize": "Personnaliser \"{{themeName}}\" pour quelle boutique ?",
+        "selectStoreToInstall": "Installer \"{{themeName}}\" sur quelle boutique ?",
+        "selectStoreToCustomizeTitle": "Choisir une boutique à personnaliser",
+        "selectStoreToInstallTitle": "Choisir une boutique pour l'installation",
+        "noStoresAvailableForInstall": "Aucune autre boutique disponible pour installer ce thème.",
+        "noStoresFoundForCustomize": "Aucune boutique trouvée pour personnaliser ce thème."
+    },
+    "themePreview": {
+        "defaultStoreName": "Ma Boutique Démo",
+        "category1": "Nouveautés",
+        "category2": "Promotions",
+        "category3": "Vêtements",
+        "category4": "Accessoires",
+        "productName": "Article Tendance",
+        "productDescription": "Description courte et attrayante de ce produit phare.",
+        "heroTitle": "Collection Été 2025",
+        "heroSubtitle": "Découvrez nos dernières créations et styles pour la saison.",
+        "heroButton": "Découvrir",
+        "categoriesTitle": "Nos Catégories",
+        "productsTitle": "Produits Populaires",
+        "footerAbout": "Votre boutique en ligne propulsée par Sublymus.",
+        "footerLinks": "Liens Rapides",
+        "footerContact": "Contactez-Nous",
+        "footerSocial": "Suivez-Nous",
+        "footerRights": "Tous droits réservés."
+    },
+    "themesMarket": {
+        "pageTitle": "Marché des Thèmes",
+        "searchPlaceholder": "Rechercher un thème...",
+        "filterTagsLabel": "Filtrer par tags",
+        "filterPriceLabel": "Prix",
+        "priceOptions": {
+            "all": "Tous",
+            "free": "Gratuits",
+            "premium": "Premium"
+        },
+        "sortLabel": "Trier par",
+        "sortOptions": {
+            "name_asc": "Nom (A-Z)",
+            "name_desc": "Nom (Z-A)",
+            "date_desc": "Plus Récent"
+        },
+        "noThemesMatch": "Aucun thème ne correspond à vos critères.",
+        "selectThemePrompt": "Sélectionnez un thème pour voir l'aperçu.",
+        "installButton": "Installer ce thème",
+        "installingButton": "Installation...",
+        "previewLabel": "Aperçu",
+        "selectStoreFirst": "Veuillez d'abord sélectionner ou créer une boutique pour installer ce thème."
+    },
+    "imageControl": {
+        "previewAlt": "Aperçu",
+        "changeAction": "Changer l'image",
+        "uploadButton": "Télécharger",
+        "helpText": "PNG, JPG, WEBP, SVG, GIF jusqu'à 2MB."
+    },
+    "themeEditor": {
+        "pageTitle": "Éditeur de Thème - {{name}}",
+        "previewing": "Visualisation",
+        "saveButton": "Enregistrer le Thème",
+        "error": {
+            "missingParams": "ID du magasin ou du thème manquant dans l'URL.",
+            "optionsNotFound": "Impossible de charger les options de personnalisation pour ce thème.",
+            "settingsNotFound": "Impossible de charger les paramètres actuels pour ce thème."
+        },
+        "section": {
+            "general": "Général",
+            "colors": "Couleurs",
+            "typography": "Typographie",
+            "layout": "Mise en page",
+            "header": "En-tête",
+            "footer": "Pied de page",
+            "homepage": "Page d'accueil",
+            "productPage": "Page Produit",
+            "buttons": "Boutons"
+        },
+        "options": {
+            "storeNameVisible": "Afficher le nom de la boutique",
+            "storeNameVisibleDesc": "Montre le nom de votre boutique dans l'en-tête.",
+            "logoUrl": "Logo personnalisé",
+            "logoUrlDesc": "Remplace le texte du nom par votre logo (PNG, SVG, JPG).",
+            "primaryColor": "Couleur Principale",
+            "primaryColorDesc": "Utilisée pour les boutons, liens et accents.",
+            "secondaryColor": "Couleur Secondaire",
+            "secondaryColorDesc": "Utilisée pour les éléments moins importants.",
+            "accentColor": "Couleur d'Accentuation",
+            "accentColorDesc": "Utilisée pour attirer l'attention (promos, badges...).",
+            "textColor": "Couleur du Texte Principal",
+            "textColorDesc": "Couleur par défaut pour la majorité du texte.",
+            "backgroundColor": "Couleur de Fond Principale",
+            "backgroundColorDesc": "Arrière-plan général de la boutique.",
+            "headingColor": "Couleur des Titres",
+            "headingColorDesc": "Couleur spécifique pour les titres H1, H2, etc.",
+            "bodyFont": "Police du Corps de Texte",
+            "bodyFontDesc": "Police utilisée pour les paragraphes et textes courants.",
+            "headingFont": "Police des Titres",
+            "headingFontDesc": "Police utilisée pour les titres principaux.",
+            "baseFontSize": "Taille de Police de Base",
+            "baseFontSizeDesc": "Ajuste la taille générale du texte sur le site.",
+            "productListView": "Vue Liste Produits",
+            "productListViewDesc": "Affichage par défaut des produits dans les collections.",
+            "showHeader": "Afficher l'En-tête",
+            "showHeaderDesc": "Affiche ou masque la barre de navigation supérieure.",
+            "headerAnnouncement": "Bandeau d'annonce",
+            "headerAnnouncementDesc": "Texte affiché en haut de page (laisser vide pour masquer)."
+        },
+        "fontSize": {
+            "small": "Petite",
+            "medium": "Moyenne",
+            "large": "Grande"
+        },
+        "layoutOptions": {
+            "grid": "Grille",
+            "list": "Liste"
+        }
     },
     "themeFeatures": {
         "multi_category": "Multi-catégories",

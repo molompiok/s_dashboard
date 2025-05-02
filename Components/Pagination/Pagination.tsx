@@ -106,6 +106,7 @@ export function Pagination({
                 >
                     {t('pagination.previous')} 
                 </button>
+                <span>{currentPage} / {lastPage}</span>
                 <button
                     onClick={handleNext}
                     disabled={currentPage === lastPage}

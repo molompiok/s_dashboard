@@ -11,6 +11,7 @@ import { useTranslation } from 'react-i18next';
 import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
+import { useWindowSize } from '../../Hooks/useWindowSize';
 
 interface StoresListProps {
     stores: StoreInterface[];
@@ -23,23 +24,17 @@ interface StoresListProps {
 
 export function StoresList({ stores, isLoading, selectedStoreId, onSelectStore, viewAllUrl, newStoreRequire }: StoresListProps) {
     const { t } = useTranslation();
-
-    // Calcul slidesPerView basé sur la largeur (à affiner)
-    const getSlidesPerView = () => {
-        if (typeof window === 'undefined') return 3; // SSR fallback
-        const width = window.innerWidth;
-        if (width < 640) return 1.5; // sm
-        if (width < 768) return 2.5; // md
-        if (width < 1024) return 3.5; // lg
-        return 4.5; // xl+
-    };
+    const size = useWindowSize()
+    
+    const n = ((size.width - 260) / 1200)*4 + 1.3  
 
     return (
         <div className="relative w-full group"> {/* Group pour afficher boutons nav au survol */}
+            
             <Swiper
                 modules={[Navigation, SwiperPagination]}
                 spaceBetween={16} // gap-4
-                slidesPerView={getSlidesPerView()}
+                slidesPerView={n}
                 navigation={{ // Activer navigation Swiper
                     nextEl: '.swiper-button-next-store', // Sélecteurs CSS personnalisés
                     prevEl: '.swiper-button-prev-store',

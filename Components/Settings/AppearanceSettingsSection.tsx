@@ -10,6 +10,7 @@ import { getImg } from '../Utils/StringFormater'; // Pour preview
 import { useGlobalStore } from '../../pages/stores/StoreStore'; // Pour URL base image
 import { NO_PICTURE } from '../Utils/constants'; // Placeholder
 import { ApiError } from '../../api/SublymusApi';
+import { Server_Host } from '../../renderer/+config';
 
 interface AppearanceSettingsSectionProps {
     store: StoreInterface;
@@ -136,9 +137,9 @@ export function AppearanceSettingsSection({ store }: AppearanceSettingsSectionPr
     };
 
     // --- URLs pour affichage ---
-    const currentLogoUrl = formState.logoPreview ?? (store.logo?.[0] ? getImg(store.logo[0], undefined, store.url).match(/url\("?([^"]+)"?\)/)?.[1] : null);
-    const currentCoverUrl = formState.coverPreview ?? (store.cover_image?.[0] ? getImg(store.cover_image[0], undefined, store.url).match(/url\("?([^"]+)"?\)/)?.[1] : null);
-    const currentFaviconUrl = formState.faviconPreview ?? (store.favicon ? getImg(store.favicon[0], undefined, store.url).match(/url\("?([^"]+)"?\)/)?.[1] : null); // Assumer store.favicon est l'URL directe
+    let currentLogoUrl = formState.logoPreview ?? (store.logo?.[0] ? getImg(store.logo[0], undefined, Server_Host).match(/url\("?([^"]+)"?\)/)?.[1] : null);
+    let currentCoverUrl = formState.coverPreview ?? (store.cover_image?.[0] ? getImg(store.cover_image[0], undefined, Server_Host).match(/url\("?([^"]+)"?\)/)?.[1] : null);
+    const currentFaviconUrl = formState.faviconPreview ?? (store.favicon ? getImg(store.favicon[0], undefined, Server_Host).match(/url\("?([^"]+)"?\)/)?.[1] : null); // Assumer store.favicon est l'URL directe
 
     return (
          // Conteneur Section
@@ -157,18 +158,18 @@ export function AppearanceSettingsSection({ store }: AppearanceSettingsSectionPr
                  <div className="md:col-span-1 flex flex-col gap-4 items-start">
                      <label className="block text-sm font-medium text-gray-700">{t('settingsAppearance.logoLabel')}</label> 
                      {/* Preview */}
-                     <div className="w-24 h-24 rounded-full border border-gray-300 bg-gray-100 flex items-center justify-center overflow-hidden">
+                     <label htmlFor='store-setting-logo' className="w-24 h-24 rounded-full border border-gray-300 bg-gray-100 flex items-center justify-center overflow-hidden">
                          {currentLogoUrl ? (
                              <img src={currentLogoUrl} alt="Logo preview" className="w-full h-full object-contain"/>
                          ) : (
                               <IoImageOutline className="w-12 h-12 text-gray-400" />
                          )}
-                     </div>
+                     </label>
                      {/* Bouton Upload */}
                       <button type="button" onClick={() => logoInputRef.current?.click()} className="text-sm text-blue-600 hover:text-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                           {currentLogoUrl ? t('settingsAppearance.changeLogo') : t('settingsAppearance.uploadLogo')} 
                       </button>
-                     <input ref={logoInputRef} type="file" accept="image/png, image/jpeg, image/webp, image/svg+xml" className="hidden" onChange={(e) => handleFileChange(e, 'logo')} />
+                     <input id='store-setting-logo' ref={logoInputRef} type="file" accept="image/png, image/jpeg, image/webp, image/svg+xml" className="hidden" onChange={(e) => handleFileChange(e, 'logo')} />
                      <p className="text-xs text-gray-500">{t('settingsAppearance.logoHelp')}</p> 
                  </div>
 
@@ -176,18 +177,18 @@ export function AppearanceSettingsSection({ store }: AppearanceSettingsSectionPr
                  <div className="md:col-span-1 flex flex-col gap-4 items-start">
                      <label className="block text-sm font-medium text-gray-700">{t('settingsAppearance.faviconLabel')}</label> 
                      {/* Preview */}
-                      <div className="w-10 h-10 rounded border border-gray-300 bg-gray-100 flex items-center justify-center overflow-hidden">
+                      <label htmlFor='store-setting-favicon' className="w-10 h-10 rounded border border-gray-300 bg-gray-100 flex items-center justify-center overflow-hidden">
                           {currentFaviconUrl ? (
                               <img src={currentFaviconUrl} alt="Favicon preview" className="w-full h-full object-contain"/>
                           ) : (
                                <IoImageOutline className="w-5 h-5 text-gray-400" />
                           )}
-                      </div>
+                      </label>
                      {/* Bouton Upload */}
                       <button type="button" onClick={() => faviconInputRef.current?.click()} className="text-sm text-blue-600 hover:text-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                            {currentFaviconUrl ? t('settingsAppearance.changeFavicon') : t('settingsAppearance.uploadFavicon')} 
                       </button>
-                      <input ref={faviconInputRef} type="file" accept="image/x-icon, image/png, image/svg+xml" className="hidden" onChange={(e) => handleFileChange(e, 'favicon')} />
+                      <input id='store-setting-favicon' ref={faviconInputRef} type="file" accept="image/x-icon, image/png, image/svg+xml" className="hidden" onChange={(e) => handleFileChange(e, 'favicon')} />
                      <p className="text-xs text-gray-500">{t('settingsAppearance.faviconHelp')}</p> 
                  </div>
 
@@ -196,18 +197,18 @@ export function AppearanceSettingsSection({ store }: AppearanceSettingsSectionPr
                   <div className="md:col-span-2 flex flex-col gap-4 items-start">
                       <label className="block text-sm font-medium text-gray-700">{t('settingsAppearance.coverLabel')}</label> 
                       {/* Preview */}
-                      <div className="w-full aspect-video rounded-lg border border-gray-300 bg-gray-100 flex items-center justify-center overflow-hidden">
+                      <label htmlFor='store-setting-cover-image' className="w-full aspect-video rounded-lg border border-gray-300 bg-gray-100 flex items-center justify-center overflow-hidden">
                          {currentCoverUrl ? (
                              <img src={currentCoverUrl} alt="Cover preview" className="w-full h-full object-cover"/>
                          ) : (
                               <IoImageOutline className="w-16 h-16 text-gray-400" />
                          )}
-                      </div>
+                      </label>
                       {/* Bouton Upload */}
                        <button type="button" onClick={() => coverInputRef.current?.click()} className="text-sm text-blue-600 hover:text-blue-800 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
                             {currentCoverUrl ? t('settingsAppearance.changeCover') : t('settingsAppearance.uploadCover')} 
                        </button>
-                       <input ref={coverInputRef} type="file" accept="image/png, image/jpeg, image/webp" className="hidden" onChange={(e) => handleFileChange(e, 'cover')} />
+                       <input id='store-setting-cover-image' ref={coverInputRef} type="file" accept="image/png, image/jpeg, image/webp" className="hidden" onChange={(e) => handleFileChange(e, 'cover')} />
                       <p className="text-xs text-gray-500">{t('settingsAppearance.coverHelp')}</p> 
                   </div>
 

@@ -21,7 +21,7 @@ import { MarkdownEditor2 } from '../../../../Components/MackdownEditor/MarkdownE
 import { MarkdownViewer } from '../../../../Components/MarkdownViewer/MarkdownViewer'; // Pour affichage
 import { ProductPreview } from '../../../../Components/ProductPreview/ProductPreview';
 import { ChildViewer } from '../../../../Components/ChildViewer/ChildViewer';
-import { Comfirm } from '../../../../Components/Confirm/Confirm'; // Pour popup DetailInfo
+import { Confirm } from '../../../../Components/Confirm/Confirm'; // Pour popup DetailInfo
 import { getImg } from '../../../../Components/Utils/StringFormater';
 import { getFileType, limit } from '../../../../Components/Utils/functions'; // Garder limit
 import { DETAIL_LIMIT } from '../../../../Components/Utils/constants';
@@ -446,13 +446,10 @@ function DetailInfo({ detail: initialDetail, onSave, onCancel }: {
     const viewUrlForDisplay = localPreview ? getImg(localPreview) : (typeof collected?.view?.[0] === 'string' ? getImg(collected.view[0], undefined, currentStore?.url) : getImg('/res/empty/drag-and-drop.png', '70%'));
     const showPlaceholder = !localPreview && (!collected?.view || collected.view.length === 0 || typeof collected.view[0] !== 'string');
 
-
-    console.log('0000000000000000', viewUrlForDisplay, collected);
-
+    
     return (
         // Utiliser flex flex-col gap-4 ou 5, padding
         <div className="detail-info p-4 sm:p-6 flex flex-col gap-5">
-            {/* Image */}
             <div>
                 <label className='block text-sm font-medium text-gray-700 mb-1' htmlFor='detail-view-input'>
                     {t('detail.imageLabel')}
@@ -514,7 +511,7 @@ function DetailInfo({ detail: initialDetail, onSave, onCancel }: {
             </div>
 
             {/* Confirmation */}
-            <Comfirm
+            <Confirm
                 // Actif seulement si titre valide (et image si nouveau?)
                 canConfirm={!!collected.title?.trim()}
                 onCancel={onCancel}

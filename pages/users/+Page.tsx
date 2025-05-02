@@ -5,7 +5,7 @@ import React, { useEffect, useState, useMemo } from 'react';
 import { FiUsers, FiBriefcase } from 'react-icons/fi'; // Importer les icônes spécifiques
 import { Topbar } from '../../Components/TopBar/TopBar'; // Garder Topbar
 // import { useApp } from '../../renderer/AppStore/UseApp'; // Remplacé par useGetStats
-import { useGetStats } from '../../api/ReactSublymusApi'; // ✅ Hook pour les stats
+import { useGetStats, useGetUserStats } from '../../api/ReactSublymusApi'; // ✅ Hook pour les stats
 // import { useGlobalStore  } from '../stores/StoreStore'; // Gardé si besoin pour currentStore
 import { useClientStore } from './clients/ClientStore'; // Sera remplacé par hook API
 import { useGetUsers } from '../../api/ReactSublymusApi'; // ✅ Hook pour les users
@@ -13,6 +13,9 @@ import { UserInterface } from '../../Interfaces/Interfaces';
 import { getImg } from '../../Components/Utils/StringFormater';
 import { useTranslation } from 'react-i18next'; // ✅ i18n
 import logger from '../../api/Logger';
+import { useApp } from '../../renderer/AppStore/UseApp';
+import { useGlobalStore } from '../stores/StoreStore';
+import { ClientList } from '../../Components/ClientList/ClientList';
 
 // Interface simplifiée pour les cartes de stats (pour la clarté)
 interface StatCardInfo {
@@ -27,27 +30,30 @@ interface StatCardInfo {
 
 export default function Page() {
   const { t } = useTranslation(); // ✅ i18n
-  // const { fetchUsersStats, userStats } = useApp(); // Remplacé par hook
-  // const { fetchClients } = useClientStore(); // Remplacé par hook
-  // const { currentStore } = useGlobalStore (); // Utilisé par les hooks API via useApi()
+  const { fetchClients } = useClientStore(); // Remplacé par hook
+  const { currentStore } = useGlobalStore (); // Utilisé par les hooks API via useApi()
 
-  // ✅ Récupérer les stats globales (similaire à HomeStat)
-  const { data: statsApiData, isLoading: isLoadingStats } = useGetStats(
-    { stats: ['visits_stats', 'order_stats'] } // Adapter les stats nécessaires
-    // { enabled: !!currentStore } // Activé par défaut si useApi ne throw pas
-  );
+  const { data: userStatsData, isLoading:clientsStatLoading, isError, error } = useGetUserStats({
+    with_active_users: true,
+    with_total_clients: true,
+    with_online_clients:true,
+    with_satisfied_clients:true,
+},{
+  enabled: !!currentStore
+});
+  
   // Extraire les données de stats nécessaires (exemple)
   const userStats = useMemo(() => {
     // TODO: Mapper statsApiData aux valeurs attendues par les cartes (totalClients, activeUsers, etc.)
     // Pour l'instant, on utilise des placeholders ou les données brutes si possible
     return {
-      totalClients: statsApiData?.visits_stats?.length, // Exemple très simplifié
-      ratedUsersCount: undefined, // Placeholder
-      activeUsers: undefined, // Placeholder
-      onlineClients: undefined, // Placeholder
-      averageSatisfaction: undefined // Placeholder
+      totalClients: userStatsData?.stats.totalClients||0, // Exemple très simplifié
+      ratedUsersCount: userStatsData?.stats.ratedUsersCount||0, // Placeholder
+      activeUsers: userStatsData?.stats.activeUsers||0, // Placeholder
+      onlineClients: userStatsData?.stats.onlineClients||0, // Placeholder
+      averageSatisfaction: userStatsData?.stats.averageSatisfaction||0 // Placeholder
     };
-  }, [statsApiData]);
+  }, [userStatsData]);
 
 
   // ✅ Récupérer la liste des clients (première page)
@@ -78,7 +84,7 @@ export default function Page() {
         { labelKey: 'usersPage.stats.rated', value: userStats?.ratedUsersCount ?? 'N/A' },
         { labelKey: 'usersPage.stats.active', value: userStats?.activeUsers ?? 'N/A' },
         { labelKey: 'usersPage.stats.online', value: userStats?.onlineClients ?? 'N/A' },
-        { labelKey: 'usersPage.stats.satisfaction', value: `${userStats?.averageSatisfaction ? (userStats.averageSatisfaction / 5 * 100).toFixed(0) + '%' : 'N/A'}` },
+        { labelKey: 'usersPage.stats.satisfaction', value: `${userStats?.averageSatisfaction ? (userStats.averageSatisfaction / 5 * 100).toFixed(0) + '%' : '--'}` },
       ],
       link: '/users/clients'
     },
@@ -100,7 +106,7 @@ export default function Page() {
     // Ajouter d'autres cartes si nécessaire
   ];
 
-  const isLoading = isLoadingStats || isLoadingClients || isLoadingCollabs;
+  const isLoading = isLoadingClients || isLoadingCollabs||clientsStatLoading;
 
   return (
     // Utiliser flex flex-col
@@ -121,7 +127,7 @@ export default function Page() {
         {/* Ou afficher une table/liste ici */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {/* Afficher la liste des clients ici? */}
-          {/* <ClientList initialClients={clientPrev} /> */}
+          <ClientList initialClients={clientPrev} />
           {/* Afficher la liste des collaborateurs ici? */}
         </div>
         {/* Afficher le planning / tâches si pertinent */}

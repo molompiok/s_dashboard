@@ -8,7 +8,8 @@ import type {
     StatParamType, EventStatus, FeatureInterface, TypeJsonRole, ValueInterface,
     UserAddressInterface,
     UserPhoneInterface,
-    StoreFilterType
+    StoreFilterType,
+    ThemeInterface
 } from '../Interfaces/Interfaces'; // Adapter le chemin
 
 export { StatParamType, UserFilterType, CommandFilterType, Inventory }
@@ -54,6 +55,11 @@ export type GetCategoriesParams = {
     category_id?: string;
     with_product_count?: boolean;
 };
+export type GetCategoryParams = {
+    category_id?: string;
+    slug?: string;
+    with_product_count?: boolean;
+}
 export type GetCategoriesResponse = ListType<CategoryInterface>; // L'API retourne une liste paginée
 export type GetCategoryResponse = CategoryInterface | null; // Pour GET par ID/Slug
 export type CreateCategoryResponse = { message: string, category: CategoryInterface };
@@ -260,10 +266,52 @@ export type ManageDomainResponse = { message: string, store: StoreInterface };
 
 export interface AvailableNameParams { name: string; }
 export type AvailableNameResponse = { is_available_name: boolean };
+
+
+// Interface pour les filtres des stats utilisateurs
+// Basée sur UserStatsFilterType de ton code Zustand
+export interface GetUserStatsParams {
+    with_active_users?: boolean;
+    with_total_clients?: boolean;
+    with_online_clients?: boolean; // Si l'API le supporte
+    with_satisfied_clients?: boolean; // Si l'API le supporte
+}
+
+// Interface pour la réponse des stats utilisateurs
+// Basée sur UserStatsResult de ton code Zustand
+export interface GetUserStatsResponse {
+    stats: {
+        activeUsers?: number; // Renommer pour correspondre?
+        totalClients?: number;
+        onlineClients?: number;
+        averageSatisfaction?: number; // Note moyenne?
+        ratedUsersCount?: number; // Nombre d'utilisateurs ayant noté?
+        // Ajouter d'autres stats si retournées par l'API
+    }
+}
+
 // --- Fin Types Stores ---
 // Types génériques
 export type MessageResponse = { message: string };
 export type DeleteResponse = { message?: string, isDeleted?: boolean } | null;
+// --- Types pour les méthodes Theme ---
+export interface GetThemesParams {
+    page?: number;
+    limit?: number;
+    search?: string; // Recherche par nom, description, features?
+    is_public?: boolean; // Filtrer par thèmes publics?
+    is_active?: boolean; // Filtrer par thèmes activés globalement?
+    // Ajouter d'autres filtres si l'API les supporte (ex: par feature tag)
+}
+// La réponse de la liste est une pagination standard
+export type GetThemesResponse = ListType<ThemeInterface>;
+
+export interface GetThemeParams {
+    theme_id: string; // ID ou Slug du thème
+}
+// La réponse pour un thème est l'objet ThemeInterface lui-même
+export type GetThemeResponse = ThemeInterface;
+// --- Fin Types Theme ---
 
 // Type pour _buildFormData (optionnel)
 type BuildFormDataParams = {
@@ -305,6 +353,7 @@ export class SublymusApi {
     public general: GeneralApiNamespace;
     public debug: DebugApiNamespace;
     public store: StoreNamespace;
+    public readonly theme: ThemeNamespace;
 
     constructor({getAuthTokenApi,getAuthTokenServer,serverUrl,storeApiUrl,t}:{storeApiUrl: string, serverUrl: string, getAuthTokenApi: () => string | null,getAuthTokenServer: () => string | null, t: (key: string, params?: any) => string}) {
         if (!storeApiUrl) throw new Error("API URL is required for initialization."); // Utiliser message brut ou clé i18n pré-initialisée?
@@ -321,6 +370,7 @@ export class SublymusApi {
 
         // Initialiser les namespaces
         this.store = new StoreNamespace(this)
+        this.theme = new ThemeNamespace(this); 
         this.auth = new AuthApiNamespace(this);
         this.products = new ProductsApiNamespace(this);
         this.categories = new CategoriesApiNamespace(this);
@@ -367,7 +417,7 @@ export class SublymusApi {
         
         const requestHeaders = new Headers(headers);
 
-        console.log('token-----------------------------------------',token);
+        console.log('----url---',url);
         
         if (token) requestHeaders.set('Authorization', `Bearer ${token}`);
         if (!isFormData && body) requestHeaders.set('Content-Type', 'application/json');
@@ -634,6 +684,45 @@ export class SublymusApi {
 
 
 // ==================================
+// == Namespace pour Theme ==
+// ==================================
+class ThemeNamespace {
+    private _api: SublymusApi;
+    constructor(apiInstance: SublymusApi) { this._api = apiInstance; }
+
+    getList(params: GetThemesParams = {}): Promise<GetThemesResponse> {
+         // L'API s_server /themes retourne une structure ListType<ThemeInterface>
+        return this._api._request('/{{main_server}}/themes', { method: 'GET', params });
+    }
+
+    getOne({ theme_id }: GetThemeParams): Promise<GetThemeResponse | null> {
+        if (!theme_id) throw new ApiError(this._api.t('api.missingParam', { param: 'theme_id' }), 400);
+        // L'API s_server /themes/:id retourne directement l'objet ThemeInterface ou 404
+        return this._api._request(`/{{main_server}}/themes/${theme_id}`, { method: 'GET' });
+    }
+     async activateForStore({ store_id, themeId }: ChangeThemeParams): Promise<ChangeThemeResponse> {
+         return this._api.store.changeTheme({ store_id, themeId });
+     }
+
+     /**
+      * Récupère les paramètres/options de personnalisation pour un thème donné.
+      * (Nécessiterait un endpoint dédié sur s_server ou l'API du thème)
+      */
+     // async getCustomizationOptions({ theme_id }: GetThemeParams): Promise<any> {
+     //    return this._api._request(`/{{main_server}}/themes/${theme_id}/options`, { method: 'GET' });
+     // }
+
+     /**
+      * Sauvegarde les paramètres de personnalisation d'un thème pour un store donné.
+      * (Nécessiterait un endpoint dédié sur s_server ou l'API du thème)
+      */
+     // async saveCustomization({ store_id, theme_id, settings }: { store_id: string, theme_id: string, settings: any }): Promise<MessageResponse> {
+     //    return this._api._request(`/{{main_server}}/stores/${store_id}/themes/${theme_id}/settings`, { method: 'PUT', body: settings });
+     // }
+
+}
+
+// ==================================
 // == Namespace pour Store ==
 // ==================================
 class StoreNamespace {
@@ -659,7 +748,7 @@ class StoreNamespace {
 
     async update({ store_id, data }: UpdateStoreParams): Promise<UpdateStoreResponse> {
         if (!store_id) throw new ApiError(this._api.t('api.missingId', { entity: 'store' }), 400); // Validation ID
-        const formData = await this._api._buildFormData({ data, dataFilesFelds: ['logo', 'cover_image'] });
+        const formData = await this._api._buildFormData({ data, dataFilesFelds: ['logo', 'cover_image','favicon'] });
         // L'API s_server /stores/:id retourne { message, store }
         return this._api._request(`/{{main_server}}/stores/${store_id}`, { method: 'PUT', body: formData, isFormData: true });
     }
@@ -838,7 +927,7 @@ class CategoriesApiNamespace {
     getList(params?: GetCategoriesParams): Promise<GetCategoriesResponse> { // Rendre params optionnel
         return this._api._request<GetCategoriesResponse>('/api/v1/categories', { method: 'GET', params });
     }
-    async getOne(params: { category_id?: string; slug?: string; with_product_count?: boolean }): Promise<GetCategoryResponse> {
+    async getOne(params: GetCategoryFiltersParams): Promise<GetCategoryResponse> {
         // Utilise getList avec limit: 1
         const filter: GetCategoriesParams = { ...params, limit: 1 };
         const result = await this.getList(filter);
@@ -1207,6 +1296,12 @@ class UsersApiNamespace {
         return this._api._request('/api/v1/users', { method: 'GET', params });
     }
     // Ajouter delete si l'API le permet
+    async getUserStats(params: GetUserStatsParams = {}): Promise<GetUserStatsResponse> {
+        // L'API actuelle retourne { stats: {...} }, donc on type le retour global
+        const response = await this._api._request<GetUserStatsResponse>('/api/v1/stats/clients_stats', { method: 'GET', params });
+        // Retourner un objet vide si la clé 'stats' est manquante pour éviter les erreurs
+        return response ?? { stats: {} };
+    }
 }
 
 // ==============================
@@ -1256,7 +1351,6 @@ class InventoriesApiNamespace {
     async getOne(params: { inventory_id: string }): Promise<GetInventoryResponse> {
         // Utilise l'endpoint /:id
         return this._api._request<Inventory>(`/api/v1/inventories/${params.inventory_id}`, { method: 'GET' });
-        // Gérer le cas 404 avec un try/catch si _request ne le fait pas déjà
     }
 
     async create(params: CreateInventoryParams): Promise<InventoryResponse> {

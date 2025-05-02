@@ -7,7 +7,7 @@ import { useCreateInventory, useUpdateInventory } from "../../api/ReactSublymusA
 import logger from '../../api/Logger';
 import { IoCloudUploadOutline, IoImageOutline } from 'react-icons/io5';
 import { RiImageEditFill } from 'react-icons/ri';
-import { Comfirm } from '../Confirm/Confirm'; // Utiliser Comfirm pour boutons
+import { Confirm } from '../Confirm/Confirm'; // Utiliser Confirm pour boutons
 import { getImg } from '../Utils/StringFormater'; // Pour preview
 import { useGlobalStore } from '../../pages/stores/StoreStore'; // Pour URL base image
 import { ApiError } from '../../api/SublymusApi';
@@ -103,8 +103,7 @@ export function InventoryFormPopup({ initialData, onSaveSuccess, onCancel }: Inv
 
         setFormData(prev => ({
             ...prev,
-            // Remplacer les fichiers et previews existants
-            views: [], // Vider les URLs serveur existantes si on ajoute de nouveaux fichiers? Ou les garder? Gardons les pour l'instant.
+            views: newFiles,
             viewFiles: newFiles,
             viewPreviews: newPreviews,
         }));
@@ -135,7 +134,8 @@ export function InventoryFormPopup({ initialData, onSaveSuccess, onCancel }: Inv
                         address_name: formData.address_name || '',
                         email: formData.email,
                         latitude: formData.latitude,
-                        longitude: formData.longitude
+                        longitude: formData.longitude,
+                        views: formData.views
                     }
                 },
                 {
@@ -153,7 +153,13 @@ export function InventoryFormPopup({ initialData, onSaveSuccess, onCancel }: Inv
         } else {
             // --- Création ---
             createInventoryMutation.mutate({
-                data: formData
+                data: {
+                    address_name: formData.address_name || '',
+                    email: formData.email,
+                    latitude: formData.latitude,
+                    longitude: formData.longitude,
+                    views: formData.views
+                }
             }, {
                 onSuccess: (data) => {
                     logger.info(`Inventory created: ${data.inventory.id}`);
@@ -169,7 +175,7 @@ export function InventoryFormPopup({ initialData, onSaveSuccess, onCancel }: Inv
 
     // --- Affichage Image Preview ---
     // Prioriser les previews locales, sinon les URLs existantes
-    const displayImage = formData.viewPreviews?.[0] ??
+    const displayImage = (formData.viewPreviews?.[0] ? getImg(formData.viewPreviews?.[0]) : null) ??
         (typeof formData.views?.[0] === 'string' ? getImg(formData.views[0], undefined, currentStore?.url) : undefined);
     const showPlaceholder = !displayImage;
 
@@ -184,7 +190,7 @@ export function InventoryFormPopup({ initialData, onSaveSuccess, onCancel }: Inv
                 <label htmlFor='inventory-image-input' className={`relative block w-full aspect-video rounded-lg cursor-pointer overflow-hidden group bg-gray-100 border ${fieldErrors.views ? 'border-red-500' : 'border-gray-300'} hover:bg-gray-200`}>
                     <div
                         className="absolute inset-0 bg-cover bg-center transition-opacity duration-150"
-                        style={{ backgroundImage: displayImage || getImg('/res/empty/drag-and-drop.png', '80%') }} // Utiliser displayImage ou placeholder
+                        style={{ background: displayImage }} // Utiliser displayImage ou placeholder
                     ></div>
                     {showPlaceholder && (
                         <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-400 group-hover:text-blue-500 p-2 text-center">
@@ -276,12 +282,12 @@ export function InventoryFormPopup({ initialData, onSaveSuccess, onCancel }: Inv
 
 
             {/* Boutons */}
-            <Comfirm
+            <Confirm
                 onCancel={onCancel}
                 confirm={formData.id ? t('common.saveChanges') : t('common.create')}
                 onConfirm={handleSubmit}
                 canConfirm={!isLoading} // Actif si pas en chargement
-            // isLoading={isLoading} // Passer l'état de chargement à Comfirm si besoin
+            // isLoading={isLoading} // Passer l'état de chargement à Confirm si besoin
             />
         </div>
     );

@@ -1,15 +1,18 @@
 // Components/StoreDetails/SelectedStoreDetails.tsx
 
-import { StoreInterface } from "../../Interfaces/Interfaces";
+import { PeriodType, StoreInterface } from "../../Interfaces/Interfaces";
 import { useTranslation } from "react-i18next";
-import { IoCheckmarkCircle, IoChevronForward, IoClose, IoDesktop, IoFingerPrint, IoPauseCircle, IoPencil, IoSettings, IoTrash } from "react-icons/io5"; // Ajouter icônes actions
+import { IoCheckmarkCircle, IoChevronForward, IoClose, IoDesktop, IoFingerPrint, IoGlobe, IoGlobeOutline, IoPauseCircle, IoPencil, IoSettings, IoTrash } from "react-icons/io5"; // Ajouter icônes actions
 import { Bar } from 'react-chartjs-2'; // Importer Bar pour exemple stats
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js'; // Importer modules Chart.js
 import { Progrees } from "../Progress/Pregress"; // Utiliser le composant Progress
 import { useDeleteStore, useGetStats, useStartStore, useStopStore } from "../../api/ReactSublymusApi"; // Hook pour stats (si applicable au store)
 import logger from "../../api/Logger";
-import { getImg } from "../Utils/StringFormater";
 import { useGlobalStore } from "../../pages/stores/StoreStore";
+import { useState } from "react";
+import { Confirm } from "../../Components/Confirm/Confirm";
+import { useChildViewer } from "../ChildViewer/useChildViewer";
+import { ChildViewer } from "../ChildViewer/ChildViewer";
 
 // Enregistrer les modules Chart.js nécessaires
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
@@ -20,26 +23,30 @@ interface SelectedStoreDetailsProps {
 }
 
 export function SelectedStoreDetails({ store, onEditRequired }: SelectedStoreDetailsProps) {
-    const { t } = useTranslation();
 
-    // TODO: Récupérer les stats spécifiques à CE store si l'API le permet
-    // Pour l'instant, on utilise des données statiques ou globales
-    // const { data: statsData, isLoading: isLoadingStats } = useGetStats({ : store.id }, { enabled: !!store.id });
-    const isLoadingStats = false; // Placeholder
-    const statsData = { // Placeholder Data
-        order_stats: [{ date: '2023-10-01', orders_count: 5 }, { date: '2023-10-02', orders_count: 8 }],
-        visits_stats: [{ date: '2023-10-01', visits: 50 }, { date: '2023-10-02', visits: 75 }],
-    };
+    const { t, i18n } = useTranslation();
+    const { openChild } = useChildViewer();
+
+
+    const [period, setPeriod] = useState<PeriodType>('month');
+    const { data: statsData, isLoading: isLoadingStats } = useGetStats({ period, stats: ['visits_stats', 'order_stats'] }, { enabled: !!store.id });
+    // const statsData = { // Placeholder Data
+    //     order_stats: [{ date: '2023-10-01', orders_count: 5 }, { date: '2023-10-02', orders_count: 8 }],
+    //     visits_stats: [{ date: '2023-10-01', visits: 50 }, { date: '2023-10-02', visits: 75 }],
+    // };
+
+    console.log({ statsData });
+
     const { setCurrentStore } = useGlobalStore()
     // TODO: Initialiser les mutations pour les actions serveur
     const startStoreMutation = useStartStore();
     const stopStoreMutation = useStopStore();
-    const deleteStoreMutation = useDeleteStore();
+
 
     const isActionLoading = startStoreMutation.isPending || startStoreMutation.isPending || stopStoreMutation.isPending
 
     // --- Handlers pour les actions ---
-    const handleStartStop = () => {
+    const _handleStartStop = () => {
         if (store.is_running) {
             logger.warn("Stop store action not implemented");
             store.id && stopStoreMutation.mutate({
@@ -64,20 +71,32 @@ export function SelectedStoreDetails({ store, onEditRequired }: SelectedStoreDet
                 },
             });
         }
+    }
+    const handleStartStop = () => {
+        openChild(<ChildViewer>
+            <div>
+                <h3>{store.is_running ? t('storesPage.comfirm.stop') : t('storesPage.comfirm.start')}</h3>
+                <p>{store.is_running ? t('storesPage.comfirm.stopPompt') : t('storesPage.comfirm.startPompt')}</p>
+                <Confirm canConfirm 
+                cancel={t('common.cancel')} 
+                confirm={t('common.ok')}
+                onConfirm={()=>{
+                    _handleStartStop();
+                }} 
+                onCancel={()=>{
+                    openChild(null)
+                }} 
+                />
+            </div>
+        </ChildViewer>, {
+            background: '#3455'
+        })
     };
-    const handleDeleteStore = () => {
-        // Ajouter confirmation
-        logger.warn("Delete store action not implemented");
-        store.id && deleteStoreMutation.mutate({
-            store_id: store.id
-        });
-    };
-
 
     // --- Préparation données Chart.js (Exemple simple) ---
-    const chartLabels = statsData?.order_stats?.map(d => d.date) ?? [];
-    const chartOrderData = statsData?.order_stats?.map(d => d.orders_count) ?? [];
-    const chartVisitData = statsData?.visits_stats?.map(d => d.visits) ?? [];
+    const chartLabels = statsData?.order_stats?.slice(0, 7).map(_d => _d.date) ?? [];
+    const chartOrderData = statsData?.order_stats?.slice(0, 7).map(d => d.orders_count) ?? [];
+    const chartVisitData = statsData?.visits_stats?.slice(0, 7).map(d => d.visits) ?? [];
 
     const chartData = {
         labels: chartLabels,
@@ -121,22 +140,32 @@ export function SelectedStoreDetails({ store, onEditRequired }: SelectedStoreDet
                     <div className="flex items-center gap-3 mb-1">
                         <h2 className="text-xl font-semibold text-gray-800 truncate" title={store.name}>{store.name}</h2>
                         <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium ${store.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
-                            {store.is_active ? <IoCheckmarkCircle className="w-4 h-4"/> : <IoPauseCircle  className="w-4 h-4"/>}
+                            {store.is_active ? <IoCheckmarkCircle className="w-4 h-4" /> : <IoPauseCircle className="w-4 h-4" />}
                             {store.is_active ? t('storesPage.status.active') : t('storesPage.status.inactive')}
                         </span>
                     </div>
                     {/* Description */}
                     <p className="text-sm text-gray-500 line-clamp-2">{store.description || t('storesPage.noDescription')}</p>
+                    {/* <span className="text-gray-500">{t('storesPage.domainLabel')}: </span> */}
+                    {/* Url de par defeaut de la boutique. */}
+                    {
+                        <div className="mt-2 flex items-center gap-1 text-sm">
+                            <IoGlobeOutline className="w-4 h-4 text-gray-700" />
+                            <span className="text-gray-500">{t('')} </span>
+                            <a href={`http://${'sublymus.com/'}${store.slug}`} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline font-medium">
+                                {`http://${'sublymus.com/'}${store.slug}`}
+                            </a>
+                        </div>
+                    }
                     {/* Domaine(s) */}
-                    {store.domain_names && store.domain_names.length > 0 && (
+                    {/* {store.domain_names && store.domain_names.length > 0 && (
                         <div className="mt-2 text-sm">
-                            <span className="text-gray-500">{t('storesPage.domainLabel')}: </span>
                             <a href={`http://${store.domain_names[0]}`} target="_blank" rel="noreferrer" className="text-blue-600 hover:underline font-medium">
                                 {store.domain_names[0]}
                             </a>
                             {store.domain_names.length > 1 && <span className="text-gray-400 text-xs"> (+{store.domain_names.length - 1})</span>}
                         </div>
-                    )}
+                    )} */}
                 </div>
                 {/* Actions Rapides */}
                 <div className="flex flex-wrap gap-2 md:flex-col md:items-end flex-shrink-0">
@@ -145,8 +174,8 @@ export function SelectedStoreDetails({ store, onEditRequired }: SelectedStoreDet
                         onClick={handleStartStop}
                         disabled={isActionLoading}
                         className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium border transition w-full md:w-auto justify-center ${store.is_running
-                                ? 'bg-yellow-50 border-yellow-200 text-yellow-700 hover:bg-yellow-100  hover:shadow-md cursor-pointer'
-                                : 'bg-green-50 border-green-200 text-green-700 hover:bg-green-100  hover:shadow-md cursor-pointer'
+                            ? 'bg-yellow-50 border-yellow-200 text-yellow-700 hover:bg-yellow-100  hover:shadow-md cursor-pointer'
+                            : 'bg-green-50 border-green-200 text-green-700 hover:bg-green-100  hover:shadow-md cursor-pointer'
                             } disabled:opacity-50`}
                     >
                         {
@@ -164,16 +193,27 @@ export function SelectedStoreDetails({ store, onEditRequired }: SelectedStoreDet
                     <a href={`/stores/${store.id}/settings`} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 w-full md:w-auto justify-center transition hover:shadow-md cursor-pointer hover:border-blue-200 hover:bg-blue-50/30">
                         <IoSettings size={16} /> {t('storesPage.actions.settings')}
                     </a>
-                    {/* Sécurité (exemple) */}
-                    {/* <a href={`/stores/${store.id}/security`} className="...">...</a> */}
-                    {/* Supprimer (exemple) */}
-                    {/* <button onClick={handleDeleteStore} disabled={isActionLoading} className="...">...</button> */}
                 </div>
             </div>
 
             {/* Section 2: Statistiques */}
             <div className="pb-6 border-b border-gray-100">
                 <h3 className="text-base font-medium text-gray-700 mb-3">{t('storesPage.statsTitle')}</h3>
+                <div className="flex justify-between items-center mb-4">
+                    <h3 className="text-lg font-semibold text-gray-800">{t('clientDetail.activityChartTitle')}</h3>
+                    {/* Sélecteur Période */}
+                    <div className="periods flex items-center gap-1 border border-gray-300 rounded-lg p-0.5">
+                        {(['day', 'week', 'month'] as const).map(p => (
+                            <button
+                                key={p}
+                                onClick={() => setPeriod(p)}
+                                className={`px-2.5 py-1 rounded-md text-xs font-medium transition ${p === period ? 'bg-blue-600 text-white shadow-sm' : 'text-gray-500 hover:bg-gray-100'}`}
+                            >
+                                {t(`dashboard.periods.${p}`)}
+                            </button>
+                        ))}
+                    </div>
+                </div>
                 <div className="h-48"> {/* Hauteur fixe pour le graphique */}
                     {isLoadingStats ? (
                         <div className="h-full flex items-center justify-center text-gray-400">{t('common.loading')}...</div>

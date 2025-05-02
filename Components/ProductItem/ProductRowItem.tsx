@@ -141,23 +141,23 @@ function ProductRowItem({ product, categoriesMap }: ProductRowItemProps) {
             </div>
 
             {/* Catégories (md+) */}
-            <div className="hidden md:flex flex-wrap gap-1 items-center flex-shrink-0 max-w-[150px] lg:max-w-[200px]"> {/* Ajuster max-w */}
+            {/* <div className="hidden md:flex flex-wrap gap-1 items-center flex-shrink-0 max-w-[150px] lg:max-w-[200px]">
                 {productCategories.slice(0, 2).map((catName, index) => (
                     <span key={index} className="text-xs bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded whitespace-nowrap">
                         {limit(catName, 15)}
                     </span>
                 ))}
                 {productCategories.length > 2 && (<span className="text-xs text-gray-400">+{productCategories.length - 2}</span>)}
-            </div>
+            </div> */}
 
             {/* Rating (caché en dessous de 500px) */}
-            <div className="hidden min-[500px]:flex min-[500px]:items-center min-[500px]:flex-col min-[850px]:flex-row flex-wrap gap-x-3 gap-y-1 text-xs text-gray-600 flex-shrink-0 w-16 justify-end">
-                <span className="inline-flex gap-1 items-center"><IoStarHalf className="text-amber-500" />{(product.rating || 0).toFixed(1)}</span>
-                <span className="inline-flex gap-1 items-center"><IoPeopleSharp />{shortNumber(product.comment_count || 0)}</span>
-            </div>
+            <div className="hidden min-[500px]:flex flex-wrap gap-x-3 gap-y-1 mt-1 text-xs text-gray-600">
+                    <span className="inline-flex gap-1 items-center"><IoStarHalf className="text-amber-500" />{(product.rating || 0).toFixed(1)}</span>
+                    <span className="inline-flex gap-1 items-center"><IoPeopleSharp />{shortNumber(product.comment_count || 0)}</span>
+                </div>
 
             {/* Prix (sm+) */}
-            <div className="hidden sm:flex flex-col items-end flex-shrink-0 w-24">
+            <div className="hidden sx:flex flex-col items-end flex-shrink-0 w-24">
                 <span className='text-sm font-medium text-gray-800'>{Number(product.price || 0).toLocaleString()} {product.currency}</span>
                 {product.barred_price && product.barred_price > product.price && (<span className="text-xs text-gray-400 line-through">{product.barred_price.toLocaleString()}</span>)}
             </div>
@@ -166,8 +166,8 @@ function ProductRowItem({ product, categoriesMap }: ProductRowItemProps) {
             <div className="hidden ml-4 lg:flex items-center justify-end gap-2 flex-shrink-0 w-32 text-right"> {/* justify-end */}
                 {/* Stock */}
                 <span className={`text-xs font-medium px-1.5 py-0.5 rounded whitespace-nowrap ${stockStatus === 'in_stock' ? 'bg-green-100 text-green-700' :
-                        stockStatus === 'low_stock' ? 'bg-yellow-100 text-yellow-700' :
-                            'bg-red-100 text-red-700'
+                    stockStatus === 'low_stock' ? 'bg-yellow-100 text-yellow-700' :
+                        'bg-red-100 text-red-700'
                     }`} title={t(`productList.stockStatus.${stockStatus}`, { count: stockLevel })}>
                     {stockStatus === 'in_stock' ? t('productList.inStock') : stockStatus === 'low_stock' ? t('productList.lowStockShort', { count: stockLevel }) : t('productList.outOfStock')}
                 </span>

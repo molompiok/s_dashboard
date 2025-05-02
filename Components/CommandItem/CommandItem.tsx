@@ -7,23 +7,17 @@ import { OrderStatusElement } from "../Status/Satus";
 export function CommandItem({ command }: { command: CommandInterface }) {
     const { t } = useTranslation(); // ✅ i18n
     return (
-         // Utiliser les classes Tailwind dérivées de CommandItem.css
-         // Ajout de padding global p-3
-        <div className="bg-white shadow-sm border border-gray-100 w-full rounded-xl gap-2 flex flex-col items-start p-3 transition duration-100 hover:bg-gray-50">
+        <div className="command-item  bg-white shadow-sm border border-gray-100 w-full rounded-xl gap-2 flex flex-col items-start p-3 transition duration-100 hover:bg-gray-50">
              {/* Info Client */}
-             {/* Utiliser flex, items-center, gap-2, cursor-pointer */}
-            <div className="w-full flex items-center gap-2 cursor-pointer">
+            <div className="w-full flex flex-col sl2:flex-row sl2:items-center gap-2 cursor-pointer">
                  {/* Image + Infos */}
-                 {/* Utiliser flex, items-center, gap-2, min-w-0 (important pour flex-shrink) */}
                 <div className='flex items-center gap-2 min-w-0'>
                      {/* Image Client */}
-                     {/* Utiliser w-14 h-14, rounded-xl, flex-shrink-0, bg-cover, bg-center, bg-gray-200 */}
                     <div
                         className="w-14 h-14 rounded-xl flex-shrink-0 bg-cover bg-center bg-no-repeat bg-gray-200"
                         style={{ background: getImg(command.user?.photo?.[0] ?? '/res/delivery_moto.png') }} // Utiliser photo user si dispo
                     ></div>
                      {/* Infos Textuelles */}
-                     {/* Utiliser flex, flex-col, gap-0.5, flex-shrink, overflow-hidden */}
                     <div className="flex flex-col gap-0.5 flex-shrink overflow-hidden">
                         <h2 className='font-medium text-base text-gray-800 overflow-hidden text-ellipsis whitespace-nowrap'>
                             {command.user?.full_name || t('common.anonymous')} {/* Afficher nom ou 'Anonyme' */}
@@ -33,9 +27,7 @@ export function CommandItem({ command }: { command: CommandInterface }) {
                     </div>
                 </div>
                 {/* Partie Droite */}
-                 {/* Utiliser ml-auto, flex, items-center, gap-3, flex-shrink-0 */}
-                 {/* Responsive: md:flex-row flex-col-reverse items-end md:items-center */}
-                <div className="ml-auto flex flex-col-reverse items-end gap-2 md:flex-row md:items-center md:gap-3 flex-shrink-0">
+                 <div className="ml-auto flex flex-row sl2:flex-col-reverse sl2:items-end gap-2 md:flex-row md:items-center md:gap-3 flex-shrink-0">
                     {/* Statut */}
                     <span className='flex justify-end'>
                          <OrderStatusElement status={(command.status || command.payment_status)?.toUpperCase() as any || ''} />
@@ -52,7 +44,7 @@ export function CommandItem({ command }: { command: CommandInterface }) {
 
 export function CommandItemSkeleton() {
     return (
-        <div className="category-item-row flex items-center gap-3 sm:gap-4 p-2.5 bg-white rounded-lg shadow-sm border border-gray-200 w-full animate-pulse">
+        <div className="command-item-row flex items-center gap-3 sm:gap-4 p-2.5 bg-white rounded-lg shadow-sm border border-gray-200 w-full animate-pulse">
             <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-md bg-gray-300 flex-shrink-0"></div>
             <div className="flex-grow min-w-0 flex flex-col gap-1">
                 <div className="h-5 w-3/5 bg-gray-300 rounded"></div> {/* Nom */}

@@ -23,8 +23,7 @@ interface CategoriesPopupProps {
 }
 
 function CategoriesPopup({ onSelected, ignore = [], initialSearch = '' }: CategoriesPopupProps) {
-    const { t } = useTranslation(); // ✅ i18n
-    // const { fetchCategories, categories: _list } = useCategory(); // Supprimé
+    const { t } = useTranslation(); 
     const { currentStore } = useGlobalStore();
     const [searchTerm, setSearchTerm] = useState(initialSearch);
     const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(initialSearch);
@@ -36,7 +35,7 @@ function CategoriesPopup({ onSelected, ignore = [], initialSearch = '' }: Catego
 
     // ✅ Utiliser React Query pour fetcher les catégories avec le filtre de recherche
     const { data: categoriesData, isLoading, isError } = useGetCategories(
-        { search: debouncedSearchTerm || undefined, limit: 100 }, // Limite haute pour tout afficher, ajouter pagination si besoin
+        { search: debouncedSearchTerm || undefined, limit: 100,with_product_count:true }, // Limite haute pour tout afficher, ajouter pagination si besoin
         { enabled: !!currentStore }
     );
 

@@ -3,9 +3,9 @@
 import { useState, useEffect, useCallback } from 'react';
 import { StoreInterface } from "../../Interfaces/Interfaces";
 import { useTranslation } from "react-i18next";
-import { useUpdateStore } from "../../api/ReactSublymusApi"; // Hook pour la mise à jour
+import { useStartStore, useStopStore, useUpdateStore } from "../../api/ReactSublymusApi"; // Hook pour la mise à jour
 import logger from '../../api/Logger';
-import { IoCheckmarkCircle, IoInformationCircleOutline, IoPauseCircle, IoPencil } from 'react-icons/io5';
+import { IoCheckmarkCircle, IoInformationCircleOutline, IoPauseCircle, IoPencil, IoPlayCircleOutline, IoStopCircleOutline, IoSyncCircleOutline } from 'react-icons/io5';
 import TimezoneSelect, { ITimezoneOption } from 'react-timezone-select'; // Utiliser un sélecteur de fuseau horaire
 import { ApiError } from '../../api/SublymusApi';
 
@@ -24,7 +24,9 @@ type GeneralFormState = Pick<StoreInterface, 'name' | 'title' | 'description'> &
 export function GeneralSettingsSection({ store }: GeneralSettingsSectionProps) {
     const { t } = useTranslation();
     const updateStoreMutation = useUpdateStore();
-
+    const startStoreMutation = useStartStore();
+    const stopStoreMutation = useStopStore();
+    const isActionLoading = startStoreMutation.isPending || stopStoreMutation.isPending; 
     const isLoading = updateStoreMutation.isPending
     // --- État Local du Formulaire ---
     const [formState, setFormState] = useState<GeneralFormState>({
@@ -87,6 +89,29 @@ export function GeneralSettingsSection({ store }: GeneralSettingsSectionProps) {
         // Ajouter validation timezone si nécessaire
         setFieldErrors(errors);
         return isValid;
+    };
+    const handleStartStop = () => {
+        if (isActionLoading || !store.id) return; // Sécurité
+
+        const action = store.is_running ? stopStoreMutation : startStoreMutation;
+        const actionName = store.is_running ? 'stop' : 'start';
+
+        action.mutate(
+            { store_id: store.id },
+            {
+                onSuccess: (data) => {
+                    logger.info(`Store ${actionName} requested successfully`, { storeId: store.id, jobId: data.store });
+                    // L'invalidation du cache 'storeDetails' dans le hook mettra à jour l'UI
+                    // Afficher toast succès? (Ex: "Demande de démarrage envoyée")
+                },
+                onError: (error: ApiError) => {
+                    logger.error({ error }, `Failed to request store ${actionName} for store ${store.id}`);
+                    // Afficher toast erreur?
+                    // On ne revert pas l'état is_running ici car l'état réel est côté serveur
+                    // et sera mis à jour par le refetch après invalidation.
+                }
+            }
+        );
     };
 
     // --- Sauvegarde ---
@@ -212,25 +237,58 @@ export function GeneralSettingsSection({ store }: GeneralSettingsSectionProps) {
                 <div>
                     <span className="block text-sm font-medium text-gray-700">{t('settingsGeneral.statusLabel')}</span>
                     <div className={`mt-1 inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium ${store.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
-                        {store.is_active ? <IoCheckmarkCircle /> : <IoPauseCircle />}
+                        {store.is_active ? <IoCheckmarkCircle className="w-4 h-4" /> : <IoPauseCircle className="w-4 h-4"/>}
                         {store.is_active ? t('storesPage.status.active') : t('storesPage.status.inactive')}
                     </div>
                     <p className="mt-1 text-xs text-gray-500 flex items-center gap-1">
-                        <IoInformationCircleOutline className="w-3.5 h-3.5" />
+                        <IoInformationCircleOutline className="w-4 h-4" />
                         {t('settingsGeneral.statusHelp')}
                     </p>
                 </div>
 
-                {/* Visibilite Boutique */}
-                <div>
-                    <span className="block text-sm font-medium text-gray-700">{t('settingsGeneral.statusLabel')}</span>
-                    <div className={`mt-1 inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium ${store.is_active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-600'}`}>
-                        {store.is_active ? <IoCheckmarkCircle /> : <IoPauseCircle />}
-                        {store.is_active ? t('storesPage.status.active') : t('storesPage.status.inactive')}
+                   {/* ---- NOUVELLE SECTION POUR is_running ---- */}
+                   <div>
+                    <span className="block text-sm font-medium text-gray-700">{t('settingsGeneral.runtimeStatusLabel')}</span> 
+                    <div className="mt-1 flex items-center gap-4">
+                         {/* Indicateur Visuel du Statut */}
+                         <span className={`inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium ${
+                             store.is_running
+                                 ? 'bg-sky-100 text-sky-700' // Bleu clair pour "en cours"
+                                 : 'bg-red-100 text-red-700' // Rouge pour "stoppé"
+                         }`}>
+                             {isActionLoading ? (
+                                 <IoSyncCircleOutline className="animate-spin w-3.5 h-3.5" /> // Spinner pendant l'action
+                             ) : store.is_running ? (
+                                 <IoPlayCircleOutline className="w-4 h-4" /> // Icône Play pour en cours
+                             ) : (
+                                 <IoStopCircleOutline className="w-4 h-4" /> // Icône Stop pour arrêté
+                             )}
+                             {isActionLoading
+                                 ? (store.is_running ? t('common.stopping') : t('common.starting')) // Texte pendant action
+                                 : (store.is_running ? t('storesPage.status.running') : t('storesPage.status.stopped'))} 
+                         </span>
+                         {/* Bouton d'Action Start/Stop */}
+                          <button
+                              type="button"
+                              onClick={handleStartStop}
+                              disabled={isActionLoading}
+                              className={`inline-flex hover:shadow-sm cursor-pointer items-center justify-center px-3 py-1 border rounded-md text-sm font-medium transition duration-150 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed ${
+                                  store.is_running
+                                      ? 'border-yellow-300 bg-yellow-50 text-yellow-700 hover:bg-yellow-100' // Style Stop
+                                      : 'border-green-300 bg-green-50 text-green-700 hover:bg-green-100' // Style Start
+                              }`}
+                          >
+                              {isActionLoading ? (
+                                  <svg className="animate-spin h-4 w-4 text-currentColor" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path></svg>
+                              ) : (
+                                  store.is_running ? <IoStopCircleOutline className="-ml-0.5 mr-1 h-4 w-4" /> : <IoPlayCircleOutline className="-ml-0.5 mr-1 h-4 w-4" />
+                              )}
+                              {store.is_running ? t('storesPage.actions.stop') : t('storesPage.actions.start')} 
+                         </button>
                     </div>
                     <p className="mt-1 text-xs text-gray-500 flex items-center gap-1">
-                        <IoInformationCircleOutline className="w-3.5 h-3.5" />
-                        {t('settingsGeneral.statusHelp')}
+                        <IoInformationCircleOutline className="w-3.5 h-3.5"/>
+                         {store.is_running ? t('settingsGeneral.runtimeStatusHelpRunning') : t('settingsGeneral.runtimeStatusHelpStopped')} 
                     </p>
                 </div>
 

@@ -18,6 +18,7 @@ import { useTranslation } from 'react-i18next'; // ✅ i18n
 import { DateTime } from 'luxon';
 import { DateFilterComponent } from '../CommandesList/CommandesList';
 import IMask from 'imask';
+import { Pagination } from '../Pagination/Pagination';
 
 export { ClientList };
 
@@ -25,7 +26,7 @@ export { ClientList };
 const VALID_CLIENT_STATUS = ['NEW', 'CLIENT', 'PREMIUM', 'BANNED'] as const;
 type ValidClientStatus = typeof VALID_CLIENT_STATUS[number];
 
-function ClientList({ product_id, user_id }: { user_id?: string; product_id?: string }) {
+function ClientList({ product_id, user_id, initialClients }: { initialClients: UserInterface[], user_id?: string; product_id?: string }) {
   const { t } = useTranslation(); // ✅ i18n
   // L'état du filtre local
   const [filter, setFilter] = useState<UserFilterType>({
@@ -67,9 +68,9 @@ function ClientList({ product_id, user_id }: { user_id?: string; product_id?: st
     <div className="client-list w-full flex flex-col gap-4">
       {/* Barre supérieure Titre + Recherche */}
       {/* Utiliser flex justify-between items-center flex-wrap gap-4 */}
-      <div className="top w-full flex justify-between items-center flex-wrap gap-4 p-2">
+      <div className="top w-full flex justify-between flex-wrap items-center  gap-4 p-2">
         <h2 className="text-lg font-semibold text-gray-700 whitespace-nowrap">{t('clientList.title')}</h2>
-        <label htmlFor="client-search-input" className='relative w-full sm:w-auto sm:max-w-xs ml-auto'>
+        <label htmlFor="client-search-input" className='relative w-full min-[460px]:w-auto sm:max-w-xs ml-auto'>
           <input
             className="w-full pl-3 pr-10 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
             placeholder={t('clientList.searchPlaceholder')}
@@ -81,7 +82,7 @@ function ClientList({ product_id, user_id }: { user_id?: string; product_id?: st
               debounce(() => setFilter(prev => ({ ...prev, search: search || undefined, page: 1 })), 'client-search', 400);
             }}
           />
-          <IoSearch className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
+          <IoSearch className="absolute right-3 top-[16px] -translate-y-1/2 text-gray-400" />
         </label>
       </div>
 
@@ -117,7 +118,15 @@ function ClientList({ product_id, user_id }: { user_id?: string; product_id?: st
           );
         })}
       </div>
-      {/* TODO: Ajouter Pagination basée sur clientsMeta */}
+      {clientsMeta && clientsMeta.total > clientsMeta.per_page && (
+        <Pagination
+          currentPage={clientsMeta.current_page}
+          lastPage={clientsMeta.last_page}
+          total={clientsMeta.total}
+          perPage={clientsMeta.per_page}
+          onPageChange={(newPage) => setFilter(prev => ({ ...prev, page: newPage }))}
+        />
+      )}
     </div>
   );
 }

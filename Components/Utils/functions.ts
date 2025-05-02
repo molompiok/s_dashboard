@@ -33,6 +33,11 @@ function ClientCall(fn: Function, defaultValue?: any, ...params: any[]) {
     return defaultValue
 }
 
+async function waitHere(millis: number) {
+  await new Promise((rev) => setTimeout(() => rev(0), millis))
+}
+
+
 const CharList = Array.from({ length: 36 }).map((_, i) => Number(i).toString(36));
 CharList.push('-');
 

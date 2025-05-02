@@ -1,14 +1,9 @@
 // Components/TopBar/TopBar.tsx
-// import './TopBar.css'; // ❌ Supprimer
 
 import { useEffect, useState } from 'react';
-// import {  getTransmit, useGlobalStore  } from '../../pages/stores/StoreStore'; // Probablement pas nécessaires ici
-// import { useApp } from '../../renderer/AppStore/UseApp'; // Remplacé
 import { ChildViewer } from '../ChildViewer/ChildViewer'; // Gardé
 import { TopSearch } from '../TopSearch/TopSearch'; // Gardé
 import { IoSearch, IoNotifications, IoChevronBack, IoChevronForward } from "react-icons/io5"; // Ajouter IoChevronForward pour breadcrumb
-// import { ClientCall } from '../Utils/functions'; // Supposé non utilisé ici directement
-// import { Transmit } from '@adonisjs/transmit-client'; // Supposé non utilisé ici
 import { useChildViewer } from '../ChildViewer/useChildViewer'; // Utiliser le hook
 import { useTranslation } from 'react-i18next'; // ✅ i18n
 import { useAuthStore } from '../../pages/login/AuthStore'; // Pour afficher le nom de l'utilisateur
@@ -16,7 +11,7 @@ import { useAuthStore } from '../../pages/login/AuthStore'; // Pour afficher le 
 export { Topbar };
 
 // Interface pour les miettes de pain (breadcrumbs)
-interface BreadcrumbItem {
+export interface BreadcrumbItem {
     name: string; // Texte affiché
     url?: string; // URL cliquable (optionnel pour le dernier élément)
 }
@@ -43,11 +38,10 @@ function Topbar({
     const { user } = useAuthStore(); // Récupérer l'utilisateur connecté
 
     // Déterminer le titre à afficher (Breadcrumbs ou Titre simple)
-    const displayTitle = breadcrumbs.length === 0 ? (title || t('topbar.welcomeMessage', { name: user?.full_name?.split(' ')[0] || 'Admin' })) : null; // 🌍 i18n
+    const displayTitle = breadcrumbs.length === 0 ? (title || t('topbar.welcomeMessage', { name: user?.full_name?.split(' ')[0] || 'Admin' })) : null;
 
     // Calculer le nom d'utilisateur à afficher
-    const displayName = user?.full_name || t('topbar.defaultUser'); // 🌍 i18n
-
+    const displayName = user?.full_name ; 
     const handleBackClick = () => {
         if (onBack) {
             onBack();
@@ -99,13 +93,24 @@ function Topbar({
                         <ol className="flex items-center gap-1.5 text-sm">
                             {breadcrumbs.map((crumb, index) => (
                                 <li key={index} className="flex items-center gap-1.5">
-                                    {index > 0 && <IoChevronForward className="w-3 h-3 text-gray-400 flex-shrink-0" />}
-                                    {crumb.url && index < breadcrumbs.length - 1 ? ( // Si URL et pas le dernier
-                                        <a href={crumb.url} className="text-gray-500 hover:text-gray-700 hover:underline truncate">
+                                    {index > 0 && (
+                                        <IoChevronForward className="w-3 h-3 text-gray-400 flex-shrink-0" />
+                                    )}
+                                    {crumb.url && index < breadcrumbs.length - 1 ? (
+                                        <a
+                                            href={crumb.url}
+                                            className="text-gray-500 hover:text-gray-700 hover:underline truncate max-w-[80px] overflow-hidden text-ellipsis whitespace-nowrap"
+                                        >
                                             {crumb.name}
                                         </a>
-                                    ) : ( // Dernier élément ou pas d'URL
-                                        <span className={`font-medium ${index === breadcrumbs.length - 1 ? 'text-gray-700' : 'text-gray-500'} truncate`} aria-current={index === breadcrumbs.length - 1 ? 'page' : undefined}>
+                                    ) : (
+                                        <span
+                                            className={`font-medium ${index === breadcrumbs.length - 1
+                                                    ? 'text-gray-700'
+                                                    : 'text-gray-500'
+                                                } truncate max-w-[80px] overflow-hidden text-ellipsis whitespace-nowrap`}
+                                            aria-current={index === breadcrumbs.length - 1 ? 'page' : undefined}
+                                        >
                                             {crumb.name}
                                         </span>
                                     )}
@@ -118,7 +123,7 @@ function Topbar({
 
             {/* Section Droite: Recherche & Notifications */}
             {/* Utiliser flex, items-center, gap-2 ou 3 */}
-            <div className='right flex items-center gap-3 flex-shrink-0'>
+            <div className='right bg-white flex items-center gap-3 flex-shrink-0'>
                 {/* Bouton Recherche */}
                 {search && (
                     <button

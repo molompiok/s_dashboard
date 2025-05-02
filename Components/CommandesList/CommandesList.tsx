@@ -21,6 +21,7 @@ import { queryClient } from '../../api/ReactSublymusApi'; // Importer queryClien
 import { DateTime } from 'luxon';
 import Logger from '../../api/Logger';
 import { CommandItemSkeleton } from '../CommandItem/CommandItem';
+import { Pagination } from '../Pagination/Pagination';
 
 
 
@@ -41,7 +42,7 @@ function CommandeList({ product_id, user_id }: { user_id?: string; product_id?: 
         { enabled: !!currentStore } // Activer seulement si store chargé
     );
     const commands = commandsData?.list ?? []; // Extraire la liste
-    const commandsMeta = commandsData?.meta; // Extraire meta pour pagination future
+    const meta = commandsData?.meta; // Extraire meta pour pagination future
 
     // Gestion SSE pour rafraîchissement temps réel
     useEffect(() => {
@@ -103,6 +104,21 @@ function CommandeList({ product_id, user_id }: { user_id?: string; product_id?: 
     };
     // --- Fin Logique Dates ---
 
+    const searchInput = <label htmlFor="commands-search-input" className='relative w-full max-w-xs ml-auto'> {/* Limiter largeur recherche */}
+        <input
+            className="w-full pl-3 pr-10 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
+            placeholder={t('dashboard.searchPlaceholder')} // 🌍 i18n
+            id="commands-search-input"
+            type="text"
+            value={filter.search || ''}
+            onChange={(e) => {
+                const search = e.currentTarget.value;
+                // Utiliser debounce pour la recherche
+                debounce(() => setFilter((prev) => ({ ...prev, search: search || undefined, page: 1 })), 'search-command', 400); // Reset page à 1
+            }}
+        />
+        <IoSearch className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
+    </label>
     return (
         // Utiliser flex-col et gap-2
         <div className="w-full flex flex-col items-stretch gap-2">
@@ -110,30 +126,20 @@ function CommandeList({ product_id, user_id }: { user_id?: string; product_id?: 
             <div className="w-full flex items-center justify-between gap-4 p-2"> {/* Ajouter padding et gap */}
                 {/* 🌍 i18n */}
                 <h2 className="text-lg font-semibold text-gray-700 whitespace-nowrap">{t('dashboard.recentOrders')}</h2>
-                <label htmlFor="commands-search-input" className='relative w-full max-w-xs ml-auto'> {/* Limiter largeur recherche */}
-                    <input
-                        className="w-full pl-3 pr-10 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
-                        placeholder={t('dashboard.searchPlaceholder')} // 🌍 i18n
-                        id="commands-search-input"
-                        type="text"
-                        value={filter.search || ''}
-                        onChange={(e) => {
-                            const search = e.currentTarget.value;
-                            // Utiliser debounce pour la recherche
-                            debounce(() => setFilter((prev) => ({ ...prev, search: search || undefined, page: 1 })), 'search-command', 400); // Reset page à 1
-                        }}
-                    />
-                    <IoSearch className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
-                </label>
+                <span className='hidden mob:inline-block'>
+                    {searchInput}
+                </span>
                 {/* Lien "Tout voir" (si non sur la page /commands) */}
                 {!ClientCall(() => location, { pathname: '' })?.pathname.startsWith('/commands') && (
                     <a className='flex items-center gap-1 text-sm text-blue-600 p-2 rounded-lg hover:bg-blue-100/50 transition whitespace-nowrap min-w-max' href='/commands'>
-                        {t('common.seeAll')} {/* 🌍 i18n */}
+                        <span className='hidden sl2:inline-block'> {t('common.seeAll')}</span>
                         <IoChevronForward className='w-4 h-4' />
                     </a>
                 )}
             </div>
-
+            <span className='inline-block mob:hidden'>
+                {searchInput}
+            </span>
             {/* Filtres */}
             <CommandsFilters filter={filter} setFilter={setFilter} />
 
@@ -177,7 +183,15 @@ function CommandeList({ product_id, user_id }: { user_id?: string; product_id?: 
                     );
                 })}
             </div>
-            {/* TODO: Ajouter la pagination basée sur commandsMeta */}
+            {meta && meta.total > meta.per_page && (
+                <Pagination
+                    currentPage={meta.current_page}
+                    lastPage={meta.last_page}
+                    total={meta.total}
+                    perPage={meta.per_page}
+                    onPageChange={(newPage) => setFilter(prev => ({ ...prev, page: newPage }))}
+                />
+            )}
         </div>
     );
 }
@@ -381,8 +395,8 @@ export function PriceFilterComponent({ prices, setPrice, active }: { active: boo
                 <span
                     onClick={canReset ? handleReset : undefined}
                     className={`inline-flex border rounded-lg px-3 py-1 text-sm transition ${canReset
-                            ? 'text-red-500 border-red-200 cursor-pointer hover:bg-red-50'
-                            : 'text-gray-400 border-gray-200 cursor-not-allowed'
+                        ? 'text-red-500 border-red-200 cursor-pointer hover:bg-red-50'
+                        : 'text-gray-400 border-gray-200 cursor-not-allowed'
                         }`}
                 >
                     {t('dashboard.orderFilters.reset')}

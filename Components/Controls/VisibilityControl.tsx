@@ -48,7 +48,7 @@ export function VisibilityControl({
                     type="button"
                     onClick={handleVisibilityToggle}
                     disabled={isLoading}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium border transition disabled:opacity-50 disabled:cursor-not-allowed ${
+                    className={`flex items-center gap-1.5 px-3 py-1.5 hover:shadow-sm rounded-md text-sm font-medium border cursor-pointer transition disabled:opacity-50 disabled:cursor-not-allowed ${
                         isVisible
                             ? 'bg-yellow-50 text-yellow-700 border-yellow-300 hover:bg-yellow-100 focus:ring-2 focus:ring-yellow-400 focus:ring-opacity-50' // Style pour "Masquer" (état visible actuel)
                             : 'bg-green-50 text-green-700 border-green-300 hover:bg-green-100 focus:ring-2 focus:ring-green-400 focus:ring-opacity-50' // Style pour "Rendre Visible" (état masqué actuel)
@@ -64,7 +64,7 @@ export function VisibilityControl({
                     type="button"
                     onClick={handleDeleteClick}
                     disabled={isLoading}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium border transition bg-red-50 text-red-700 border-red-300 hover:bg-red-100 focus:ring-2 focus:ring-red-400 focus:ring-opacity-50 disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex items-center gap-1.5 px-3 py-1.5 hover:shadow-sm rounded-md text-sm font-medium border transition bg-red-50 text-red-700 border-red-300 hover:bg-red-100 focus:ring-2 cursor-pointer focus:ring-red-400 focus:ring-opacity-50 disabled:opacity-50 disabled:cursor-not-allowed"
                     aria-label={t('common.delete')}
                 >
                     <FaTrashAlt size={13} /> {/* Légèrement plus petite pour l'équilibre */}

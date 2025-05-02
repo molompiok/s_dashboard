@@ -58,7 +58,13 @@ import {
     StoreActionParams,
     ManageDomainResponse,
     ManageDomainParams,
-    AvailableNameResponse
+    AvailableNameResponse,
+    GetThemesResponse,
+    GetThemesParams,
+    GetThemeResponse,
+    GetUserStatsParams,
+    GetUserStatsResponse,
+    GetCategoryParams
 } from './SublymusApi'; // Importer la classe et l'erreur, et TOUS les types
 import { useAuthStore } from '../pages/login/AuthStore'; // Pour le token
 import { useGlobalStore } from '../pages/stores/StoreStore'; // Pour l'URL du store
@@ -67,6 +73,9 @@ import { CommentInterface, FeatureInterface } from '../Interfaces/Interfaces';
 import { useTranslation } from 'react-i18next';
 import { Api_host, Server_Host } from '../renderer/+config';
 
+async function waitHere(millis: number) {
+    await new Promise((rev) => setTimeout(() => rev(0), millis))
+}
 
 
 // --- Client TanStack Query (inchangé) ---
@@ -96,7 +105,7 @@ const SublymusApiContext = createContext<SublymusApiContextType>({ api: null });
 // Provider pour l'API et TanStack Query
 interface SublymusApiProviderProps {
     children: ReactNode;
-    serverApiUrl:string
+    serverApiUrl: string
 }
 
 export const SublymusApiProvider: React.FC<SublymusApiProviderProps> = ({ children, serverApiUrl }) => {
@@ -114,7 +123,7 @@ export const SublymusApiProvider: React.FC<SublymusApiProviderProps> = ({ childr
             return null;
         }
 
-        
+
         // Créer l'instance avec les deux URLs
         return new SublymusApi({
             getAuthTokenApi() {
@@ -123,12 +132,12 @@ export const SublymusApiProvider: React.FC<SublymusApiProviderProps> = ({ childr
             getAuthTokenServer() {
                 return 'oat_MzU.ZVc2SUhad1A4dmh6ellfZjFrejJGcEdtOW5ZckN0OWFfN19KeEs2UTE3NzAxNjc4MzE'
             },
-            serverUrl:Server_Host,
-            storeApiUrl:Api_host,
+            serverUrl: Server_Host,
+            storeApiUrl: Api_host,
             t
         });
     }, [currentStore?.url, serverApiUrl, user?.token]);
-    
+
     return (
         <QueryClientProvider client={queryClient}>
             <SublymusApiContext.Provider value={{ api }}>
@@ -142,7 +151,7 @@ export const SublymusApiProvider: React.FC<SublymusApiProviderProps> = ({ childr
 // --- Hook useApi (inchangé) ---
 export const useApi = (): SublymusApi => {
     const context = useContext(SublymusApiContext);
-    
+
     const { t } = useTranslation();
     if (!context || !context.api) {
         const { currentStore } = useGlobalStore.getState();
@@ -156,6 +165,49 @@ export const useApi = (): SublymusApi => {
 
 // --- Hooks Personnalisés par Namespace ---
 
+// ========================
+// == Thèmes ==
+// ========================
+
+// Hook pour récupérer la liste des thèmes disponibles
+export const useGetThemes = (params: GetThemesParams = {}, options: { enabled?: boolean } = {}): UseQueryResult<GetThemesResponse, ApiError> => {
+    const api = useApi();
+    return useQuery<GetThemesResponse, ApiError>({
+        queryKey: ['themes', params], // Clé de query pour la liste des thèmes
+        queryFn: () => api.theme.getList(params),
+        enabled: options.enabled !== undefined ? options.enabled : true,
+        staleTime: 0 * 60 * 1000, // Cache long pour la liste des thèmes (1 heure)
+    });
+};
+
+// Hook pour récupérer les détails d'un thème spécifique
+export const useGetThemeById = (themeId: string | undefined, options: { enabled?: boolean } = {}): UseQueryResult<GetThemeResponse | null, ApiError> => {
+    const api = useApi();
+    return useQuery<GetThemeResponse | null, ApiError>({
+        queryKey: ['themeDetails', themeId], // Clé spécifique au détail
+        queryFn: () => themeId ? api.theme.getOne({ theme_id: themeId }) : Promise.resolve(null),
+        enabled: !!themeId && (options.enabled !== undefined ? options.enabled : true),
+        staleTime: 0 * 60 * 1000, // Cache "infini" pour les détails d'un thème (ils changent rarement)
+    });
+};
+
+// Hook pour activer un thème pour un store (Mutation)
+// Utilise la méthode api.store.changeTheme via l'alias api.theme.activateForStore
+export const useActivateThemeForStore = (): UseMutationResult<ChangeThemeResponse, ApiError, ChangeThemeParams> => {
+    const api = useApi();
+    return useMutation<ChangeThemeResponse, ApiError, ChangeThemeParams>({
+        mutationFn: (params) => api.theme.activateForStore(params), // ou api.store.changeTheme(params)
+        onSuccess: (data, variables) => {
+            // Invalider les détails du store pour refléter le nouveau thème actif
+            queryClient.invalidateQueries({ queryKey: ['storeDetails', variables.store_id] } as InvalidateQueryFilters);
+            // Peut-être invalider la liste des stores si elle affiche le thème actif?
+            // queryClient.invalidateQueries({ queryKey: ['stores'] } as InvalidateQueryFilters);
+            logger.info("Theme activated for store via mutation", { storeId: variables.store_id, newThemeId: variables.themeId });
+            // Afficher toast succès?
+        },
+        onError: (error) => { logger.error({ error }, "Failed to activate theme for store via mutation"); }
+    });
+};
 
 
 // ==================================
@@ -179,7 +231,7 @@ export const useGetStore = (storeId: string | undefined, options: { enabled?: bo
         queryKey: ['storeDetails', storeId], // Clé spécifique au détail
         queryFn: () => storeId ? api.store.getOne({ store_id: storeId }) : Promise.resolve(null),
         enabled: !!storeId && (options.enabled !== undefined ? options.enabled : true),
-        staleTime: 10 * 60 * 1000, // Cache plus long pour les détails d'un store
+        staleTime: 0 * 60 * 1000, // Cache plus long pour les détails d'un store
     });
 };
 
@@ -203,14 +255,14 @@ export const useUpdateStore = (): UseMutationResult<UpdateStoreResponse, ApiErro
     return useMutation<UpdateStoreResponse, ApiError, UpdateStoreParams>({
         mutationFn: (params) => api.store.update(params),
         onSuccess: (data, variables) => {
-             queryClient.invalidateQueries({ queryKey: ['stores'] } as InvalidateQueryFilters); // Invalider la liste
-             queryClient.invalidateQueries({ queryKey: ['storeDetails', variables.store_id] } as InvalidateQueryFilters); // Invalider le détail
-             logger.info("Store updated via mutation", data.store);
-              // Mettre à jour le store courant dans Zustand si c'est lui qui a été modifié
-              const currentStore = useGlobalStore.getState().currentStore;
-              if (currentStore?.id === variables.store_id) {
-                  useGlobalStore.getState().setCurrentStore(data.store);
-              }
+            queryClient.invalidateQueries({ queryKey: ['stores'] } as InvalidateQueryFilters); // Invalider la liste
+            queryClient.invalidateQueries({ queryKey: ['storeDetails', variables.store_id] } as InvalidateQueryFilters); // Invalider le détail
+            logger.info("Store updated via mutation", data.store);
+            // Mettre à jour le store courant dans Zustand si c'est lui qui a été modifié
+            const currentStore = useGlobalStore.getState().currentStore;
+            if (currentStore?.id === variables.store_id) {
+                useGlobalStore.getState().setCurrentStore(data.store);
+            }
         },
         onError: (error) => { logger.error({ error }, "Failed to update store via mutation"); }
     });
@@ -222,15 +274,15 @@ export const useDeleteStore = (): UseMutationResult<DeleteStoreResponse, ApiErro
     return useMutation<DeleteStoreResponse, ApiError, DeleteStoreParams>({
         mutationFn: (params) => api.store.delete(params),
         onSuccess: (data, variables) => {
-             queryClient.invalidateQueries({ queryKey: ['stores'] } as InvalidateQueryFilters); // Invalider la liste
-             queryClient.removeQueries({ queryKey: ['storeDetails', variables.store_id] }); // Supprimer le détail du cache
-             logger.info("Store deleted via mutation", { storeId: variables.store_id });
-              // Si le store supprimé était le store courant, le désélectionner
-              const currentStore = useGlobalStore.getState().currentStore;
-              if (currentStore?.id === variables.store_id) {
-                   useGlobalStore.getState().setCurrentStore(undefined);
-                   localStorage.removeItem('current_store');
-              }
+            queryClient.invalidateQueries({ queryKey: ['stores'] } as InvalidateQueryFilters); // Invalider la liste
+            queryClient.removeQueries({ queryKey: ['storeDetails', variables.store_id] }); // Supprimer le détail du cache
+            logger.info("Store deleted via mutation", { storeId: variables.store_id });
+            // Si le store supprimé était le store courant, le désélectionner
+            const currentStore = useGlobalStore.getState().currentStore;
+            if (currentStore?.id === variables.store_id) {
+                useGlobalStore.getState().setCurrentStore(undefined);
+                localStorage.removeItem('current_store');
+            }
         },
         onError: (error) => { logger.error({ error }, "Failed to delete store via mutation"); }
     });
@@ -242,10 +294,10 @@ export const useChangeTheme = (): UseMutationResult<ChangeThemeResponse, ApiErro
     return useMutation<ChangeThemeResponse, ApiError, ChangeThemeParams>({
         mutationFn: (params) => api.store.changeTheme(params),
         onSuccess: (data, variables) => {
-             // Invalider les détails du store pour refléter le nouveau thème
-             queryClient.invalidateQueries({ queryKey: ['storeDetails', variables.store_id] } as InvalidateQueryFilters);
-             logger.info("Store theme changed via mutation", { storeId: variables.store_id, newThemeId: data.store.current_theme_id });
-             // Mettre à jour le store courant dans Zustand si nécessaire
+            // Invalider les détails du store pour refléter le nouveau thème
+            queryClient.invalidateQueries({ queryKey: ['storeDetails', variables.store_id] } as InvalidateQueryFilters);
+            logger.info("Store theme changed via mutation", { storeId: variables.store_id, newThemeId: data.store.current_theme_id });
+            // Mettre à jour le store courant dans Zustand si nécessaire
         },
         onError: (error) => { logger.error({ error }, "Failed to change store theme via mutation"); }
     });
@@ -257,10 +309,10 @@ export const useUpdateStoreStatus = (): UseMutationResult<UpdateStoreStatusRespo
     return useMutation<UpdateStoreStatusResponse, ApiError, UpdateStoreStatusParams>({
         mutationFn: (params) => api.store.updateStatus(params),
         onSuccess: (data, variables) => {
-             queryClient.invalidateQueries({ queryKey: ['stores'] } as InvalidateQueryFilters);
-             queryClient.invalidateQueries({ queryKey: ['storeDetails', variables.store_id] } as InvalidateQueryFilters);
-             logger.info("Store status updated via mutation", { storeId: variables.store_id, isActive: data.store.is_active });
-             // Mettre à jour le store courant dans Zustand si nécessaire
+            queryClient.invalidateQueries({ queryKey: ['stores'] } as InvalidateQueryFilters);
+            queryClient.invalidateQueries({ queryKey: ['storeDetails', variables.store_id] } as InvalidateQueryFilters);
+            logger.info("Store status updated via mutation", { storeId: variables.store_id, isActive: data.store.is_active });
+            // Mettre à jour le store courant dans Zustand si nécessaire
         },
         onError: (error) => { logger.error({ error }, "Failed to update store status via mutation"); }
     });
@@ -270,35 +322,41 @@ export const useUpdateStoreStatus = (): UseMutationResult<UpdateStoreStatusRespo
 export const useStartStore = (): UseMutationResult<StoreActionResponse, ApiError, StoreActionParams> => {
     const api = useApi();
     return useMutation<StoreActionResponse, ApiError, StoreActionParams>({
-        mutationFn: (params) => api.store.start(params),
+        mutationFn: (params) => (async () => {
+            await waitHere(3000)
+            return await api.store.start(params)
+        })(),
         onSuccess: (data, variables) => {
-              queryClient.invalidateQueries({ queryKey: ['stores'] } as InvalidateQueryFilters);
-              queryClient.invalidateQueries({ queryKey: ['storeDetails', variables.store_id] } as InvalidateQueryFilters);
-             logger.info("Store start requested via mutation", { storeId: variables.store_id, store: data.store });
+            queryClient.invalidateQueries({ queryKey: ['stores'] } as InvalidateQueryFilters);
+            queryClient.invalidateQueries({ queryKey: ['storeDetails', variables.store_id] } as InvalidateQueryFilters);
+            logger.info("Store start requested via mutation", { storeId: variables.store_id, store: data.store });
         },
         onError: (error) => { logger.error({ error }, "Failed to request store start via mutation"); }
     });
 };
-export const useStopStore = (): UseMutationResult<StoreActionResponse, ApiError, StoreActionParams> => { 
+export const useStopStore = (): UseMutationResult<StoreActionResponse, ApiError, StoreActionParams> => {
     const api = useApi();
     return useMutation<StoreActionResponse, ApiError, StoreActionParams>({
-        mutationFn: (params) => api.store.stop(params),
+        mutationFn: (params) => (async () => {
+            await waitHere(3000)
+            return await api.store.stop(params)
+        })(),
         onSuccess: (data, variables) => {
-              queryClient.invalidateQueries({ queryKey: ['stores'] } as InvalidateQueryFilters);
-              queryClient.invalidateQueries({ queryKey: ['storeDetails', variables.store_id] } as InvalidateQueryFilters);
-             logger.info("Store start requested via mutation", { storeId: variables.store_id, store: data.store });
+            queryClient.invalidateQueries({ queryKey: ['stores'] } as InvalidateQueryFilters);
+            queryClient.invalidateQueries({ queryKey: ['storeDetails', variables.store_id] } as InvalidateQueryFilters);
+            logger.info("Store start requested via mutation", { storeId: variables.store_id, store: data.store });
         },
         onError: (error) => { logger.error({ error }, "Failed to request store start via mutation"); }
     });
- };
+};
 export const useRestartStore = (): UseMutationResult<StoreActionResponse, ApiError, StoreActionParams> => {
     const api = useApi();
     return useMutation<StoreActionResponse, ApiError, StoreActionParams>({
         mutationFn: (params) => api.store.restart(params),
         onSuccess: (data, variables) => {
-              queryClient.invalidateQueries({ queryKey: ['stores'] } as InvalidateQueryFilters);
-              queryClient.invalidateQueries({ queryKey: ['storeDetails', variables.store_id] } as InvalidateQueryFilters);
-             logger.info("Store start requested via mutation",  { storeId: variables.store_id, store: data.store });
+            queryClient.invalidateQueries({ queryKey: ['stores'] } as InvalidateQueryFilters);
+            queryClient.invalidateQueries({ queryKey: ['storeDetails', variables.store_id] } as InvalidateQueryFilters);
+            logger.info("Store start requested via mutation", { storeId: variables.store_id, store: data.store });
         },
         onError: (error) => { logger.error({ error }, "Failed to request store start via mutation"); }
     });
@@ -309,9 +367,9 @@ export const useAddStoreDomain = (): UseMutationResult<ManageDomainResponse, Api
     const api = useApi();
     return useMutation<ManageDomainResponse, ApiError, ManageDomainParams>({
         mutationFn: (params) => api.store.addDomain(params),
-         onSuccess: (data, variables) => {
-             queryClient.invalidateQueries({ queryKey: ['storeDetails', variables.store_id] } as InvalidateQueryFilters);
-             logger.info("Store domain added via mutation", { storeId: variables.store_id, domain: variables.domainName });
+        onSuccess: (data, variables) => {
+            queryClient.invalidateQueries({ queryKey: ['storeDetails', variables.store_id] } as InvalidateQueryFilters);
+            logger.info("Store domain added via mutation", { storeId: variables.store_id, domain: variables.domainName });
         },
         onError: (error) => { logger.error({ error }, "Failed to add store domain via mutation"); }
     });
@@ -320,14 +378,14 @@ export const useAddStoreDomain = (): UseMutationResult<ManageDomainResponse, Api
 
 // Hook pour vérifier la disponibilité d'un nom (appelle s_server)
 export const useCheckStoreNameAvailability = (name: string | undefined, options: { enabled?: boolean } = {}): UseQueryResult<AvailableNameResponse, ApiError> => {
-     const api = useApi();
-     return useQuery<AvailableNameResponse, ApiError>({
-         queryKey: ['storeNameAvailable', name],
-         queryFn: () => name ? api.store.checkAvailableName({ name }) : Promise.resolve({ is_available_name: false }), // Ne fetch que si nom fourni
-         enabled: !!name && (options.enabled !== undefined ? options.enabled : true),
-         staleTime: 1 * 60 * 1000, // Cache court
-         refetchOnWindowFocus: false,
-     });
+    const api = useApi();
+    return useQuery<AvailableNameResponse, ApiError>({
+        queryKey: ['storeNameAvailable', name],
+        queryFn: () => name ? api.store.checkAvailableName({ name }) : Promise.resolve({ is_available_name: false }), // Ne fetch que si nom fourni
+        enabled: !!name && (options.enabled !== undefined ? options.enabled : true),
+        staleTime: 1 * 60 * 1000, // Cache court
+        refetchOnWindowFocus: false,
+    });
 };
 
 // ========================
@@ -613,7 +671,7 @@ export const useGetCategories = (
 
 // Hook pour récupérer UNE catégorie par ID ou Slug
 export const useGetCategory = (
-    params: { category_id?: string; slug?: string }, // ID ou Slug requis
+    params: GetCategoryParams, // ID ou Slug requis
     options: { enabled?: boolean } = {}
 ): UseQueryResult<GetCategoryResponse, ApiError> => {
     const api = useApi();
@@ -1433,6 +1491,19 @@ export const useGetUsers = (
     });
 };
 // Ajouter useGetUser si un endpoint getOne est créé
+export const useGetUserStats = (
+    params: GetUserStatsParams = {},
+    options: { enabled?: boolean; refetchInterval?: number | false } = {}
+): UseQueryResult<GetUserStatsResponse, ApiError> => {
+    const api = useApi();
+    return useQuery<GetUserStatsResponse, ApiError>({
+        queryKey: ['userStats', params], // Clé de query pour les stats users
+        queryFn: () => api.users.getUserStats(params),
+        enabled: options.enabled !== undefined ? options.enabled : true,
+        staleTime: 5 * 60 * 1000, // Cache de 5 minutes pour les stats
+        refetchInterval: options.refetchInterval, // Permettre un refetch périodique si besoin
+    });
+};
 
 
 // ==============================

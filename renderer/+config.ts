@@ -20,6 +20,6 @@ export default {
 
 const Host = `http://localhost:3005`
 const Server_Host = `http://172.25.72.235:5555`
-const Api_host = 'http://172.25.72.235:3334/'
+const Api_host = 'http://172.25.72.235:3334'
 export {Host, Server_Host,Api_host}
 

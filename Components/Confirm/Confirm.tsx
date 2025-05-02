@@ -1,9 +1,9 @@
 import { JSX } from "react"
 import { IoChevronBack } from "react-icons/io5"
 
-export { Comfirm }
+export { Confirm }
 
-function Comfirm({
+function Confirm({
   cancel = 'Retour',
   confirm = 'Sauvegarder',
   iconCancelLeft,

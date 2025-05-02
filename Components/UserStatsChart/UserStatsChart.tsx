@@ -9,7 +9,7 @@ import {
   Tooltip,
   Legend,
 } from 'chart.js';
-import { Line } from 'react-chartjs-2';
+import { Bar, Line } from 'react-chartjs-2';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend);
 
@@ -361,7 +361,7 @@ export default function StatsChart({ period, data, setAvailable, setResume }: St
         touchAction: 'none',
       }}
     >
-      <Line data={chartData} options={options} height={300} />
+      <Bar data={chartData} options={options} height={300} />
     </div>
   );
 }

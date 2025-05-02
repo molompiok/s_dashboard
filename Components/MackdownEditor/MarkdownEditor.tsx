@@ -74,7 +74,7 @@ export function MarkdownEditor2({ value, setValue,error }: { value: string, setV
 
   const handleChange = () => {
     const instance = editorRef.current?.getInstance();
-    setValue(instance?.getMarkdown() || "");
+    setValue(instance?.getMarkdown() || " ");
     adjustHeight();
   };
 
@@ -86,7 +86,7 @@ export function MarkdownEditor2({ value, setValue,error }: { value: string, setV
       setEditor(
         <Editor
           ref={editorRef}
-          initialValue={value || ""}
+          initialValue={value || " "}
           previewStyle="vertical"
           initialEditType="wysiwyg"
           useCommandShortcut={true}

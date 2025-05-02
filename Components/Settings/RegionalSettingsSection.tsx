@@ -4,9 +4,9 @@ import { useState, useEffect, useCallback } from 'react';
 import { StoreInterface, StoreSetting } from "../../Interfaces/Interfaces"; // Assurer import StoreSetting
 import { useTranslation } from "react-i18next";
 // Importer le hook pour mettre à jour les settings
-// import { useUpdateStoreSettings } from "../../api/ReactSublymusApi";
+import { useUpdateStore } from "../../api/ReactSublymusApi";
 import logger from '../../api/Logger';
-// import { ApiError } from '../../api/SublymusApi';
+import { ApiError } from '../../api/SublymusApi';
 import Select from 'react-select'; // Utiliser react-select pour une meilleure UX
 
 interface RegionalSettingsSectionProps {
@@ -15,7 +15,7 @@ interface RegionalSettingsSectionProps {
 }
 
 // Type pour l'état local du formulaire
-type RegionalFormState = Pick<StoreSetting, 'default_locale' | 'currency'>;
+type RegionalFormState = Pick<StoreSetting, 'timezone' | 'currency'>;
 
 // Options disponibles (à enrichir ou charger depuis une source externe/config)
 const supportedLocales = [
@@ -34,9 +34,8 @@ const supportedCurrencies = [
 export function RegionalSettingsSection({ store, settings = {} }: RegionalSettingsSectionProps) {
     const { t } = useTranslation();
     // Initialiser la mutation (à créer)
-    // const updateSettingsMutation = useUpdateStoreSettings();
-    const updateSettingsMutation = { isPending: false, mutate: (data: any, options: any) => { console.log("Update settings mutation:", data); options.onSuccess?.(); } }; // Placeholder
-
+    const updateSettingsMutation = useUpdateStore();
+    
     const isLoading = updateSettingsMutation.isPending
     // --- État Local ---
     const [formState, setFormState] = useState<Partial<RegionalFormState>>({});
@@ -46,7 +45,7 @@ export function RegionalSettingsSection({ store, settings = {} }: RegionalSettin
     // Initialiser/Réinitialiser le formulaire
     useEffect(() => {
         setFormState({
-            default_locale: settings.default_locale ?? 'fr', // Défaut 'fr'
+            timezone: settings.timezone ?? 'fr', // Défaut 'fr'
             currency: settings.currency ?? 'XOF',         // Défaut 'XOF'
         });
         setHasChanges(false);
@@ -55,7 +54,7 @@ export function RegionalSettingsSection({ store, settings = {} }: RegionalSettin
 
     // --- Détection des changements ---
     useEffect(() => {
-        const changed = formState.default_locale !== (settings.default_locale ?? 'fr') ||
+        const changed = formState.timezone !== (settings.timezone ?? 'fr') ||
                         formState.currency !== (settings.currency ?? 'XOF');
         setHasChanges(changed);
     }, [formState, settings]);
@@ -63,7 +62,7 @@ export function RegionalSettingsSection({ store, settings = {} }: RegionalSettin
     // --- Handlers ---
     // Utiliser useCallback pour la stabilité des références (important pour react-select)
     const handleLocaleChange = useCallback((selectedOption: any) => { // Type de react-select
-        setFormState(prev => ({ ...prev, default_locale: selectedOption?.value }));
+        setFormState(prev => ({ ...prev, timezone: selectedOption?.value }));
         if (apiError) setApiError(null);
     }, [apiError]);
 
@@ -81,10 +80,11 @@ export function RegionalSettingsSection({ store, settings = {} }: RegionalSettin
         }
         setApiError(null);
 
-        const dataToUpdate: Partial<StoreSetting> = {};
-        if (formState.default_locale !== (settings.default_locale ?? 'fr')) dataToUpdate.default_locale = formState.default_locale;
+        // TODO  Partial<StoreSettings>
+        const dataToUpdate: StoreInterface = {};
+        if (formState.timezone !== (settings.timezone ?? 'fr')) dataToUpdate.timezone = formState.timezone;
         if (formState.currency !== (settings.currency ?? 'XOF')) dataToUpdate.currency = formState.currency;
-
+        
         if (Object.keys(dataToUpdate).length === 0) {
              setHasChanges(false);
              return;
@@ -92,14 +92,14 @@ export function RegionalSettingsSection({ store, settings = {} }: RegionalSettin
 
         // TODO: Appeler la mutation useUpdateStoreSettings
         logger.warn("Update store settings mutation not implemented yet. Data:", dataToUpdate);
-        // updateSettingsMutation.mutate(
-        //     { store_id: store.id, settings: dataToUpdate },
-        //     { onSuccess: () => { setHasChanges(false); /*...*/ }, onError: (error) => { setApiError(error.message); /*...*/ }}
-        // );
+        store.id && updateSettingsMutation.mutate(
+            { store_id: store.id, data: dataToUpdate },
+            { onSuccess: () => { setHasChanges(false); }, onError: (error) => { setApiError(error.message); /*...*/ }}
+        );
     };
 
     // Trouver les objets complets pour react-select
-    const selectedLocaleOption = supportedLocales.find(opt => opt.value === formState.default_locale);
+    const selectedLocaleOption = supportedLocales.find(opt => opt.value === formState.timezone);
     const selectedCurrencyOption = supportedCurrencies.find(opt => opt.value === formState.currency);
 
     return (
@@ -114,11 +114,11 @@ export function RegionalSettingsSection({ store, settings = {} }: RegionalSettin
             <div className="px-4 py-5 sm:p-6 space-y-6">
                  {/* Langue par Défaut */}
                  <div>
-                     <label htmlFor="default_locale" className="block text-sm font-medium text-gray-700">{t('settingsRegional.defaultLocaleLabel')}</label> 
+                     <label htmlFor="timezone" className="block text-sm font-medium text-gray-700">{t('settingsRegional.defaultLocaleLabel')}</label> 
                       {/* Utiliser react-select */}
                       <Select
-                          id="default_locale"
-                          name="default_locale"
+                          id="timezone"
+                          name="timezone"
                           options={supportedLocales}
                           value={selectedLocaleOption}
                           onChange={handleLocaleChange}

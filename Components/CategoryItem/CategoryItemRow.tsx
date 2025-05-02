@@ -131,20 +131,20 @@ function CategoryItemRow({ category /*, onDeleteSuccess, onVisibilityChangeSucce
                     </h3>
                 </a>
                 {category.description && (
-                    <p className='hidden md:block text-xs text-gray-500 mt-0.5 truncate' title={category.description}>
+                    <p className=' text-xs text-gray-500 mt-0.5 truncate' title={category.description}>
                         {limit(category.description, 60)}
                     </p>
                 )}
             </div>
 
             {/* Nombre Produits */}
-            <div className="hidden sm:flex items-center gap-1 text-xs text-gray-500 flex-shrink-0 w-20" title={t('category.productCountTooltip')}>
+            <div className="hidden sl2:flex items-center justify-center gap-1 text-xs text-gray-500 flex-shrink-0 w-20" title={t('category.productCountTooltip')}>
                 <IoPricetagsOutline className="w-3.5 h-3.5" />
                 <span>{category.product_count ?? 0}</span>
             </div>
 
             {/* Visibilité */}
-            <div className="hidden md:flex items-center justify-center flex-shrink-0 w-16">
+            <div className="hidden mob:flex items-center justify-center flex-shrink-0 w-16">
                 {/* Utiliser un bouton pour l'action de toggle */}
                 <button onClick={handleToggleVisibility} title={isVisible ? t('productList.setHidden') : t('productList.setVisible')} className="p-1 rounded-full hover:bg-gray-100">
                     {isVisible ? <IoEyeOutline className="w-4 h-4 text-green-500" /> : <IoEyeOffOutline className="w-4 h-4 text-gray-400" />}

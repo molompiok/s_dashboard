@@ -1,4 +1,6 @@
 
+export type ThemeSettingsValues = Record<string, any>;
+
 export const JsonRole = {
   filter_client: '',
   ban_client: '',
@@ -43,7 +45,7 @@ export type ListType<T> = {
 
 export interface StoreFilterType {
   search?: string;            // Recherche par nom, titre, description?
-  is_active?:boolean // Filtrer par statut actif/inactif
+  is_active?: boolean // Filtrer par statut actif/inactif
   // Ajouter d'autres filtres si l'API les supporte (ex: par date d'expiration, plan, etc.)
   page?: number;
   limit?: number;
@@ -73,7 +75,7 @@ export type StoreInterface = Partial<{
   user_id: string;
   name: string;
   title?: string; // Peut être null
-  description?: string ; // Peut être null
+  description?: string; // Peut être null
   slug: string;
   logo: (string | Blob)[],
   favicon: (string | Blob)[],
@@ -85,14 +87,33 @@ export type StoreInterface = Partial<{
   disk_storage_limit_gb: number;
   is_active: boolean;
   is_running?: boolean;
-  created_at: string; 
+  created_at: string;
   updated_at: string;
-  url?: string; 
-  timezone?:string,
-  currency?:string,
-  current_api?: ApiInterface; // Définir ApiInterface
-  current_theme?: ThemeInterface; // Définir ThemeInterface
-}> 
+  url?: string;
+  timezone?: string,
+  currency?: string,
+  currentApi?: ApiInterface; // Définir ApiInterface
+  currentTheme?: ThemeInterface; // Définir ThemeInterface
+}>
+
+export interface ThemeOptionDefinition {
+  key: string;
+  type: 'color' | 'font' | 'text' | 'select' | 'toggle' | 'image' | string; // Ajouter d'autres types si besoin
+  labelKey: string;
+  defaultValue?: any;
+  options?: { value: string; labelKey: string }[]; // Pour le type 'select'
+  section: string;
+  descriptionKey?: string; // Clé i18n pour l'aide/description
+  // Ajouter d'autres métadonnées si nécessaire (ex: validation, conditions d'affichage)
+}
+
+
+export interface ToggleControlProps {
+  option: ThemeOptionDefinition;
+  value: boolean | undefined | null; // La valeur est booléenne
+  onChange: (key: string, value: boolean) => void;
+}
+
 
 export interface StoreFilterType {
   search?: string;            // Recherche par nom, titre, description?
@@ -106,8 +127,15 @@ export interface StoreFilterType {
   no_save?: boolean; // Pour compatibilité avec l'ancien code Zustand? Généralement pas nécessaire avec React Query.
 }
 
-export interface ApiInterface{
+export interface ApiInterface {
 
+}
+
+export interface ThemeFilterType{
+  search?: string;            
+  page?: number;
+  limit?: number;
+  order_by?: 'name_asc' | 'name_desc' | 'created_at_asc' | 'created_at_desc' ; // Options de tri possibles
 }
 
 export interface ThemeInterface { // Ajout interface Theme basée sur modèle
@@ -126,7 +154,6 @@ export interface ThemeInterface { // Ajout interface Theme basée sur modèle
   is_default: boolean;
   is_premium: boolean;
   price: number;
-  is_free:boolean
   creator_id: string | null;
   createdAt: string;
   updatedAt: string;
@@ -527,7 +554,7 @@ export interface FavoriteInteraface {
 export interface Inventory {
   id: string;
   address_name: string; // Nom du point de vente/stock
-  views: string[];       // URLs des images (retournées par l'API après upload)
+  views: (string|Blob)[];       // URLs des images (retournées par l'API après upload)
   email: string | null;  // Email de contact (peut être null)
   latitude: number;      // Coordonnée géographique
   longitude: number;     // Coordonnée géographique

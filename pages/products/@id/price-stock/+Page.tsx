@@ -13,7 +13,7 @@ import { useGlobalStore } from "../../../stores/StoreStore";
 // import { useApp } from "../../../../renderer/AppStore/UseApp"; // Remplacé par useChildViewer
 import { ChildViewer } from "../../../../Components/ChildViewer/ChildViewer";
 import { ValuePricing } from "../../../../Components/ValuePricing/ValuePricing"; // Formulaire prix/stock
-import { Comfirm } from "../../../../Components/Confirm/Confirm"; // Bouton de confirmation
+import { Confirm } from "../../../../Components/Confirm/Confirm"; // Bouton de confirmation
 import { Topbar } from "../../../../Components/TopBar/TopBar"; // Topbar
 import { useTranslation } from "react-i18next"; // ✅ i18n
 import logger from "../../../../api/Logger"; // Logger
@@ -289,7 +289,7 @@ function ValueRow({ feature, value: currentValue, onValueChange }: ValueRowProps
                     }}
                 />
                 {/* Bouton Confirmer */}
-                <Comfirm
+                <Confirm
                     canConfirm={true} // Toujours confirmable pour le moment
                     onCancel={() => openChild(null)}
                     confirm={t('common.save')}

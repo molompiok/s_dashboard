@@ -4,7 +4,7 @@
 import { useRef, useState, useEffect } from 'react';
 import { FeatureInterface, ValueInterface } from '../../Interfaces/Interfaces';
 import { IoClose, IoPencil } from 'react-icons/io5';
-import { Comfirm } from '../Confirm/Confirm'; // Gardé
+import { Confirm } from '../Confirm/Confirm'; // Gardé
 import { Colors } from '../Utils/constants'; // Gardé
 import { ValuePricing } from '../ValuePricing/ValuePricing'; // Gardé
 import { useTranslation } from 'react-i18next'; // ✅ i18n
@@ -42,13 +42,13 @@ function ColorInfo({ value: initialValue, feature, onChange, onCancel }: ColorIn
         let isValid = true;
         const errors = { text: '', key: '' };
         if (!v.text || v.text.trim().length < 1) {
-             errors.text = t('value.validation.textRequired');
-             textRef.current?.focus();
-             isValid = false;
+            errors.text = t('value.validation.textRequired');
+            textRef.current?.focus();
+            isValid = false;
         }
         if (!v.key || !/^#[0-9A-Fa-f]{6}$/i.test(v.key)) {
-             errors.key = t('value.validation.colorKeyRequired'); // Nouvelle clé
-             isValid = false;
+            errors.key = t('value.validation.colorKeyRequired'); // Nouvelle clé
+            isValid = false;
         }
         setTextError(errors.text);
         setKeyError(errors.key);
@@ -57,20 +57,20 @@ function ColorInfo({ value: initialValue, feature, onChange, onCancel }: ColorIn
 
     // Handlers
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-         const { name, value } = e.target;
-         setValue(prev => ({ ...prev, [name]: value.substring(0, 32) }));
-         if (name === 'text') setTextError('');
+        const { name, value } = e.target;
+        setValue(prev => ({ ...prev, [name]: value.substring(0, 32) }));
+        if (name === 'text') setTextError('');
     };
 
-     const handleColorSelect = (hex: string, name: string) => {
+    const handleColorSelect = (hex: string, name: string) => {
         setValue(prev => ({ ...prev, key: hex, text: name || prev.text })); // Pré-remplir text si vide
         setKeyError('');
         if (!textError && (!v.text || v.text.trim().length < 1)) {
             setTextError(''); // Ne pas mettre d'erreur texte si on vient de sélectionner une couleur
         }
-     };
+    };
 
-     const handlePricingChange = (pricingData: Partial<ValueInterface>) => {
+    const handlePricingChange = (pricingData: Partial<ValueInterface>) => {
         setValue(prev => ({ ...prev, ...pricingData }));
     };
 
@@ -85,8 +85,8 @@ function ColorInfo({ value: initialValue, feature, onChange, onCancel }: ColorIn
         // Utiliser flex flex-col gap-4 ou 5, padding
         <div className="color-info p-4 sm:p-6 flex flex-col gap-5">
             <div>
-                <h3 className="block text-sm font-medium text-gray-700 mb-2">{t('value.selectColorLabel')}</h3> 
-                 {/* Utiliser overflow-x-auto pour le scroll horizontal */}
+                <h3 className="block text-sm font-medium text-gray-700 mb-2">{t('value.selectColorLabel')}</h3>
+                {/* Utiliser overflow-x-auto pour le scroll horizontal */}
                 <div className="scroll overflow-x-auto p-2 pb-6 -mb-2"> {/* Padding négatif pour compenser scrollbar */}
                     {/* Utiliser flex gap-1.5 */}
                     <div className="colors flex flex-nowrap gap-1.5">
@@ -94,15 +94,15 @@ function ColorInfo({ value: initialValue, feature, onChange, onCancel }: ColorIn
                             // Utiliser flex flex-col gap-1.5
                             <div key={groupIndex} className="group-color flex flex-col gap-1.5 flex-shrink-0">
                                 {c.variants.map((variant) => (
-                                     // Utiliser w-6 h-6 rounded-full border cursor-pointer hover:scale-110 transition
-                                     <button
-                                         type="button"
-                                         key={variant.hex}
-                                         className={`w-6 h-6 rounded-full border border-gray-300 cursor-pointer hover:scale-110 transition-transform duration-100 ${v.key === variant.hex ? 'ring-2 ring-offset-1 ring-blue-500' : ''}`} // Indicateur sélection
-                                         style={{ backgroundColor: variant.hex }}
-                                         onClick={() => handleColorSelect(variant.hex, variant.name)}
-                                         title={variant.name} // Tooltip avec nom couleur
-                                     ></button>
+                                    // Utiliser w-6 h-6 rounded-full border cursor-pointer hover:scale-110 transition
+                                    <button
+                                        type="button"
+                                        key={variant.hex}
+                                        className={`w-6 h-6 rounded-full border border-gray-300 cursor-pointer hover:scale-110 transition-transform duration-100 ${v.key === variant.hex ? 'ring-2 ring-offset-1 ring-blue-500' : ''}`} // Indicateur sélection
+                                        style={{ backgroundColor: variant.hex }}
+                                        onClick={() => handleColorSelect(variant.hex, variant.name)}
+                                        title={variant.name} // Tooltip avec nom couleur
+                                    ></button>
                                 ))}
                             </div>
                         ))}
@@ -112,10 +112,10 @@ function ColorInfo({ value: initialValue, feature, onChange, onCancel }: ColorIn
             </div>
 
             {/* Nom de la couleur */}
-             <div>
+            <div>
                 <label className='block text-sm font-medium text-gray-700 mb-1 flex justify-between items-center' htmlFor="feature-info-text-input">
-                    <span>{t('value.colorNameLabel')} <IoPencil className="inline-block ml-1 w-3 h-3 text-gray-400" /></span> 
-                    <span className={`text-xs ${ (v.text?.trim()?.length || 0) > 32 ? 'text-red-600' : 'text-gray-400'}`}>
+                    <span>{t('value.colorNameLabel')} <IoPencil className="inline-block ml-1 w-3 h-3 text-gray-400" /></span>
+                    <span className={`text-xs ${(v.text?.trim()?.length || 0) > 32 ? 'text-red-600' : 'text-gray-400'}`}>
                         {(v.text?.trim()?.length || 0)} / 32
                     </span>
                 </label>
@@ -127,11 +127,11 @@ function ColorInfo({ value: initialValue, feature, onChange, onCancel }: ColorIn
                         id="feature-info-text-input"
                         name="text" // Important
                         className={`block w-full rounded-md shadow-sm sm:text-sm h-10 ${v.key ? 'pl-9' : 'pl-3'} pr-3 ${textError ? 'border-red-500 ring-red-500 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'}`}
-                        placeholder={t('value.colorNamePlaceholder')} 
+                        placeholder={t('value.colorNamePlaceholder')}
                         type="text"
                         value={v.text || ''}
                         onChange={handleInputChange}
-                     />
+                    />
                 </div>
                 {textError && <p className="mt-1 text-xs text-red-600">{textError}</p>}
             </div>
@@ -140,7 +140,8 @@ function ColorInfo({ value: initialValue, feature, onChange, onCancel }: ColorIn
             <ValuePricing value={v} addToValue={handlePricingChange} />
 
             {/* Confirmation */}
-            <Comfirm
+            <Confirm
+                cancel={t('common.cancel')}
                 canConfirm={!textError && !keyError}
                 onCancel={onCancel}
                 confirm={t('common.ok')}
@@ -151,41 +152,41 @@ function ColorInfo({ value: initialValue, feature, onChange, onCancel }: ColorIn
 
 // --- Composant de Rendu Value Color ---
 function ColorValue({ value, feature, onRemove, onClick }: { onClick?: () => void; onRemove?: () => void; value: ValueInterface; feature: Partial<FeatureInterface> }) {
-     const { openChild } = useChildViewer();
-     const { t } = useTranslation();
+    const { openChild } = useChildViewer();
+    const { t } = useTranslation();
 
     return (
-         // Utiliser flex, flex-col, items-center, gap, padding, rounded, border, hover, relative
+        // Utiliser flex, flex-col, items-center, gap, padding, rounded, border, hover, relative
         <div
             onClick={onClick}
-             className="value-color relative flex flex-col items-center gap-1 p-1.5 rounded-lg border border-gray-200 cursor-pointer hover:border-blue-300 hover:bg-blue-50/30 transition group w-20" // Taille fixe comme Mini
-             title={value.text || t('value.editOption')}
+            className="value-color relative flex flex-col items-center gap-1 p-1.5 rounded-lg border border-gray-200 cursor-pointer hover:border-blue-300 hover:bg-blue-50/30 transition group w-20" // Taille fixe comme Mini
+            title={value.text || t('value.editOption')}
         >
-             {/* Bouton Supprimer */}
-              {onRemove && (
-                  <button
-                      type="button"
-                      onClick={(e) => {
-                          e.stopPropagation();
-                          openChild(<ChildViewer>
-                              <ConfirmDelete title={t('value.confirmDelete', { name: value.text || 'cette couleur' })} onCancel={() => openChild(null)} onDelete={() => { onRemove(); openChild(null); }} />
-                          </ChildViewer>, { background: '#3455' });
-                      }}
-                      className="absolute -top-2 -right-2 z-10 w-6 h-6 flex items-center justify-center bg-red-500 text-white rounded-full shadow hover:bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
-                      title={t('common.delete')}
-                  >
-                      <IoClose size={14} />
-                  </button>
-              )}
-             {/* Pastille de couleur */}
-             <div
-                  className="color w-8 h-8 rounded-full border border-gray-300 shadow-inner"
-                  style={{ backgroundColor: value.key ?? '#ffffff' }} // Afficher la couleur
-             ></div>
-             {/* Texte */}
-             <span className={`w-full text-xs text-center truncate ${value.text ? 'text-gray-700' : 'text-gray-400 italic'}`} title={value.text || t('value.emptyText')}> 
-                  {value.text || `(${t('value.emptyText')})`} 
-             </span>
+            {/* Bouton Supprimer */}
+            {onRemove && (
+                <button
+                    type="button"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        openChild(<ChildViewer>
+                            <ConfirmDelete title={t('value.confirmDelete', { name: value.text || 'cette couleur' })} onCancel={() => openChild(null)} onDelete={() => { onRemove(); openChild(null); }} />
+                        </ChildViewer>, { background: '#3455' });
+                    }}
+                    className="absolute -top-2 -right-2 z-10 w-6 h-6 flex items-center justify-center bg-red-500 text-white rounded-full shadow hover:bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                    title={t('common.delete')}
+                >
+                    <IoClose size={14} />
+                </button>
+            )}
+            {/* Pastille de couleur */}
+            <div
+                className="color w-8 h-8 rounded-full border border-gray-300 shadow-inner"
+                style={{ backgroundColor: value.key ?? '#ffffff' }} // Afficher la couleur
+            ></div>
+            {/* Texte */}
+            <span className={`w-full text-xs text-center truncate ${value.text ? 'text-gray-700' : 'text-gray-400 italic'}`} title={value.text || t('value.emptyText')}>
+                {value.text || `(${t('value.emptyText')})`}
+            </span>
         </div>
     );
 }

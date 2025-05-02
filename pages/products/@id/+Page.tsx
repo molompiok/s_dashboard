@@ -1,7 +1,7 @@
 // pages/products/@id/+Page.tsx (ou /products/new/+Page.tsx)
 
 // --- Imports ---
-import { useEffect, useState, useCallback } from 'react'; // Ajouter useCallback
+import { useEffect, useState, useCallback, useMemo } from 'react'; // Ajouter useCallback
 import { usePageContext } from '../../../renderer/usePageContext';
 import { useGlobalStore } from '../../stores/StoreStore';
 // ✅ Importer les hooks API nécessaires
@@ -15,7 +15,7 @@ import {
     useGetProduct
 } from '../../../api/ReactSublymusApi';
 import { FeatureInterface, ProductInterface, ValueInterface } from '../../../Interfaces/Interfaces';
-import { Topbar } from '../../../Components/TopBar/TopBar';
+import { BreadcrumbItem, Topbar } from '../../../Components/TopBar/TopBar';
 // Importer les composants UI 
 import { SwiperProducts } from '../../../Components/SwiperProducts/SwiperProducts';
 import { CategoryItemMini } from '../../../Components/CategoryItem/CategoryItemMini';
@@ -27,7 +27,7 @@ import { Indicator } from '../../../Components/Indicator/Indicator';
 import { ConfirmDelete } from '../../../Components/Confirm/ConfirmDelete';
 import { PageNotFound } from '../../../Components/PageNotFound/PageNotFound';
 // Importer les utilitaires
-import { debounce } from '../../../Components/Utils/functions';
+import { debounce, limit } from '../../../Components/Utils/functions';
 import { NEW_VIEW } from '../../../Components/Utils/constants';
 // Autres imports
 import { useMyLocation } from '../../../Hooks/useRepalceState';
@@ -51,6 +51,7 @@ import { VisibilityControl } from '../../../Components/Controls/VisibilityContro
 import { CreateControl } from '../../../Components/Controls/CreateControl';
 import { preview } from 'vite';
 import { globalActionZust } from '../../../renderer/AppStore/globalActionZust';
+import { ProductSettings } from './ProductSettings';
 // Constantes
 const FEATURE_LIMIT = 5;
 const DEBOUNCE_PRODUCT_ID = 'debounce:save:product';
@@ -476,6 +477,23 @@ function Page() {
         updateValues(v.map((a, i) => ({ ...a, index: i })));
     }, [originalProductData])
 
+    const productName = productFormState?.name;
+
+    const breadcrumbs: BreadcrumbItem[] = useMemo(() => {
+        const crumbs: BreadcrumbItem[] = [
+            { name: t('navigation.home'), url: '/' },
+            { name: t('navigation.products'), url: '/products' },
+        ];
+        if (isNewProduct) {
+            crumbs.push({ name: t('product.createBreadcrumb') }); // Ex: "Nouveau Produit"
+        } else if (productName) {
+            crumbs.push({ name: limit(productName, 30) }); // Nom du produit tronqué, pas de lien
+        } else {
+            crumbs.push({ name: t('common.loading') }); // Pendant le chargement du nom
+        }
+        return crumbs;
+    }, [t, isNewProduct, productName]);
+
     // --- Rendu ---
     if (!isNewProduct && isLoadingProduct) {
         return <div className="w-full min-h-screen flex items-center justify-center"><span className='text-gray-500'>{t('common.loading')}</span></div>;
@@ -491,7 +509,7 @@ function Page() {
 
     return (
         <div className="product-detail-page w-full flex flex-col bg-gray-50 min-h-screen">
-            <Topbar back={true} />
+            <Topbar back={true} breadcrumbs={breadcrumbs} />
             {/* Utiliser max-w-4xl ou 5xl pour plus d'espace, gap-6 ou 8 */}
             <main className="w-full max-w-5xl mx-auto p-4 md:p-6 lg:p-8 flex flex-col gap-8 pb-24">
 
@@ -729,7 +747,7 @@ function Page() {
                                 type="button"
                                 onClick={() => { openNewFeature() }}
                                 disabled={(featuresFromState?.filter(f => !f.is_default).length || 0) >= FEATURE_LIMIT}
-                                className="text-sm ml-auto text-blue-600 hover:text-blue-800 px-3 py-1 rounded border border-blue-300 hover:bg-blue-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                                className="text-sm hover:shadow-sm cursor-pointer ml-auto text-blue-600 hover:text-blue-800 px-3 py-1 rounded border border-blue-300 hover:bg-blue-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
                             >
                                 {t('product.addVariantButton')}
                             </button>
@@ -814,57 +832,6 @@ function Page() {
 
             </main>
         </div>
-    );
-}
-
-
-// --- Nouveau Composant ProductSettings --- (à mettre dans son propre fichier idéalement)
-const Settings = [
-    // Garder la structure mais adapter les clés i18n pour 'show'
-    { name: 'price-stock', showKey: 'productSettings.priceStock', url: '/res/icons/money.png', color: '#4CAF50', shadow: '#388E3C' },
-    { name: 'details', showKey: 'productSettings.details', url: '/res/icons/details.png', color: '#607D8B', shadow: '#455A64' },
-    // { name: 'promo', showKey: 'productSettings.promo', url: '/res/icons/promo.png', color: '#FF9800', shadow: '#F57C00' },
-    { name: 'inventory', showKey: 'productSettings.inventory', url: '/res/icons/inventory.png', color: '#3F51B5', shadow: '#303F9F' }, // Caché si non pertinent
-    // { name: 'affiliation', showKey: 'productSettings.affiliation', url: '/res/icons/affiliation.png', color: '#9C27B0', shadow: '#7B1FA2' }, // Caché si non pertinent
-    { name: 'show-stats', showKey: 'productSettings.stats', url: '/res/icons/stats.png', color: '#2196F3', shadow: '#1976D2' },
-    { name: 'comments', showKey: 'productSettings.comments', url: '/res/icons/comments.png', color: '#FFC107', shadow: '#FFA000' },
-];
-
-function ProductSettings({ onSelected }: { onSelected: (type: string) => void }) {
-    const { t } = useTranslation();
-    const s = useWindowSize().width;
-    // Calcul slide per view (simplifié)
-    const n = s < 550 ? 2 : s < 900 ? 3 : 4; // Ajuster selon besoin
-
-    return (
-        <Swiper
-            slidesPerView={n}
-            grid={{ rows: 2 }}
-            spaceBetween={15} // Espace entre slides
-            pagination={{ clickable: true }}
-            modules={[Grid, Pagination]}
-
-            // Ajouter padding horizontal pour voir les slides partielles
-            // Les styles Swiper peuvent nécessiter des ajustements globaux ou via props
-            className="product-settings-swiper py-4" // Ajouter py-4 pour pagination
-            style={{ height: '300px', overflow: 'visible' }} // Permettre aux ombres de déborder
-        >
-            {Settings.map(s => (
-                <SwiperSlide key={s.name} className="h-auto pb-8"> {/* Ajouter padding bottom pour pagination */}
-                    {/* Carte Setting */}
-                    <button // Utiliser un bouton pour l'accessibilité
-                        type="button"
-                        onClick={() => onSelected(s.name)}
-                        className={`no-select setting w-full aspect-square rounded-xl p-3 flex flex-col justify-between items-center cursor-pointer transition duration-150 hover:scale-105`}
-                        style={{ backgroundColor: s.color, boxShadow: `0px 4px 12px -4px ${s.shadow}` }} // Style inline pour couleurs dynamiques
-                    >
-                        <img src={s.url} alt={t(s.showKey)} className="w-12 h-12 object-contain" /> {/* Icone plus grande */}
-                        <span className="name text-white text-xs font-medium text-center mt-1">{t(s.showKey)}</span>
-                    </button>
-                </SwiperSlide>
-            ))}
-            {/* Ajouter slides vides si besoin pour compléter la grille? Non nécessaire avec Swiper Grid */}
-        </Swiper>
     );
 }
 

@@ -21,9 +21,8 @@ export function InventoryManager({ store }: InventoryManagerProps) {
 
     // --- Récupération Données ---
     const { data: inventoriesData, isLoading, isError, error } = useGetInventories(
-        // L'API getInventories doit accepter un filtre store_id (à vérifier/implémenter)
-        {}, // Filtrer par l'ID du store courant
-        { enabled: !!store.id } // Activer seulement si store sélectionné
+        {},
+        { enabled: !!store.id } 
     );
     const inventories = inventoriesData?.list ?? []; // Utiliser data.list si paginé
 
@@ -60,6 +59,8 @@ export function InventoryManager({ store }: InventoryManagerProps) {
          );
      };
 
+     console.log(inventoriesData);
+     
 
     return (
         // Section principale : fond blanc, rounded, shadow, border, padding, flex col

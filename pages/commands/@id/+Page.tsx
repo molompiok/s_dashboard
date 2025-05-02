@@ -4,7 +4,7 @@ import { IoCheckmarkCircle, IoChevronForward, IoCopyOutline, IoQrCode } from 're
 import { QRCodeCanvas } from 'qrcode.react';
 import { OrderStatus, PaymentMethod } from '../../../Components/Utils/constants'; // Garder enums
 import { OrderStatusElement, statusColors } from '../../../Components/Status/Satus';
-import { Topbar } from '../../../Components/TopBar/TopBar';
+import { BreadcrumbItem, Topbar } from '../../../Components/TopBar/TopBar';
 import { copyToClipboard, FeatureType, getId, limit } from '../../../Components/Utils/functions'; // Garder utilitaires
 import { CommandInterface, CommandItemInterface, EventStatus, ProductInterface, UserInterface, ValueInterface } from '../../../Interfaces/Interfaces'; // Garder Interfaces
 import { FaTruck } from 'react-icons/fa';
@@ -29,6 +29,7 @@ import { UseMutationResult } from '@tanstack/react-query';
 import { ApiError } from '../../../api/SublymusApi';
 import { Receipt } from './Receipt/Receipt';
 import { useChildViewer } from '../../../Components/ChildViewer/useChildViewer';
+
 
 export { Page };
 
@@ -100,6 +101,21 @@ function Page() {
         );
     };
 
+
+    const commandRef = command?.reference || command?.id?.substring(0, 8); // Utiliser référence ou début ID
+    const breadcrumbs: BreadcrumbItem[] = useMemo(() => {
+        const crumbs: BreadcrumbItem[] = [
+            { name: t('navigation.home'), url: '/' },
+            { name: t('navigation.orders'), url: '/commands' }, // Lien vers la liste
+        ];
+        if (commandRef) {
+            crumbs.push({ name: `#${commandRef}` }); // Référence/ID commande, pas de lien
+        } else if (command?.id) {
+            crumbs.push({ name: t('common.loading') });
+        }
+        return crumbs;
+    }, [t, command?.id, commandRef]);
+
     // --- Rendu ---
     if (isLoading) return <div className="p-6 text-center text-gray-500">{t('common.loading')}</div>;
     if (isError) return <div className="p-6 text-center text-red-500">{apiError?.message || t('error_occurred')}</div>;
@@ -107,7 +123,7 @@ function Page() {
 
     return (
         <div className="w-full flex flex-col bg-gray-50 min-h-screen">
-            <Topbar back />
+            <Topbar back breadcrumbs={breadcrumbs}/>
             <div className="w-full max-w-4xl mx-auto p-4 md:p-6 lg:p-8 flex flex-col gap-6">
                 <CommandTop command={command} />
 
@@ -135,7 +151,7 @@ function Page() {
                     </h2>
                     <button
                         onClick={handleOpenStatusUpdate}
-                        className="text-sm text-blue-600 hover:text-blue-800 px-3 py-1 rounded border border-blue-300 hover:bg-blue-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="text-sm text-blue-600 hover:text-blue-800 cursor-pointer px-3 py-1 rounded border border-blue-300 hover:shadow-md hover:bg-blue-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
                         disabled={updateStatusMutation.isPending}
                     >
                         {updateStatusMutation.isPending ? t('common.saving') : t('order.updateStatusButton')}
@@ -254,14 +270,14 @@ export function CommandUser({ user, command }: { command: Partial<CommandInterfa
                 {/* Téléphone */}
                 {maskedPhone && (
                     <div className="flex flex-col min-[500px]:flex-row min-[500px]:items-center min-[500px]:justify-between gap-1 min-[500px]:gap-2">
-                        <a href={telLink} className="flex items-center gap-2 text-min-[500px] text-gray-700 hover:text-blue-600 min-w-0">
+                        <a href={telLink} target="_blank" rel="noreferrer" className="flex items-center gap-2 text-min-[500px] text-gray-700 hover:text-blue-600 min-w-0">
                             <IoCall className="w-4 h-4 text-gray-400 flex-shrink-0" />
                             <span className="truncate">{maskedPhone}</span>
                         </a>
                         <div className="flex items-center gap-2 mt-1 min-[500px]:mt-0 flex-shrink-0">
-                            {telLink && <a href={telLink} title={t('order.callAction')} target="_blank" rel="noreferrer" className="p-1 rounded-full hover:bg-gray-100"><img src={'/res/social/telephone.png'} alt="Call" className="w-5 h-5" /></a>}
-                            {waLink && <a href={waLink} title={t('order.whatsappAction')} target="_blank" rel="noreferrer" className="p-1 rounded-full hover:bg-gray-100"><img src={'/res/social/social.png'} alt="WhatsApp" className="w-5 h-5" /></a>}
-                            {tgLink && <a href={tgLink} title={t('order.telegramAction')} target="_blank" rel="noreferrer" className="p-1 rounded-full hover:bg-gray-100"><img src={'/res/social/telegram.png'} alt="Telegram" className="w-5 h-5" /></a>}
+                            {telLink && <a href={telLink} title={t('order.callAction')} target="_blank" rel="noreferrer" className="p-1 rounded-full hover:bg-gray-200"><img src={'/res/social/telephone.png'} alt="Call" className="w-5 h-5" /></a>}
+                            {waLink && <a href={waLink} title={t('order.whatsappAction')} target="_blank" rel="noreferrer" className="p-1 rounded-full hover:bg-gray-200"><img src={'/res/social/social.png'} alt="WhatsApp" className="w-5 h-5" /></a>}
+                            {tgLink && <a href={tgLink} title={t('order.telegramAction')} target="_blank" rel="noreferrer" className="p-1 rounded-full hover:bg-gray-200"><img src={'/res/social/telegram.png'} alt="Telegram" className="w-5 h-5" /></a>}
                         </div>
                     </div>
                 )}
@@ -273,7 +289,7 @@ export function CommandUser({ user, command }: { command: Partial<CommandInterfa
                             <span className="truncate">{user.email}</span>
                         </a>
                         <div className="flex items-center gap-2 mt-1 min-[500px]:mt-0 flex-shrink-0">
-                            {mailLink && <a href={mailLink} title={t('order.emailAction')} target="_blank" rel="noreferrer" className="p-1 rounded-full hover:bg-gray-100"><img src={'/res/social/gmail.png'} alt="Email" className="w-5 h-5" /></a>}
+                            {mailLink && <a href={mailLink} title={t('order.emailAction')} target="_blank" rel="noreferrer" className="p-1 rounded-full hover:bg-gray-200"><img src={'/res/social/gmail.png'} alt="Email" className="w-5 h-5" /></a>}
                         </div>
                     </div>
                 )}
@@ -285,7 +301,7 @@ export function CommandUser({ user, command }: { command: Partial<CommandInterfa
                             <span className="flex-grow">{command.delivery_address || command.pickup_address}</span>
                         </a>
                         <div className="flex items-center gap-2 mt-1 min-[500px]:mt-0 flex-shrink-0">
-                            {mapUrl && <a href={mapUrl} title={t('order.mapAction')} target="_blank" rel="noreferrer" className="p-1 rounded-full hover:bg-gray-100"><img src={'/res/social/maps.png'} alt="Map" className="w-5 h-5" /></a>}
+                            {mapUrl && <a href={mapUrl} title={t('order.mapAction')} target="_blank" rel="noreferrer" className="p-1 rounded-full hover:bg-gray-200"><img src={'/res/social/maps.png'} alt="Map" className="w-5 h-5" /></a>}
                         </div>
                     </div>
                 )}
@@ -371,7 +387,7 @@ export function CommandProduct({ item }: { item: CommandItemInterface }) {
                 )}
             </div>
             {isReturn && <span className='absolute top-2 right-2'><OrderStatusElement status={item.status?.toUpperCase() as any} /></span>}
-            <a href={`/products/${item.product_id}`} className="absolute bottom-1 right-1 px-2 py-0.5 rounded-lg border border-gray-200 text-xs text-blue-600 bg-white/80 backdrop-blur-sm hover:bg-blue-50 hover:border-blue-300 cursor-pointer flex items-center gap-1">
+            <a href={`/products/${item.product_id}`} className="absolute bottom-1 right-1 px-2 py-0.5 rounded-lg border border-gray-200 text-xs text-blue-600 bg-white/80 backdrop-blur-sm hover:bg-blue-50 hover:border-blue-300 cursor-pointer hover:shadow-md flex items-center gap-1">
                 {t('order.viewProduct')}
                 <IoChevronForward className="w-3 h-3" />
             </a>

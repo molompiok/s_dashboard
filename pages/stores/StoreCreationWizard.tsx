@@ -40,7 +40,7 @@ export function StoreCreationEditionWizard({
     const { t } = useTranslation(); // ✅ i18n
     const [swiper, setSwiper] = useState<SwiperType | null>(null);
     const [activeIndex, setActiveIndex] = useState(0);
-    const [maxReachedIndex, setMaxReachedIndex] = useState(0); // Index max atteint valablement
+    const [maxReachedIndex, setMaxReachedIndex] = useState(initialStoreData?3:0); // Index max atteint valablement
 
     const isEditing = !!initialStoreData?.id;
 
@@ -49,6 +49,9 @@ export function StoreCreationEditionWizard({
     const [apiError, setApiError] = useState<string | null>(null);
     const [savedStore, setSavedStore] = useState<StoreInterface | null>(null);
 
+    const [s] = useState({
+        collected:{} as StoreInterface
+    })
     // --- État du Formulaire ---
     const [collected, setCollected] = useState({
         name: initialStoreData.name ?? '',
@@ -102,7 +105,9 @@ export function StoreCreationEditionWizard({
         }
         setNameCheck({ type: 'checking', message: t('storeCreate.validation.nameChecking') });
         setIsNameValid(false); // Invalide pendant la vérification
-        const handler = debounce(() => setDebouncedName(collected.name), 'store-name-check', 600);
+        const handler = debounce(() => {
+            setDebouncedName(collected.name)
+        }, 'store-name-check', 600);
         // return () => handler.cancel(); // Si debounce retourne cancel
     }, [collected.name, t, isEditing]);
 
@@ -183,6 +188,7 @@ export function StoreCreationEditionWizard({
             processedValue = value.substring(0, 128); // Limiter description
         }
 
+        s.collected = {...s.collected,[name]: processedValue}
         setCollected(prev => ({ ...prev, [name]: processedValue }));
 
         // Reset erreurs spécifiques au champ
@@ -194,6 +200,7 @@ export function StoreCreationEditionWizard({
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, field: 'logo' | 'cover_image') => {
         const file = e.target.files?.[0];
         if (!file) return;
+        s.collected = {...s.collected,[field]: [file]}
         setCollected(prev => ({ ...prev, [field]: [file] })); // Remplacer par le nouveau fichier
         // Reset erreurs
         if (field === 'logo') setLogoError('');
@@ -222,7 +229,7 @@ export function StoreCreationEditionWizard({
 
             // --- Mise à jour ---
             updateStoreMutation.mutate(
-                { store_id: initialStoreData.id, data: collected }, // Passer comme objet, l'API interne fera le FormData
+                { store_id: initialStoreData.id, data: s.collected }, // Passer comme objet, l'API interne fera le FormData
                 // Ou si l'API attend vraiment FormData:
                 // { store_id: initialStoreData.id, formData: apiFormData },
                 {
@@ -402,15 +409,15 @@ export function StoreCreationEditionWizard({
                     </SwiperSlide>
 
                     {/* Slide 3: Cover Image */}
-                    <SwiperSlide className='flex flex-col items-center justify-center gap-6 px-4 text-center'>
+                    <SwiperSlide className='flex h-full overflow-visible flex-col items-center justify-center gap-6 px-4 text-center'>
                         <h2 className="text-lg font-medium text-gray-700">{t('storeCreate.stepCoverTitle')}</h2>
-                        <label htmlFor='store-cover_image-input' className={`relative group w-full max-w-md aspect-video rounded-lg cursor-pointer overflow-hidden bg-gray-100 border-2 ${coverError ? 'border-red-400' : 'border-dashed border-gray-300'} hover:border-blue-400 hover:bg-gray-50`}>
-                            <img
-                                src={coverPreview || '/res/empty/drag-and-drop.png'} // Preview ou Placeholder
-                                alt={t('storeCreate.coverLabel')}
-                                className={`w-full h-auto ${collected.cover_image.length > 0 ? 'object-cover' : 'object-contain opacity-50'}`}
-                                onError={(e) => (e.currentTarget.src = '/res/empty/drag-and-drop.png')}
-                            />
+                        <label htmlFor='store-cover_image-input' className={`relative  group w-full max-w-md aspect-video rounded-lg cursor-pointer overflow-hidden bg-gray-100 border-2 ${coverError ? 'border-red-400' : 'border-dashed border-gray-300'} hover:border-blue-400 hover:bg-gray-50`}>
+                            <div
+                                style={{background:getImg(coverPreview || '/res/empty/drag-and-drop.png')}}
+                                className={`w-auto h-[70%]  ${collected.cover_image.length > 0 ? 'object-cover' : 'object-contain opacity-50'}`}
+                                onError={(e) => (e.currentTarget.style.background = getImg('/res/empty/drag-and-drop.png'))}
+                            >
+                            </div>
                             <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                                 <IoPencil className="text-white w-10 h-10" />
                             </div>

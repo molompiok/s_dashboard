@@ -14,7 +14,7 @@ import './HorizontalSwiper.css';
 import { Pagination, Navigation } from 'swiper/modules';
 import { useWindowSize } from '../../Hooks/useWindowSize';
 import { ValueInterface } from '../../Interfaces/Interfaces';
-import { IoArrowBackCircleOutline, IoArrowForwardCircleOutline, IoTrash } from 'react-icons/io5';
+import { IoArrowBackCircleOutline, IoArrowForwardCircleOutline, IoChevronBack, IoChevronForward, IoTrash } from 'react-icons/io5';
 import { BiSolidImageAdd } from 'react-icons/bi';
 import { getFileType } from '../Utils/functions';
 import { ChildViewer } from '../ChildViewer/ChildViewer';
@@ -23,6 +23,7 @@ import { useGlobalStore } from '../../pages/stores/StoreStore';
 import { getImg } from '../Utils/StringFormater';
 import { useChildViewer } from '../ChildViewer/useChildViewer';
 import { globalActionZust } from '../../renderer/AppStore/globalActionZust';
+import { useTranslation } from 'react-i18next';
 
 export { HoriszontalSwiper }
 
@@ -30,8 +31,8 @@ export { HoriszontalSwiper }
 function HoriszontalSwiper({ values, onActiveIndexChange, onDeleteValue, goBack, forward, newViewRequire, editValue }: { editValue: (value: ValueInterface) => void, newViewRequire: (files: Blob[]) => void, goBack: () => boolean, forward: () => boolean, onDeleteValue?: (index: number) => void, onActiveIndexChange?: (index: number) => void, values: ValueInterface[] }) {
     const [swiperRef, setSwiperRef] = useState<SwiperType | null>(null);
     const { currentStore } = useGlobalStore()
-    const size = useWindowSize()
     const { openChild } = useChildViewer();
+    const {t} = useTranslation()
 
     const s = useWindowSize().width;
     const n = s <= 580 ? ((s - 260) / 200) + 2
@@ -40,7 +41,7 @@ function HoriszontalSwiper({ values, onActiveIndexChange, onDeleteValue, goBack,
 
 
     return values.length <= 0 ? <div style={{ width: '1200px' }}></div> : (
-        <div className='horizontal-swiper'>
+        <div className='horizontal-swiper relative w-full group'>
             <Swiper
                 onActiveIndexChange={(_swiper) => {
                     onActiveIndexChange?.(_swiper.activeIndex);
@@ -49,10 +50,10 @@ function HoriszontalSwiper({ values, onActiveIndexChange, onDeleteValue, goBack,
                 slidesPerView={n}
                 centeredSlides={true}
                 spaceBetween={20}
-                pagination={{
-                    type: 'fraction',
+                navigation={{ // Activer navigation Swiper
+                    nextEl: '.swiper-button-next-store', // Sélecteurs CSS personnalisés
+                    prevEl: '.swiper-button-prev-store',
                 }}
-                navigation={true}
                 modules={[Pagination, Navigation]}
                 className="mySwiper"
             >
@@ -132,6 +133,13 @@ function HoriszontalSwiper({ values, onActiveIndexChange, onDeleteValue, goBack,
                 }
                 <div className='unlimited'></div>
             </Swiper>
+            <button className="swiper-button-prev-store absolute top-1/2 left-0 transform -translate-y-1/2 z-10 p-2 bg-white/70 hover:bg-white rounded-full shadow-md text-gray-600 hover:text-gray-900 opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-0" aria-label={t('pagination.previous')}>
+                <IoChevronBack className="w-5 h-5" />
+            </button>
+            {/* Bouton Suivant */}
+            <button className="swiper-button-next-store absolute top-1/2 right-0 transform -translate-y-1/2 z-10 p-2 bg-white/70 hover:bg-white rounded-full shadow-md text-gray-600 hover:text-gray-900 opacity-0 group-hover:opacity-100 transition-opacity disabled:opacity-0" aria-label={t('pagination.next')}>
+                <IoChevronForward className="w-5 h-5" />
+            </button>
         </div>
     );
 }
