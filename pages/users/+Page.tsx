@@ -125,7 +125,7 @@ export default function Page() {
         {/* Autres Sections (Liste complète des clients/collaborateurs?) */}
         {/* Cette section pourrait être remplacée par une navigation vers les pages dédiées */}
         {/* Ou afficher une table/liste ici */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-1 gap-6">
           {/* Afficher la liste des clients ici? */}
           <ClientList initialClients={clientPrev} />
           {/* Afficher la liste des collaborateurs ici? */}

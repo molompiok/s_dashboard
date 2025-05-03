@@ -226,9 +226,11 @@ export function ThemeManager({ store }: ThemeManagerProps) {
 interface ThemeCardProps {
     theme: Partial<ThemeInterface>;
     isCurrent?: boolean; // Indiquer si c'est le thème actuel
+    isSelected?:boolean,
+    onClick?:() => void
 }
 
-export function ThemeCard({ theme, isCurrent = false }: ThemeCardProps) {
+export function ThemeCard({ theme, isCurrent = false ,isSelected,onClick}: ThemeCardProps) {
     const { t } = useTranslation();
     const { currentStore: globalCurrentStore } = useGlobalStore(); // Pour URL base image
     const [imgError, setImgError] = useState(false);
@@ -252,7 +254,7 @@ export function ThemeCard({ theme, isCurrent = false }: ThemeCardProps) {
     return (
         <button // Rendre la carte cliquable
             type="button"
-            onClick={handleClick}
+            onClick={onClick||handleClick}
             className={`theme-card w-full h-full flex flex-col bg-white rounded-lg shadow-sm border overflow-hidden transition duration-150 ${isCurrent ? 'border-blue-500 ring-1 ring-blue-400' : 'border-gray-200 hover:shadow-md hover:border-gray-300'
                 }`}
         >
@@ -287,7 +289,7 @@ export function ThemeCard({ theme, isCurrent = false }: ThemeCardProps) {
 // --- Skeleton pour ThemeCard ---
 export function ThemeCardSkeleton() {
     return (
-        <div className="theme-card w-full h-full flex flex-col bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden animate-pulse">
+        <div className="theme-card w-[90%] mx-auto mb-4 h-auto flex flex-col bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden animate-pulse">
             <div className="aspect-video w-full bg-gray-300"></div>
             <div className="p-2 flex flex-col flex-grow justify-between">
                 <div><div className="h-4 w-3/4 bg-gray-300 rounded mb-2"></div></div>

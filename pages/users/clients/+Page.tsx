@@ -18,7 +18,7 @@ const Page: React.FC = () => {
 ];
 
   return (
-    <div className="clients-page">
+    <div className="clients-page pb-48">
       <Topbar breadcrumbs={breadcrumbs}/>
       <ClientList initialClients={[]}/>
     </div>

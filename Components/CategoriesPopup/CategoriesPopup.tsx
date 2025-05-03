@@ -46,10 +46,10 @@ function CategoriesPopup({ onSelected, ignore = [], initialSearch = '' }: Catego
 
     return (
         // Utiliser flex flex-col, gap, padding
-        <div className="list-categories-popup flex flex-col gap-4 p-4 sm:p-6 max-h-[70vh] overflow-y-auto"> {/* Hauteur max et scroll */}
+        <div className="list-categories-popup flex flex-col gap-4 px-4 pb-48 sm:p-6 max-h-[70vh] overflow-y-auto"> {/* Hauteur max et scroll */}
             {/* Barre de recherche */}
             {/* Utiliser flex justify-center mb-4 */}
-            <div className="flex justify-center mb-4 sticky top-0 bg-white/80 backdrop-blur-sm py-2 z-10"> {/* Rendre sticky */}
+            <div className="flex justify-center mb-4 sticky top-0 bg-white backdrop-blur-sm py-2 z-12 "> {/* Rendre sticky */}
                 <label htmlFor="category-popup-search-input" className='relative w-full max-w-sm'>
                     <input
                         className="w-full pl-3 pr-10 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"

@@ -51,7 +51,7 @@ function Page() {
     const [isLoadingInitialData, setIsLoadingInitialData] = useState(true);
     const [fetchError, setFetchError] = useState<string | null>(null);
     // --- Nouvel état pour la visibilité de la sidebar en survol (< lg) ---
-    const [isSidebarOverlayVisible, setIsSidebarOverlayVisible] = useState(false);
+    const [isSidebarOverlayVisible, setIsSidebarOverlayVisible] = useState(true);
 
     // --- Hooks API Placeholder (INCHANGÉ) ---
     const getThemeOptions = useCallback(async (id: string): Promise<ThemeOptionsStructure> => { /* ... (votre logique inchangée) ... */ return { themeId: id, themeName: "Thème Exemple", sections: [ { key: 'general', titleKey: 'themeEditor.section.general', order: 1 }, { key: 'colors', titleKey: 'themeEditor.section.colors', order: 2 }, { key: 'typography', titleKey: 'themeEditor.section.typography', order: 3 }, { key: 'layout', titleKey: 'themeEditor.section.layout', order: 4 }, { key: 'header', titleKey: 'themeEditor.section.header', order: 5 }, ], options: [ { key: 'storeNameVisible', type: 'toggle', section: 'general', labelKey: 'themeEditor.options.storeNameVisible', defaultValue: true, descriptionKey: 'themeEditor.options.storeNameVisibleDesc' }, { key: 'logoUrl', type: 'image', section: 'general', labelKey: 'themeEditor.options.logoUrl', defaultValue: '/res/logo-placeholder.svg', descriptionKey: 'themeEditor.options.logoUrlDesc' }, { key: 'primaryColor', type: 'color', section: 'colors', labelKey: 'themeEditor.options.primaryColor', defaultValue: '#2563EB', descriptionKey: 'themeEditor.options.primaryColorDesc' }, { key: 'secondaryColor', type: 'color', section: 'colors', labelKey: 'themeEditor.options.secondaryColor', defaultValue: '#6B7280', descriptionKey: 'themeEditor.options.secondaryColorDesc' }, { key: 'accentColor', type: 'color', section: 'colors', labelKey: 'themeEditor.options.accentColor', defaultValue: '#F59E0B', descriptionKey: 'themeEditor.options.accentColorDesc' }, { key: 'textColor', type: 'color', section: 'colors', labelKey: 'themeEditor.options.textColor', defaultValue: '#1F2937', descriptionKey: 'themeEditor.options.textColorDesc' }, { key: 'backgroundColor', type: 'color', section: 'colors', labelKey: 'themeEditor.options.backgroundColor', defaultValue: '#FFFFFF', descriptionKey: 'themeEditor.options.backgroundColorDesc' }, { key: 'bodyFont', type: 'font', section: 'typography', labelKey: 'themeEditor.options.bodyFont', defaultValue: 'Inter, sans-serif', descriptionKey: 'themeEditor.options.bodyFontDesc' }, { key: 'headingFont', type: 'font', section: 'typography', labelKey: 'themeEditor.options.headingFont', defaultValue: 'Poppins, sans-serif', descriptionKey: 'themeEditor.options.headingFontDesc' }, { key: 'baseFontSize', type: 'select', section: 'typography', labelKey: 'themeEditor.options.baseFontSize', defaultValue: '16px', descriptionKey: 'themeEditor.options.baseFontSizeDesc', options: [ { value: '14px', labelKey: 'themeEditor.fontSize.small' }, { value: '16px', labelKey: 'themeEditor.fontSize.medium' }, { value: '18px', labelKey: 'themeEditor.fontSize.large' }, ] }, { key: 'productListView', type: 'select', section: 'layout', labelKey: 'themeEditor.options.productListView', defaultValue: 'grid', descriptionKey: 'themeEditor.options.productListViewDesc', options: [ { value: 'grid', labelKey: 'themeEditor.layoutOptions.grid' }, { value: 'list', labelKey: 'themeEditor.layoutOptions.list' }, ] }, { key: 'showHeader', type: 'toggle', section: 'header', labelKey: 'themeEditor.options.showHeader', defaultValue: true, descriptionKey: 'themeEditor.options.showHeaderDesc', }, { key: 'headerAnnouncement', type: 'text', section: 'header', labelKey: 'themeEditor.options.headerAnnouncement', defaultValue: '', descriptionKey: 'themeEditor.options.headerAnnouncementDesc', }, ] as ThemeOptionDefinition[] }; }, []);
@@ -64,7 +64,7 @@ function Page() {
         const content = document.querySelector('#page-content')
         const rect  = content?.getBoundingClientRect()
         setContentWidth(rect?.width||contentWidth);
-    },[size.width])
+    },[size.width,isSidebarOverlayVisible])
     // --- Chargement Initial (INCHANGÉ) ---
     useEffect(() => {
         if (!storeId || !themeId) { /* ... (votre logique inchangée) ... */ setFetchError(t('themeEditor.error.missingParams')); setIsLoadingInitialData(false); return; }
@@ -121,7 +121,7 @@ function Page() {
                 {/* --- Backdrop pour fermer la sidebar overlay sur mobile --- */}
                 {isSidebarOverlayVisible && (
                     <div
-                        className="fixed inset-0 bg-black/30 z-30 lg:hidden"
+                        className="absolute inset-0 bg-black/30 z-30 lg:hidden"
                         onClick={toggleSidebarOverlay}
                         aria-hidden="true"
                     ></div>
@@ -169,15 +169,15 @@ function Page() {
 
                 {/* --- Bouton Flottant pour ouvrir/fermer la Sidebar sur Mobile --- */}
                 {/* Visible seulement SOUS le breakpoint 'lg' */}
-                <button
+               { !isSidebarOverlayVisible &&  <button
                     type="button"
                     onClick={toggleSidebarOverlay}
-                    className={`absolute top-0 left-0 z-50 p-2 bg-gray-300 text-white rounded-full shadow-lg lg:hidden hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition ${isSidebarOverlayVisible ? 'opacity-50 pointer-events-none' : 'opacity-100'}`} // Disparaît quand sidebar ouverte
+                    className={`absolute top-2 cursor-pointer left-4 z-50 p-2 bg-gray-300 hover:bg-gray-400 text-white rounded-full shadow-md hover:shadow-xl lg:hidden hover:bg-primary-dark focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 transition ${isSidebarOverlayVisible ? 'opacity-50 pointer-events-none' : 'opacity-100'}`} 
                     aria-label={isSidebarOverlayVisible ? t('themeEditor.closeSidebar') : t('themeEditor.openSidebar')}
                     title={isSidebarOverlayVisible ? t('themeEditor.closeSidebar') : t('themeEditor.openSidebar')}
                 >
                     <FaEdit size={20} /> {/* Ou une autre icône comme FaSlidersH */}
-                </button>
+                </button>}
 
             </div>
 

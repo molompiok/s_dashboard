@@ -7,7 +7,7 @@ import { OrderStatusElement } from "../Status/Satus";
 export function CommandItem({ command }: { command: CommandInterface }) {
     const { t } = useTranslation(); // ✅ i18n
     return (
-        <div className="command-item  bg-white shadow-sm border border-gray-100 w-full rounded-xl gap-2 flex flex-col items-start p-3 transition duration-100 hover:bg-gray-50">
+        <div className="command-item  bg-white shadow-sm border border-gray-100 w-full rounded-xl gap-2 flex flex-col items-start p-3 transition duration-100 hover:bg-slate-100">
              {/* Info Client */}
             <div className="w-full flex flex-col sl2:flex-row sl2:items-center gap-2 cursor-pointer">
                  {/* Image + Infos */}

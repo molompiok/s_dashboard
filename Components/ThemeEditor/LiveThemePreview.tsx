@@ -113,10 +113,7 @@ console.log(avalaibleWidth);
             {/* Barre d'outils */}
             <div style={{width:avalaibleWidth}} className="flex-shrink-0 bg-white border-b border-gray-300 px-3 py-2 flex items-center justify-between gap-4 shadow-sm z-10">
                 {/* Titre (peut être caché ou simplifié) */}
-                <div className='min-w-0 hidden md:block'>
-                    <span className="text-xs text-gray-500">{t('themeEditor.previewing')}</span>
-                    <h3 className="text-sm font-semibold text-gray-800 truncate" title={theme.name}>{theme.name}</h3>
-                </div>
+                <div className='w-24'></div>
 
                 {/* Contrôles Responsive & Reload */}
                 <div className='flex items-center gap-1 sm:gap-2 mx-auto md:mx-0'> {/* Centré sur mobile */}
@@ -137,7 +134,10 @@ console.log(avalaibleWidth);
                 </div>
 
                 {/* Placeholder à droite pour équilibrer (peut contenir d'autres actions) */}
-                <div className='hidden md:block min-w-[100px]'></div>
+                <div>
+                    <span className="text-xs text-gray-500">{t('themeEditor.previewing')}</span>
+                    <h3 className="text-sm font-semibold text-gray-800 truncate" title={theme.name}>{theme.name}</h3>
+                </div>
             </div>
 
             {/* Conteneur Iframe */}

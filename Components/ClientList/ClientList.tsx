@@ -65,7 +65,7 @@ function ClientList({ product_id, user_id, initialClients }: { initialClients: U
 
   return (
     // Utiliser flex flex-col gap-4
-    <div className="client-list w-full flex flex-col gap-4">
+    <div className="client-list w-full flex flex-col px-4 gap-4">
       {/* Barre supérieure Titre + Recherche */}
       {/* Utiliser flex justify-between items-center flex-wrap gap-4 */}
       <div className="top w-full flex justify-between flex-wrap items-center  gap-4 p-2">
@@ -133,47 +133,84 @@ function ClientList({ product_id, user_id, initialClients }: { initialClients: U
 
 // --- Composant ClientItem ---
 function ClientItem({ client }: { client: UserInterface }) {
-  const { t } = useTranslation(); // ✅ i18n
-  const clientStatus = client.status ?? 'CLIENT'; // Statut par défaut
-  // Utiliser les couleurs définies pour les statuts client
+  const { t } = useTranslation();
+  const clientStatus = client.status ?? 'CLIENT';
   const statusColor = (ClientStatusColor as any)[clientStatus] ?? ClientStatusColor['CLIENT'];
-  const statusBgColor = `${statusColor}20`; // Ajouter de la transparence pour le fond
+  const statusBgColor = `${statusColor}20`;
 
-  const displayPhone = client.user_phones?.[0] ? IMask.pipe(client.user_phones?.[0]?.phone_number || '', { mask: client.user_phones?.[0]?.format || '' }) : t('common.notProvided');
+  const displayPhone = client.user_phones?.[0]
+    ? IMask.pipe(client.user_phones?.[0]?.phone_number || '', {
+        mask: client.user_phones?.[0]?.format || '',
+      })
+    : t('common.notProvided');
 
   return (
-    // Utiliser flex, items-center, gap, p, rounded, bg, hover
-    <div className="client-item flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-4 p-3 rounded-lg bg-white shadow-sm border border-transparent hover:border-gray-200 transition duration-150 cursor-pointer">
-      {/* Photo/Initials */}
-      <div className="flex items-center gap-3 flex-shrink-0">
+    <div className="client-item hover:bg-slate-100 flex flex-col sx2:flex-row sm:items-center gap-3 sm:gap-6 p-4 rounded-xl bg-white shadow-sm hover:border-gray-200 transition duration-150 cursor-pointer">
+      {/* Avatar + Infos principales */}
+      <div className="flex items-center gap-4 flex-1 min-w-0">
+        {/* Avatar */}
         <div
-          className="client-photo w-10 h-10 rounded-full bg-cover bg-center bg-gray-200 text-gray-500 font-medium text-sm flex items-center justify-center" // Styles pour initiales
-          style={{ background: client.photo?.[0] ? getImg(client.photo[0], undefined,) : 'none' }}
+          className="w-12 h-12 rounded-full bg-cover bg-center bg-gray-200 text-gray-500 font-semibold text-sm flex items-center justify-center shrink-0"
+          style={{
+            background: client.photo?.[0]
+              ? `url(${getImg(client.photo[0])})`
+              : undefined,
+          }}
         >
-          {!client.photo?.[0] && (client.full_name?.substring(0, 2).toUpperCase() || '?')}
+          {!client.photo?.[0] &&
+            (client.full_name?.substring(0, 2).toUpperCase() || '?')}
         </div>
-        {/* Info Principale (Nom, Email, Téléphone) */}
-        {/* Utiliser flex flex-col, min-w-0 */}
-        <div className="client-info flex flex-col min-w-0">
-          <p className="client-full_name text-sm font-medium text-gray-800 truncate" title={client.full_name}>{client.full_name || t('common.anonymous')}</p>
-          <p className="client-email text-xs text-gray-500 truncate" title={client.email}>{client.email}</p>
-          <p className="client-phone text-xs text-gray-500 truncate block sm:hidden" title={displayPhone}>{displayPhone}</p>
+
+        {/* Nom, Email, Téléphone (mobile visible) */}
+        <div className="flex flex-col gap-0.5 min-w-0">
+          <p
+            className="text-sm font-medium text-gray-800 truncate"
+            title={client.full_name}
+          >
+            {client.full_name || t('common.anonymous')}
+          </p>
+          <p
+            className="text-xs text-gray-500 truncate"
+            title={client.email}
+          >
+            {client.email}
+          </p>
+          <p
+            className="text-xs text-gray-500 truncate sm:hidden"
+            title={displayPhone}
+          >
+            {displayPhone}
+          </p>
         </div>
       </div>
 
-      {/* Téléphone (caché sur mobile) */}
-      <p className="client-phone text-xs text-gray-500 truncate hidden sm:block w-32 flex-shrink-0" title={displayPhone}>{displayPhone}</p>
+      {/* Téléphone (desktop only) */}
+      <p
+        className="hidden sm:block text-xs text-gray-500 w-28 truncate"
+        title={displayPhone}
+      >
+        {displayPhone}
+      </p>
+      <div className='ml-auto flex items-center gap-6'>
+         {/* Date d'inscription */}
+      <p className=" sm:block text-xs text-gray-400 w-24 text-right shrink-0">
+        {DateTime.fromISO(client.created_at)
+          .setLocale(t('common.locale'))
+          .toFormat('dd MMM yy')}
+      </p>
 
-      {/* Date d'inscription (caché sur mobile) */}
-      <span className='client-date hidden md:block text-xs text-gray-500 whitespace-nowrap w-20 flex-shrink-0 text-right'>
-        {DateTime.fromISO(client.created_at).setLocale(t('common.locale')).toFormat('dd MMM yy')}
-      </span>
-
-      {/* Statut Client (toujours visible, aligné à droite sur mobile) */}
-      <div className="client-status w-full sm:w-auto sm:ml-auto flex justify-end flex-shrink-0">
-        <span className="px-2.5 py-0.5 rounded-full text-xs font-medium capitalize" style={{ backgroundColor: statusBgColor, color: statusColor }}>
+      {/* Statut */}
+      <div className=" sm:w-auto sm:ml-auto flex justify-end shrink-0">
+        <span
+          className="px-2.5 py-0.5 rounded-full text-xs font-medium capitalize"
+          style={{
+            backgroundColor: statusBgColor,
+            color: statusColor,
+          }}
+        >
           {t(`clientStatus.${clientStatus.toLowerCase()}`, clientStatus)}
         </span>
+      </div>
       </div>
     </div>
   );

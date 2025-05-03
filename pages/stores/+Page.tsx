@@ -79,7 +79,7 @@ function Page() {
   const handleStoreCreateEdit = (store?: StoreInterface | undefined) => {
     openChild(<StoreCreationEditionWizard onSaveSuccess={(collected, mode) => {
       console.log('collected', mode, collected);
-      // openChild(null)
+      openChild(null)
     }} onCancel={() => {
       openChild(null)
     }} onFinish={(collected) => {

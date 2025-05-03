@@ -7,6 +7,7 @@ import { IoSearch, IoNotifications, IoChevronBack, IoChevronForward } from "reac
 import { useChildViewer } from '../ChildViewer/useChildViewer'; // Utiliser le hook
 import { useTranslation } from 'react-i18next'; // ✅ i18n
 import { useAuthStore } from '../../pages/login/AuthStore'; // Pour afficher le nom de l'utilisateur
+import { Host } from '../../renderer/+config';
 
 export { Topbar };
 
@@ -41,7 +42,7 @@ function Topbar({
     const displayTitle = breadcrumbs.length === 0 ? (title || t('topbar.welcomeMessage', { name: user?.full_name?.split(' ')[0] || 'Admin' })) : null;
 
     // Calculer le nom d'utilisateur à afficher
-    const displayName = user?.full_name ; 
+    const displayName = user?.full_name;
     const handleBackClick = () => {
         if (onBack) {
             onBack();
@@ -59,9 +60,22 @@ function Topbar({
     const handleSearchClick = () => {
         openChild(
             <ChildViewer title={t('topbar.globalSearchTitle')}>
-                <TopSearch />
+                <TopSearch
+                    onCategorySelected={(c) => {
+                        window.location.href = `${Host}/categories/${c.id}`;
+                    }}
+                    onClientSelected={(c) => {
+                        window.location.href = `${Host}/users/clients/${c.id}`;
+                    }}
+                    onCommandSelected={(c) => {
+                        window.location.href = `${Host}/commands/${c.id}`;
+                    }}
+                    onProductSelected={(c) => {
+                        window.location.href = `${Host}/products/${c.id}`;
+                    }}
+                />
             </ChildViewer>,
-            { background: 'rgba(51, 51, 68, 0.8)', blur: 5 } // Fond plus sombre et flou
+            { background: 'rgba(51, 51, 68, 0.8)', blur: 3 } // Fond plus sombre et flou
         );
     };
 
@@ -106,8 +120,8 @@ function Topbar({
                                     ) : (
                                         <span
                                             className={`font-medium ${index === breadcrumbs.length - 1
-                                                    ? 'text-gray-700'
-                                                    : 'text-gray-500'
+                                                ? 'text-gray-700'
+                                                : 'text-gray-500'
                                                 } truncate max-w-[80px] overflow-hidden text-ellipsis whitespace-nowrap`}
                                             aria-current={index === breadcrumbs.length - 1 ? 'page' : undefined}
                                         >

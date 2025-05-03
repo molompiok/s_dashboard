@@ -48,6 +48,14 @@
         "select": "Sélectionner...",
         "noOptions": "Aucune option"
     },
+    "topSearch": {
+        "placeholder": "Rechercher produits, clients, commandes...",
+        "categoriesTitle": "Catégories",
+        "productsTitle": "Produits",
+        "clientsTitle": "Clients",
+        "commandsTitle": "Commandes",
+        "noResultsFound": "Aucun résultat trouvé pour \"{{term}}\"."
+    },
     "collaborator": {
         "pageTitle": "Gestion des Collaborateurs",
         "listTitle": "Membres de l'équipe",
@@ -243,7 +251,7 @@
         "statusLabel": "Statut Client",
         "memberSinceLabel": "Membre Depuis",
         "activityChartTitle": "Activité Récente",
-        "pageTitle":"Profile du client"
+        "pageTitle": "Profile du client"
     },
     "clientStatus": {
         "new": "Nouveau",
@@ -303,10 +311,12 @@
         "noCommentsDesc": "Soyez le premier à laisser un avis sur ce produit !"
     },
     "navigation": {
+        "teams": "Équipes",
+        "stats": "Statistiques",
         "home": "Accueil",
         "products": "Produits",
         "categories": "Catégories",
-        "users": "Utilisateurs", 
+        "users": "Utilisateurs",
         "clients": "Clients",
         "collaborators": "Collaborateurs",
         "orders": "Commandes",
@@ -921,7 +931,7 @@
         "footerSocial": "Suivez-Nous",
         "footerRights": "Tous droits réservés."
     },
-    "themesMarket": {
+    "themeMarket": {
         "pageTitle": "Marché des Thèmes",
         "searchPlaceholder": "Rechercher un thème...",
         "filterTagsLabel": "Filtrer par tags",

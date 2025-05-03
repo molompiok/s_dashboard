@@ -16,6 +16,7 @@ import { useGlobalStore } from '../pages/stores/StoreStore'; // Gardé pour fetc
 import { useTranslation } from 'react-i18next'; // Pour traduction future
 import { useChildViewer } from '../Components/ChildViewer/useChildViewer'; // Hook pour popup
 import { IoHome, IoHomeOutline, IoStorefront, IoStorefrontOutline, IoPeople, IoPeopleOutline, IoDocumentText, IoDocumentTextOutline, IoCube, IoCubeOutline, IoLayers, IoLayersOutline } from 'react-icons/io5'; // Importer directement les icônes
+import { PageHelper } from '../Components/Indicator/PageHelper';
 
 
 // --- Styles Globaux (Peuvent aller dans index.css ou être appliqués au body via un composant global) ---
@@ -31,6 +32,7 @@ body {
 */
 
 // --- Variables CSS (à définir dans globals.css ou tailwind.config.js) ---
+
 /*
 :root {
   --background: #f8f9fa; // Exemple
@@ -83,7 +85,7 @@ function Layout({ children, pageContext }: { children: React.ReactNode; pageCont
           <Link href="/users" activeIcon={<IoPeople className='w-5 h-5' />} defaultIcon={<IoPeopleOutline className='w-5 h-5' />} />
         </Bottombar>
 
-        {/* Popup Global */}
+        {/* <PageHelper /> */}
         <OpenChild />
       </PageContextProvider>
     </React.StrictMode>
@@ -99,8 +101,8 @@ function OpenChild() {
   useEffect(() => { 
     if (!currentChild && location.hash === "#openChild") {
       ClientCall(() => {
-        // history.replaceState(null, "", location.pathname);
-        history.back()
+        history.replaceState(null, "", location.pathname);
+        // history.back()
         openChild(null)
       });
     }
@@ -149,7 +151,7 @@ function Frame({ children }: { children: React.ReactNode }) {
   // Appliquer le filtre blur ici
   return (
     <div
-      className="flex w-full max-w-7xl mx-auto transition-filter duration-300" // Ajuster max-w
+      className="flex  bg-gray-100 w-full max-w-7xl mx-auto transition-filter duration-300" // Ajuster max-w
       style={{ filter: blur ? `blur(${blur}px)` : 'none' }}
     >
       {children}
@@ -165,7 +167,7 @@ function Sidebar({ children }: { children: React.ReactNode }) {
       id="sidebar"
       // Caché par défaut, visible à partir de sm
       // Largeur fixe w-20 entre sm et md, puis w-60 sur md+
-      className="hidden sm:flex flex-col flex-shrink-0 w-20 md:w-48 h-screen sticky top-0 // Rendre sticky
+      className="hidden sm:flex flex-col flex-shrink-0 w-20 md:w-48 h-screen top-0 // Rendre sticky
                  px-4 py-5 // Padding
                  border-r border-gray-200 // Bordure
                  bg-white // Fond blanc
@@ -208,10 +210,10 @@ function Content({ children }: { children: React.ReactNode }) {
     // Prend tout l'espace restant, overflow-y pour scroll vertical
     <div
       id="page-container"
-      className="flex-grow w-full max-h-screen overflow-y-auto overflow-x-hidden" // flex-grow pour prendre l'espace
+      className="flex-grow w-full max-h-screen overflow-x-hidden" // flex-grow pour prendre l'espace
     >
       {/* Conteneur interne pour padding, etc. */}
-      <div id="page-content" className="w-full pb-24 sm:pb-8"> {/* Moins de padding bottom sur desktop */}
+      <div id="page-content" className="w-full "> {/* Moins de padding bottom sur desktop */}
         {/* <div className="corrige-le-bug-content-overflow-x" style={{ width: '1200px' }}></div> // Supprimer ce hack */}
         {children}
       </div>

@@ -143,7 +143,7 @@ export const SublymusApiProvider: React.FC<SublymusApiProviderProps> = ({ childr
             <SublymusApiContext.Provider value={{ api }}>
                 {children}
             </SublymusApiContext.Provider>
-            <ReactQueryDevtools initialIsOpen={false} />
+            {/* <ReactQueryDevtools initialIsOpen={false} /> */}
         </QueryClientProvider>
     );
 };

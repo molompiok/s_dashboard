@@ -365,7 +365,6 @@ export interface UserInterface {
   roles?: Role[],
   token: string;
   created_at: string,
-
   status: 'BANNED' | 'PREMIUM' | 'NEW' | 'CLIENT'
   s_type?: string;
   stats?: UserStats

@@ -358,7 +358,7 @@ function Page() {
                 </h1>
 
                 <div>
-                    <label className='block text-sm font-medium text-gray-700 mb-1 flex  items-center' htmlFor='chose-category-view'>
+                    <label className=' text-sm font-medium text-gray-700 mb-1 flex  items-center' htmlFor='chose-category-view'>
                         {t('category.coverImageLabel')} <Indicator title={t('category.coverImageTooltipTitle')} description={t('category.coverImageTooltipDesc')} />
                     </label>
                     {/* Utiliser aspect-video ou aspect-[16/9] ? Ou 3/1? */}

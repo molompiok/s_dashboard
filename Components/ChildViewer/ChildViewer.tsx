@@ -18,7 +18,7 @@ export function ChildViewer({
   return (
     <div className='child-viewer flex items-center justify-center h-full w-full'>
       <div className="w-[95%] max-w-[750px] max-h-[80%] relative bg-white rounded-2xl overflow-y-auto overflow-x-hidden">
-      <div className="w-full flex items-center px-3 py-1.5">
+      <div className="w-full sticky flex items-center px-3 py-1.5">
         
         <h3 className="m-auto text-base font-medium">{title}</h3>
         <div className=" w-[25px] h-[25px] cursor-pointer transition-all duration-100 hover:scale-110 hover:bg-discret-9 rounded-full flex items-center justify-center">
