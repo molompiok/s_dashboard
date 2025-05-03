@@ -1,7 +1,7 @@
 //pages/stores/StoreStore.ts
 import { create } from "zustand";
 import { combine } from "zustand/middleware";
-import { useAuthStore } from "../login/AuthStore";
+import { useAuthStore } from "../users/login/AuthStore";
 import { Api_host, Server_Host } from "../../renderer/+config";
 import { ListType, StoreInterface } from "../../Interfaces/Interfaces";
 
@@ -33,9 +33,9 @@ function getTransmit(url: string): Transmit | null {
     return transmit
 }
 const useGlobalStore = create(combine({
-    _current: undefined  as StoreInterface |undefined,
+    _current: undefined as StoreInterface | undefined,
     stores: undefined as ListType<StoreInterface> | undefined,
-    currentStore : {
+    currentStore: {
         "id": "77b0d648-3c44-4e7a-8711-fef08a72605a",
         "user_id": "a25e2381-a634-4eea-a8ed-aa60ba37a61b",
         "name": "ladona5",
@@ -86,7 +86,7 @@ const useGlobalStore = create(combine({
             "created_at": "2025-04-17T11:08:12.160+00:00",
             "updated_at": "2025-04-17T11:09:54.329+00:00"
         }
-     } as StoreInterface |undefined,
+    } as StoreInterface | undefined,
 }, (set, get) => ({
     async testSSE() {
         if (!useGlobalStore.getState().currentStore?.url) {
@@ -98,7 +98,7 @@ const useGlobalStore = create(combine({
     },
     async setCurrentStore(currentStore: StoreInterface | undefined) {
         currentStore && (currentStore.url = Api_host)
-        set(() => ({currentStore:currentStore }));
+        set(() => ({ currentStore: currentStore }));
         if (currentStore)
             localStorage.setItem('current_store', JSON.stringify(currentStore));
         else {
@@ -113,7 +113,7 @@ const useGlobalStore = create(combine({
                 const a = localStorage.getItem('current_store');
                 c = a && JSON.parse(a);
                 console.log(c);
-                
+
             } catch (error) { }
         }
         if (!c) {

@@ -6,7 +6,7 @@ import { TopSearch } from '../TopSearch/TopSearch'; // Gardé
 import { IoSearch, IoNotifications, IoChevronBack, IoChevronForward } from "react-icons/io5"; // Ajouter IoChevronForward pour breadcrumb
 import { useChildViewer } from '../ChildViewer/useChildViewer'; // Utiliser le hook
 import { useTranslation } from 'react-i18next'; // ✅ i18n
-import { useAuthStore } from '../../pages/login/AuthStore'; // Pour afficher le nom de l'utilisateur
+import { useAuthStore } from '../../pages/users/login/AuthStore'; // Pour afficher le nom de l'utilisateur
 import { Host } from '../../renderer/+config';
 
 export { Topbar };

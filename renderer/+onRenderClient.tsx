@@ -9,6 +9,7 @@ import { SublymusApiProvider } from '../api/ReactSublymusApi';
 import { I18nextProvider } from 'react-i18next';
 import i18next from '../Lib/i18n';
 import { Server_Host } from './+config';
+import { getToken } from '../pages/users/login/AuthStore';
 
 let root: ReactDOM.Root
 const onRenderClient: OnRenderClientAsync = async (pageContext): ReturnType<OnRenderClientAsync> => {
@@ -23,7 +24,7 @@ const onRenderClient: OnRenderClientAsync = async (pageContext): ReturnType<OnRe
   if (!container) throw new Error('DOM element #root not found')
 
   const page = (
-    <SublymusApiProvider serverApiUrl={Server_Host}>
+    <SublymusApiProvider serverApiUrl={Server_Host} getToken={getToken}>
       <I18nextProvider i18n={i18n}>
         <Layout pageContext={pageContext}>
           <Page />

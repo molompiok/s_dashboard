@@ -46,7 +46,23 @@
         "seeLess": "Voir moins",
         "saveChanges": "Enregistrer les modifications",
         "select": "Sélectionner...",
-        "noOptions": "Aucune option"
+        "noOptions": "Aucune option",
+        "deleting": "Suppression..."
+    },
+    "loginPage": {
+        "title": "Connectez-vous à votre compte",
+        "subtitle": "Ou",
+        "registerLink": "créez un compte gratuitement",
+        "emailLabel": "Adresse email",
+        "emailPlaceholder": "nom@exemple.com",
+        "passwordLabel": "Mot de passe",
+        "passwordPlaceholder": "Votre mot de passe",
+        "rememberMe": "Se souvenir de moi",
+        "forgotPasswordLink": "Mot de passe oublié ?",
+        "loginButton": "Se connecter",
+        "socialLoginSeparator": "Ou continuer avec",
+        "googleButton": "Google",
+        "facebookButton": "Facebook"
     },
     "topSearch": {
         "placeholder": "Rechercher produits, clients, commandes...",
@@ -89,6 +105,16 @@
         "emailPlaceholder": "nom@exemple.com",
         "addButtonDirect": "Ajouter le membre",
         "addHelpS0": "L'utilisateur doit déjà avoir un compte Sublymus pour être ajouté.",
+        "validation": {
+            "emailInvalid": "Veuillez saisir une adresse email valide."
+        }
+    },
+    "forgotPasswordPage": {
+        "title": "Mot de passe oublié ?",
+        "subtitle": "Entrez votre email pour recevoir un lien de réinitialisation.",
+        "sendButton": "Envoyer le lien",
+        "successTitle": "Email envoyé !",
+        "backToLogin": "Retour à la connexion",
         "validation": {
             "emailInvalid": "Veuillez saisir une adresse email valide."
         }
@@ -379,10 +405,80 @@
         "publicPhoneLabel": "Téléphone de Contact",
         "publicPhoneHelp": "Affiché sur votre boutique.",
         "validation": {
-            "emailInvalid": "Format d'email invalide."
+            "emailInvalid": "Format d'email invalide.",
+            "passwordLength": "Le mot de passe doit contenir au moins 8 caractères.",
+            "passwordMismatch": "Les mots de passe ne correspondent pas."
         }
     },
+    "roles": {
+        "client": "Client",
+        "collaborator": "Collaborateur",
+        "owner": "Propriétaire"
+    },
+    "profilePage": {
+        "error": {
+            "loadError": "Erreur lors du chargement du profil."
+        },
+        "title": "Mon Profil",
+        "profile": {
+            "title": "Informations Personnelles",
+            "avatarAlt": "Avatar utilisateur",
+            "changeAvatar": "Changer l'avatar",
+            "uploadAvatar": "Télécharger un avatar",
+            "emailLabel": "Adresse Email",
+            "nameLabel": "Nom complet"
+        },
+        "contact": {
+            "title": "Adresses & Téléphones",
+            "manageAddresses": "Gérer mes adresses",
+            "managePhones": "Gérer mes numéros"
+        },
+        "prefs": {
+            "title": "Préférences",
+            "languageLabel": "Langue de l'interface",
+            "languageHelp": "Change la langue affichée dans le dashboard."
+        },
+        "security": {
+            "title": "Sécurité",
+            "logoutAllConfirmTitle": "Déconnexion Multiple",
+            "logoutAllConfirmDesc": "Confirmez-vous vouloir vous déconnecter de tous les autres appareils et navigateurs ?",
+            "changePasswordTitle": "Changer le Mot de Passe",
+            "changePasswordButton": "Changer le mot de passe",
+            "logoutAllTitle": "Sessions Actives",
+            "logoutAllDesc": "Vous déconnecter de tous les autres navigateurs et appareils.",
+            "logoutAllButton": "Déconnexion Partout",
+            "deleteAccountTitle": "Supprimer le Compte",
+            "deleteAccountConfirmTitle": "Supprimer définitivement votre compte ?",
+            "deleteAccountWarning": "Cette action est irréversible. Toutes vos données personnelles, boutiques, et configurations seront perdues."
+        }
+    },
+    "languages": {
+        "fr": "Français",
+        "en": "English"
+    },
+    "resetPasswordPage": {
+        "title": "Réinitialiser votre mot de passe",
+        "subtitle": "Saisissez votre nouveau mot de passe ci-dessous.",
+        "passwordLabel": "Nouveau mot de passe",
+        "passwordPlaceholder": "Nouveau mot de passe (min 8 caractères)",
+        "passwordConfirmLabel": "Confirmer le nouveau mot de passe",
+        "passwordConfirmPlaceholder": "Retapez le nouveau mot de passe",
+        "resetButton": "Réinitialiser le mot de passe",
+        "successTitle": "Mot de passe réinitialisé !",
+        "errorTitle": "Erreur de réinitialisation",
+        "backToLogin": "Retour à la connexion"
+    },
     "auth": {
+        "resetPassword": {
+            "success": "Votre mot de passe a été réinitialisé avec succès. Vous pouvez maintenant vous connecter.",
+            "invalidToken": "Ce lien de réinitialisation est invalide ou a expiré. Veuillez refaire une demande.",
+            "genericError": "Une erreur est survenue lors de la réinitialisation.",
+            "missingToken": "Le lien de réinitialisation est incomplet ou manquant. Veuillez utiliser le lien reçu par email."
+        },
+        "forgotPassword": {
+            "emailSentConfirmation": "Si un compte correspond à cet email, un lien de réinitialisation a été envoyé.",
+            "genericError": "Une erreur est survenue lors de la demande de réinitialisation."
+        },
         "socialCallbackFailed": "Erreur interne lors du traitement de la connexion sociale.",
         "emailNotVerified": "Veuillez vérifier votre adresse email avant de vous connecter.",
         "loginSuccess": "Connexion réussie.",
@@ -409,6 +505,31 @@
     },
     "emails": {
         "verifySubject": "Vérifiez votre adresse email - Sublymus"
+    },
+    "registerPage": {
+        "title": "Créer votre compte Sublymus",
+        "subtitle": "Déjà membre ?",
+        "loginLink": "Connectez-vous",
+        "nameLabel": "Nom complet",
+        "namePlaceholder": "Votre nom et prénom",
+        "emailLabel": "Adresse email",
+        "emailPlaceholder": "nom@exemple.com",
+        "passwordLabel": "Mot de passe",
+        "passwordPlaceholder": "Créez un mot de passe",
+        "passwordConfirmLabel": "Confirmer le mot de passe",
+        "passwordConfirmPlaceholder": "Retapez votre mot de passe",
+        "registerButton": "S'inscrire",
+        "successTitle": "Inscription presque terminée !",
+        "successMessage": "Un email de vérification a été envoyé à **{{email}}**. Veuillez cliquer sur le lien contenu dans l'email pour activer votre compte.",
+        "backToLogin": "Retour à la connexion",
+        "resendLink": "Renvoyer l'email",
+        "validation": {
+            "nameRequired": "Le nom complet est requis (3 caractères min).",
+            "emailInvalid": "Veuillez saisir une adresse email valide.",
+            "passwordLength": "Le mot de passe doit contenir au moins 8 caractères.",
+            "passwordMismatch": "Les mots de passe ne correspondent pas.",
+            "currentPasswordRequired": "Le mot de pass actuel est requis"
+        }
     },
     "product": {
         "viewRequired": "Une image principale est requise pour le produit.",

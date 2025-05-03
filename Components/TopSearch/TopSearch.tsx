@@ -72,7 +72,7 @@ function TopSearch({ onClientSelected, onProductSelected, onCategorySelected, on
     // Calcul slidesPerView pour Swiper (peut être simplifié)
     const size = useWindowSize().width;
     const productSize = size < 800 ? ((size - 260) / (700 - 260)) * 1.8 + 1 : 3.3;
-    const categorySize =  size < 800 ?((size - 260) / (700 - 260)) * 4 + 2.2:6.4;
+    const categorySize = size < 800 ? ((size - 260) / (700 - 260)) * 4 + 2.2 : 6.4;
 
 
     // --- Handlers pour sélection ---
@@ -103,7 +103,7 @@ function TopSearch({ onClientSelected, onProductSelected, onCategorySelected, on
                     id="top-search-input"
                     type="text"
                     autoFocus
-                    ref={ref=> ref?.focus()}
+                    ref={ref => ref?.focus()}
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -186,30 +186,15 @@ function TopSearch({ onClientSelected, onProductSelected, onCategorySelected, on
                         </section>
                     )}
 
-                    {/* Message si aucune correspondance */}
-                    {!hasResults && (
-                        <div className="text-center py-10 text-gray-500">
-                            <div className="w-32 h-32 mx-auto bg-contain bg-center bg-no-repeat mb-4 opacity-70" style={{ backgroundImage: getImg('/res/empty/search.png') }}></div>
-                            {t('topSearch.noResultsFound', { term: debouncedSearchTerm })}
-                        </div>
-                    )}
                 </>
+            )}
+            {/* Message si aucune correspondance */}
+            {!hasResults && (
+                <div className="text-center py-10 text-gray-500">
+                    <div className="w-32 h-32 mx-auto bg-contain bg-center bg-no-repeat mb-4 opacity-70" style={{ background: getImg('/res/empty/search.png') }}></div>
+                    {t('topSearch.noResultsFound', { term: debouncedSearchTerm })}
+                </div>
             )}
         </div>
     );
 }
-
-// --- Nouvelles clés i18n ---
-/*
-{
- "topSearch": {
-    "placeholder": "Rechercher produits, clients, commandes...",
-    "categoriesTitle": "Catégories",
-    "productsTitle": "Produits",
-    "clientsTitle": "Clients",
-    "commandsTitle": "Commandes",
-    "noResultsFound": "Aucun résultat trouvé pour \"{{term}}\"."
- }
- // ...
-}
-*/

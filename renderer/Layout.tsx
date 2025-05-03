@@ -4,7 +4,7 @@ export { Layout };
 
 import React, { useEffect, useState, useMemo } from 'react'; // Ajouter useState, useMemo
 import logoUrl from './logo.svg';
-import { PageContextProvider } from './usePageContext';
+import { PageContextProvider, usePageContext } from './usePageContext';
 import { Link } from './Link';
 import type { PageContext } from 'vike/types';
 import '../Lib/i18n'; // Garder pour initialisation i18n
@@ -161,8 +161,9 @@ function Frame({ children }: { children: React.ReactNode }) {
 
 // --- Composant Sidebar ---
 function Sidebar({ children }: { children: React.ReactNode }) {
-  // Utiliser hidden sm:flex, flex-col, w-20 md:w-60 (largeurs min/max), etc.
-  return (
+  
+  const { urlPathname} = usePageContext()
+  return !(urlPathname.includes('login') ||  urlPathname.includes('register') ) && (
     <div
       id="sidebar"
       // Caché par défaut, visible à partir de sm

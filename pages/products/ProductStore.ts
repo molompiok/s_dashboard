@@ -1,7 +1,7 @@
 //pages/products/ProductStore.ts
 import { create } from "zustand";
 import { combine } from "zustand/middleware";
-import { useAuthStore } from "../login/AuthStore";
+import { useAuthStore } from "../users/login/AuthStore";
 import { Api_host, Server_Host } from "../../renderer/+config";
 import { ProductInterface, ListType, FeatureInterface, ValueInterface, UpdateFeature, FilterType } from "../../Interfaces/Interfaces";
 import { useGlobalStore } from "../stores/StoreStore";

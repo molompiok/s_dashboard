@@ -9,7 +9,9 @@ import type {
     UserAddressInterface,
     UserPhoneInterface,
     StoreFilterType,
-    ThemeInterface
+    ThemeInterface,
+    ForgotPasswordParams,
+    ResetPasswordParams
 } from '../Interfaces/Interfaces'; // Adapter le chemin
 
 export { StatParamType, UserFilterType, CommandFilterType, Inventory }
@@ -215,7 +217,7 @@ export type RegisterParams = { full_name: string; email: string; password: strin
 export type RegisterResponse = { message?: string; user_id: string };
 export type VerifyEmailParams = { token: string };
 export type ResendVerificationParams = { email: string };
-export type UpdateUserParams = { data: { full_name?: string; password?: string; password_confirmation?: string } }; // 2 - Changé
+export type UpdateUserParams = { data: { locale?:string,full_name?: string; photo?:(string|Blob)[], password?: string; password_confirmation?: string } }; // 2 - Changé
 export type UpdateUserResponse = { message?: string; user: UserInterface };
 // MessageResponse utilisé pour logout, logoutAll, deleteAccount, verify, resend
 
@@ -331,6 +333,7 @@ export class SublymusApi {
     public readonly storeApiUrl: string;
     public readonly getAuthTokenApi: () => string | null;
     public readonly getAuthTokenServer: () => string | null;
+    public readonly handleUnauthorized:((action:'api'|'server',token?:string)=> void)|undefined
     private serverUrl: string;
     public readonly t: (key: string, params?: any) => string; // Ajouter params optionnel
 
@@ -355,7 +358,7 @@ export class SublymusApi {
     public store: StoreNamespace;
     public readonly theme: ThemeNamespace;
 
-    constructor({getAuthTokenApi,getAuthTokenServer,serverUrl,storeApiUrl,t}:{storeApiUrl: string, serverUrl: string, getAuthTokenApi: () => string | null,getAuthTokenServer: () => string | null, t: (key: string, params?: any) => string}) {
+    constructor({getAuthTokenApi,getAuthTokenServer,serverUrl,storeApiUrl,t,handleUnauthorized}:{handleUnauthorized?:(action:'api'|'server',token?:string)=>void,storeApiUrl: string, serverUrl: string, getAuthTokenApi: () => string | null,getAuthTokenServer: () => string | null, t: (key: string, params?: any) => string}) {
         if (!storeApiUrl) throw new Error("API URL is required for initialization."); // Utiliser message brut ou clé i18n pré-initialisée?
         this.t = t;
         // Server URL est requis
@@ -366,6 +369,7 @@ export class SublymusApi {
         this.storeApiUrl = storeApiUrl ? storeApiUrl.replace(/\/$/, '') : '';
         this.getAuthTokenApi = getAuthTokenApi;
         this.getAuthTokenServer = getAuthTokenServer;
+        this.handleUnauthorized = handleUnauthorized
         logger.info(`SublymusApi initialized with URL: ${this.storeApiUrl}`);
 
         // Initialiser les namespaces
@@ -397,11 +401,12 @@ export class SublymusApi {
 
         console.log({endpoint});
         let token = undefined
-        const token_server= this.getAuthTokenServer();
+        let action :'api'|'server'= 'api';
         let baseUrl: string;
         if (endpoint.startsWith('/{{main_server}}')) {
             endpoint = endpoint.replace('/{{main_server}}', '');
             baseUrl = this.serverUrl;
+            action='server'
             token = this.getAuthTokenServer();
         } else if (this.storeApiUrl) {
             baseUrl = this.storeApiUrl;
@@ -471,6 +476,12 @@ export class SublymusApi {
             return responseBody as T;
 
         } catch (error) {
+            if (error instanceof ApiError && error.status === 401) {
+                logger.warn("API request resulted in 401 Unauthorized. Logging out and redirecting.");
+                
+                this.handleUnauthorized?.(action,token??undefined);
+                return Promise.reject(error);
+           }
             if (error instanceof ApiError) throw error;
             if (error instanceof Error) {
                 console.log({ method, url, error: error.message, stack: error.stack }, "API request failed (Network/Fetch Error)");
@@ -853,6 +864,21 @@ class AuthApiNamespace {
         return this._api._request('/api/v1/auth/me', { method: 'DELETE' });
     }
     // handleSocialCallbackInternal reste non exposé publiquement
+
+    async forgotPassword(params: ForgotPasswordParams): Promise<MessageResponse> {
+        // La validation de l'email est faite par le schéma Vine côté backend
+        // La callback_url est ajoutée ici ou passée par le frontend
+        const frontendResetUrl = `${window.location.origin}/reset-password`; // URL de la page frontend de reset
+        return this._api._request('/api/v1/auth/forgot-password', {
+             method: 'POST',
+             body: { email: params.email, callback_url: frontendResetUrl }
+        });
+    }
+
+    async resetPassword(params: ResetPasswordParams): Promise<MessageResponse> {
+        // Validation faite par le backend + schéma Vine
+        return this._api._request('/api/v1/auth/reset-password', { method: 'POST', body: params });
+    }
 }
 
 // ========================

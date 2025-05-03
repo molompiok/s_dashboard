@@ -66,10 +66,10 @@ import {
     GetUserStatsResponse,
     GetCategoryParams
 } from './SublymusApi'; // Importer la classe et l'erreur, et TOUS les types
-import { useAuthStore } from '../pages/login/AuthStore'; // Pour le token
+import { useAuthStore } from '../pages/users/login/AuthStore'; // Pour le token
 import { useGlobalStore } from '../pages/stores/StoreStore'; // Pour l'URL du store
 import logger from './Logger';
-import { CommentInterface, FeatureInterface } from '../Interfaces/Interfaces';
+import { CommentInterface, FeatureInterface, ForgotPasswordParams, ResetPasswordParams } from '../Interfaces/Interfaces';
 import { useTranslation } from 'react-i18next';
 import { Api_host, Server_Host } from '../renderer/+config';
 
@@ -105,16 +105,15 @@ const SublymusApiContext = createContext<SublymusApiContextType>({ api: null });
 // Provider pour l'API et TanStack Query
 interface SublymusApiProviderProps {
     children: ReactNode;
-    serverApiUrl: string
+    serverApiUrl: string,
+    getToken: () => string | undefined
 }
 
-export const SublymusApiProvider: React.FC<SublymusApiProviderProps> = ({ children, serverApiUrl }) => {
-    const { user } = useAuthStore();
+export const SublymusApiProvider: React.FC<SublymusApiProviderProps> = ({ children, serverApiUrl, getToken }) => {
     const { currentStore } = useGlobalStore(); // Utiliser alias
     const { t } = useTranslation();
     const api = useMemo(() => {
         const storeApiUrl = currentStore?.url; // Peut être null/undefined
-        const token = user?.token;
 
         // Server URL est toujours requis
 
@@ -123,11 +122,16 @@ export const SublymusApiProvider: React.FC<SublymusApiProviderProps> = ({ childr
             return null;
         }
 
-
         // Créer l'instance avec les deux URLs
         return new SublymusApi({
+            handleUnauthorized(action, token) {
+                console.log({action,token});
+                window.location.href = '/users/login?sessionExpired=true'; 
+            },
             getAuthTokenApi() {
-                return 'oat_MTk.Y1BleEpvTEhDVVQxa3lRSU1WdTk3ejBlYjIyc0ppUzVGQVYtWlU3ZzQwMzc2Njc5MDA'
+                const token = getToken();
+                console.log(token);
+                return  token||''
             },
             getAuthTokenServer() {
                 return 'oat_MzU.ZVc2SUhad1A4dmh6ellfZjFrejJGcEdtOW5ZckN0OWFfN19KeEs2UTE3NzAxNjc4MzE'
@@ -136,7 +140,7 @@ export const SublymusApiProvider: React.FC<SublymusApiProviderProps> = ({ childr
             storeApiUrl: Api_host,
             t
         });
-    }, [currentStore?.url, serverApiUrl, user?.token]);
+    }, [currentStore?.url, serverApiUrl]);
 
     return (
         <QueryClientProvider client={queryClient}>
@@ -147,6 +151,7 @@ export const SublymusApiProvider: React.FC<SublymusApiProviderProps> = ({ childr
         </QueryClientProvider>
     );
 };
+
 
 // --- Hook useApi (inchangé) ---
 export const useApi = (): SublymusApi => {
@@ -396,6 +401,26 @@ export const useCheckStoreNameAvailability = (name: string | undefined, options:
 const AUTH_QUERY_KEYS = {
     me: ['me'] as const,
 };
+
+
+
+// Hook pour demander la réinitialisation du mot de passe
+export const useRequestPasswordReset = (): UseMutationResult<MessageResponse, ApiError, ForgotPasswordParams> => {
+    const api = useApi();
+    return useMutation<MessageResponse, ApiError, ForgotPasswordParams>({
+        mutationFn: (params) => api.auth.forgotPassword(params), // Assumer que la méthode existe dans api.auth
+        // Pas de onSuccess/onError générique ici, géré dans le composant
+    });
+};
+
+export const useResetPassword = (): UseMutationResult<MessageResponse, ApiError, ResetPasswordParams> => {
+    const api = useApi();
+    return useMutation<MessageResponse, ApiError, ResetPasswordParams>({
+        mutationFn: (params) => api.auth.resetPassword(params), // Assumer que la méthode existe dans api.auth
+         // Pas de onSuccess/onError générique ici, géré dans le composant
+    });
+};
+
 
 export const useLogin = (): UseMutationResult<LoginResponse, ApiError, LoginParams> => {
     const api = useApi();

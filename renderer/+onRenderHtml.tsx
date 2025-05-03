@@ -11,6 +11,7 @@ import { I18nextProvider } from 'react-i18next';
 import './tw.css'
 import { SublymusApiProvider } from "../api/ReactSublymusApi";
 import { Server_Host } from "./+config";
+import { getToken } from "../pages/users/login/AuthStore";
 const onRenderHtml: OnRenderHtmlAsync = async (pageContext): ReturnType<OnRenderHtmlAsync> => {
   const { Page } = pageContext
   const i18n = i18next.cloneInstance();
@@ -20,7 +21,7 @@ const onRenderHtml: OnRenderHtmlAsync = async (pageContext): ReturnType<OnRender
 
   // Alternatively, we can use an HTML stream, see https://vike.dev/streaming
   const pageHtml = ReactDOMServer.renderToString(
-    <SublymusApiProvider serverApiUrl={Server_Host}>
+    <SublymusApiProvider serverApiUrl={Server_Host} getToken={getToken}>
       <I18nextProvider i18n={i18n}>
         <Layout pageContext={pageContext}>
           <Page />
@@ -40,7 +41,7 @@ const onRenderHtml: OnRenderHtmlAsync = async (pageContext): ReturnType<OnRender
   const documentHtml = escapeInject`<!DOCTYPE html>
     <html lang="fr">
       <head>
-      <meta name="viewport" content="width=${isPreviewMode?'1080':'width=device-width, initial-scale=1.0'}"></meta>
+      <meta name="viewport" content="width=${isPreviewMode ? '1080' : 'width=device-width, initial-scale=1.0'}"></meta>
         <meta charset="UTF-8" />
         <link rel="icon" href="${logoUrl}" />
         

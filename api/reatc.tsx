@@ -5,7 +5,7 @@ import React, { createContext, useContext, useMemo, ReactNode } from 'react';
 import { QueryClient, QueryClientProvider, useQuery, useMutation, UseQueryResult, UseMutationResult, InvalidateQueryFilters } from '@tanstack/react-query';
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
 import { SublymusApi, ApiError, BuildFormDataForFeaturesValuesParam, CreateProductParams } from './SublymusApi'; // Importer la classe et l'erreur
-import { useAuthStore } from '../pages/login/AuthStore'; // Pour le token
+import { useAuthStore } from '../pages/users/login/AuthStore'; // Pour le token
 import { useGlobalStore } from '../pages/stores/StoreStore'; // Pour l'URL du store
 import type {
     ListType, ProductInterface, CategoryInterface, UserInterface,

@@ -347,6 +347,20 @@ export type UpdateFeature = {
   delete: string[],
 }
 
+
+export interface ResetPasswordParams {
+  token: string;
+  password: string;
+  password_confirmation: string;
+}
+
+export interface ForgotPasswordParams {
+  email: string;
+  callback_url: string; 
+}
+
+export type MessageResponse = { message: string }; 
+
 export interface VisiteInterface {
   user_id: string
   created_at?: string
@@ -361,7 +375,8 @@ export interface UserInterface {
   user_phones?: UserPhoneInterface[],
   user_addresses?: UserAddressInterface[]
   password: string,
-  photo?: string[] | null,
+  photo?: (string|Blob)[] | null,
+  locale:string
   roles?: Role[],
   token: string;
   created_at: string,

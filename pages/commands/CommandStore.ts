@@ -2,7 +2,7 @@
 import { create } from "zustand"
 import { combine } from "zustand/middleware"
 import { CommandFilterType, CommandInterface, EventStatus, ListType } from "../../Interfaces/Interfaces"
-import { useAuthStore } from "../login/AuthStore"
+import { useAuthStore } from "../users/login/AuthStore"
 
 
 
@@ -22,7 +22,7 @@ const useCommandStore = create(combine({
             return l;
         }
     },
-    async updateEventStatus(event_status:Partial<EventStatus>&{user_order_id:string}) {
+    async updateEventStatus(event_status: Partial<EventStatus> & { user_order_id: string }) {
 
         const h = useAuthStore.getState().getHeaders();
         if (!h) {
@@ -30,7 +30,7 @@ const useCommandStore = create(combine({
             return;
         }
         if (!event_status.status) {
-            console.error('event_status.status required',event_status);
+            console.error('event_status.status required', event_status);
             return;
         }
 
@@ -48,7 +48,7 @@ const useCommandStore = create(combine({
         ]).forEach(p => {
             if ((event_status as any)[p] != undefined) {
                 if (p == 'status') {
-                    (event_status).status && formData.append(p,(event_status).status?.toLowerCase());
+                    (event_status).status && formData.append(p, (event_status).status?.toLowerCase());
                 }
                 else {
                     formData.append(p, (event_status as any)[p]);
@@ -67,7 +67,7 @@ const useCommandStore = create(combine({
 
             console.log({ updatedCommand });
 
-            if (!updatedCommand?.id) return ;
+            if (!updatedCommand?.id) return;
 
             set(({ commands }) => ({ commands: commands && { ...commands, list: commands.list.map((_p) => _p.id == updatedCommand.id ? updatedCommand : _p) } }))
 

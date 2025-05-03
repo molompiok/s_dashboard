@@ -6,7 +6,7 @@ import * as fr from "../src/locales/fr/translation.json";
 // Exemple de ressources de traduction
 const resources = {
   en: {
-    translation: en
+    translation: fr
   },
   fr: {
     translation: fr

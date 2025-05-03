@@ -2,7 +2,7 @@
 import React, { JSX, StyleHTMLAttributes } from "react";
 import { create } from "zustand";
 import { combine } from "zustand/middleware";
-import { useAuthStore } from "../../pages/login/AuthStore";
+import { useAuthStore } from "../../pages/users/login/AuthStore";
 import { CategoryInterface, CommandInterface, PeriodType, ProductInterface, StatParamType, StatsData, VisiteInterface } from "../../Interfaces/Interfaces";
 
 
@@ -18,7 +18,7 @@ export type GlobalSearchType = {
     categories: CategoryInterface[],
 }
 const useApp = create(combine({
-     userStats: undefined as undefined | UserStatsResult
+    userStats: undefined as undefined | UserStatsResult
 }, (set, get) => ({
     async gobalSearch({ text }: { text?: string }) {
         const h = useAuthStore.getState().getHeaders()
@@ -61,7 +61,7 @@ const useApp = create(combine({
         });
 
         const _stats = await response.json();
-       return _stats as StatsData||{};
+        return _stats as StatsData || {};
     },
     async fetchUsersStats(filter: UserStatsFilterType) {
         const h = useAuthStore.getState().getHeaders()
