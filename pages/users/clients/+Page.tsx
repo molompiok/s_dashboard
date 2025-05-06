@@ -5,7 +5,6 @@ import { ClientList } from "../../../Components/ClientList/ClientList"
 export {Page}
 
 import React from 'react';
-import './+Page.css';
 import { BreadcrumbItem, Topbar } from "../../../Components/TopBar/TopBar";
 import { useTranslation } from "react-i18next";
 

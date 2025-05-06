@@ -41,7 +41,6 @@ const onRenderHtml: OnRenderHtmlAsync = async (pageContext): ReturnType<OnRender
   const documentHtml = escapeInject`<!DOCTYPE html>
     <html lang="fr">
       <head>
-      <meta name="viewport" content="width=${isPreviewMode ? '1080' : 'width=device-width, initial-scale=1.0'}"></meta>
         <meta charset="UTF-8" />
         <link rel="icon" href="${logoUrl}" />
         

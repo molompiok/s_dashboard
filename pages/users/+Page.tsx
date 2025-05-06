@@ -1,21 +1,19 @@
 // pages/users/+Page.tsx (Ou le nom correspondant)
-// ❌ Supprimer les imports CSS
 
-import React, { useEffect, useState, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { FiUsers, FiBriefcase } from 'react-icons/fi'; // Importer les icônes spécifiques
 import { Topbar } from '../../Components/TopBar/TopBar'; // Garder Topbar
 // import { useApp } from '../../renderer/AppStore/UseApp'; // Remplacé par useGetStats
-import { useGetStats, useGetUserStats } from '../../api/ReactSublymusApi'; // ✅ Hook pour les stats
+import { useGetCollaborators, useGetUserStats } from '../../api/ReactSublymusApi'; // ✅ Hook pour les stats
 // import { useGlobalStore  } from '../stores/StoreStore'; // Gardé si besoin pour currentStore
-import { useClientStore } from './clients/ClientStore'; // Sera remplacé par hook API
 import { useGetUsers } from '../../api/ReactSublymusApi'; // ✅ Hook pour les users
 import { UserInterface } from '../../Interfaces/Interfaces';
 import { getImg } from '../../Components/Utils/StringFormater';
 import { useTranslation } from 'react-i18next'; // ✅ i18n
-import logger from '../../api/Logger';
-import { useApp } from '../../renderer/AppStore/UseApp';
 import { useGlobalStore } from '../stores/StoreStore';
 import { ClientList } from '../../Components/ClientList/ClientList';
+import { CurrentUserCard } from '../../Components/userPreview/CurrentUserCard';
+import { GetCollaboratorsResponse } from '../../api/SublymusApi';
 
 // Interface simplifiée pour les cartes de stats (pour la clarté)
 interface StatCardInfo {
@@ -30,7 +28,7 @@ interface StatCardInfo {
 
 export default function Page() {
   const { t } = useTranslation(); // ✅ i18n
-  const { fetchClients } = useClientStore(); // Remplacé par hook
+ 
   const { currentStore } = useGlobalStore (); // Utilisé par les hooks API via useApi()
 
   const { data: userStatsData, isLoading:clientsStatLoading, isError, error } = useGetUserStats({
@@ -63,11 +61,10 @@ export default function Page() {
   );
   const clientPrev = clientsData?.list ?? [];
 
-  // ✅ Récupérer la liste des collaborateurs (première page)
-  const { data: collaboratorsData, isLoading: isLoadingCollabs } = useGetUsers(
-    //  { role: 'collaborator', limit: 5 }, // Fetch 5 collaborateurs
-    // { enabled: !!currentStore }
-  );
+  const { data: collaboratorsData , isLoading:isLoadingCollabs} = useGetCollaborators(
+    {limit:5},
+    // { enabled: true } // Activé par défaut
+); // Remplacé par hook
   const collaboratorPrev = collaboratorsData?.list ?? [];
 
 
@@ -110,12 +107,13 @@ export default function Page() {
 
   return (
     // Utiliser flex flex-col
-    <div className="users-pages w-full flex flex-col min-h-screen bg-gray-100">
+    <div className="users-pages pb-48 w-full flex flex-col min-h-screen bg-gray-100">
       <Topbar title={t('usersPage.title')} search={false} /> {/* Titre pour la page */}
       <main className="flex-grow p-4 md:p-6 lg:p-8"> {/* Ajouter padding */}
+      <CurrentUserCard />
         {/* Cartes de Stats */}
         {/* Utiliser grid, gap, mb */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-6">
+        <div className="grid mt-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-6">
           {isLoading && Array.from({ length: 2 }).map((_, i) => <StatCardSkeleton key={i} />)}
           {!isLoading && statsCards.map((stat) => (
             <StatCard key={stat.id} stat={stat} clientPreviews={clientPrev} collabPreviews={collaboratorPrev} />
@@ -147,8 +145,10 @@ interface StatCardProps {
 function StatCard({ stat, clientPreviews, collabPreviews }: StatCardProps) {
   const { t } = useTranslation();
   // Choisir les bons avatars à afficher
-  const usersToDisplay = stat.id === 'client' ? clientPreviews : collabPreviews;
+  const usersToDisplay = stat.id === 'client' ? clientPreviews : (collabPreviews as GetCollaboratorsResponse['list']).map(u=> u.user);
 
+  console.log({stat,collabPreviews});
+  
   return (
     // Utiliser p-5, rounded-2xl, shadow, text-gray-800, transition
     <div className={`stat-card p-5 rounded-2xl shadow-md text-gray-800 transition transform hover:-translate-y-1 bg-gradient-to-br ${stat.gradient}`}>

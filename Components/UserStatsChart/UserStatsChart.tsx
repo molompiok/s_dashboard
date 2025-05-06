@@ -1,3 +1,4 @@
+//Components/UserStatsChart/UserStatsChart.tsx
 import { useMemo, useState, useEffect, useRef } from 'react';
 import { DateTime } from 'luxon';
 import {
@@ -10,35 +11,15 @@ import {
   Legend,
 } from 'chart.js';
 import { Bar, Line } from 'react-chartjs-2';
+import { OrderStatsResponse, OrderStatsResultItem, VisitStatsResponse } from '../../Interfaces/Interfaces';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend);
 
 type PeriodType = 'day' | 'week' | 'month';
 
 interface StatsData {
-  visits_stats?: Array<{
-    date: string;
-    visits: number;
-    users_count: number;
-    browser?: Record<string, number>;
-    os?: Record<string, number>;
-    device?: Record<string, number>;
-    pageUrl?: Record<string, number>;
-    [key: string]: any;
-  }>;
-  order_stats?: Array<{
-    date: string;
-    users_count: number;
-    orders_count: number;
-    total_price: number;
-    items_count: number;
-    return_delivery_price: number;
-    status?: Record<string, number>;
-    payment_status?: Record<string, number>;
-    payment_method?: Record<string, number>;
-    with_delivery?: Record<string, number>;
-    [key: string]: any;
-  }>;
+  visits_stats?: VisitStatsResponse;
+  order_stats?:OrderStatsResponse;
 }
 
 interface StatsChartProps {
@@ -361,42 +342,7 @@ export default function StatsChart({ period, data, setAvailable, setResume }: St
         touchAction: 'none',
       }}
     >
-      <Bar data={chartData} options={options} height={300} />
-    </div>
-  );
-}
-
-// Exemple de composant parent
-interface ParentComponentProps {
-  data: StatsData;
-}
-
-export function ParentComponent({ data }: ParentComponentProps) {
-  const [period, setPeriod] = useState<PeriodType>('week');
-  const [available, setAvailable] = useState<string[]>([]);
-  const [resume, setResume] = useState<Record<string, { sum: number; average: number }>>({});
-
-  return (
-    <div>
-      <select value={period} onChange={(e) => setPeriod(e.target.value as PeriodType)}>
-        <option value="day">Jour</option>
-        <option value="week">Semaine</option>
-        <option value="month">Mois</option>
-      </select>
-      <StatsChart
-        period={period}
-        data={data}
-        setAvailable={setAvailable}
-        setResume={setResume}
-      />
-      <h3>Données disponibles :</h3>
-      <ul>{available.map((key) => <li key={key}>{key}</li>)}</ul>
-      <h3>Résumé :</h3>
-      <ul>
-        {Object.entries(resume).map(([key, { sum, average }]) => (
-          <li key={key}>{`${key}: Somme = ${sum}, Moyenne = ${average.toFixed(2)}`}</li>
-        ))}
-      </ul>
+      <Line data={chartData} options={options} height={300} />
     </div>
   );
 }

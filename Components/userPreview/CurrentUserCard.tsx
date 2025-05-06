@@ -42,7 +42,7 @@ export function CurrentUserCard() {
     // --- Rendu Normal ---
     return (
         // Utiliser un lien <a> qui englobe tout pour aller au profil
-        <a href="/profile" className="current-user-card w-full p-4 bg-gradient-to-r from-blue-50 via-white to-indigo-50 rounded-xl shadow-sm border border-blue-100 flex items-center justify-between gap-4 group hover:shadow-md hover:border-blue-200 transition duration-150 ease-in-out">
+        <a href="/users/profile" className="current-user-card w-full p-4 bg-gradient-to-r from-blue-50 via-white to-indigo-50 rounded-xl shadow-sm border border-blue-100 flex items-center justify-between gap-4 group hover:shadow-md hover:border-blue-200 transition duration-150 ease-in-out">
             {/* Partie Gauche: Avatar + Nom/Email */}
             <div className="flex items-center gap-3 min-w-0">
                 {/* Avatar */}

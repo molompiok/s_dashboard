@@ -1,4 +1,4 @@
-// src/api/SublymusApi.ts
+///api/SublymusApi.ts
 
 import { OrderStatus } from '../Components/Utils/constants'; // Ajuster chemin si besoin
 import type {
@@ -11,7 +11,15 @@ import type {
     StoreFilterType,
     ThemeInterface,
     ForgotPasswordParams,
-    ResetPasswordParams
+    ResetPasswordParams,
+    SetupAccountParams,
+    SetupAccountResponse,
+    BaseStatsParams,
+    KpiStatsResponse,
+    VisitStatsIncludeOptions,
+    OrderStatsIncludeOptions,
+    VisitStatsResponse,
+    OrderStatsResponse
 } from '../Interfaces/Interfaces'; // Adapter le chemin
 
 export { StatParamType, UserFilterType, CommandFilterType, Inventory }
@@ -184,7 +192,7 @@ export type GetUsersResponse = ListType<UserInterface>;
 // Roles (Collaborateurs)
 export type GetCollaboratorsParams = { page?: number, limit?: number };
 export type GetCollaboratorsResponse = ListType<Role & { user: UserInterface }>;
-export type CreateCollaboratorParams = { email: string };
+export type CreateCollaboratorParams = { email: string, full_name?:string,dashboard_url:string,setup_account_url?:string };
 export type CreateCollaboratorResponse = { message: string, role: Role & { user: UserInterface } };
 export type UpdateCollaboratorParams = { collaborator_user_id: string, permissions: Partial<TypeJsonRole> };
 export type UpdateCollaboratorResponse = { message: string, role: Role & { user: UserInterface } };
@@ -855,9 +863,9 @@ class AuthApiNamespace {
     getMe(): Promise<GetMeResponse> {
         return this._api._request('/api/v1/auth/me', { method: 'GET' });
     }
-    update(params: UpdateUserParams): Promise<UpdateUserResponse> { // 2 - Type Params modifié
-        // Utiliser la méthode PUT sur /me
-        return this._api._request('/api/v1/auth/me', { method: 'PUT', body: params.data });
+    update(data: UpdateUserParams): Promise<UpdateUserResponse> { // 2 - Type Params modifié
+        const formData = this._api._buildFormData({data,dataFilesFelds:['photo']})
+        return this._api._request('/api/v1/auth/me', { method: 'PUT', body: formData, isFormData:true });
     }
     deleteAccount(): Promise<MessageResponse> {
         // Utiliser la méthode DELETE sur /me
@@ -865,7 +873,7 @@ class AuthApiNamespace {
     }
     // handleSocialCallbackInternal reste non exposé publiquement
 
-    async forgotPassword(params: ForgotPasswordParams): Promise<MessageResponse> {
+    forgotPassword(params: ForgotPasswordParams): Promise<MessageResponse> {
         // La validation de l'email est faite par le schéma Vine côté backend
         // La callback_url est ajoutée ici ou passée par le frontend
         const frontendResetUrl = `${window.location.origin}/reset-password`; // URL de la page frontend de reset
@@ -875,9 +883,18 @@ class AuthApiNamespace {
         });
     }
 
-    async resetPassword(params: ResetPasswordParams): Promise<MessageResponse> {
+    resetPassword(params: ResetPasswordParams): Promise<MessageResponse> {
         // Validation faite par le backend + schéma Vine
         return this._api._request('/api/v1/auth/reset-password', { method: 'POST', body: params });
+    }
+
+    // --- NOUVELLE MÉTHODE ACCOUNT SETUP ---
+    /**
+     * Finalise la création de compte pour un collaborateur invité.
+     */
+    setupAccount(params: SetupAccountParams): Promise<SetupAccountResponse> { // Utiliser type retour spécifique
+         // La validation (longueur mdp, confirmation) est faite par le backend via Vine
+        return this._api._request('/api/v1/auth/setup-account', { method: 'POST', body: params });
     }
 }
 
@@ -1401,13 +1418,59 @@ class StatsApiNamespace {
     private _api: SublymusApi;
     constructor(apiInstance: SublymusApi) { this._api = apiInstance; }
 
-    get(params: StatParamType): Promise<GetStatsResponse> {
-        return this._api._request('/api/v1/stats', { method: 'GET', params });
+    async getKpis(params: BaseStatsParams = {}): Promise<KpiStatsResponse> {
+        return this._api._request('/api/v1/stats/kpi', { method: 'GET', params });
     }
-    getVisitsSummary(params: { period?: string, user_id?: string }): Promise<any> { // Type retour à affiner
+
+    async getVisitDetails(params: BaseStatsParams & { include?: VisitStatsIncludeOptions } = {}): Promise<VisitStatsResponse> {
+        const apiParams: Record<string, any> = { ...params };
+
+        // 💡 Correction ici : transformer l'objet include en un tableau de clés actives
+        if (params.include) {
+            const includedDimensions: string[] = [];
+            Object.entries(params.include).forEach(([key, value]) => {
+                if (value === true) {
+                    includedDimensions.push(key);
+                }
+            });
+            if (includedDimensions.length > 0) {
+                 // Assigner le tableau à la clé 'include'
+                apiParams.include = includedDimensions;
+            }
+            // Pas besoin de supprimer params.include, car apiParams est une copie
+        }
+         // L'API backend /stats/visits ne semble pas utiliser le param 'stats', le retirer
+         delete apiParams.stats;
+
+         return this._api._request('/api/v1/stats/visits', { method: 'GET', params: apiParams });
+    }
+
+    async getOrderDetails(params: BaseStatsParams & { include?: OrderStatsIncludeOptions } = {}): Promise<OrderStatsResponse> {
+        const apiParams: Record<string, any> = { ...params };
+
+        // 💡 Correction ici : transformer l'objet include en un tableau de clés actives
+        if (params.include) {
+            const includedDimensions: string[] = [];
+            Object.entries(params.include).forEach(([key, value]) => {
+                if (value === true) {
+                    includedDimensions.push(key);
+                }
+            });
+             if (includedDimensions.length > 0) {
+                 apiParams.include = includedDimensions;
+            }
+        }
+         // L'API backend /stats/orders ne semble pas utiliser le param 'stats', le retirer
+        delete apiParams.stats;
+
+        return this._api._request('/api/v1/stats/orders', { method: 'GET', params: apiParams });
+    }
+
+    // Garder ou adapter si nécessaire
+    getVisitsSummary(params: { period?: string, user_id?: string }): Promise<any> {
         return this._api._request('/api/v1/stats/summary', { method: 'GET', params });
     }
-    // Ajouter trackVisit si nécessaire (POST /api/v1/stats/track)
+
 }
 
 // =========================

@@ -2,11 +2,11 @@
 
 import { PeriodType, StoreInterface } from "../../Interfaces/Interfaces";
 import { useTranslation } from "react-i18next";
-import { IoCheckmarkCircle, IoChevronForward, IoClose, IoDesktop, IoFingerPrint, IoGlobe, IoGlobeOutline, IoPauseCircle, IoPencil, IoSettings, IoTrash } from "react-icons/io5"; // Ajouter icônes actions
+import { IoBarChart, IoCheckmarkCircle, IoChevronForward, IoClose, IoDesktop, IoFingerPrint, IoGlobe, IoGlobeOutline, IoPauseCircle, IoPencil, IoSettings, IoTrash } from "react-icons/io5"; // Ajouter icônes actions
 import { Bar } from 'react-chartjs-2'; // Importer Bar pour exemple stats
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js'; // Importer modules Chart.js
 import { Progrees } from "../Progress/Pregress"; // Utiliser le composant Progress
-import { useDeleteStore, useGetStats, useStartStore, useStopStore } from "../../api/ReactSublymusApi"; // Hook pour stats (si applicable au store)
+import { useGetVisitDetails, useGetOrderDetailsStats, useStartStore, useStopStore } from "../../api/ReactSublymusApi"; // Hook pour stats (si applicable au store)
 import logger from "../../api/Logger";
 import { useGlobalStore } from "../../pages/stores/StoreStore";
 import { useState } from "react";
@@ -29,11 +29,33 @@ export function SelectedStoreDetails({ store, onEditRequired }: SelectedStoreDet
 
 
     const [period, setPeriod] = useState<PeriodType>('month');
-    const { data: statsData, isLoading: isLoadingStats } = useGetStats({ period, stats: ['visits_stats', 'order_stats'] }, { enabled: !!store.id });
+    const {
+        data: orderStatsData,
+        isLoading: isLoadingOderStats
+    } = useGetOrderDetailsStats(
+        {
+            period: period
+        },
+        { enabled: !!store.id }
+    );
+    const {
+        data: visitStatsData,
+        isLoading: isLoadingVisitStats
+    } = useGetVisitDetails(
+        {
+            period: period
+        },
+        { enabled: !!store.id }
+    );
     // const statsData = { // Placeholder Data
     //     order_stats: [{ date: '2023-10-01', orders_count: 5 }, { date: '2023-10-02', orders_count: 8 }],
     //     visits_stats: [{ date: '2023-10-01', visits: 50 }, { date: '2023-10-02', visits: 75 }],
     // };
+
+    const statsData = { // Placeholder Data
+        order_stats: orderStatsData,
+        visits_stats: visitStatsData,
+    };
 
     console.log({ statsData });
 
@@ -44,6 +66,8 @@ export function SelectedStoreDetails({ store, onEditRequired }: SelectedStoreDet
 
 
     const isActionLoading = startStoreMutation.isPending || startStoreMutation.isPending || stopStoreMutation.isPending
+
+    const isLoadingStats = isLoadingOderStats || isLoadingVisitStats;
 
     // --- Handlers pour les actions ---
     const _handleStartStop = () => {
@@ -77,15 +101,15 @@ export function SelectedStoreDetails({ store, onEditRequired }: SelectedStoreDet
             <div>
                 <h3>{store.is_running ? t('storesPage.comfirm.stop') : t('storesPage.comfirm.start')}</h3>
                 <p>{store.is_running ? t('storesPage.comfirm.stopPompt') : t('storesPage.comfirm.startPompt')}</p>
-                <Confirm canConfirm 
-                cancel={t('common.cancel')} 
-                confirm={t('common.ok')}
-                onConfirm={()=>{
-                    _handleStartStop();
-                }} 
-                onCancel={()=>{
-                    openChild(null)
-                }} 
+                <Confirm canConfirm
+                    cancel={t('common.cancel')}
+                    confirm={t('common.ok')}
+                    onConfirm={() => {
+                        _handleStartStop();
+                    }}
+                    onCancel={() => {
+                        openChild(null)
+                    }}
                 />
             </div>
         </ChildViewer>, {
@@ -133,9 +157,7 @@ export function SelectedStoreDetails({ store, onEditRequired }: SelectedStoreDet
 
             {/* Section 1: Infos générales et Actions */}
             <div className="flex flex-col md:flex-row md:items-start gap-4 md:gap-6 pb-6 border-b border-gray-100">
-                {/* Image/Logo (Optionnel ici, déjà dans la carte?) */}
-                {/* <img src={logoSrc} ... /> */}
-                <div className="flex-grow min-w-0">
+                 <div className="flex-grow min-w-0">
                     {/* Titre et Statut */}
                     <div className="flex items-center gap-3 mb-1">
                         <h2 className="text-xl font-semibold text-gray-800 truncate" title={store.name}>{store.name}</h2>
@@ -198,7 +220,9 @@ export function SelectedStoreDetails({ store, onEditRequired }: SelectedStoreDet
 
             {/* Section 2: Statistiques */}
             <div className="pb-6 border-b border-gray-100">
-                <h3 className="text-base font-medium text-gray-700 mb-3">{t('storesPage.statsTitle')}</h3>
+                <a href={`/stores/stats`} className="inline-flex  items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium border border-gray-300  text-gray-700 hover:bg-gray-50 w-full md:w-auto justify-center transition hover:shadow-md cursor-pointer hover:border-blue-200 hover:bg-blue-50/30  bg-blue-50">
+                    <IoBarChart size={16} /> {t('storesPage.openStoreStats')}
+                </a>
                 <div className="flex justify-between items-center mb-4">
                     <h3 className="text-lg font-semibold text-gray-800">{t('clientDetail.activityChartTitle')}</h3>
                     {/* Sélecteur Période */}

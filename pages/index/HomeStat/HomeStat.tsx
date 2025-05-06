@@ -5,7 +5,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { IoPeopleSharp, IoCart, IoEllipsisHorizontalSharp, IoEyeOff, IoEyeSharp } from "react-icons/io5";
 import { Nuage } from "../Nuage"; // Garder Nuage
 import MyChart from "../MiniChart"; // Garder MiniChart
-import { useGetStats } from "../../../api/ReactSublymusApi"; // ✅ Importer le hook
+import { useGetVisitDetails, useGetOrderDetailsStats } from "../../../api/ReactSublymusApi"; // ✅ Importer le hook
 import { PeriodType, StatsData } from "../../../Interfaces/Interfaces";
 import { useGlobalStore } from "../../stores/StoreStore";
 import { useTranslation } from "react-i18next"; // ✅ Importer useTranslation
@@ -22,20 +22,38 @@ export function HomeStat() {
     const [openPeriod, setOpenPeriod] = useState(false);
 
     // ✅ Utiliser le hook React Query pour fetch les stats
-    const { data: statsData, isLoading, isError } = useGetStats(
-        { period, stats: ['visits_stats', 'order_stats'] },
-        { enabled: !!currentStore } // N'activer que si currentStore existe
-    );
 
+    // Stats temporelles (visites, commandes, etc.)
+    const {
+        data: orderStatsData,
+        isLoading: isLoadingOderStats,
+        isError:isErrorVisit
+    } = useGetOrderDetailsStats(
+        {
+            period: period
+        },
+        { enabled:  !!currentStore }
+    );
+    const {
+        data: visitStatsData,
+        isLoading: isLoadingVisitStats,
+        isError:isErrorOder
+    } = useGetVisitDetails(
+        {
+            period: period
+        },
+        { enabled: !!currentStore }
+    );
     // Calculer les totaux à partir des données de React Query
     const totalVisits = useMemo(() =>
-        statsData?.visits_stats?.reduce((sum: any, day: any) => sum + (day.visits || 0), 0) ?? 0,
-        [statsData?.visits_stats]
+        visitStatsData?.reduce((sum: any, day: any) => sum + (day.visits || 0), 0) ?? 0,
+        [visitStatsData]
     );
     const totalOrders = useMemo(() =>
-        statsData?.order_stats?.reduce((sum: any, day: any) => sum + (day.orders_count || 0), 0) ?? 0,
-        [statsData?.order_stats]
+        orderStatsData?.reduce((sum: any, day: any) => sum + (day.orders_count || 0), 0) ?? 0,
+        [orderStatsData]
     );
+
     // TODO: Ajouter la récupération du total du compte si nécessaire via une autre query/mutation
 
     // Gérer la largeur du nuage quand on cache/montre le montant
@@ -126,12 +144,12 @@ export function HomeStat() {
                 </div>
                 <div className="flex flex-col gap-2.5">
                     <div className="flex items-start justify-between gap-4">
-                        {isLoading && <span className="text-lg text-gray-500">{t('common.loading')}</span>}
-                        {isError && <span className="text-lg text-red-500">{t('common.error')}</span>}
-                        {!isLoading && !isError && <h2 className="text-lg font-semibold text-blue-700">{totalVisits}</h2>}
+                        {isLoadingVisitStats && <span className="text-lg text-gray-500">{t('common.loading')}</span>}
+                        {isErrorVisit && <span className="text-lg text-red-500">{t('common.error')}</span>}
+                        {!isLoadingVisitStats && !isErrorVisit && <h2 className="text-lg font-semibold text-blue-700">{totalVisits}</h2>}
                         {/* Afficher le graphique seulement si données disponibles */}
-                        {statsData?.visits_stats && statsData.visits_stats.length > 0 &&
-                            <MyChart datasets={statsData.visits_stats.slice(-12).map(v => v.visits || 0)} />} {/* Prendre les 12 dernières? */}
+                        {visitStatsData && visitStatsData.length > 0 &&
+                            <MyChart datasets={visitStatsData.slice(-12).map(v => v.visits || 0)} />} {/* Prendre les 12 dernières? */}
                     </div>
                     {/* 🌍 i18n */}
                     <a href="/stats" className="absolute bottom-2.5 left-5 text-sm text-blue-500 hover:text-blue-700 hover:underline no-underline">{t('common.seeMore')}</a>
@@ -149,12 +167,12 @@ export function HomeStat() {
                 </div>
                 <div className="flex flex-col gap-2.5">
                     <div className="flex items-start justify-between gap-4">
-                        {isLoading && <span className="text-lg text-gray-500">{t('common.loading')}</span>}
-                        {isError && <span className="text-lg text-red-500">{t('common.error')}</span>}
-                        {!isLoading && !isError && <h2 className="text-lg font-semibold text-green-700">{totalOrders}</h2>}
+                        {isLoadingOderStats && <span className="text-lg text-gray-500">{t('common.loading')}</span>}
+                        {isErrorOder && <span className="text-lg text-red-500">{t('common.error')}</span>}
+                        {!isLoadingOderStats && !isErrorOder && <h2 className="text-lg font-semibold text-green-700">{totalOrders}</h2>}
                         {/* Afficher le graphique seulement si données disponibles */}
-                        {statsData?.order_stats && statsData.order_stats.length > 0 &&
-                            <MyChart datasets={statsData.order_stats.slice(-12).map(v => v.orders_count || 0)} color='green' />} {/* Prendre les 12 dernières? */}
+                        {orderStatsData && orderStatsData.length > 0 &&
+                            <MyChart datasets={orderStatsData.slice(-12).map(v => v.orders_count || 0)} color='green' />} {/* Prendre les 12 dernières? */}
                     </div>
                     {/* 🌍 i18n */}
                     <a href="/stats" className="absolute bottom-2.5 left-5 text-sm text-blue-500 hover:text-blue-700 hover:underline no-underline">{t('common.seeMore')}</a>

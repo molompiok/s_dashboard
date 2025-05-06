@@ -8,7 +8,7 @@ import { Mail, Phone, Star, ShoppingCart, MessageCircle, CreditCard, CalendarClo
 import { usePageContext } from '../../../../renderer/usePageContext';
 import { getTransmit, useGlobalStore } from '../../../stores/StoreStore'; // Garder Store
 // import { useClientStore } from '../ClientStore'; // Remplacé par hooks API
-import { useGetUsers, useGetStats } from '../../../../api/ReactSublymusApi'; // ✅ Importer hooks API
+import { useGetUsers, useGetVisitDetails , useGetOrderDetailsStats} from '../../../../api/ReactSublymusApi'; // ✅ Importer hooks API
 import IMask from 'imask';
 import { getImg } from '../../../../Components/Utils/StringFormater';
 import { ClientStatusColor, NO_PICTURE } from '../../../../Components/Utils/constants'; // Garder couleurs statut
@@ -55,14 +55,22 @@ function Page() {
 
     // Stats temporelles (visites, commandes, etc.)
     const {
-        data: timeStatsData,
-        isLoading: isLoadingTimeStats
-    } = useGetStats(
+        data: orderStatsData,
+        isLoading: isLoadingOderStats
+    } = useGetOrderDetailsStats(
         {
             user_id: userId,
-            period: period,
-            // Demander seulement les stats nécessaires pour le graphique
-            stats: ['visits_stats', 'order_stats']
+            period: period
+        },
+        { enabled: !!userId && !!currentStore }
+    );
+    const {
+        data: visitStatsData,
+        isLoading: isLoadingVisitStats
+    } = useGetVisitDetails(
+        {
+            user_id: userId,
+            period: period
         },
         { enabled: !!userId && !!currentStore }
     );
@@ -110,7 +118,7 @@ function Page() {
     };
 
     // --- Rendu ---
-    const isLoading = isLoadingUser || isLoadingTimeStats;
+    const isLoading = isLoadingUser || isLoadingOderStats||isLoadingVisitStats;
 
     if (isLoading && !user) return <div className="p-6 text-center text-gray-500">{t('common.loading')}</div>;
     if (isUserError && userError?.status === 404) return <PageNotFound title={t('user.notFound')} description={userError.message} />;
@@ -221,7 +229,10 @@ function Page() {
                     <div className="h-64"> {/* Hauteur fixe pour le graphique */}
                         <StatsChart
                             period={period}
-                            data={timeStatsData || {}} // Passer les données fetchées
+                            data={{
+                                order_stats:orderStatsData||[],
+                                visits_stats:visitStatsData||[]
+                            }} // Passer les données fetchées
                             // Props pour configurer le graphique
                             setAvailable={() => { }} // Gérer si besoin
                             setResume={() => { }} // Gérer si besoin

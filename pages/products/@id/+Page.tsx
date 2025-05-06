@@ -819,7 +819,9 @@ function Page() {
                             <ProductSettings onSelected={(action) => {
                                 logger.info("Action selected from ProductSettings:", action);
                                 // Gérer la navigation ou les actions ici
-                                if (action === 'delete') handleDelete();
+                                if (action === 'show-stats') {
+                                    nextPage(`/stores/stats?product_id=${productFormState.id}`)
+                                }
                                 else nextPage(`/products/${productFormState.id}/${action}`)
                             }} />
                         </section>

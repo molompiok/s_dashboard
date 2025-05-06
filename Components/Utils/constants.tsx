@@ -54,16 +54,18 @@ const Icons = {
     commands_outline: <IoCartOutline />,
 }
 enum OrderStatus {
-    PENDING = 'pending',
-    CANCELED = 'canceled',
-    CONFIRMED = 'confirmed',
-    RETURNED = 'returned',
-    DELIVERED = 'delivered',
-    PICKED_UP = 'picked_up',
-    NOT_DELIVERED = 'not_delivered',
-    NOT_PICKED_UP = 'not_picked_up',
-    WAITING_FOR_PAYMENT = 'waiting_for_payment',
-    WAITING_PICKED_UP = 'waiting_picked_up',
+  PENDING = 'pending',
+  CONFIRMED = 'confirmed',
+  PROCESSING = 'processing',
+  SHIPPED = 'shipped',
+  READY_FOR_PICKUP = 'ready_for_pickup',
+  PICKED_UP = 'picked_up',
+  NOT_PICKED_UP = 'not_picked_up',
+  DELIVERED = 'delivered',
+  NOT_DELIVERED = 'not_delivered',
+  RETURNED = 'returned',
+  CANCELED = 'canceled',
+  FAILED = 'failed'
 }
 
 enum PaymentMethod {

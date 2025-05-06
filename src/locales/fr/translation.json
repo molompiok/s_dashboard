@@ -101,12 +101,78 @@
         "permissionsCount": "{{count}} Permissions",
         "editPermissionsButton": "Modifier les permissions",
         "addPopupTitle": "Ajouter un Membre à l'Équipe",
+        "nameLabel": "Nom du collaborateur",
+        "namePlaceholder": "Nom du collaborateur",
         "emailLabel": "Email du collaborateur",
         "emailPlaceholder": "nom@exemple.com",
         "addButtonDirect": "Ajouter le membre",
-        "addHelpS0": "L'utilisateur doit déjà avoir un compte Sublymus pour être ajouté.",
+        "addNameHelper": "Le nom du collaborateur, pour preparer son compte",
+        "addEmailHelper": "Une invitation sera envoyée sur l'email du collaborateur",
         "validation": {
             "emailInvalid": "Veuillez saisir une adresse email valide."
+        }
+    },
+    "statsPage": {
+        "overviewTitle": "Vue d'ensemble",
+        "salesAnalysisTitle": "Analyse des Ventes",
+        "trafficAnalysisTitle": "Analyse du Trafic",
+        "kpiError": "Impossible de charger les indicateurs clés.",
+        "kpi": {
+            "revenue": "Revenu Total",
+            "orders": "Commandes",
+            "visits": "Visites",
+            "conversionRate": "Taux Conv.",
+            "averageOrderValue": "Panier Moyen",
+            "uniqueVisitors": "Visiteurs Uniques"
+        },
+        "charts": {
+            "totalRevenue": "Revenu",
+            "ordersCount": "Commandes",
+            "visits": "Visites",
+            "uniqueVisitors": "Visiteurs Uniques",
+            "revenueAxis": "Revenu (FCFA)",
+            "ordersAxis": "Nombre de Commandes",
+            "visitsAxis": "Nombre de Visites",
+            "salesEvolutionTitle": "Évolution des Ventes",
+            "trafficEvolutionTitle": "Évolution du Trafic",
+            "orderStatusTitle": "Répartition des Statuts",
+            "paymentMethodTitle": "Méthodes de Paiement",
+            "devicesTitle": "Appareils",
+            "browsersTitle": "Navigateurs",
+            "referrerTitle": "Sources de Trafic",
+            "sourceHeader": "Source",
+            "visitsHeader": "Visites"
+        },
+        "devices": {
+            "desktop": "Bureau",
+            "mobile": "Mobile",
+            "tablet": "Tablette",
+            "unknown": "Inconnu"
+        },
+        "browsers": {
+            "chrome": "Chrome",
+            "firefox": "Firefox",
+            "safari": "Safari",
+            "edge": "Edge",
+            "brave": "Brave",
+            "opera": "Opera",
+            "unknown": "Inconnu"
+        }
+    },
+    "statsFilters": {
+        "groupByLabel": "Grouper par",
+        "period": {
+            "day": "Jour",
+            "week": "Semaine",
+            "month": "Mois"
+        },
+        "range": {
+            "last7days": "7 derniers jours",
+            "last30days": "30 derniers jours",
+            "thisMonth": "Ce mois-ci",
+            "lastMonth": "Mois dernier",
+            "custom": "Personnalisé",
+            "select": "Choisir une plage"
         }
     },
     "forgotPasswordPage": {
@@ -296,7 +362,7 @@
         "title": "Mes Boutiques",
         "addStoreButton": "Créer une boutique",
         "searchPlaceholder": "Rechercher par nom...",
-        "usageTitle": "",
+        "openStoreStats": "Voire toutes les statistiques",
         "statusFilter": {
             "all": "Toutes",
             "active": "Actives",
@@ -410,6 +476,17 @@
             "passwordMismatch": "Les mots de passe ne correspondent pas."
         }
     },
+    "verifyNoticePage": {
+        "title": "Vérifiez votre boîte de réception !",
+        "messageGeneric": "Nous vous avons envoyé un email de vérification. Veuillez cliquer sur le lien contenu dans cet email pour activer votre compte.",
+        "messageWithEmail": "Nous avons envoyé un email de vérification à **{{email}}**. Veuillez cliquer sur le lien contenu dans cet email pour activer votre compte.",
+        "spamHint": "Pensez à vérifier votre dossier de courrier indésirable (spam).",
+        "resendLink": "Renvoyer l'email ?"
+    },
+    "authNotice": {
+        "genericSentTitle": "Opération Réussie",
+        "genericSentMessage": "Votre demande a été traitée. Veuillez consulter votre boîte de réception si nécessaire."
+    },
     "roles": {
         "client": "Client",
         "collaborator": "Collaborateur",
@@ -449,7 +526,7 @@
             "logoutAllButton": "Déconnexion Partout",
             "deleteAccountTitle": "Supprimer le Compte",
             "deleteAccountConfirmTitle": "Supprimer définitivement votre compte ?",
-            "deleteAccountWarning": "Cette action est irréversible. Toutes vos données personnelles, boutiques, et configurations seront perdues."
+            "deleteAccountWarning": "Cette action est irréversible. Toutes vos données personnelles et configurations seront perdues."
         }
     },
     "languages": {
@@ -468,6 +545,14 @@
         "errorTitle": "Erreur de réinitialisation",
         "backToLogin": "Retour à la connexion"
     },
+    "setupAccountPage": {
+        "title": "Finalisez votre compte Sublymus",
+        "subtitle": "Choisissez un mot de passe pour activer votre accès collaborateur.",
+        "setupButton": "Activer mon compte",
+        "successTitle": "Compte Activé !",
+        "errorTitle": "Erreur d'activation",
+        "backToLogin": "Aller à la connexion"
+    },
     "auth": {
         "resetPassword": {
             "success": "Votre mot de passe a été réinitialisé avec succès. Vous pouvez maintenant vous connecter.",
@@ -478,6 +563,12 @@
         "forgotPassword": {
             "emailSentConfirmation": "Si un compte correspond à cet email, un lien de réinitialisation a été envoyé.",
             "genericError": "Une erreur est survenue lors de la demande de réinitialisation."
+        },
+        "setupAccount": {
+            "success": "Votre compte a été activé et votre mot de passe défini. Vous pouvez maintenant vous connecter.",
+            "invalidToken": "Ce lien d'activation est invalide ou a expiré. Veuillez contacter la personne qui vous a invité.",
+            "alreadyActive": "Ce compte est déjà actif. Vous pouvez vous connecter directement.",
+            "genericError": "Une erreur est survenue lors de l'activation du compte."
         },
         "socialCallbackFailed": "Erreur interne lors du traitement de la connexion sociale.",
         "emailNotVerified": "Veuillez vérifier votre adresse email avant de vous connecter.",
@@ -843,7 +934,49 @@
         "noEmail": "Aucun email fourni"
     },
     "stats": {
-        "fetchFailed": "Erreur lors de la récupération des statistiques."
+        "pageTitle": "Statistiques",
+        "fetchFailed": "Échec de la récupération des statistiques.", 
+        "filtersTitle": "Filtres",
+        "periodLabel": "Période",
+        "periods": {
+            "day": "Jour",
+            "week": "Semaine",
+            "month": "Mois"
+        },
+        "visitStatsHiddenForProduct":"Pas de Stats disponible pour ce produit",
+        "visitStatsHiddenForClient":"Pas de Stats disponible pour ce client",
+        "countLabel": "Nombre de périodes",
+        "endDateLabel": "Date de fin (optionnel)",
+        "clientLabel": "Client",
+        "selectClientTitle": "Sélectionner un client",
+        "selectClientPlaceholder": "Sélectionner un client...",
+        "searchClientPlaceholder": "Rechercher par nom, email...",
+        "noClientFound": "Aucun client trouvé correspondant à votre recherche.",
+        "typeToSearchClient": "Commencez à taper pour chercher des clients...",
+        "productLabel": "Produit",
+        "selectProductTitle": "Sélectionner un produit",
+        "selectProductPlaceholder": "Sélectionner un produit...",
+        "searchProductPlaceholder": "Rechercher par nom...",
+        "noProductFound": "Aucun produit trouvé correspondant à votre recherche.",
+        "typeToSearchProduct": "Commencez à taper pour chercher des produits...",
+        "visitDetailsLabel": "Détails des visites",
+        "orderDetailsLabel": "Détails des commandes",
+        "kpi": {
+            "totalRevenue": "Chiffre d'affaires",
+            "totalOrders": "Total Commandes",
+            "totalVisits": "Total Visites",
+            "uniqueVisitors": "Visiteurs Uniques",
+            "conversionRate": "Taux de Conversion",
+            "averageOrderValue": "Panier Moyen"
+        },
+        "visitStatsTitle": "Statistiques de visites",
+        "noVisitData": "Aucune donnée de visite pour la période ou le filtre sélectionné(e).",
+        "orderStatsTitle": "Statistiques de commandes",
+        "noOrderData": "Aucune donnée de commande pour la période ou le filtre sélectionné(e).",
+        "noDimensionData": "Aucune donnée détaillée (navigateur, OS, statuts, etc.) pour la période ou le filtre sélectionné(e).",
+        "selectDimension": "Sélectionnez une dimension ci-dessus pour afficher les détails.",
+        "listView": "Liste",
+        "chartView": "Graphique"
     },
     "address": {
         "createdSuccess": "Adresse créée avec succès.",
@@ -877,7 +1010,9 @@
         "deleteSuccess": "Commande supprimée avec succès.",
         "deleteFailed": "La suppression de la commande a échoué.",
         "customerInfoTitle": "Informations Client",
+        "currentStatusLabel":"Le status actuel",
         "productListTitle": "Liste des Produits",
+        "nextStatus": "Prochain status possible",
         "totalLabel": "Total",
         "statusEvolutionTitle": "Évolution des Statuts",
         "updateStatusTitle": "Mettre à jour le statut de la commande",

@@ -31,6 +31,25 @@ function Page() {
         enabled: !!storeId,
     });
 
+    const storeName = storeData?.name;
+
+    const breadcrumbs: BreadcrumbItem[] = useMemo(() => {
+        const crumbs: BreadcrumbItem[] = [
+            { name: t('navigation.home'), url: '/' },
+             // Lien vers la liste principale des stores
+            { name: t('navigation.stores'), url: '/stores' },
+        ];
+         if (storeName) {
+             // Lien vers la page principale du store sélectionné? Ou juste le nom?
+             // Mettons juste le nom, car on est DANS ses paramètres.
+              crumbs.push({ name: limit(storeName, 25) });
+              crumbs.push({ name: t('navigation.settings') }); // Page actuelle
+         } else if (storeId) {
+               crumbs.push({ name: t('common.loading') });
+         }
+        return crumbs;
+    }, [t, storeId, storeName]);
+
     if (isLoading) {
         return <div className="p-6 text-center text-gray-500">{t('common.loading')}</div>;
     }
@@ -67,25 +86,6 @@ function Page() {
                 return <GeneralSettingsSection store={storeData} />;
         }
     };
-
-    const storeName = storeData?.name;
-
-      const breadcrumbs: BreadcrumbItem[] = useMemo(() => {
-         const crumbs: BreadcrumbItem[] = [
-             { name: t('navigation.home'), url: '/' },
-              // Lien vers la liste principale des stores
-             { name: t('navigation.stores'), url: '/stores' },
-         ];
-          if (storeName) {
-              // Lien vers la page principale du store sélectionné? Ou juste le nom?
-              // Mettons juste le nom, car on est DANS ses paramètres.
-               crumbs.push({ name: limit(storeName, 25) });
-               crumbs.push({ name: t('navigation.settings') }); // Page actuelle
-          } else if (storeId) {
-                crumbs.push({ name: t('common.loading') });
-          }
-         return crumbs;
-     }, [t, storeId, storeName]);
 
     return (
         <div className="w-full min-h-screen flex flex-col bg-gray-100 relative">

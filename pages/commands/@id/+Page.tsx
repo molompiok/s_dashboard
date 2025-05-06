@@ -30,6 +30,17 @@ import { ApiError } from '../../../api/SublymusApi';
 import { Receipt } from './Receipt/Receipt';
 import { useChildViewer } from '../../../Components/ChildViewer/useChildViewer';
 
+const allowedTransitionsClient: Partial<Record<OrderStatus, OrderStatus[]>> = {
+    [OrderStatus.PENDING]: [OrderStatus.CONFIRMED, OrderStatus.CANCELED, OrderStatus.FAILED],
+    [OrderStatus.CONFIRMED]: [OrderStatus.PROCESSING, OrderStatus.CANCELED],
+    [OrderStatus.PROCESSING]: [OrderStatus.SHIPPED, OrderStatus.READY_FOR_PICKUP, OrderStatus.CANCELED, OrderStatus.FAILED], // Ici on propose les deux, le choix dépendra de with_delivery
+    [OrderStatus.READY_FOR_PICKUP]: [OrderStatus.PICKED_UP, OrderStatus.NOT_PICKED_UP],
+    [OrderStatus.SHIPPED]: [OrderStatus.DELIVERED, OrderStatus.NOT_DELIVERED, OrderStatus.FAILED], // Enlever RETURNED ici ?
+    [OrderStatus.DELIVERED]: [OrderStatus.RETURNED],
+    [OrderStatus.PICKED_UP]: [OrderStatus.RETURNED],
+    [OrderStatus.NOT_DELIVERED]: [OrderStatus.SHIPPED, OrderStatus.RETURNED, OrderStatus.CANCELED],
+    [OrderStatus.NOT_PICKED_UP]: [OrderStatus.CANCELED],
+}
 
 export { Page };
 
@@ -43,7 +54,7 @@ function Page() {
     const command_id = routeParams?.['id'];
 
     // ✅ Utiliser le hook pour récupérer les détails
-    const { data: command, isLoading, isError, error: apiError } = useGetOrderDetails(
+    const { data: command, isLoading, isError, error: apiError , refetch} = useGetOrderDetails(
         {
             order_id: command_id
         },
@@ -51,15 +62,14 @@ function Page() {
     );
 
     // ✅ Utiliser la mutation pour mettre à jour le statut
-    const updateStatusMutation = useUpdateOrderStatus();
-
+    
     const low = useMemo(() => size.width < 380, [size.width]);
 
     // ✅ Logique SSE (inchangée mais vérifiée)
     useEffect(() => {
         if (!currentStore?.url || !command_id) return;
         const transmit = getTransmit(currentStore.url);
-        const channel = `store/${currentStore.id}/update_command`;
+        const channel = `store/${'9b1192a3-0727-43a4-861b-05775bf2fd0d'/* TODO currentStore.id*/}/update_command`;
         logger.info(`Subscribing to SSE channel for order updates: ${channel}`);
         const subscription = transmit?.subscription(channel);
         async function subscribe() {
@@ -67,11 +77,13 @@ function Page() {
             try {
                 await subscription.create();
                 subscription.onMessage<{ id: string }>((data) => {
+                    console.log({data});
+                    
                     if (data.id === command_id) {
-                        logger.info(`Received SSE update for current order ${command_id}. Invalidating...`);
-                        queryClient.invalidateQueries({ queryKey: ['orderDetails', command_id] });
+                        console.log(`Received SSE update for current order ${command_id}. Invalidating...`);
+                        refetch()
                     } else {
-                        logger.debug(`Received SSE update for different order ${data.id}. Ignoring.`);
+                        console.log(`Received SSE update for different order ${data.id}. Ignoring.`);
                     }
                 });
             } catch (err) {
@@ -91,10 +103,10 @@ function Page() {
         openChild(
             <ChildViewer title={t('order.updateStatusTitle')}>
                 <StatusUpdatePopup
+                    isDelivery={!!command.with_delivery}
                     currentStatus={command.status as OrderStatus}
                     orderId={command.id}
                     onClose={() => openChild(null)}
-                    mutation={updateStatusMutation}
                 />
             </ChildViewer>,
             { background: '#3455' }
@@ -122,8 +134,8 @@ function Page() {
     if (!command) return <div className="p-6 text-center text-gray-500">{t('order.notFound')}</div>;
 
     return (
-        <div className="w-full flex flex-col bg-gray-50 min-h-screen">
-            <Topbar back breadcrumbs={breadcrumbs}/>
+        <div className="w-full pb-48 flex flex-col bg-gray-50 min-h-screen">
+            <Topbar back breadcrumbs={breadcrumbs} />
             <div className="w-full max-w-4xl mx-auto p-4 md:p-6 lg:p-8 flex flex-col gap-6">
                 <CommandTop command={command} />
 
@@ -152,13 +164,11 @@ function Page() {
                     <button
                         onClick={handleOpenStatusUpdate}
                         className="text-sm text-blue-600 hover:text-blue-800 cursor-pointer px-3 py-1 rounded border border-blue-300 hover:shadow-md hover:bg-blue-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                        disabled={updateStatusMutation.isPending}
                     >
-                        {updateStatusMutation.isPending ? t('common.saving') : t('order.updateStatusButton')}
+                        {t('order.updateStatusButton')}
                     </button>
                 </div>
                 <CommandStatusHistory events={command.events_status || []} low={low} />
-
             </div>
         </div>
     );
@@ -397,16 +407,16 @@ export function CommandProduct({ item }: { item: CommandItemInterface }) {
 
 // --- Composant CommandStatusHistory ---
 export function CommandStatusHistory({ events, low }: { events: EventStatus[], low: boolean }) {
-    const { t } = useTranslation(); // ✅ i18n
+    const { t ,i18n} = useTranslation(); // ✅ i18n
     // S'assurer que les événements sont triés du plus récent au plus ancien
-    const sortedEvents = useMemo(() => [...events].sort((a, b) => DateTime.fromISO(b.change_at).toMillis() - DateTime.fromISO(a.change_at).toMillis()), [events]);
+    const sortedEvents = useMemo(() => [...events].sort((a, b) => DateTime.fromISO(a.change_at).toMillis() - DateTime.fromISO(b.change_at).toMillis()), [events]);
 
     return (
         <div className="flex flex-col">
             {sortedEvents.map((k, i, arr) => {
                 const eventDate = DateTime.fromISO(k.change_at);
                 // Utiliser la locale de i18next si possible
-                const currentLocale = useTranslation().i18n.language;
+                const currentLocale = i18n.language;
                 const formattedDate = eventDate.isValid ? eventDate.setLocale(currentLocale).toLocaleString(DateTime.DATE_MED_WITH_WEEKDAY) : 'N/A';
                 const formattedTime = eventDate.isValid ? eventDate.setLocale(currentLocale).toLocaleString(DateTime.TIME_SIMPLE) : '';
 
@@ -455,71 +465,88 @@ export function CommandStatusHistory({ events, low }: { events: EventStatus[], l
 }
 
 // --- Composant Popup StatusUpdatePopup ---
-export function StatusUpdatePopup({ currentStatus, orderId, onClose, mutation }: {
+export function StatusUpdatePopup({ currentStatus, orderId, onClose, isDelivery }: {
     currentStatus: OrderStatus;
     orderId: string;
     onClose: () => void;
-    mutation: UseMutationResult<any, ApiError, { user_order_id: string, status: OrderStatus }>;
+    isDelivery: boolean;
 }) {
     const { t } = useTranslation();
+    const mutation = useUpdateOrderStatus();
+    const getValidNextStatuses = (current: OrderStatus, deliveryMode: boolean): OrderStatus[] => {
+        const possibleNext = allowedTransitionsClient[current] || [];
 
-    // TODO: Implémenter la logique pour déterminer les statuts valides
-    const getValidNextStatuses = (current: OrderStatus): OrderStatus[] => {
-        // Logique de transition à implémenter ici basées sur les règles backend
-        // Exemple simplifié :
-        switch (current) {
-            case OrderStatus.PENDING:
-                return [OrderStatus.CONFIRMED, OrderStatus.CANCELED];
-            case OrderStatus.CONFIRMED:
-                // Assumer que with_delivery détermine si 'Shipped' ou 'ReadyForPickup' est possible
-                // return [OrderStatus.SHIPPED, OrderStatus.READY_FOR_PICKUP, OrderStatus.CANCELED];
-                return [OrderStatus.DELIVERED, OrderStatus.PICKED_UP, OrderStatus.CANCELED]; // Simplifié pour S0?
-            case OrderStatus.DELIVERED:
-                return [OrderStatus.RETURNED]; // Seul un retour possible?
-            // Ajouter tous les autres cas...
-            default:
-                return []; // Ne peut pas changer depuis CANCELED, RETURNED, etc.
+        // Filtrer en fonction du mode (livraison/retrait) si nécessaire
+        if (current === OrderStatus.PROCESSING) {
+            return possibleNext.filter(status =>
+                deliveryMode ? status !== OrderStatus.READY_FOR_PICKUP : status !== OrderStatus.SHIPPED
+            );
         }
+        // Ajouter d'autres logiques de filtrage si besoin
+
+        return possibleNext;
     };
 
-    const validStatuses = getValidNextStatuses(currentStatus);
+    const validNextStatuses = useMemo(() => getValidNextStatuses(currentStatus, isDelivery), [currentStatus, isDelivery]);
 
     const handleUpdate = (newStatus: OrderStatus) => {
         mutation.mutate(
             { user_order_id: orderId, status: newStatus },
-            { onSuccess: onClose, onError: onClose } // Fermer même en cas d'erreur? Ou afficher erreur?
+            {
+                onSuccess: () => {
+                    logger.info("Order status update success, closing popup.");
+                    onClose();
+                },
+                onError: (error) => {
+                    // L'erreur est déjà affichée via mutation.isError plus bas
+                    // On pourrait ajouter un toast ici
+                    logger.error({ orderId, newStatus, error }, "Order status update mutation failed.");
+                    // onClose(); // Faut-il fermer en cas d'erreur? Peut-être pas, pour laisser voir le message.
+                }
+            }
         );
     };
 
     return (
-        <div className="bg-white p-6 rounded-lg shadow-xl max-w-sm w-full">
-            <h3 className="text-lg font-medium text-gray-900 mb-4">{t('order.updateStatusTitle')}</h3>
-            <div className='flex flex-wrap gap-3 justify-center'>
-                {Object.values(OrderStatus).map((k) => {
-                    const isValidNext = validStatuses.includes(k);
-                    const isCurrent = k === currentStatus;
-                    return (
+        <div className="bg-white p-6 rounded-lg shadow-xl  w-full"> {/* Augmenté max-w un peu */}
+            <h3 className="text-lg font-medium text-gray-900 mb-2">{t('order.updateStatusTitle')}</h3>
+            <p className="text-sm text-gray-500 mb-4">
+                {t('order.currentStatusLabel')}: <OrderStatusElement status={currentStatus} />
+            </p>
+
+            {validNextStatuses.length > 0 ? (
+                <div className='flex flex-wrap gap-3 items-center'>
+                    <p className="text-sm text-gray-500  mr-2">
+                        {t('order.nextStatus')}:
+                    </p>
+                    {validNextStatuses.map((nextStatus) => (
                         <button
-                            key={k}
+                            key={nextStatus}
                             type="button"
-                            onClick={() => handleUpdate(k)}
-                            // Désactiver si ce n'est pas une transition valide ou si c'est le statut actuel ou si mutation en cours
-                            disabled={!isValidNext || isCurrent || mutation.isPending}
-                            className={`disabled:opacity-50 disabled:cursor-not-allowed transition ${isCurrent ? 'ring-2 ring-offset-1 ring-blue-500' : ''}`}
+                            onClick={() => handleUpdate(nextStatus)}
+                            disabled={mutation.isPending} // Désactiver seulement pendant la mutation
+                            className={`disabled:opacity-50 disabled:cursor-wait transition hover:scale-105`}
                         >
-                            <OrderStatusElement status={k as any} isSelected={isCurrent} />
+                            {/* Utiliser le composant StatusElement pour l'affichage */}
+                            <OrderStatusElement status={nextStatus} />
                         </button>
-                    );
-                })}
-            </div>
+                    ))}
+                </div>
+            ) : (
+                <p className="text-center text-gray-500 italic">{t('order.noNextStatus')}</p>
+            )}
+
             {mutation.isError && (
-                <p className="text-red-600 text-sm mt-4">{mutation.error.message || t('error_occurred')}</p>
+                <p className="text-red-600 text-sm mt-4 text-center">
+                    {t('order.updateFailed')}: {mutation.error.message || t('error_occurred')}
+                </p>
             )}
             <button
                 onClick={onClose}
-                className="mt-6 w-full text-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                disabled={mutation.isPending} // Désactiver aussi pendant chargement
+                className="mt-6 w-full text-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
             >
-                {t('common.cancel')}
+                {mutation.isPending ? t('common.saving') : t('common.cancel')}
             </button>
         </div>
     );

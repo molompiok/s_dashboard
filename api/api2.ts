@@ -3,7 +3,7 @@
 import {  OrderStatus } from '../Components/Utils/constants'; // Ajuster chemin si besoin
 import type {
     ListType, ProductInterface, CategoryInterface, UserInterface, StoreInterface,
-    CommandInterface, CommentInterface, DetailInterface, Inventory, Role, Favorite,
+    CommandInterface, CommentInterface, DetailInterface, Inventory, Role, FavoriteInteraface,
     FilterType, CommandFilterType, UserFilterType, GlobalSearchType, StatsData,
     StatParamType, EventStatus, FeatureInterface, TypeJsonRole, ValueInterface
 } from '../Interfaces/Interfaces';
@@ -128,9 +128,9 @@ export type DeleteCommentResponse = MessageResponse;
 export type AddFavoriteParams = { product_id: string };
 export type AddFavoriteResponse = any; // L'API retourne { favorite_id, product_name }
 export type GetFavoritesParams = { page?: number, limit?: number, order_by?: string, favorite_id?: string, label?: string, product_id?: string };
-export type GetFavoritesResponse = ListType<Favorite & { product: ProductInterface }>;
+export type GetFavoritesResponse = ListType<FavoriteInteraface & { product: ProductInterface }>;
 export type UpdateFavoriteParams = { favorite_id: string, label: string };
-export type UpdateFavoriteResponse = Favorite; // L'API retourne le favori mis à jour
+export type UpdateFavoriteResponse = FavoriteInteraface; // L'API retourne le favori mis à jour
 export type DeleteFavoriteResponse = { message: string, isDeleted: boolean };
 
 // UserProfile (Adresses & Téléphones)

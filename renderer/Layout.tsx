@@ -1,4 +1,4 @@
-// import './Layout.css'
+//renderer/Layout.tsx
 
 export { Layout };
 
@@ -16,35 +16,7 @@ import { useGlobalStore } from '../pages/stores/StoreStore'; // Gardé pour fetc
 import { useTranslation } from 'react-i18next'; // Pour traduction future
 import { useChildViewer } from '../Components/ChildViewer/useChildViewer'; // Hook pour popup
 import { IoHome, IoHomeOutline, IoStorefront, IoStorefrontOutline, IoPeople, IoPeopleOutline, IoDocumentText, IoDocumentTextOutline, IoCube, IoCubeOutline, IoLayers, IoLayersOutline } from 'react-icons/io5'; // Importer directement les icônes
-import { PageHelper } from '../Components/Indicator/PageHelper';
 
-
-// --- Styles Globaux (Peuvent aller dans index.css ou être appliqués au body via un composant global) ---
-// Ces styles doivent être appliqués une seule fois au niveau racine si possible.
-// Ex: dans main.tsx ou un composant RootLayout
-/*
-body {
-  @apply bg-background text-discret-0 font-sans text-base antialiased overflow-hidden;
-}
-* {
-  @apply p-0 m-0 box-border;
-}
-*/
-
-// --- Variables CSS (à définir dans globals.css ou tailwind.config.js) ---
-
-/*
-:root {
-  --background: #f8f9fa; // Exemple
-  --discret-0: #1f2937; // Exemple text-gray-800
-  --discret-1: #6b7280; // Exemple text-gray-500
-  --primary-color: #ff9800; // Exemple orange-500
-  --primary-color-rgb: 255, 152, 0; // Exemple
-  // etc.
-  --side-bar-width-min: 80px; // w-20
-  --side-bar-width-max: 240px; // w-60
-}
-*/
 
 function Layout({ children, pageContext }: { children: React.ReactNode; pageContext: PageContext }) {
   const { t } = useTranslation()
@@ -62,10 +34,10 @@ function Layout({ children, pageContext }: { children: React.ReactNode; pageCont
             <Link href="/products" activeIcon={<IoCube className='w-5 h-5' />} defaultIcon={<IoCubeOutline className='w-5 h-5' />}>{t('navigation.products')}</Link>
             {/* Lien Catégories ajouté */}
             <Link href="/categories" activeIcon={<IoLayers className='w-5 h-5' />} defaultIcon={<IoLayersOutline className='w-5 h-5' />}>{t('navigation.categories')}</Link>
-            <Link href="/users" activeIcon={<IoPeople className='w-5 h-5' />} defaultIcon={<IoPeopleOutline className='w-5 h-5' />}>{t('navigation.teams')}</Link>
             <Link href="/commands" activeIcon={<IoDocumentText className='w-5 h-5' />} defaultIcon={<IoDocumentTextOutline className='w-5 h-5' />}>{t('navigation.orders')}</Link>
+            <Link href="/users" activeIcon={<IoPeople className='w-5 h-5' />} defaultIcon={<IoPeopleOutline className='w-5 h-5' />}>{t('navigation.teams')}</Link>
             {/* Lien Inventaire ajouté */}
-            <Link href="/inventory" activeIcon={<IoHome className='w-5 h-5' />} defaultIcon={<IoHomeOutline className='w-5 h-5' />}>{t('navigation.inventory')}</Link>
+            {/* <Link href="/inventory" activeIcon={<IoHome className='w-5 h-5' />} defaultIcon={<IoHomeOutline className='w-5 h-5' />}>{t('navigation.inventory')}</Link> */}
             <Link href="/stores" activeIcon={<IoStorefront className='w-5 h-5' />} defaultIcon={<IoStorefrontOutline className='w-5 h-5' />}>{t('navigation.stores')}</Link>
             {/* Ajouter lien Settings, Stats etc. */}
           </Sidebar>
@@ -79,10 +51,9 @@ function Layout({ children, pageContext }: { children: React.ReactNode; pageCont
         <Bottombar>
           <Link href="/" activeIcon={<IoHome className='w-5 h-5' />} defaultIcon={<IoHomeOutline className='w-5 h-5' />} />
           <Link href="/products" activeIcon={<IoCube className='w-5 h-5' />} defaultIcon={<IoCubeOutline className='w-5 h-5' />} />
-          {/* Ajouter icône Commandes? */}
           <Link href="/commands" activeIcon={<IoDocumentText className='w-5 h-5' />} defaultIcon={<IoDocumentTextOutline className='w-5 h-5' />} />
-          <Link href="/stores" activeIcon={<IoStorefront className='w-5 h-5' />} defaultIcon={<IoStorefrontOutline className='w-5 h-5' />} />
           <Link href="/users" activeIcon={<IoPeople className='w-5 h-5' />} defaultIcon={<IoPeopleOutline className='w-5 h-5' />} />
+          <Link href="/stores" activeIcon={<IoStorefront className='w-5 h-5' />} defaultIcon={<IoStorefrontOutline className='w-5 h-5' />} />
         </Bottombar>
 
         {/* <PageHelper /> */}
@@ -101,8 +72,8 @@ function OpenChild() {
   useEffect(() => { 
     if (!currentChild && location.hash === "#openChild") {
       ClientCall(() => {
-        history.replaceState(null, "", location.pathname);
-        // history.back()
+        // history.replaceState(null, "", location.pathname);
+        history.back()
         openChild(null)
       });
     }

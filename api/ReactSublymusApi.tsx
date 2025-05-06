@@ -1,4 +1,4 @@
-// src/api/ReactSublymusApi.tsx
+//api/ReactSublymusApi.tsx
 
 import React, { createContext, useContext, useMemo, ReactNode } from 'react';
 
@@ -69,7 +69,7 @@ import {
 import { useAuthStore } from '../pages/users/login/AuthStore'; // Pour le token
 import { useGlobalStore } from '../pages/stores/StoreStore'; // Pour l'URL du store
 import logger from './Logger';
-import { CommentInterface, FeatureInterface, ForgotPasswordParams, ResetPasswordParams } from '../Interfaces/Interfaces';
+import { BaseStatsParams, CommentInterface, FeatureInterface, ForgotPasswordParams, KpiStatsResponse, OrderStatsIncludeOptions, OrderStatsResponse, ResetPasswordParams, SetupAccountParams, SetupAccountResponse, VisitStatsIncludeOptions, VisitStatsResponse } from '../Interfaces/Interfaces';
 import { useTranslation } from 'react-i18next';
 import { Api_host, Server_Host } from '../renderer/+config';
 
@@ -125,13 +125,13 @@ export const SublymusApiProvider: React.FC<SublymusApiProviderProps> = ({ childr
         // Créer l'instance avec les deux URLs
         return new SublymusApi({
             handleUnauthorized(action, token) {
-                console.log({action,token});
-                window.location.href = '/users/login?sessionExpired=true'; 
+                console.log({ action, token });
+                window.location.href = '/users/login?sessionExpired=true';
             },
             getAuthTokenApi() {
                 const token = getToken();
                 console.log(token);
-                return  token||''
+                return token || ''
             },
             getAuthTokenServer() {
                 return 'oat_MzU.ZVc2SUhad1A4dmh6ellfZjFrejJGcEdtOW5ZckN0OWFfN19KeEs2UTE3NzAxNjc4MzE'
@@ -151,6 +151,12 @@ export const SublymusApiProvider: React.FC<SublymusApiProviderProps> = ({ childr
         </QueryClientProvider>
     );
 };
+
+const waitFor = (async(fn:Promise<any>, time=2000):Promise<any>=>{
+    await waitHere(time)
+    const res = await fn;
+    return res
+})
 
 
 // --- Hook useApi (inchangé) ---
@@ -328,8 +334,9 @@ export const useStartStore = (): UseMutationResult<StoreActionResponse, ApiError
     const api = useApi();
     return useMutation<StoreActionResponse, ApiError, StoreActionParams>({
         mutationFn: (params) => (async () => {
+            const res = await api.store.start(params)
             await waitHere(3000)
-            return await api.store.start(params)
+            return res
         })(),
         onSuccess: (data, variables) => {
             queryClient.invalidateQueries({ queryKey: ['stores'] } as InvalidateQueryFilters);
@@ -371,7 +378,7 @@ export const useRestartStore = (): UseMutationResult<StoreActionResponse, ApiErr
 export const useAddStoreDomain = (): UseMutationResult<ManageDomainResponse, ApiError, ManageDomainParams> => {
     const api = useApi();
     return useMutation<ManageDomainResponse, ApiError, ManageDomainParams>({
-        mutationFn: (params) => api.store.addDomain(params),
+        mutationFn: (params) => api.store.addDomain(params), 
         onSuccess: (data, variables) => {
             queryClient.invalidateQueries({ queryKey: ['storeDetails', variables.store_id] } as InvalidateQueryFilters);
             logger.info("Store domain added via mutation", { storeId: variables.store_id, domain: variables.domainName });
@@ -417,7 +424,7 @@ export const useResetPassword = (): UseMutationResult<MessageResponse, ApiError,
     const api = useApi();
     return useMutation<MessageResponse, ApiError, ResetPasswordParams>({
         mutationFn: (params) => api.auth.resetPassword(params), // Assumer que la méthode existe dans api.auth
-         // Pas de onSuccess/onError générique ici, géré dans le composant
+        // Pas de onSuccess/onError générique ici, géré dans le composant
     });
 };
 
@@ -540,6 +547,16 @@ export const useDeleteAccount = (): UseMutationResult<MessageResponse, ApiError,
         onError: (error) => { logger.error({ error }, "Account deletion failed via mutation"); }
     });
 };
+
+// Hook pour finaliser la création de compte collaborateur
+export const useSetupAccount = (): UseMutationResult<SetupAccountResponse, ApiError, SetupAccountParams> => {
+    const api = useApi();
+    return useMutation<SetupAccountResponse, ApiError, SetupAccountParams>({
+        mutationFn: (params) => api.auth.setupAccount(params),
+        // Pas de onSuccess/onError générique, géré dans la page SetupAccountPage
+    });
+};
+
 
 // --- Fin Auth Hooks ---
 
@@ -1096,11 +1113,12 @@ export const useGetOrderDetails = (
     });
 };
 
+
 // Hook pour mettre à jour le statut d'une commande
 export const useUpdateOrderStatus = (): UseMutationResult<UpdateOrderStatusResponse, ApiError, UpdateOrderStatusParams> => {
     const api = useApi();
     return useMutation<UpdateOrderStatusResponse, ApiError, UpdateOrderStatusParams>({
-        mutationFn: (params) => api.orders.updateStatus(params),
+        mutationFn: (params) => waitFor(api.orders.updateStatus(params),3000),
         onSuccess: (data, variables) => {
             logger.info("Order status updated via mutation", data.order);
             const orderId = variables.user_order_id;
@@ -1530,6 +1548,57 @@ export const useGetUserStats = (
     });
 };
 
+// ===========================
+// == Namespace Statistiques ==
+// ===========================
+
+// Clé de Query
+const STATS_QUERY_KEY = (params: StatParamType = {}) => ['stats', params] as const;
+export const useGetKpis = (
+    params: BaseStatsParams = {},
+    options: { enabled?: boolean; refetchInterval?: number | false } = {}
+): UseQueryResult<KpiStatsResponse, ApiError> => {
+    const api = useApi();
+    return useQuery<KpiStatsResponse, ApiError>({
+        queryKey: ['stats', 'kpi', params], // Clé spécifique KPI
+        queryFn: () => api.stats.getKpis(params),
+        enabled: options.enabled !== undefined ? options.enabled : true,
+        staleTime: 5 * 60 * 1000, // Cache 5 min
+        refetchInterval: options.refetchInterval,
+    });
+};
+
+// Hook pour récupérer les stats de visites détaillées
+type VisitDetailsParams = BaseStatsParams & { include?: VisitStatsIncludeOptions };
+export const useGetVisitDetails = (
+    params: VisitDetailsParams = {},
+    options: { enabled?: boolean; refetchInterval?: number | false } = {}
+): UseQueryResult<VisitStatsResponse, ApiError> => {
+    const api = useApi();
+    return useQuery<VisitStatsResponse, ApiError>({
+        queryKey: ['stats', 'visits', params], // Clé spécifique visites
+        queryFn: () => api.stats.getVisitDetails(params),
+        enabled: options.enabled !== undefined ? options.enabled : true,
+        staleTime: 5 * 60 * 1000,
+        refetchInterval: options.refetchInterval,
+    });
+};
+
+// Hook pour récupérer les stats de commandes détaillées
+type OrderDetailsParams = BaseStatsParams & { include?: OrderStatsIncludeOptions };
+export const useGetOrderDetailsStats = ( // Renommer pour éviter conflit avec useGetOrderDetails(id)
+    params: OrderDetailsParams = {},
+    options: { enabled?: boolean; refetchInterval?: number | false } = {}
+): UseQueryResult<OrderStatsResponse, ApiError> => {
+    const api = useApi();
+    return useQuery<OrderStatsResponse, ApiError>({
+        queryKey: ['stats', 'orders', params], // Clé spécifique commandes
+        queryFn: () => api.stats.getOrderDetails(params),
+        enabled: options.enabled !== undefined ? options.enabled : true,
+        staleTime: 5 * 60 * 1000,
+        refetchInterval: options.refetchInterval,
+    });
+};
 
 // ==============================
 // == Namespace Roles (Admin)  ==
@@ -1679,25 +1748,6 @@ export const useDeleteInventory = (): UseMutationResult<DeleteInventoryResponse,
             queryClient.removeQueries({ queryKey: INVENTORIES_QUERY_KEYS.details({ inventory_id: variables.inventory_id }) });
         },
         onError: (error) => { logger.error({ error }, "Failed to delete inventory via mutation"); }
-    });
-};
-
-// ===========================
-// == Namespace Statistiques ==
-// ===========================
-
-// Clé de Query
-const STATS_QUERY_KEY = (params: StatParamType = {}) => ['stats', params] as const;
-
-export const useGetStats = (
-    params: StatParamType = {},
-    options: { enabled?: boolean } = {}
-): UseQueryResult<GetStatsResponse, ApiError> => {
-    const api = useApi();
-    return useQuery<GetStatsResponse, ApiError>({
-        queryKey: STATS_QUERY_KEY(params),
-        queryFn: () => api.stats.get(params),
-        enabled: options.enabled !== undefined ? options.enabled : true,
     });
 };
 

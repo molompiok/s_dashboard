@@ -2,23 +2,23 @@
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useGetMe, useUpdateUser, useLogoutAllDevices, useDeleteAccount, queryClient } from '../../api/ReactSublymusApi'; // Importer tous les hooks nécessaires
-import logger from '../../api/Logger';
-import { ApiError } from '../../api/SublymusApi';
+import { useGetMe, useUpdateUser, useLogoutAllDevices, useDeleteAccount, queryClient } from '../../../api/ReactSublymusApi'; // Importer tous les hooks nécessaires
+import logger from '../../../api/Logger';
+import { ApiError } from '../../../api/SublymusApi';
 import { IoCameraOutline, IoPersonOutline, IoMailOutline, IoLockClosedOutline, IoLogOutOutline, IoTrashOutline, IoLocationOutline, IoCallOutline, IoLanguageOutline, IoChevronForward, IoTrash } from 'react-icons/io5';
 import logoUrl from '../../renderer/logo.svg'; // Pour placeholder avatar?
-import { Link } from '../../renderer/Link'; // Pour liens settings
-import { Topbar } from '../../Components/TopBar/TopBar';
-import { PageNotFound } from '../../Components/PageNotFound/PageNotFound';
-import { ConfirmDelete } from '../../Components/Confirm/ConfirmDelete';
-import { useChildViewer } from '../../Components/ChildViewer/useChildViewer';
-import { ChildViewer } from '../../Components/ChildViewer/ChildViewer';
-import { getImg } from '../../Components/Utils/StringFormater';
-import { NO_PICTURE } from '../../Components/Utils/constants';
-import { UserInterface } from '../../Interfaces/Interfaces'; // Importer UserInterface
-import { useGlobalStore } from '../stores/StoreStore';
-import { Button } from '../../Components/Button/Button';
-import { Confirm } from '../../Components/Confirm/Confirm';
+import { Link } from '../../../renderer/Link'; // Pour liens settings
+import { Topbar } from '../../../Components/TopBar/TopBar';
+import { PageNotFound } from '../../../Components/PageNotFound/PageNotFound';
+import { ConfirmDelete } from '../../../Components/Confirm/ConfirmDelete';
+import { useChildViewer } from '../../../Components/ChildViewer/useChildViewer';
+import { ChildViewer } from '../../../Components/ChildViewer/ChildViewer';
+import { getImg } from '../../../Components/Utils/StringFormater';
+import { NO_PICTURE } from '../../../Components/Utils/constants';
+import { UserInterface } from '../../../Interfaces/Interfaces'; // Importer UserInterface
+import { useGlobalStore } from '../../stores/StoreStore';
+import { Button } from '../../../Components/Button/Button';
+import { Confirm } from '../../../Components/Confirm/Confirm';
 
 export { Page };
 
@@ -293,7 +293,7 @@ function Page() {
   const avatarUrl = avatarPreview ?? (currentUser.photo?.[0] ? getImg(currentUser.photo[0], undefined, currentStore?.url).match(/url\("?([^"]+)"?\)/)?.[1] : null);
 
   return (
-    <div className="w-full min-h-screen flex flex-col bg-gray-100">
+    <div className="w-full pb-48 min-h-screen flex flex-col bg-gray-100">
       <Topbar back={true} title={t('profilePage.title')} />
       <main className="w-full max-w-3xl mx-auto p-4 md:p-6 lg:p-8 flex flex-col gap-8">
 
@@ -331,7 +331,7 @@ function Page() {
             <div>
               <label htmlFor="profile-full-name" className="block text-sm font-medium text-gray-700">{t('profilePage.profile.nameLabel')}</label>
               <input type="text" name="full_name" id="profile-full-name" value={profileForm.full_name || ''} onChange={handleProfileInputChange}
-                className={`mt-1 block w-full md:w-2/3 rounded-md shadow-sm sm:text-sm h-10 ${profileErrors.full_name ? 'border-red-500 ring-red-500 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'}`} />
+                className={`mt-1 px-4 block w-full md:w-2/3 rounded-md shadow-sm sm:text-sm h-10 ${profileErrors.full_name ? 'border-red-500 ring-red-500 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'}`} />
               {profileErrors.full_name && <p className="mt-1 text-xs text-red-600">{profileErrors.full_name}</p>}
             </div>
             {/* Erreur API Profil */}
@@ -348,7 +348,7 @@ function Page() {
         </section>
 
         {/* Section Adresses/Téléphones (Liens Simples) */}
-        <section className="bg-white rounded-lg shadow-sm border border-gray-200">
+        {/* <section className="bg-white rounded-lg shadow-sm border border-gray-200">
           <div className="px-4 py-5 sm:px-6">
             <h3 className="text-lg leading-6 font-medium text-gray-900">{t('profilePage.contact.title')}</h3>
             <div className="mt-4 space-y-3">
@@ -362,7 +362,7 @@ function Page() {
               </Link>
             </div>
           </div>
-        </section>
+        </section> */}
 
         {/* Section Préférences */}
         <section className="bg-white rounded-lg shadow-sm border border-gray-200">
@@ -395,8 +395,17 @@ function Page() {
             {/* Changement Mot de Passe */}
             <form onSubmit={handlePasswordChange} className="space-y-4">
               <h4 className="text-base font-medium text-gray-800">{t('profilePage.security.changePasswordTitle')}</h4>
-              {/* Ajouter input mot de passe actuel ici si API requise */}
-              {/* ... */}
+              {/*  mot de passe actuel  */}
+              <div className="relative">
+                <label htmlFor="new-password" className="sr-only">{t('resetPasswordPage.passwordLabel')}</label>
+                <IoLockClosedOutline className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                <input id="new-password" name="password" type="password" required autoComplete="new-password"
+                  className={`block w-full rounded-md shadow-sm sm:text-sm h-10 pl-10 pr-3 ${passwordErrors.password ? 'border-red-500 ring-red-500 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'}`}
+                  placeholder={t('resetPasswordPage.passwordPlaceholder')}
+                  value={passwordForm.current_password || ''} onChange={(e) => { setPasswordForm(p => ({ ...p, current_password: e.target.value })); setPasswordErrors(p => ({ ...p, password: '' })); }} disabled={updateUserMutation.isPending}
+                />
+                {passwordErrors.current_password && <p className="mt-1 text-xs text-red-600">{passwordErrors.current_password}</p>}
+              </div>
               {/* Nouveau Mot de Passe */}
               <div className="relative">
                 <label htmlFor="new-password" className="sr-only">{t('resetPasswordPage.passwordLabel')}</label>
@@ -448,9 +457,9 @@ function Page() {
             {/* Suppression Compte (Zone Danger) */}
             <div className="pt-6 border-t border-red-200 bg-red-50 -mx-4 -mb-5 sm:-mx-6 sm:-mb-6 px-4 pb-5 sm:px-6 rounded-b-lg">
               <h4 className="text-base font-medium text-red-800">{t('profilePage.security.deleteAccountTitle')}</h4>
-              <p className="text-sm text-red-700 mt-1 mb-3">{t('dangerZone.deleteWarning')}</p>
+              <p className="text-sm text-red-700 mt-1 mb-3">{t('profilePage.security.deleteAccountWarning')}</p>
               <Button
-                title={t('dangerZone.deleteButtonConfirm')}
+                title={t('profilePage.security.deleteAccountConfirmTitle')}
                 icon={<IoTrash className='w-5 h-5' />}
                 onClick={handleDeleteAccount}
                 // loading={deleteAccountMutation.isPending}

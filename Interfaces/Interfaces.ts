@@ -1,6 +1,107 @@
 
 export type ThemeSettingsValues = Record<string, any>;
 
+// src/Interfaces/Interfaces.ts
+
+// --- Types pour Stats (Nouvelle Structure) ---
+export type StatsPeriod = 'day' | 'week' | 'month'; // Utiliser celui de StatsUtils?
+
+// Paramètres communs pour les requêtes stats
+export interface BaseStatsParams {
+    period?: StatsPeriod;
+    start_at?: string; // ISO Date string
+    count?: number;
+    end_at?:string,
+    user_id?: string; // Filtre client
+    product_id?: string; // Filtre produit
+}
+
+// Options Include pour Visites
+export interface VisitStatsIncludeOptions {
+    browser?: boolean;
+    os?: boolean;
+    device?: boolean;
+    landing_page?: boolean;
+    referrer?: boolean;
+}
+
+// Options Include pour Commandes
+export interface OrderStatsIncludeOptions {
+    status?: boolean;
+    payment_status?: boolean;
+    payment_method?: boolean;
+    with_delivery?: boolean;
+}
+
+// Réponse pour KPIs
+export interface KpiStatsResponse {
+    totalRevenue: number;
+    totalOrders: number;
+    totalVisits: number;
+    uniqueVisitors: number; // Clarifier la définition exacte (total période?)
+    conversionRate: number; // En % (ex: 1.23 pour 1.23%)
+    averageOrderValue: number;
+    // Ajouter d'autres KPIs si besoin
+}
+
+// Réponse pour Visites Détaillées
+export interface VisitStatsResultItem {
+    date: string; // Format YYYY-MM-DD ou YYYY-MM
+    visits: number;
+    users_count: number;
+    // Champs optionnels basés sur 'include'
+    browser?: Record<string, number>;
+    os?: Record<string, number>;
+    device?: Record<string, number>;
+    pageUrl?: Record<string, number>;
+    referrer?: Record<string, number>;
+}
+export type VisitStatsResponse = VisitStatsResultItem[]; // Directement le tableau
+
+// Réponse pour Commandes Détaillées
+export interface OrderStatsResultItem {
+    date: string;
+    users_count: number;
+    orders_count: number;
+    total_price: number;
+    items_count: number;
+    return_delivery_price: number;
+    // Champs optionnels basés sur 'include'
+    status?: Record<string, number>;
+    payment_status?: Record<string, number>;
+    payment_method?: Record<string, number>;
+    with_delivery?: Record<string, number>; // Clés 'true'/'false'?
+}
+export type OrderStatsResponse = OrderStatsResultItem[]; // Directement le tableau
+
+// --- Fin Types Stats ---
+
+
+// --- Types pour Auth (Reset/Setup) ---
+export interface ForgotPasswordParams {
+  email: string;
+  callback_url: string; // URL Frontend pour le lien de reset
+}
+
+export interface ResetPasswordParams {
+  token: string;
+  password: string;
+  password_confirmation: string;
+}
+
+export interface SetupAccountParams {
+  token: string;
+  password: string;
+  password_confirmation: string;
+}
+export type SetupAccountResponse = MessageResponse; // Simple message de succès a priori
+
+// --- Types pour Collaborateurs (Roles) ---
+export interface CreateCollaboratorParams {
+  email: string;
+  full_name?: string; // Nom optionnel pour création
+}
+
 export const JsonRole = {
   filter_client: '',
   ban_client: '',
@@ -445,7 +546,7 @@ export interface CommandInterface {
   currency: string,
   total_price: number,
   price_return_delivery: number,
-  with_delivery: string,
+  with_delivery: boolean,
   phone_number: string,
   formatted_phone_number: string,
   country_code: string,

@@ -132,7 +132,7 @@ function ClientList({ product_id, user_id, initialClients }: { initialClients: U
 }
 
 // --- Composant ClientItem ---
-function ClientItem({ client }: { client: UserInterface }) {
+export function ClientItem({ client }: { client: UserInterface }) {
   const { t } = useTranslation();
   const clientStatus = client.status ?? 'CLIENT';
   const statusColor = (ClientStatusColor as any)[clientStatus] ?? ClientStatusColor['CLIENT'];
