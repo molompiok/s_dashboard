@@ -27,8 +27,11 @@ import { useGetOrderDetails, useUpdateOrderStatus, queryClient } from '../../../
 import logger from '../../../api/Logger'; // Assurer chemin correct
 import { UseMutationResult } from '@tanstack/react-query';
 import { ApiError } from '../../../api/SublymusApi';
-import { Receipt } from './Receipt/Receipt';
+import { Page as Receipt } from './receipt/+Page';
 import { useChildViewer } from '../../../Components/ChildViewer/useChildViewer';
+import { showErrorToast, showToast } from '../../../Components/Utils/toastNotifications';
+import { OrderDetailSkeleton } from '../../../Components/Skeletons/allsKeletons';
+import { PageNotFound } from '../../../Components/PageNotFound/PageNotFound';
 
 const allowedTransitionsClient: Partial<Record<OrderStatus, OrderStatus[]>> = {
     [OrderStatus.PENDING]: [OrderStatus.CONFIRMED, OrderStatus.CANCELED, OrderStatus.FAILED],
@@ -128,10 +131,14 @@ function Page() {
         return crumbs;
     }, [t, command?.id, commandRef]);
 
+    const [isPageLoading, setIsPageLoading] = useState(true);
+    useEffect(() => {
+        setIsPageLoading(false)
+    }, []);
     // --- Rendu ---
-    if (isLoading) return <div className="p-6 text-center text-gray-500">{t('common.loading')}</div>;
-    if (isError) return <div className="p-6 text-center text-red-500">{apiError?.message || t('error_occurred')}</div>;
-    if (!command) return <div className="p-6 text-center text-gray-500">{t('order.notFound')}</div>;
+    if (isLoading || isPageLoading) return <OrderDetailSkeleton/>
+    if (isError) return <PageNotFound />
+    if (!command) return <PageNotFound />
 
     return (
         <div className="w-full pb-48 flex flex-col bg-gray-50 min-h-screen">
@@ -257,6 +264,7 @@ export function PaymentMethodElement({ paymentMethod }: { paymentMethod?: Paymen
 // --- Composant CommandUser ---
 export function CommandUser({ user, command }: { command: Partial<CommandInterface>, user: Partial<UserInterface> }) {
     const { t } = useTranslation();
+    const { currentStore } = useGlobalStore()
     const maskedPhone = command.phone_number && command.formatted_phone_number
         ? IMask.pipe(command.phone_number, { mask: command.formatted_phone_number })
         : command.phone_number;
@@ -271,7 +279,7 @@ export function CommandUser({ user, command }: { command: Partial<CommandInterfa
         <div className="flex flex-col min-[420px]:flex-row max-[420px]:items-center items-start gap-4 p-4 bg-white rounded-lg shadow-min-[500px] border border-gray-200">
             <div
                 className={`w-24 h-24 flex items-center ${user.photo?.[0] ? '' : 'gb-gray-300'} font-bold text-gray-500 justify-center text-4xl rounded-full object-cover border-4 border-white shadow`}
-                style={{ background: user.photo?.[0] ? getImg(user.photo[0], undefined,) : 'var(--color-gray-100)' }}
+                style={{ background: user.photo?.[0] ? getImg(user.photo[0], undefined,currentStore?.url) : 'var(--color-gray-100)' }}
             >
                 {!user.photo?.[0] && (user.full_name?.substring(0, 2).toUpperCase() || '?')}
             </div>
@@ -387,7 +395,7 @@ export function CommandProduct({ item }: { item: CommandItemInterface }) {
                             return (
                                 <li key={key} className="flex items-center border border-gray-200 rounded text-xs leading-none max-w-full">
                                     <span className='bg-gray-100 text-gray-600 px-1.5 py-1 rounded-l'>{limit(featureName, 12)}</span>
-                                    {valueIcon && <span className='w-5 h-5 rounded mx-1 bg-cover bg-center' style={{ backgroundImage: getImg(valueIcon) }}></span>}
+                                    {valueIcon && <span className='w-5 h-5 rounded mx-1 bg-cover bg-center' style={{ background: getImg(valueIcon) }}></span>}
                                     {valueKey && featureType === FeatureType.COLOR && !valueIcon && <span className='w-3 h-3 rounded-full mx-1.5 border border-gray-300' style={{ backgroundColor: valueKey }}></span>}
                                     <span className='text-gray-800 px-1.5 py-1 truncate rounded-r' title={valueText || undefined}>{limit(valueText, 16)}</span>
                                 </li>
@@ -491,21 +499,21 @@ export function StatusUpdatePopup({ currentStatus, orderId, onClose, isDelivery 
 
     const handleUpdate = (newStatus: OrderStatus) => {
         mutation.mutate(
-            { user_order_id: orderId, status: newStatus },
-            {
-                onSuccess: () => {
-                    logger.info("Order status update success, closing popup.");
-                    onClose();
-                },
-                onError: (error) => {
-                    // L'erreur est déjà affichée via mutation.isError plus bas
-                    // On pourrait ajouter un toast ici
-                    logger.error({ orderId, newStatus, error }, "Order status update mutation failed.");
-                    // onClose(); // Faut-il fermer en cas d'erreur? Peut-être pas, pour laisser voir le message.
-                }
-            }
+          { user_order_id: orderId, status: newStatus },
+          {
+            onSuccess: () => {
+              logger.info("Order status update success, closing popup.");
+              showToast("Statut de la commande mis à jour avec succès"); // ✅ Toast succès
+              onClose();
+            },
+            onError: (error) => {
+              logger.error({ orderId, newStatus, error }, "Order status update mutation failed.");
+              showErrorToast(error); // ❌ Toast erreur
+              // onClose(); // On ne ferme pas pour laisser l'utilisateur voir l'erreur
+            },
+          }
         );
-    };
+      };
 
     return (
         <div className="bg-white p-6 rounded-lg shadow-xl  w-full"> {/* Augmenté max-w un peu */}

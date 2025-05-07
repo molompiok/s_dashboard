@@ -192,7 +192,7 @@ export type GetUsersResponse = ListType<UserInterface>;
 // Roles (Collaborateurs)
 export type GetCollaboratorsParams = { page?: number, limit?: number };
 export type GetCollaboratorsResponse = ListType<Role & { user: UserInterface }>;
-export type CreateCollaboratorParams = { email: string, full_name?:string,dashboard_url:string,setup_account_url?:string };
+export type CreateCollaboratorParams = { email: string, full_name?: string, dashboard_url: string, setup_account_url?: string };
 export type CreateCollaboratorResponse = { message: string, role: Role & { user: UserInterface } };
 export type UpdateCollaboratorParams = { collaborator_user_id: string, permissions: Partial<TypeJsonRole> };
 export type UpdateCollaboratorResponse = { message: string, role: Role & { user: UserInterface } };
@@ -225,7 +225,7 @@ export type RegisterParams = { full_name: string; email: string; password: strin
 export type RegisterResponse = { message?: string; user_id: string };
 export type VerifyEmailParams = { token: string };
 export type ResendVerificationParams = { email: string };
-export type UpdateUserParams = { data: { locale?:string,full_name?: string; photo?:(string|Blob)[], password?: string; password_confirmation?: string } }; // 2 - Changé
+export type UpdateUserParams = { data: { locale?: string, full_name?: string; photo?: (string | Blob)[], password?: string; password_confirmation?: string } }; // 2 - Changé
 export type UpdateUserResponse = { message?: string; user: UserInterface };
 // MessageResponse utilisé pour logout, logoutAll, deleteAccount, verify, resend
 
@@ -250,8 +250,8 @@ export interface CreateStoreParams {
     name: string; // Slug-like
     title: string;
     description?: string;
-    logo?: (string|Blob)[];
-    cover_image?: (string|Blob)[];
+    logo?: (string | Blob)[];
+    cover_image?: (string | Blob)[];
 }
 // La réponse contient le store complet créé par le serveur
 export type CreateStoreResponse = { message: string, store: StoreInterface };
@@ -341,7 +341,7 @@ export class SublymusApi {
     public readonly storeApiUrl: string;
     public readonly getAuthTokenApi: () => string | null;
     public readonly getAuthTokenServer: () => string | null;
-    public readonly handleUnauthorized:((action:'api'|'server',token?:string)=> void)|undefined
+    public readonly handleUnauthorized: ((action: 'api' | 'server', token?: string) => void) | undefined
     private serverUrl: string;
     public readonly t: (key: string, params?: any) => string; // Ajouter params optionnel
 
@@ -366,7 +366,7 @@ export class SublymusApi {
     public store: StoreNamespace;
     public readonly theme: ThemeNamespace;
 
-    constructor({getAuthTokenApi,getAuthTokenServer,serverUrl,storeApiUrl,t,handleUnauthorized}:{handleUnauthorized?:(action:'api'|'server',token?:string)=>void,storeApiUrl: string, serverUrl: string, getAuthTokenApi: () => string | null,getAuthTokenServer: () => string | null, t: (key: string, params?: any) => string}) {
+    constructor({ getAuthTokenApi, getAuthTokenServer, serverUrl, storeApiUrl, t, handleUnauthorized }: { handleUnauthorized?: (action: 'api' | 'server', token?: string) => void, storeApiUrl: string, serverUrl: string, getAuthTokenApi: () => string | null, getAuthTokenServer: () => string | null, t: (key: string, params?: any) => string }) {
         if (!storeApiUrl) throw new Error("API URL is required for initialization."); // Utiliser message brut ou clé i18n pré-initialisée?
         this.t = t;
         // Server URL est requis
@@ -382,7 +382,7 @@ export class SublymusApi {
 
         // Initialiser les namespaces
         this.store = new StoreNamespace(this)
-        this.theme = new ThemeNamespace(this); 
+        this.theme = new ThemeNamespace(this);
         this.auth = new AuthApiNamespace(this);
         this.products = new ProductsApiNamespace(this);
         this.categories = new CategoriesApiNamespace(this);
@@ -407,14 +407,14 @@ export class SublymusApi {
     public async _request<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
         // ... (code de _request inchangé, utilise this.t pour les erreurs génériques) ...
 
-        console.log({endpoint});
+        console.log({ endpoint });
         let token = undefined
-        let action :'api'|'server'= 'api';
+        let action: 'api' | 'server' = 'api';
         let baseUrl: string;
         if (endpoint.startsWith('/{{main_server}}')) {
             endpoint = endpoint.replace('/{{main_server}}', '');
             baseUrl = this.serverUrl;
-            action='server'
+            action = 'server'
             token = this.getAuthTokenServer();
         } else if (this.storeApiUrl) {
             baseUrl = this.storeApiUrl;
@@ -427,11 +427,11 @@ export class SublymusApi {
         let url = `${baseUrl}${endpoint}`;
 
         const { method = 'GET', headers = {}, body = null, params = null, isFormData = false } = options;
-        
+
         const requestHeaders = new Headers(headers);
 
-        console.log('----url---',url);
-        
+        console.log('----url---', url);
+
         if (token) requestHeaders.set('Authorization', `Bearer ${token}`);
         if (!isFormData && body) requestHeaders.set('Content-Type', 'application/json');
         requestHeaders.set('Accept', 'application/json');
@@ -467,8 +467,8 @@ export class SublymusApi {
                         throw new ApiError(this.t('api.parseError'), response.status);
                     }
                 }
-                console.log('responseBody',responseBody);
-                
+                console.log('responseBody', responseBody);
+
             } else {
                 try { responseBody = await response.text(); } catch { }
                 if (response.ok) {
@@ -486,10 +486,10 @@ export class SublymusApi {
         } catch (error) {
             if (error instanceof ApiError && error.status === 401) {
                 logger.warn("API request resulted in 401 Unauthorized. Logging out and redirecting.");
-                
-                this.handleUnauthorized?.(action,token??undefined);
+
+                this.handleUnauthorized?.(action, token ?? undefined);
                 return Promise.reject(error);
-           }
+            }
             if (error instanceof ApiError) throw error;
             if (error instanceof Error) {
                 console.log({ method, url, error: error.message, stack: error.stack }, "API request failed (Network/Fetch Error)");
@@ -519,6 +519,9 @@ export class SublymusApi {
                     console.log(`le champs "${key}" doit contenir un tableau, (string|blob)[]`)
                 }
             } else if (Array.isArray(value)) {
+                if(value.length==0){
+                    formData.append(key, JSON.stringify(value));
+                }else
                 for (const v of value) {
                     (v ?? undefined) !== undefined && formData.append(key, v);
                 }
@@ -710,7 +713,7 @@ class ThemeNamespace {
     constructor(apiInstance: SublymusApi) { this._api = apiInstance; }
 
     getList(params: GetThemesParams = {}): Promise<GetThemesResponse> {
-         // L'API s_server /themes retourne une structure ListType<ThemeInterface>
+        // L'API s_server /themes retourne une structure ListType<ThemeInterface>
         return this._api._request('/{{main_server}}/themes', { method: 'GET', params });
     }
 
@@ -719,25 +722,25 @@ class ThemeNamespace {
         // L'API s_server /themes/:id retourne directement l'objet ThemeInterface ou 404
         return this._api._request(`/{{main_server}}/themes/${theme_id}`, { method: 'GET' });
     }
-     async activateForStore({ store_id, themeId }: ChangeThemeParams): Promise<ChangeThemeResponse> {
-         return this._api.store.changeTheme({ store_id, themeId });
-     }
+    async activateForStore({ store_id, themeId }: ChangeThemeParams): Promise<ChangeThemeResponse> {
+        return this._api.store.changeTheme({ store_id, themeId });
+    }
 
-     /**
-      * Récupère les paramètres/options de personnalisation pour un thème donné.
-      * (Nécessiterait un endpoint dédié sur s_server ou l'API du thème)
-      */
-     // async getCustomizationOptions({ theme_id }: GetThemeParams): Promise<any> {
-     //    return this._api._request(`/{{main_server}}/themes/${theme_id}/options`, { method: 'GET' });
-     // }
+    /**
+     * Récupère les paramètres/options de personnalisation pour un thème donné.
+     * (Nécessiterait un endpoint dédié sur s_server ou l'API du thème)
+     */
+    // async getCustomizationOptions({ theme_id }: GetThemeParams): Promise<any> {
+    //    return this._api._request(`/{{main_server}}/themes/${theme_id}/options`, { method: 'GET' });
+    // }
 
-     /**
-      * Sauvegarde les paramètres de personnalisation d'un thème pour un store donné.
-      * (Nécessiterait un endpoint dédié sur s_server ou l'API du thème)
-      */
-     // async saveCustomization({ store_id, theme_id, settings }: { store_id: string, theme_id: string, settings: any }): Promise<MessageResponse> {
-     //    return this._api._request(`/{{main_server}}/stores/${store_id}/themes/${theme_id}/settings`, { method: 'PUT', body: settings });
-     // }
+    /**
+     * Sauvegarde les paramètres de personnalisation d'un thème pour un store donné.
+     * (Nécessiterait un endpoint dédié sur s_server ou l'API du thème)
+     */
+    // async saveCustomization({ store_id, theme_id, settings }: { store_id: string, theme_id: string, settings: any }): Promise<MessageResponse> {
+    //    return this._api._request(`/{{main_server}}/stores/${store_id}/themes/${theme_id}/settings`, { method: 'PUT', body: settings });
+    // }
 
 }
 
@@ -767,7 +770,7 @@ class StoreNamespace {
 
     async update({ store_id, data }: UpdateStoreParams): Promise<UpdateStoreResponse> {
         if (!store_id) throw new ApiError(this._api.t('api.missingId', { entity: 'store' }), 400); // Validation ID
-        const formData = await this._api._buildFormData({ data, dataFilesFelds: ['logo', 'cover_image','favicon'] });
+        const formData = await this._api._buildFormData({ data, dataFilesFelds: ['logo', 'cover_image', 'favicon'] });
         // L'API s_server /stores/:id retourne { message, store }
         return this._api._request(`/{{main_server}}/stores/${store_id}`, { method: 'PUT', body: formData, isFormData: true });
     }
@@ -863,9 +866,9 @@ class AuthApiNamespace {
     getMe(): Promise<GetMeResponse> {
         return this._api._request('/api/v1/auth/me', { method: 'GET' });
     }
-    update(data: UpdateUserParams): Promise<UpdateUserResponse> { // 2 - Type Params modifié
-        const formData = this._api._buildFormData({data,dataFilesFelds:['photo']})
-        return this._api._request('/api/v1/auth/me', { method: 'PUT', body: formData, isFormData:true });
+    async update({ data }: UpdateUserParams): Promise<UpdateUserResponse> { // 2 - Type Params modifié
+        const formData = await this._api._buildFormData({ data, dataFilesFelds: ['photo'] })
+        return this._api._request('/api/v1/auth/me', { method: 'PUT', body: formData, isFormData: true });
     }
     deleteAccount(): Promise<MessageResponse> {
         // Utiliser la méthode DELETE sur /me
@@ -874,12 +877,9 @@ class AuthApiNamespace {
     // handleSocialCallbackInternal reste non exposé publiquement
 
     forgotPassword(params: ForgotPasswordParams): Promise<MessageResponse> {
-        // La validation de l'email est faite par le schéma Vine côté backend
-        // La callback_url est ajoutée ici ou passée par le frontend
-        const frontendResetUrl = `${window.location.origin}/reset-password`; // URL de la page frontend de reset
         return this._api._request('/api/v1/auth/forgot-password', {
-             method: 'POST',
-             body: { email: params.email, callback_url: frontendResetUrl }
+            method: 'POST',
+            body: { email: params.email, callback_url: params.callback_url }
         });
     }
 
@@ -893,7 +893,7 @@ class AuthApiNamespace {
      * Finalise la création de compte pour un collaborateur invité.
      */
     setupAccount(params: SetupAccountParams): Promise<SetupAccountResponse> { // Utiliser type retour spécifique
-         // La validation (longueur mdp, confirmation) est faite par le backend via Vine
+        // La validation (longueur mdp, confirmation) est faite par le backend via Vine
         return this._api._request('/api/v1/auth/setup-account', { method: 'POST', body: params });
     }
 }
@@ -1434,15 +1434,15 @@ class StatsApiNamespace {
                 }
             });
             if (includedDimensions.length > 0) {
-                 // Assigner le tableau à la clé 'include'
+                // Assigner le tableau à la clé 'include'
                 apiParams.include = includedDimensions;
             }
             // Pas besoin de supprimer params.include, car apiParams est une copie
         }
-         // L'API backend /stats/visits ne semble pas utiliser le param 'stats', le retirer
-         delete apiParams.stats;
+        // L'API backend /stats/visits ne semble pas utiliser le param 'stats', le retirer
+        delete apiParams.stats;
 
-         return this._api._request('/api/v1/stats/visits', { method: 'GET', params: apiParams });
+        return this._api._request('/api/v1/stats/visits', { method: 'GET', params: apiParams });
     }
 
     async getOrderDetails(params: BaseStatsParams & { include?: OrderStatsIncludeOptions } = {}): Promise<OrderStatsResponse> {
@@ -1456,11 +1456,11 @@ class StatsApiNamespace {
                     includedDimensions.push(key);
                 }
             });
-             if (includedDimensions.length > 0) {
-                 apiParams.include = includedDimensions;
+            if (includedDimensions.length > 0) {
+                apiParams.include = includedDimensions;
             }
         }
-         // L'API backend /stats/orders ne semble pas utiliser le param 'stats', le retirer
+        // L'API backend /stats/orders ne semble pas utiliser le param 'stats', le retirer
         delete apiParams.stats;
 
         return this._api._request('/api/v1/stats/orders', { method: 'GET', params: apiParams });

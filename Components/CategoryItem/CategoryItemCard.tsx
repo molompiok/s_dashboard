@@ -13,6 +13,7 @@ import { useDeleteCategory, useUpdateCategory, queryClient } from "../../api/Rea
 import { useChildViewer } from "../ChildViewer/useChildViewer"; // Pour confirmation delete
 import { ConfirmDelete } from "../Confirm/ConfirmDelete"; // Pour confirmation delete
 import { ChildViewer } from "../ChildViewer/ChildViewer"; // Pour confirmation delete
+import { showErrorToast, showToast } from "../Utils/toastNotifications";
 
 
 export { CategoryItemCard };
@@ -53,9 +54,17 @@ function CategoryItemCard({ category }: CategoryItemCardProps) {
                     title={t('category.confirmDelete', { name: category.name })}
                     onCancel={() => openChild(null)}
                     onDelete={() => {
-                        deleteCategoryMutation.mutate(category.id, {
-                            onSuccess: () => { logger.info(`Category ${category.id} deleted`); openChild(null); },
-                            onError: (error) => { logger.error({ error }, `Failed to delete category ${category.id}`); openChild(null); }
+                        deleteCategoryMutation.mutate({
+                            category_id: category.id
+                        }, {
+                            onSuccess: () => {
+                                showToast('La catégorie a bien été supprimée', 'WARNING')
+                                logger.info(`Category ${category.id} deleted`); openChild(null);
+                            },
+                            onError: (error) => {
+                                showErrorToast(error);
+                                logger.error({ error }, `Failed to delete category ${category.id}`); openChild(null);
+                            }
                         });
                     }}
                 />
@@ -69,16 +78,22 @@ function CategoryItemCard({ category }: CategoryItemCardProps) {
         setIsMenuOpen(false);
         setIsVisible(newVisibility); // Optimistic UI update
 
-        const formData = new FormData();
-        formData.append('category_id', category.id);
-        formData.append('is_visible', String(newVisibility));
-
-        updateCategoryMutation.mutate(formData, {
-            onSuccess: () => { logger.info(`Category ${category.id} visibility updated to ${newVisibility}`); },
+        updateCategoryMutation.mutate({
+            category_id: category.id,
+            data: {
+                is_visible: newVisibility
+            }
+        }, {
+            onSuccess: () => {
+                logger.info(`Category ${category.id} visibility updated to ${newVisibility}`);
+                newVisibility
+                    ? showToast('La category est maintenant visible par vos client')
+                    : showToast('La category n\'est plus visible par vos client', 'CANCEL');
+            },
             onError: (error) => {
-                logger.error({ error }, `Failed to update visibility for category ${category.id}`);
-                setIsVisible(!newVisibility); // Revert UI on error
-                // Afficher toast erreur?
+                logger.error({ error }, `Failed to update visibility for product ${category.id}`);
+                setIsVisible(!newVisibility); // Revert UI
+                showErrorToast(error);
             }
         });
     };

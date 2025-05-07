@@ -14,6 +14,7 @@ import logger from '../../api/Logger';
 import { useChildViewer } from "../ChildViewer/useChildViewer"; // Pour confirmation delete
 import { ConfirmDelete } from "../Confirm/ConfirmDelete"; // Pour confirmation delete
 import { ChildViewer } from "../ChildViewer/ChildViewer";
+import { showErrorToast, showToast } from "../Utils/toastNotifications";
 
 export { CategoryItemRow };
 
@@ -60,13 +61,12 @@ function CategoryItemRow({ category /*, onDeleteSuccess, onVisibilityChangeSucce
                             onSuccess: () => {
                                 logger.info(`Category ${category.id} deleted`);
                                 openChild(null);
-                                // Invalidation gérée par le hook useDeleteCategory
-                                // onDeleteSuccess?.(category.id); // Appeler callback si fourni
+                                showToast('La catégorie a bien été supprimée','WARNING')
                             },
                             onError: (error) => {
                                 logger.error({ error }, `Failed to delete category ${category.id}`);
                                 openChild(null);
-                                // Afficher toast erreur?
+                                showErrorToast(error);
                             }
                         });
                     }}
@@ -87,13 +87,16 @@ function CategoryItemRow({ category /*, onDeleteSuccess, onVisibilityChangeSucce
             },
             category_id: category.id
         }, {
-            onSuccess: (data) => {
+            onSuccess: () => {
                 logger.info(`Category ${category.id} visibility updated to ${newVisibility}`);
+                newVisibility
+                    ? showToast('La category est maintenant visible par vos client')
+                    : showToast('La category n\'est plus visible par vos client', 'CANCEL');
             },
             onError: (error) => {
-                logger.error({ error }, `Failed to update visibility for category ${category.id}`);
-                // Annuler le changement local en cas d'erreur API
-                setIsVisible(!newVisibility);
+                logger.error({ error }, `Failed to update visibility for product ${category.id}`);
+                setIsVisible(!newVisibility); // Revert UI
+                showErrorToast(error);
             }
         });
     };

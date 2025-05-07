@@ -8,6 +8,7 @@ import { ApiError } from '../../api/SublymusApi'; // Importer ApiError
 import { Confirm } from '../Confirm/Confirm'; // Utiliser Comfirm pour les boutons
 import { IoMailOutline } from 'react-icons/io5';
 import { Host } from '../../renderer/+config';
+import { showErrorToast, showToast } from '../Utils/toastNotifications';
 
 interface AddCollaboratorPopupProps {
     onSuccess: () => void; // Callback en cas de succès
@@ -60,33 +61,34 @@ export function AddCollaboratorPopup({ onSuccess, onCancel }: AddCollaboratorPop
         }
         setEmailError(null); // Reset API error message
 
-        createCollaboratorMutation.mutate({
-            email,
-            dashboard_url: `${Host}`,
-            full_name: name,
-            setup_account_url: `${Host}/setup-account`
-        }, // Envoyer l'email directement
+        createCollaboratorMutation.mutate(
             {
-                onSuccess: (data) => {
-                    logger.info(`Collaborator invitation/add request sent for ${email}`, data);
-                    // Afficher toast succès avec data.message?
-                    onSuccess(); // Appeler le callback parent
-                },
-                onError: (error: ApiError) => {
-                    logger.error({ error }, `Failed to add collaborator ${email}`);
-                    // Afficher l'erreur API dans le formulaire
-                    // Distinguer les erreurs courantes (404 User not found, 409 Already collaborator)
-                    if (error.status === 404) {
-                        setEmailError(t('collaborator.userNotFound', { email }));
-                    } else if (error.status === 409) {
-                        setEmailError(t('collaborator.alreadyCollaborator'));
-                    } else {
-                        setEmailError(error.message || t('error_occurred')); // Erreur générique API
-                    }
-                    // Afficher un toast d'erreur global?
+              email,
+              dashboard_url: `${Host}`,
+              full_name: name,
+              setup_account_url: `${Host}/setup-account`,
+            }, // Envoyer l'email directement
+            {
+              onSuccess: (data) => {
+                logger.info(`Collaborator invitation/add request sent for ${email}`, data);
+                onSuccess(); // Appeler le callback parent
+                showToast("Collaborateur ajouté avec succès"); // ✅ Toast succès
+              },
+              onError: (error: ApiError) => {
+                logger.error({ error }, `Failed to add collaborator ${email}`);
+                // Afficher l'erreur API dans le formulaire
+                // Distinguer les erreurs courantes (404 User not found, 409 Already collaborator)
+                if (error.status === 404) {
+                  setEmailError(t('collaborator.userNotFound', { email }));
+                } else if (error.status === 409) {
+                  setEmailError(t('collaborator.alreadyCollaborator'));
+                } else {
+                  setEmailError(error.message || t('error_occurred')); // Erreur générique API
                 }
+                showErrorToast(error); // ❌ Toast erreur
+              },
             }
-        );
+          );
     };
 
     return (

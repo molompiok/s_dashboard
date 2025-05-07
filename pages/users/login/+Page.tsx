@@ -155,7 +155,7 @@ function Page() {
                         />
                     </div>
                     <div className="flex items-center justify-end text-sm"> {/* Pas de remember me, juste lien mdp oublié */}
-                        <a href="/forgot-password" className="font-medium text-blue-600 hover:text-blue-500 hover:underline">
+                        <a href="/auth/forgot-password" className="font-medium text-blue-600 hover:text-blue-500 hover:underline">
                             {t('loginPage.forgotPasswordLink')}
                         </a>
                     </div>

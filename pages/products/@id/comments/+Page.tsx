@@ -18,13 +18,17 @@ import { getFileType, limit } from '../../../../Components/Utils/functions';
 import { useChildViewer } from '../../../../Components/ChildViewer/useChildViewer'; // ✅ Hook popup
 import { ConfirmDelete } from '../../../../Components/Confirm/ConfirmDelete';
 import { ChildViewer } from '../../../../Components/ChildViewer/ChildViewer';
-import { ViewMore } from '../../../../Components/Views/ViewMore'; // ✅ Importer ViewMore
 import { useGetProductList, useGetComments, useDeleteComment, queryClient } from '../../../../api/ReactSublymusApi'; // ✅ Importer hooks API
 import { useTranslation } from 'react-i18next'; // ✅ i18n
 import logger from '../../../../api/Logger';
-import { getDefaultValues } from '../../../../Components/Utils/parseData';
-import { NO_PICTURE } from '../../../../Components/Utils/constants';
-import { DateTime } from 'luxon'; // Pour formater date
+
+import Lightbox from "yet-another-react-lightbox";
+import "yet-another-react-lightbox/styles.css";
+// Optionnel: importer les plugins
+import Thumbnails from "yet-another-react-lightbox/plugins/thumbnails";
+import "yet-another-react-lightbox/plugins/thumbnails.css";
+import Zoom from "yet-another-react-lightbox/plugins/zoom";
+
 import { UseMutationResult } from '@tanstack/react-query';
 
 export default function Page() {
@@ -38,7 +42,7 @@ export default function Page() {
     const productId = routeParams?.['id'];
 
     // ✅ Récupérer Produit
-    const { data: productData, isLoading: isLoadingProduct } = useGetProductList(
+    const { data: productData, isLoading: isLoadingProduct,isError,error } = useGetProductList(
         { product_id: productId, with_feature: true }, // Charger features/values pour image
         { enabled: !!productId }
     );
@@ -58,7 +62,7 @@ export default function Page() {
     useEffect(() => {
         if (!currentStore?.url || !productId) return;
         const transmit = getTransmit(currentStore.url);
-        const channel = `store/${currentStore.id}/comment`; // Écouter tous les events commentaires du store
+        const channel = `store/${'9b1192a3-0727-43a4-861b-05775bf2fd0d'/* TODO currentStore.id*/}/comment`; // Écouter tous les events commentaires du store
         logger.info(`Subscribing to SSE channel for comments: ${channel}`);
         const subscription = transmit?.subscription(channel);
         async function subscribe() {
@@ -111,10 +115,16 @@ export default function Page() {
         </ChildViewer>, { background: '#3455' });
     };
 
+    const [isPageLoading, setIsPageLoading] = useState(true);
+    useEffect(() => {
+        setIsPageLoading(false)
+    }, []);
     // --- Rendu ---
+    if (isPageLoading) return <PageSkeleton />
     const isLoading = isLoadingProduct || isLoadingComments;
-    if (isLoading) return <div className="p-6 text-center text-gray-500">{t('common.loading')}</div>;
-    if (!product) return <PageNotFound title={t('product.notFound')} />; // Si produit non trouvé
+    if (isLoading && !product) return <PageSkeleton />
+    if (isError) return <PageNotFound title={t('product.notFound')} description={error?.message} />;
+    if (!product) return <PageSkeleton />
 
     return (
         // Utiliser flex flex-col bg-gray-100 min-h-screen
@@ -139,7 +149,6 @@ export default function Page() {
                 {/* Message si aucun commentaire */}
                 {!isLoadingComments && comments.length === 0 && (
                     <PageNotFound
-                        image='/res/empty/comments.png'
                         description={t('productComments.noCommentsDesc')}
                         title={t('productComments.noCommentsTitle')}
                         back={false}
@@ -158,147 +167,194 @@ type CommentsDashboardProps = {
     onDelete: (commentId: string, commentTitle?: string) => void; // Ajouter titre pour confirmation
 };
 
-const CommentsDashboard: React.FC<CommentsDashboardProps> = ({ deleteCommentMutation, comments, currentStore, onDelete }) => {
-    const { t } = useTranslation(); // ✅ i18n
-    const [expandedComments, setExpandedComments] = useState<Set<string>>(new Set());
-    const { openChild } = useChildViewer(); // Pour ViewMore
+function ViewMore({ imagesUrls }: { imagesUrls: string[] }) {
+    const { openChild } = useChildViewer()
+    const [photoIndex, setPhotoIndex] = useState(0);
+    const { currentStore } = useGlobalStore()
+    const images = imagesUrls.map(i => ({ src: i.startsWith('/') ? currentStore?.url + i : i }))
 
+    return <Lightbox
+        open={true}
+        close={() => openChild(null)}
+        index={photoIndex}
+        slides={images}
+        plugins={[Thumbnails, Zoom]} // Ajouter les plugins
+        on={{ view: ({ index }: any) => setPhotoIndex(index) }} // Synchroniser l'index
+    />
+}
+
+export const CommentsDashboard = ({ comments, currentStore, onDelete }: CommentsDashboardProps) => {
+    const [expandedComments, setExpandedComments] = useState(new Set())
+
+    const { openChild } = useChildViewer()
     const toggleDescription = (commentId: string) => {
-        setExpandedComments(prev => {
-            const newSet = new Set(prev);
-            if (newSet.has(commentId)) {
-                newSet.delete(commentId);
-            } else {
-                newSet.add(commentId);
-            }
-            return newSet;
-        });
-    };
+        setExpandedComments((prev) => {
+            const newSet = new Set(prev)
+            newSet.has(commentId) ? newSet.delete(commentId) : newSet.add(commentId)
+            return newSet
+        })
+    }
+
 
     const getDescriptionPreview = (description: string) => {
-        const maxLength = 100;
-        if (description.length <= maxLength) return description;
-        return description.substring(0, maxLength) + '...';
-    };
-    // Handler pour ouvrir le ViewMore
-    const handleOpenViewMore = (imageUrls: (string | Blob)[], initialIndex: number) => {
-        // Filtrer pour ne garder que les URLs valides (string)
-        const validUrls = imageUrls
-            .map(url => typeof url === 'string' ? (currentStore.url + url) : null) // Préfixer avec URL store si relative
-            .filter(Boolean) as string[];
-
-        if (validUrls.length === 0) return;
-
-        openChild(<ViewMore
-            views={validUrls}
-            initialIndex={initialIndex}
-            onClose={() => openChild(null)}
-        />,
-            { background: 'rgba(0,0,0,0.8)', blur: 5 } // Fond sombre pour lightbox
-        );
-    };
+        const maxLength = 100
+        return description.length <= maxLength
+            ? description
+            : description.substring(0, maxLength) + '...'
+    }
 
 
     return (
-        // Utiliser Tailwind grid
-        <div className="comments-bento grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] gap-4">
-            <AnimatePresence>
-                {comments.map((comment) => {
-                    const isExpanded = expandedComments.has(comment.id);
-                    const description = comment.description ?? '';
-                    const needsSeeMore = description.length > 100;
-                    const v = comment.product && getDefaultValues(comment.product)?.[0]; // Image Produit
-                    const imageUrl = v?.views?.[0] ?? comment.product?.features?.find(f => f.is_default)?.values?.[0]?.views?.[0] ?? NO_PICTURE;
-                    const imageSrc = getImg(imageUrl, undefined, currentStore?.url).match(/url\("?([^"]+)"?\)/)?.[1];
+        <>
+            <div className="grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] gap-4 p-4 auto-rows-[minmax(100px,_auto)]">
+                <AnimatePresence>
+                    {comments.map((comment) => {
+                        const isExpanded = expandedComments.has(comment.id)
+                        const needsSeeMore = comment.description.length > 100
 
-                    return (
-                        <motion.div
-                            key={comment.id} layout initial={{ opacity: 0, scale: 0.95 }}
-                            animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
-                            transition={{ duration: 0.2 }}
-                            // Styles carte Tailwind
-                            className="comment-card relative flex flex-col gap-2 bg-white rounded-lg p-4 shadow-sm border border-gray-200"
-                        // style={{ gridRow: `span ${...}` }} // Calcul dynamique complexe, peut être omis
-                        >
-                            {/* User Info */}
-                            <div className="comment-user flex items-center gap-2 pb-2 border-b border-gray-100">
-                                {/* User Photo */}
-                                <a href={`/users/clients/${comment.user?.id}`} className="flex-shrink-0">
-                                    <img src={comment.user?.photo?.[0] ?? '/res/user_placeholder.png'} // Utiliser placeholder
-                                        alt={comment.user?.full_name || ''}
-                                        className="comment-user-photos w-8 h-8 rounded-full object-cover bg-gray-200" />
-                                </a>
-                                {/* User Name */}
-                                <a href={`/users/clients/${comment.user?.id}`} className="comment-user-name text-sm font-medium text-gray-700 truncate hover:text-blue-600" title={comment.user?.full_name}>
-                                    {comment.user?.full_name || t('common.anonymous')}
-                                </a>
-                                {/* Lien Ouvrir Produit (ajouté pour contexte) */}
-                                <a href={`/products/${comment.product?.id}`} className="open-item flex items-center gap-1 text-xs text-gray-500 hover:text-blue-600 ml-auto flex-shrink-0" title={t('product.viewProduct')}>
-                                    <span className='hidden sm:inline'>{limit(comment.product?.name ?? '', 15)}</span> {/* Nom produit court */}
-                                    <IoChevronForward />
-                                </a>
-                            </div>
-                            {/* Contenu Commentaire */}
-                            <div className="comment-content flex flex-col gap-2 flex-grow">
-                                <h2 className="comment-title font-semibold text-base text-gray-800">{comment.title}</h2>
-                                <div className="comment-stars flex gap-0.5">
-                                    {Array.from({ length: 5 }).map((_, i) => (<IoStar key={i} className={`w-4 h-4 ${i < (comment.rating ?? 0) ? 'text-yellow-400' : 'text-gray-300'}`} />))}
+                        return (
+                            <motion.div
+                                key={comment.id}
+                                layout
+                                initial={{ opacity: 0, scale: 0.95 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.95 }}
+                                transition={{ duration: 0.2 }}
+                                style={{ gridRow: `span ${Math.ceil(comment.description.length / 200) + 1}` }}
+                                className="relative bg-white rounded-md p-4 shadow flex flex-col gap-2"
+                            >
+                                <div className="flex items-center gap-2 mb-2">
+                                    {comment.user?.photo?.[0] ? (
+                                        <div
+                                            style={{ background: getImg(comment.user.photo[0], undefined, currentStore.url) }}
+                                            className="w-10 h-10 rounded-full object-cover"
+                                        ></div>
+                                    ) : (
+                                        <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center font-bold">
+                                            {comment.user?.full_name.substring(0, 2).toUpperCase()}
+                                        </div>
+                                    )}
+                                    <span className="font-medium">{comment.user?.full_name}</span>
                                 </div>
-                                {description && (<p className="comment-description text-sm text-gray-600 leading-relaxed">{isExpanded ? description : getDescriptionPreview(description)}</p>)}
-                                {needsSeeMore && (<button className="see-more-btn text-blue-600 hover:underline text-sm self-start mt-1" onClick={() => toggleDescription(comment.id)}>{isExpanded ? t('common.seeLess') : t('common.seeMore')}</button>)}
-                                {/* Images Commentaire */}
-                                {comment.views && comment.views.length > 0 && (
-                                    <div className="comment-views flex flex-wrap gap-2 mt-2">
-                                        {comment.views.map((url, i) => (
-                                            <button type="button" key={i} onClick={() => handleOpenViewMore(comment.views, i)} className="block w-14 h-14 rounded border border-gray-200 overflow-hidden hover:opacity-80">
-                                                <img src={currentStore.url + url} alt={`${t('comment.viewAlt')} ${i + 1}`} className="w-full h-full object-cover" />
-                                            </button>
+
+                                <div className="flex flex-col gap-2">
+                                    <h2 className="text-lg font-semibold">{comment.title}</h2>
+                                    <p className="leading-relaxed">
+                                        {isExpanded ? comment.description : getDescriptionPreview(comment.description)}
+                                    </p>
+
+                                    {needsSeeMore && (
+                                        <button
+                                            className="text-blue-600 text-sm hover:underline self-start"
+                                            onClick={() => toggleDescription(comment.id)}
+                                        >
+                                            {isExpanded ? 'Voir moins' : 'Voir plus'}
+                                        </button>
+                                    )}
+
+                                    <div className="flex gap-1 text-yellow-400">
+                                        {Array.from({ length: comment.rating }).map((_, i) => (
+                                            <IoStar key={i} className="w-4 h-4" />
                                         ))}
                                     </div>
-                                )}
-                                {/* Variantes (Bind Name) */}
-                                {comment.bind_name && typeof comment.bind_name === 'object' && Object.keys(comment.bind_name).length > 0 && (
-                                    <ul className="comment-values list-none p-0 mt-2 flex flex-wrap gap-x-3 gap-y-1">
+
+                                    <div className="flex gap-2 mt-2">
+                                        {comment.views.map((url, i) => (
+                                            <img
+                                                key={i}
+                                                src={currentStore.url + url}
+                                                alt={`view-${i}`}
+                                                className="w-14 h-14 object-cover rounded"
+                                                onClick={() => {
+                                                    openChild(<ViewMore imagesUrls={comment.views || []} />, { background: '#3455' })
+                                                }}
+                                            />
+                                        ))}
+                                    </div>
+
+                                    <ul className="list-none p-0 mt-2">
                                         {Object.entries(comment.bind_name).map(([key, value]) => (
-                                            <li key={key}>
-                                                <span className='key'>{limit(key?.split(':')[0])}</span>
-                                                : {
-                                                    value.icon?.[0]
-                                                        ? <span className='icon-16' style={{ background: getImg(value.icon?.[0]) }}></span>
-                                                        : value.key && (!key?.split(':')[1] || key?.split(':')[1] == 'color') &&
-                                                        <span className='icon-16' style={{
-                                                            border: '1px solid var(--discret-6)',
-                                                            borderRadius: '50px',
-                                                            background: value.key,
-                                                            minWidth: '16px'
-                                                        }}></span>
-                                                }
-                                                <span className='value'>
-                                                    {limit((typeof value == 'string' ? value : value.text || value.key), 16)}
+                                            <li key={key} className="flex items-center gap-2">
+                                                <span className="text-sm font-medium text-gray-700">{limit(key?.split(':')[0])}</span>
+                                                {value.icon?.[0] ? (
+                                                    <span className="w-4 h-4 bg-center bg-cover" style={{ backgroundImage: `url(${getImg(value.icon?.[0])})` }}></span>
+                                                ) : value.key && (!key?.split(':')[1] || key?.split(':')[1] === 'color') ? (
+                                                    <span
+                                                        className="w-4 h-4 rounded-full border"
+                                                        style={{ background: value.key }}
+                                                    ></span>
+                                                ) : null}
+                                                <span className="text-sm text-gray-600">
+                                                    {limit(typeof value === 'string' ? value : value.text || value.key, 16)}
                                                 </span>
                                             </li>
                                         ))}
                                     </ul>
-                                )}
-                                {/* Date */}
-                                <p className="comment-date text-xs text-gray-400 mt-auto pt-2">
-                                    {t('common.createdAt')}: {DateTime.fromISO(comment.created_at).setLocale(t('common.locale')).toLocaleString(DateTime.DATETIME_SHORT)}
-                                </p>
+
+                                    <p className="text-xs text-gray-500 mt-1">
+                                        Créé le {new Date(comment.created_at).toLocaleString()}
+                                    </p>
+                                </div>
+
+                                <button
+                                    onClick={() => onDelete(comment.id)}
+                                    className="absolute top-2 right-2 text-red-500 hover:text-red-700"
+                                    title="Supprimer le commentaire"
+                                >
+                                    <IoTrash className="w-5 h-5" />
+                                </button>
+                            </motion.div>
+                        )
+                    })}
+                </AnimatePresence>
+            </div>
+        </>
+    )
+}
+
+function PageSkeleton() {
+    return (
+        <div className="page-detail w-full flex flex-col bg-gray-100 min-h-screen animate-pulse">
+            {/* Topbar */}
+            <div className="w-full h-16 bg-gray-200 flex items-center px-4">
+                <div className="h-8 w-8 bg-gray-300 rounded-full" />
+                <div className="ml-4 h-6 w-1/3 bg-gray-300 rounded" />
+            </div>
+
+            <main className="w-full max-w-4xl mx-auto p-4 md:p-6 lg:p-8 flex flex-col gap-6">
+                {/* Aperçu Produit */}
+                <div className="mb-6">
+                    <div className="w-full h-64 bg-gray-200 rounded-lg" />
+                </div>
+
+                {/* Section Ajout Détail */}
+                <div className="flex items-center justify-between p-4 bg-white rounded-lg shadow-sm border border-gray-200">
+                    <div className="flex items-center gap-2">
+                        <div className="h-6 w-40 bg-gray-300 rounded" />
+                        <div className="h-5 w-16 bg-gray-300 rounded" />
+                    </div>
+                    <div className="h-10 w-32 bg-gray-300 rounded-md" />
+                </div>
+
+                {/* Liste des Détails */}
+                <div className="details flex flex-col gap-4">
+                    {[...Array(3)].map((_, i) => (
+                        <div
+                            key={i}
+                            className="p-4 bg-white rounded-lg shadow-sm border border-gray-200 flex flex-col gap-4"
+                        >
+                            <div className="h-6 w-3/4 bg-gray-300 rounded" />
+                            <div className="h-4 w-full bg-gray-300 rounded" />
+                            <div className="h-4 w-5/6 bg-gray-300 rounded" />
+                            <div className="flex gap-2">
+                                <div className="h-8 w-8 bg-gray-300 rounded-full" />
+                                <div className="h-8 w-8 bg-gray-300 rounded-full" />
+                                <div className="h-8 w-8 bg-gray-300 rounded-full" />
                             </div>
-                            {/* Bouton Supprimer */}
-                            <button
-                                className="comment-delete absolute top-2 right-2 p-1 text-gray-400 hover:text-red-600 rounded-full hover:bg-red-50 transition disabled:opacity-50"
-                                onClick={() => onDelete(comment.id, comment.title)} // Passer titre pour confirmation
-                                disabled={deleteCommentMutation.isPending}
-                                aria-label={t('comment.deleteLabel')}
-                                title={t('comment.deleteLabel')}
-                            >
-                                <IoTrash className="w-4 h-4" />
-                            </button>
-                        </motion.div>
-                    );
-                })}
-            </AnimatePresence>
+                        </div>
+                    ))}
+                </div>
+            </main>
         </div>
     );
-};
+}

@@ -52,6 +52,8 @@ import { CreateControl } from '../../../Components/Controls/CreateControl';
 import { preview } from 'vite';
 import { globalActionZust } from '../../../renderer/AppStore/globalActionZust';
 import { ProductSettings } from './ProductSettings';
+import { OrderDetailSkeleton, ProductFormSkeleton } from '../../../Components/Skeletons/allsKeletons';
+import { showErrorToast, showToast } from '../../../Components/Utils/toastNotifications';
 // Constantes
 const FEATURE_LIMIT = 5;
 const DEBOUNCE_PRODUCT_ID = 'debounce:save:product';
@@ -83,9 +85,6 @@ function Page() {
 
     const productIdFromRoute = params[1] || routeParams['id'];
     const isNewProduct = productIdFromRoute === 'new';
-
-
-    console.log(productIdFromRoute);
 
     // --- États du Composant ---
     // État principal du formulaire
@@ -190,8 +189,7 @@ function Page() {
         })
         setValues(vs)
         const ft = featuresFromState.map(_f => (_f.id === (feature_id || originalProductData?.default_feature_id)) ? { ..._f, values: vs } : _f);
-        console.log(ft);
-
+       
         updateLocalFeatures(() => ({
             features: ft
         }));
@@ -201,14 +199,22 @@ function Page() {
         logger.warn("handleDelete not implemented yet.");
         if (!isNewProduct && productFormState.id) {
             openChild(<ChildViewer><ConfirmDelete title={t('product.confirmDelete', { name: productFormState.name })} onCancel={() => openChild(null)} onDelete={() => {
-                deleteProductMutation.mutate({
-                    product_id: productFormState.id!
-                }, {
-                    onSuccess: () => {
-                        setProductFormState({})
+                deleteProductMutation.mutate(
+                    {
+                      product_id: productFormState.id!,
                     },
-                    onError: () => { /* Toast erreur... */ }
-                });
+                    {
+                      onSuccess: () => {
+                        logger.info(`Product ${productFormState.id} deleted successfully`);
+                        setProductFormState({});
+                        showToast("Produit supprimé avec succès",'WARNING'); // ✅ Toast succès
+                      },
+                      onError: (error) => {
+                        logger.error({ error, productId: productFormState.id }, `Failed to delete product ${productFormState.id}`);
+                        showErrorToast(error); // ❌ Toast erreur
+                      },
+                    }
+                  );
                 openChild(null);
             }} /></ChildViewer>, { background: '#3455' });
         }
@@ -294,31 +300,34 @@ function Page() {
     const createProduct = async () => {
         if (!isFilledProduct()) return
 
-        createProductMutation.mutate({
-            product: productFormState,
-            views: values[0].views || []
-        }, {
-            onSuccess: (data) => {
-                if (!data?.product?.id) return
+        createProductMutation.mutate(
+            {
+              product: productFormState,
+              views: values[0].views || [],
+            },
+            {
+              onSuccess: (data) => {
+                if (!data?.product?.id) return;
                 logger.info("Product created successfully", data);
-                s.collected = {}
+                s.collected = {};
                 setProductFormState(data.product); // Mettre à jour avec données serveur (qui inclut default_feature_id)
                 setOriginalProductData(data.product);
-                setFeaturesFromState(data.product.features || [])
+                setFeaturesFromState(data.product.features || []);
                 setFieldErrors({});
-                setValues(data.product.features?.find(f => f.id == data.product?.default_feature_id)?.values || [])
+                setValues(data.product.features?.find(f => f.id == data.product?.default_feature_id)?.values || []);
                 replaceLocation(`/products/${data.product.id}`);
-            },
-            onError: (error: ApiError) => {
+                showToast("Produit créé avec succès"); // ✅ Toast succès
+              },
+              onError: (error: ApiError) => {
                 logger.error({ error }, "Product creation failed");
                 // Afficher erreurs spécifiques si disponibles, sinon message générique
                 if (error.status === 422 && error.body?.errors) {
-                    setFieldErrors(error.body.errors); // Afficher erreurs de validation API
-                } else {
-                    // toast.error(error.message || t('product.creationFailed'));
+                  setFieldErrors(error.body.errors); // Afficher erreurs de validation API
                 }
+                showErrorToast(error); // ❌ Toast erreur
+              },
             }
-        });
+          );
     };
 
     const hasCollected = () => {
@@ -342,39 +351,41 @@ function Page() {
 
             const c = { ...s.collected, features: undefined };
             s.collected = {}
-            updateProductMutation.mutate({
-                data: c,
-                product_id: productIdFromRoute
-            }, {
-                onSuccess: (data) => {
+            updateProductMutation.mutate(
+                {
+                  data: c,
+                  product_id: productIdFromRoute,
+                },
+                {
+                  onSuccess: (data) => {
                     if (!data.product?.id) return;
                     logger.info("Product updated successfully (simple)", data);
                     const updatedProduct = { ...originalProductData, ...data.product }; // Merger avec l'original pour garder les features/values
                     setOriginalProductData(updatedProduct);
                     if (hasCollected()) {
-                        debounce(() => {
-                            saveRequired()
-                        }, DEBOUNCE_PRODUCT_ID, DEBOUNCE_PRODUCT_TIME)
-                        return
+                      debounce(() => {
+                        saveRequired();
+                      }, DEBOUNCE_PRODUCT_ID, DEBOUNCE_PRODUCT_TIME);
+                      return;
                     }
                     s.collected = {};
-                    setFeaturesFromState(updatedProduct.features || [])
-                    setValues(updatedProduct.features?.find(f => f.id == updatedProduct.default_feature_id)?.values || [])
+                    setFeaturesFromState(updatedProduct.features || []);
+                    setValues(updatedProduct.features?.find(f => f.id == updatedProduct.default_feature_id)?.values || []);
                     setProductFormState(updatedProduct);
-                    // toast.success(data.message || t('product.updateSuccess'));
-                },
-                onError: (error: ApiError) => {
+                    debounce(()=>showToast("Produit mis à jour avec succès"),'toast-update'); // ✅ Toast succès
+                  },
+                  onError: (error: ApiError) => {
                     logger.error({ error }, "Product update failed (simple)");
                     if (error.status === 422 && error.body?.errors) {
-                        setFieldErrors((prev) => ({
-                            ...prev,
-                            server: error.body.errors
-                        }));
-                    } else {
-                        // toast.error(error.message || t('product.updateFailed'));
+                      setFieldErrors((prev) => ({
+                        ...prev,
+                        server: error.body.errors,
+                      }));
                     }
+                    showErrorToast(error); // ❌ Toast erreur
+                  },
                 }
-            });
+              );
 
         } catch (error) { }
     }
@@ -394,37 +405,40 @@ function Page() {
             // }));
 
             s.features = undefined;
-            multipleUpdateMutation.mutate({
-                currentFeatures: f,
-                initialFeatures: originalProductData.features,
-                product_id: originalProductData.id,
-            }, {
-                onSuccess: (data) => {
+            multipleUpdateMutation.mutate(
+                {
+                  currentFeatures: f,
+                  initialFeatures: originalProductData.features,
+                  product_id: originalProductData.id,
+                },
+                {
+                  onSuccess: (data) => {
                     if (!data.product?.id) return;
                     logger.info("Features updated successfully", data);
                     const updatedProduct = { ...originalProductData, ...data.product };
                     setOriginalProductData(updatedProduct);
                     if (s.features) {
-                        debounce(() => {
-                            updateFeaturesValues()
-                        }, DEBOUNCE_FEATURES_ID, DEBOUNCE_FEATURES_TIME)
-                        return
+                      debounce(() => {
+                        updateFeaturesValues();
+                      }, DEBOUNCE_FEATURES_ID, DEBOUNCE_FEATURES_TIME);
+                      return;
                     }
-                    setFeaturesFromState(updatedProduct.features || [])
-                    setValues(updatedProduct.features?.find(f => f.id == updatedProduct.default_feature_id)?.values || [])
+                    setFeaturesFromState(updatedProduct.features || []);
+                    setValues(updatedProduct.features?.find(f => f.id == updatedProduct.default_feature_id)?.values || []);
                     setProductFormState(updatedProduct);
                     setFieldErrors({});
-                    // toast.success(data.message || t('product.updateSuccess'));
-                },
-                onError: (error: ApiError) => {
-                    logger.error({ error }, "Product update failed (simple)");
+                    showToast("Fonctionnalités mises à jour avec succès"); // ✅ Toast succès
+                  },
+                  onError: (error: ApiError) => {
+                    console.log
+                    ({ error }, "Product update failed (simple)");
                     if (error.status === 422 && error.body?.errors) {
-                        setFieldErrors(error.body.errors);
-                    } else {
-                        // toast.error(error.message || t('product.updateFailed'));
+                      setFieldErrors(error.body.errors);
                     }
+                    // showErrorToast(error); // ❌ Toast erreur
+                  },
                 }
-            });
+              );
 
         } catch (error) { }
     }
@@ -494,16 +508,18 @@ function Page() {
         return crumbs;
     }, [t, isNewProduct, productName]);
 
+    const [isPageLoading, setIsPageLoading] = useState(true);
+    
+    useEffect(() => {
+        setIsPageLoading(false)
+    }, []);
+    
     // --- Rendu ---
-    if (!isNewProduct && isLoadingProduct) {
-        return <div className="w-full min-h-screen flex items-center justify-center"><span className='text-gray-500'>{t('common.loading')}</span></div>;
-    }
-    if (!isNewProduct && isFetchError) {
-        return <div className="w-full min-h-screen flex items-center justify-center"><span className='text-gray-500'>{t('common.loading')}</span></div>;
-    }
-    if (!isNewProduct && !isLoadingProduct && !productFormState.id) {
-        return <div className="w-full min-h-screen flex items-center justify-center"><span className='text-gray-500'>{t('common.loading')}</span></div>;
-    }
+    if (!isNewProduct && isPageLoading) return <ProductFormSkeleton />;
+    if (!isNewProduct && isLoadingProduct) return  <ProductFormSkeleton/>
+    if (!isNewProduct &&  isFetchError)return <PageNotFound />
+    if (!isNewProduct &&  !fetchedProductData?.id)return <PageNotFound />
+
 
     const hasError = Object.keys(fieldErrors).length > 0
 

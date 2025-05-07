@@ -363,6 +363,7 @@
         "addStoreButton": "Créer une boutique",
         "searchPlaceholder": "Rechercher par nom...",
         "openStoreStats": "Voire toutes les statistiques",
+        "usageTitle": "",
         "statusFilter": {
             "all": "Toutes",
             "active": "Actives",
@@ -394,13 +395,19 @@
             "security": "Sécurité",
             "running": "En cours",
             "stopped": "Arrêtée"
+        },
+        "comfirm": {
+            "stop": "Voulez-vous arrêter la boutique ?",
+            "start": "Voulez-vous rendre la boutique disponible ?",
+            "stopPompt": "Cela mettra la boutique hors ligne immédiatement.",
+            "startPompt": "Cela rendra la boutique visible en ligne pour les clients."
         }
     },
     "productComments": {
         "pageTitle": "Commentaires - {{name}}",
         "listTitle": "Commentaires sur le Produit",
         "noCommentsTitle": "Aucun commentaire pour le moment",
-        "noCommentsDesc": "Soyez le premier à laisser un avis sur ce produit !"
+        "noCommentsDesc": "Les avis sur le produit seront listés ici !"
     },
     "navigation": {
         "teams": "Équipes",
@@ -935,7 +942,7 @@
     },
     "stats": {
         "pageTitle": "Statistiques",
-        "fetchFailed": "Échec de la récupération des statistiques.", 
+        "fetchFailed": "Échec de la récupération des statistiques.",
         "filtersTitle": "Filtres",
         "periodLabel": "Période",
         "periods": {
@@ -943,8 +950,8 @@
             "week": "Semaine",
             "month": "Mois"
         },
-        "visitStatsHiddenForProduct":"Pas de Stats disponible pour ce produit",
-        "visitStatsHiddenForClient":"Pas de Stats disponible pour ce client",
+        "visitStatsHiddenForProduct": "Pas de Stats disponible pour ce produit",
+        "visitStatsHiddenForClient": "Pas de Stats disponible pour ce client",
         "countLabel": "Nombre de périodes",
         "endDateLabel": "Date de fin (optionnel)",
         "clientLabel": "Client",
@@ -1010,7 +1017,7 @@
         "deleteSuccess": "Commande supprimée avec succès.",
         "deleteFailed": "La suppression de la commande a échoué.",
         "customerInfoTitle": "Informations Client",
-        "currentStatusLabel":"Le status actuel",
+        "currentStatusLabel": "Le status actuel",
         "productListTitle": "Liste des Produits",
         "nextStatus": "Prochain status possible",
         "totalLabel": "Total",
@@ -1104,6 +1111,7 @@
         "footerNote": "Merci pour votre achat chez {{storeName}} !"
     },
     "productList": {
+        "inStock": "En stock",
         "viewCard": "Vue Carte",
         "viewRow": "Vue Ligne",
         "addProduct": "Ajouter un produit",
@@ -1185,7 +1193,11 @@
         "footerLinks": "Liens Rapides",
         "footerContact": "Contactez-Nous",
         "footerSocial": "Suivez-Nous",
-        "footerRights": "Tous droits réservés."
+        "footerRights": "Tous droits réservés.",
+        "viewMobile": "Vue Mobile",
+        "viewTablet": "Vue Tablette",
+        "viewDesktop": "Vue Bureau",
+        "previewTitle": "Aperçu du thème : {{name}}"
     },
     "themeMarket": {
         "pageTitle": "Marché des Thèmes",
@@ -1217,8 +1229,9 @@
         "helpText": "PNG, JPG, WEBP, SVG, GIF jusqu'à 2MB."
     },
     "themeEditor": {
+        "previewing": "Aperçu en direct",
+        "reloadPreview": "Recharger l'aperçu",
         "pageTitle": "Éditeur de Thème - {{name}}",
-        "previewing": "Visualisation",
         "saveButton": "Enregistrer le Thème",
         "error": {
             "missingParams": "ID du magasin ou du thème manquant dans l'URL.",

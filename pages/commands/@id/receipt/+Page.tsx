@@ -4,17 +4,90 @@
 import { IoCloudDownloadOutline, IoDocumentsOutline, IoShareSocialOutline, IoPricetags, IoReceipt, IoCard, IoStorefront } from 'react-icons/io5';
 import { CommandInterface } from '../../../../Interfaces/Interfaces';
 import { CommandProduct, CommandTop, PaymentMethodElement } from '../+Page'; // Importer les sous-composants refactorisés
-// import { Separator } from '../../../../Components/Separator/Separator'; // Remplacé par <hr> ou div stylisé
-import { getImg } from '../../../../Components/Utils/StringFormater';
+
+import { showToast, showErrorToast } from '../../../../Components/Utils/toastNotifications';
+
 import { useTranslation } from 'react-i18next'; // ✅ i18n
-import { useMemo } from 'react'; // ✅ useMemo pour calculs
+import { useEffect, useMemo, useRef, useState } from 'react'; // ✅ useMemo pour calculs
 import { FaTruck } from 'react-icons/fa';
 import { useGlobalStore } from '../../../stores/StoreStore';
+import { usePageContext } from '../../../../renderer/usePageContext';
+import { useGetOrderDetails } from '../../../../api/ReactSublymusApi';
+import { SpinnerIcon } from '../../../../Components/Confirm/Spinner';
 
-export { Receipt };
+export { Page }
 
-function Receipt({ command }: { command?: Partial<CommandInterface> }) {
+function Page({ command }: { command?: Partial<CommandInterface> }) {
     const { t } = useTranslation(); // ✅ i18n
+
+    const { currentStore } = useGlobalStore();
+
+    const receiptRef = useRef<HTMLDivElement>(null);
+    const [isGeneratingPdf, setIsGeneratingPdf] = useState(false);
+
+    const { routeParams } = usePageContext();
+    const command_id = routeParams?.['id'];
+
+    // ✅ Utiliser le hook pour récupérer les détails
+    const { data: commandFetched } = useGetOrderDetails(
+        {
+            order_id: command_id
+        },
+        { enabled: !command && !!currentStore && !!command_id }
+    );
+
+    command = command || (commandFetched ?? undefined)
+
+const handleDownloadPdf = async () => {
+  if (!receiptRef.current) return;
+
+  try {
+    setIsGeneratingPdf(true);
+
+    // ⬇️ Importation dynamique (client-only)
+    const { jsPDF } = await import('jspdf');
+    const html2canvas = (await import('html2canvas-pro')).default;
+
+    // ⬇️ Capture du canvas
+    const canvas = await html2canvas(receiptRef.current, {
+      scale: 2,
+      useCORS: true,
+    });
+
+    // ⬇️ Conversion en image (base64)
+    const imgData = canvas.toDataURL('image/jpeg', 0.98);
+
+    // ⬇️ Création du PDF avec jsPDF
+    const pdf = new jsPDF({
+      orientation: 'portrait',
+      unit: 'px',
+      format: 'a4',
+    });
+
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+
+    // ⬇️ Adapter l'image au format A4
+    const imgProps = {
+      width: canvas.width,
+      height: canvas.height,
+    };
+    const ratio = Math.min(pageWidth / imgProps.width, pageHeight / imgProps.height);
+    const imgWidth = imgProps.width * ratio;
+    const imgHeight = imgProps.height * ratio;
+
+    const x = (pageWidth - imgWidth) / 2;
+    const y = 20; // marge en haut
+
+    pdf.addImage(imgData, 'JPEG', x, y, imgWidth, imgHeight);
+    pdf.save(`receipt_${command?.id || 'document'}.pdf`);
+  } catch (error) {
+    console.error('Erreur PDF :', error);
+    showErrorToast('Erreur lors de la génération du PDF');
+  } finally {
+    setIsGeneratingPdf(false);
+  }
+};
 
     // --- Calculs pour le résumé ---
     const subTotal = useMemo(() => {
@@ -28,37 +101,32 @@ function Receipt({ command }: { command?: Partial<CommandInterface> }) {
     const paymentMethod = command?.payment_method;
     const deliveryMode = command?.with_delivery;
 
-    const { currentStore } = useGlobalStore()
     return (
         // Conteneur principal du reçu - centré, avec fond blanc, ombre, padding
-        <div className="receipt-view w-full max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-6 sm:p-8 my-8 print:shadow-none print:my-0 print:p-4"> {/* Styles pour impression */}
+        <div ref={receiptRef} className="receipt-view f-h-full w-[95%] max-w-2xl mx-auto bg-white rounded-lg shadow-lg p-6 sm:p-8 my-8 print:shadow-none print:my-0 print:p-0"> {/* Ajusté max-w, print styles */}
             {/* En-tête avec Titre et Actions */}
-            <div className="top flex justify-between items-center border-b border-gray-200 pb-4 mb-6">
+            <div className="top flex justify-between items-center border-b border-gray-200 pb-4 mb-6 print:hidden"> {/* print:hidden pour masquer à l'impression */}
                 <h2 className="text-xl sm:text-2xl font-semibold text-gray-800 flex items-center gap-2">
-                    <IoReceipt className="text-blue-600" /> {/* Utiliser IoReceipt */}
+                    <IoReceipt className="text-blue-600" />
                     <span>{t('receipt.title')}</span>
                 </h2>
                 <div className="actions flex items-center gap-3 text-gray-500">
-                    {/* TODO: Implémenter les fonctions onClick */}
-                    <button title={t('receipt.downloadAction')} className="hover:text-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300 rounded-full p-1">
-                        <IoCloudDownloadOutline size={22} />
-                    </button>
-                    <button title={t('receipt.printAction')} className="hover:text-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300 rounded-full p-1">
-                        <IoDocumentsOutline size={22} />
-                    </button>
-                    <button title={t('receipt.shareAction')} className="hover:text-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300 rounded-full p-1">
-                        <IoShareSocialOutline size={22} />
+                    <button
+                        onClick={handleDownloadPdf}
+                        disabled={isGeneratingPdf}
+                        title={t('receipt.downloadAction')}
+                        className="hover:text-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-300 rounded-full p-1 disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                        {isGeneratingPdf ? <SpinnerIcon /> : <IoCloudDownloadOutline size={22} />} {/* Ajouter un SpinnerIcon */}
                     </button>
                 </div>
             </div>
 
             {/* Infos Commande Haut (importé) */}
-            <CommandTop command={command} /> {/* Assumer CommandTop refactorisé */}
+            <CommandTop command={command} />
 
             {/* Section Produits */}
-            {/* Utiliser mt-6 mb-2 */}
             <h3 className='text-lg font-semibold text-gray-700 mt-6 mb-2'>{t('order.productListTitle')}</h3>
-            {/* Utiliser flex flex-col gap-3 */}
             <div className="products-list flex flex-col gap-3">
                 {command?.items?.map((item) => <CommandProduct key={item.id} item={item} />)} {/* Assumer CommandProduct refactorisé */}
                 {(!command?.items || command.items.length === 0) && (
@@ -70,7 +138,6 @@ function Receipt({ command }: { command?: Partial<CommandInterface> }) {
             <hr className="my-6 border-gray-200" />
 
             {/* Résumé Financier */}
-            {/* Utiliser flex flex-col gap-1.5 */}
             <div className="pricing-summary flex flex-col gap-1.5 text-sm">
                 <h3 className='text-base font-semibold text-gray-700 mb-2'>{t('receipt.priceSummaryTitle')}</h3>
                 {/* Sous-total */}
@@ -101,21 +168,8 @@ function Receipt({ command }: { command?: Partial<CommandInterface> }) {
             <hr className="my-6 border-gray-200" />
 
             {/* Infos Paiement & Livraison */}
-            {/*
-   - grid: Active le layout grid.
-   - grid-cols-1: Par défaut (mobile), une seule colonne. Chaque élément prend toute la largeur.
-   - md:grid-cols-2: À partir du breakpoint 'md' (medium, 768px par défaut), passer à deux colonnes.
-   - gap-x-6: Espace horizontal entre les colonnes sur 'md' et plus.
-   - gap-y-4: Espace vertical entre les lignes (utile sur mobile quand c'est une seule colonne).
-   - text-sm: Taille de texte par défaut pour cette section.
- */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-y-4 gap-x-6 text-sm">
                 {/* Paiement */}
-                {/*
-      - flex: Active flexbox.
-      - justify-between: Écarte les éléments (Label vs Valeur).
-      - items-center: Centre verticalement.
-    */}
                 <div className="flex justify-between items-center">
                     {/* Label */}
                     <span className="text-gray-600 flex items-center gap-2 flex-shrink-0 mr-2"> {/* flex-shrink-0 + mr-2 pour éviter que le label soit compressé */}
@@ -123,11 +177,6 @@ function Receipt({ command }: { command?: Partial<CommandInterface> }) {
                         {t('receipt.paymentMethodLabel')}:
                     </span>
                     {/* Valeur */}
-                    {/*
-           - font-medium, text-gray-800: Style du texte.
-           - flex, items-center, gap-2: Layout interne si PaymentMethodElement contient plusieurs choses.
-           - text-right: Aligner le texte de la valeur à droite (optionnel).
-         */}
                     <span className='font-medium text-gray-800 flex items-center gap-2 text-right'>
                         <PaymentMethodElement paymentMethod={paymentMethod as any} />
                     </span>
@@ -144,7 +193,6 @@ function Receipt({ command }: { command?: Partial<CommandInterface> }) {
                         {t('receipt.deliveryMethodLabel')}:
                     </span>
                     {/* Valeur */}
-                    {/* text-right: Aligner la valeur à droite */}
                     <span className='font-medium text-gray-800 text-right'>
                         {deliveryMode ? t('order.deliveryMode.home') : t('order.deliveryMode.pickup')}
                     </span>

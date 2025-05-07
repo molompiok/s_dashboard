@@ -16,6 +16,7 @@ import { useWindowSize } from '../../../Hooks/useWindowSize';
 import { FaEdit, FaTimes } from 'react-icons/fa';
 import { Menu } from 'lucide-react';
 import { ThemeCard, ThemeCardSkeleton } from '../../../Components/ThemeManager/ThemeManager';
+import { showErrorToast, showToast } from '../../../Components/Utils/toastNotifications';
 
 export { Page };
 
@@ -75,8 +76,6 @@ function Page() {
     // --- Handlers ---
     const handleSelectTheme = (theme: ThemeInterface) => {
         setSelectedTheme(theme);
-        // Sur mobile, on pourrait naviguer vers une page détail/preview au lieu de juste mettre à jour l'état
-        // if (window.innerWidth < 768) { navigate(`/themes/preview/${theme.id}?store=${targetStoreId || currentStore?.id}`); }
     };
 
     const handleInstallTheme = (themeToInstall: ThemeInterface) => {
@@ -94,15 +93,15 @@ function Page() {
             { store_id: storeIdForInstall, themeId: themeToInstall.id },
             {
                 onSuccess: () => {
-                    logger.info(`Theme ${themeToInstall.name} successfully activated for store ${storeIdForInstall}`);
-                    // Afficher toast succès
-                    // Optionnel: rediriger vers la page /stores ou les paramètres du store?
+                  logger.info(`Theme ${themeToInstall.name} successfully activated for store ${storeIdForInstall}`);
+                  showToast(`Thème ${themeToInstall.name} activé avec succès`); // ✅ Toast succès
+                  // Optionnel: rediriger vers la page /stores ou les paramètres du store?
                 },
                 onError: (err) => {
-                    logger.error({ err }, `Failed to activate theme ${themeToInstall.id} for store ${storeIdForInstall}`);
-                    // Afficher toast erreur
-                }
-            }
+                  logger.error({ err }, `Failed to activate theme ${themeToInstall.id} for store ${storeIdForInstall}`);
+                  showErrorToast(err); // ❌ Toast erreur
+                },
+              }
         );
     };
 
@@ -145,10 +144,13 @@ function Page() {
   bg-white border-gray-200 overflow-y-auto h-screen
   absolute inset-y-0 left-0 z-40 w-72 shadow-lg transform
   ${isSidebarOverlayVisible ? 'translate-x-0' : '-translate-x-full'}
-  lg:relative lg:inset-auto lg:z-auto lg:w-80 xl:w-96
+  lg:relative lg:inset-auto lg:z-auto lg:w-80
   lg:translate-x-0 lg:shadow-none lg:flex-shrink-0 lg:border-r
 `}>
                     {/* FILTRES FIXÉS EN HAUT */}
+                    {scrollDirection === 'down' && (
+                        <div className='w-full h-[288px]'></div>
+                    )}
                     <div
                         className={`
       sticky top-0 z-10 p-4 bg-white pt-8 shadow-md transition-all duration-300
@@ -157,12 +159,12 @@ function Page() {
                     >
                         <ThemeFilters filter={filter} onFilterChange={setFilter} />
                         <button
-                        onClick={toggleSidebarOverlay}
-                        className="absolute top-2 right-2 p-1 text-gray-500 hover:text-gray-700 lg:hidden"
-                        aria-label={t('common.close')}
-                    >
-                        <FaTimes size={18} />
-                    </button>
+                            onClick={toggleSidebarOverlay}
+                            className="absolute top-2 right-2 p-1 text-gray-500 hover:text-gray-700 lg:hidden"
+                            aria-label={t('common.close')}
+                        >
+                            <FaTimes size={18} />
+                        </button>
                     </div>
                     {/* CONTENU SCROLLABLE */}
                     {isLoading && Array.from({ length: 8 }).map((_, i) => <ThemeCardSkeleton key={`skel-list-${i}`} />)}
@@ -170,20 +172,21 @@ function Page() {
                     {!isLoading && !isError && themes.length === 0 && <p className="p-4 text-sm text-gray-500">{t('themeMarket.noThemesMatch')}</p>}
 
                     <div className="m-8" />
-                    
+
                     <div className='px-4 flex flex-col gap-4'>
-                    {!isLoading && !isError &&
-                        [...themes,...themes,...themes,...themes,...themes,...themes,...themes,...themes,...themes,...themes,...themes,...themes,...themes,...themes,...themes,...themes,...themes,...themes,...themes,...themes,...themes,...themes,...themes,...themes,...themes,...themes,...themes,...themes,...themes, ...themes, ...themes, ...themes, ...themes, ...themes, ...themes, ...themes, ...themes, ...themes, ...themes, ...themes].map((theme, i) => (
-                            <ThemeCard
-                                key={theme.id + i}
-                                theme={theme}
-                                isSelected={selectedTheme?.id === theme.id}
-                                onClick={() => handleSelectTheme(theme)}
-                            />
-                        ))}
+                        {!isLoading && !isError &&
+                            [...themes, ...themes, ...themes, ...themes, ...themes, ...themes, ...themes, ...themes, ...themes, ...themes, ...themes, ...themes, ...themes, ...themes, ...themes, ...themes, ...themes, ...themes, ...themes, ...themes, ...themes, ...themes, ...themes, ...themes, ...themes, ...themes, ...themes, ...themes, ...themes, ...themes, ...themes, ...themes, ...themes, ...themes, ...themes, ...themes, ...themes, ...themes, ...themes, ...themes].map((theme, i) => (
+                                <ThemeCard
+                                    key={theme.id + i}
+                                    theme={theme}
+                                    isCurrent
+                                    isSelected={selectedTheme?.id === theme.id}
+                                    onClick={() => handleSelectTheme(theme)}
+                                />
+                            ))}
                     </div>
 
-                    
+
                 </aside>
 
                 {/* Colonne Droite: Preview (prend l'espace restant) */}
@@ -193,6 +196,8 @@ function Page() {
                         <LiveThemePreviewSkeleton />
                     ) : selectedTheme ? (
                         <LiveThemePreview
+                            onInstall={()=>handleInstallTheme(selectedTheme)}
+                            isInstalling={activateThemeMutation.isPending}
                             avalaibleWidth={contentWidth - (size.width >= 1024 ? 330 : 0)}
                             store={{ id: currentStore?.id || '' } as any}
                             theme={selectedTheme}

@@ -20,6 +20,8 @@ import logger from "../../../../api/Logger"; // Logger
 import { EDITED_DATA } from "../../../../Components/Utils/constants";
 import { SaveButton } from "../../../../Components/SaveButton/SaveButton";
 import { useChildViewer } from "../../../../Components/ChildViewer/useChildViewer";
+import { StockProductSkeleton } from "../../../../Components/Skeletons/allsKeletons";
+import { PageNotFound } from "../../../../Components/PageNotFound/PageNotFound";
 
 export { Page };
 
@@ -126,10 +128,16 @@ function Page() {
         });
     };
 
+  const [isPageLoading, setIsPageLoading] = useState(true);
+    useEffect(() => {
+        setIsPageLoading(false)
+    }, []);
+    
     // --- Rendu ---
-    if (isLoadingProduct) return <div className="p-6 text-center text-gray-500">{t('common.loading')}</div>;
-    if (isFetchError) return <div className="p-6 text-center text-red-500">{fetchError?.message || t('error_occurred')}</div>;
-    if (!product) return <div className="p-6 text-center text-gray-500">{t('product.notFound')}</div>;
+    if(isPageLoading) return <StockProductSkeleton/>
+    if (isLoadingProduct) return <StockProductSkeleton/>
+    if (isFetchError) return <PageNotFound title={t('product.notFound')} description={fetchError?.message} />;
+    if (!product) return <PageNotFound title={t('product.notFound')} />;
 
 
     return (
@@ -273,7 +281,7 @@ function ValueRow({ feature, value: currentValue, onValueChange }: ValueRowProps
 
     // L'état local de la valeur sera géré dans le popup
     const handleRowClick = () => {
-        openChild(<ChildViewer title={t('priceStock.editValuePopupTitle', { name: currentValue.text })}>
+        openChild(<ChildViewer title={t('priceStock.editValuePopupTitle', { name: currentValue.text })} back>
             <div className="p-4 sm:p-6"> {/* Padding pour le contenu du popup */}
                 {/* Afficher le nom de la feature/valeur */}
                 <div className="flex items-center gap-2 mb-4 pb-4 border-b border-gray-200">

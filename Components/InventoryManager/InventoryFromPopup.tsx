@@ -11,6 +11,7 @@ import { Confirm } from '../Confirm/Confirm'; // Utiliser Confirm pour boutons
 import { getImg } from '../Utils/StringFormater'; // Pour preview
 import { useGlobalStore } from '../../pages/stores/StoreStore'; // Pour URL base image
 import { ApiError } from '../../api/SublymusApi';
+import { showErrorToast, showToast } from '../Utils/toastNotifications';
 
 interface InventoryFormPopupProps {
     initialData?: Partial<InventoryInterface>; // Données pour l'édition
@@ -43,6 +44,10 @@ export function InventoryFormPopup({ initialData, onSaveSuccess, onCancel }: Inv
             viewPreviews: [], // Pas de preview locale au début
         };
     });
+
+    const  [s] = useState({
+        collected:{} as Partial<InventoryInterface>
+    })
     const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({});
 
     // --- Mutations ---
@@ -85,6 +90,7 @@ export function InventoryFormPopup({ initialData, onSaveSuccess, onCancel }: Inv
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value, type } = e.target;
         const parsedValue = type === 'number' ? (value === '' ? undefined : parseFloat(value)) : value;
+        (s.collected as any)[name]= parsedValue 
         setFormData(prev => ({ ...prev, [name]: parsedValue }));
         setFieldErrors(prev => ({ ...prev, [name]: '' })); // Reset erreur champ
     };
@@ -96,6 +102,8 @@ export function InventoryFormPopup({ initialData, onSaveSuccess, onCancel }: Inv
             return;
         }
         const newFiles = Array.from(files);
+        s.collected.views = newFiles 
+        
         const newPreviews = newFiles.map(file => URL.createObjectURL(file));
 
         // Révoquer les anciennes previews locales avant d'en créer de nouvelles
@@ -124,52 +132,57 @@ export function InventoryFormPopup({ initialData, onSaveSuccess, onCancel }: Inv
             return;
         }
 
-
         if (formData.id) {
             // --- Mise à jour ---
             updateInventoryMutation.mutate(
                 {
                     inventory_id: formData.id,
                     data: {
-                        address_name: formData.address_name || '',
-                        email: formData.email,
-                        latitude: formData.latitude,
-                        longitude: formData.longitude,
-                        views: formData.views
-                    }
+                        address_name: s.collected.address_name || '',
+                        email: s.collected.email,
+                        latitude: s.collected.latitude,
+                        longitude: s.collected.longitude,
+                        views: s.collected.views,
+                    },
                 },
                 {
                     onSuccess: (data) => {
                         logger.info(`Inventory ${formData.id} updated.`);
                         onSaveSuccess(data.inventory); // Appeler callback parent
+                        showToast("Inventaire mis à jour avec succès"); // ✅ Toast succès
                     },
                     onError: (error: ApiError) => {
                         logger.error({ error }, `Failed to update inventory ${formData.id}`);
-                        // Afficher message d'erreur API?
                         setFieldErrors({ api: error.message });
-                    }
+                        showErrorToast(error); // ❌ Toast erreur
+                    },
                 }
             );
         } else {
             // --- Création ---
-            createInventoryMutation.mutate({
-                data: {
-                    address_name: formData.address_name || '',
-                    email: formData.email,
-                    latitude: formData.latitude,
-                    longitude: formData.longitude,
-                    views: formData.views
-                }
-            }, {
-                onSuccess: (data) => {
-                    logger.info(`Inventory created: ${data.inventory.id}`);
-                    onSaveSuccess(data.inventory); // Appeler callback parent
+            createInventoryMutation.mutate(
+                {
+                    data: {
+                        address_name: s.collected.address_name || '',
+                        email: s.collected.email,
+                        latitude: s.collected.latitude,
+                        longitude: s.collected.longitude,
+                        views: s.collected.views,
+                    },
                 },
-                onError: (error: ApiError) => {
-                    logger.error({ error }, `Failed to create inventory`);
-                    setFieldErrors({ api: error.message });
+                {
+                    onSuccess: (data) => {
+                        logger.info(`Inventory created: ${data.inventory.id}`);
+                        onSaveSuccess(data.inventory); // Appeler callback parent
+                        showToast("Inventaire créé avec succès"); // ✅ Toast succès
+                    },
+                    onError: (error: ApiError) => {
+                        logger.error({ error }, `Failed to create inventory`);
+                        setFieldErrors({ api: error.message });
+                        showErrorToast(error); // ❌ Toast erreur
+                    },
                 }
-            });
+            );
         }
     };
 
@@ -179,116 +192,119 @@ export function InventoryFormPopup({ initialData, onSaveSuccess, onCancel }: Inv
         (typeof formData.views?.[0] === 'string' ? getImg(formData.views[0], undefined, currentStore?.url) : undefined);
     const showPlaceholder = !displayImage;
 
-
     return (
-        <div className="inventory-form p-4 sm:p-6 flex flex-col gap-5">
-            {/* Image */}
-            <div>
-                <label className='block text-sm font-medium text-gray-700 mb-1' htmlFor='inventory-image-input'>
-                    {t('inventory.imagesLabel')}
-                </label>
-                <label htmlFor='inventory-image-input' className={`relative block w-full aspect-video rounded-lg cursor-pointer overflow-hidden group bg-gray-100 border ${fieldErrors.views ? 'border-red-500' : 'border-gray-300'} hover:bg-gray-200`}>
-                    <div
-                        className="absolute inset-0 bg-cover bg-center transition-opacity duration-150"
-                        style={{ background: displayImage }} // Utiliser displayImage ou placeholder
-                    ></div>
-                    {showPlaceholder && (
-                        <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-400 group-hover:text-blue-500 p-2 text-center">
-                            <IoCloudUploadOutline size={40} />
-                            <span className="mt-1 text-xs">{t('inventory.selectImagePrompt')}</span>
-                        </div>
-                    )}
-                    {!showPlaceholder && (
-                        <div className="absolute bottom-2 right-2 p-1.5 bg-white/70 backdrop-blur-sm rounded-full shadow text-gray-600 group-hover:text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <RiImageEditFill size={18} />
-                        </div>
-                    )}
-                    <input id='inventory-image-input' name="views" type="file" accept='image/*' className="sr-only" onChange={handleFileChange} multiple={false} /> {/* multiple=false pour une seule image principale? */}
-                </label>
-                {fieldErrors.views && <p className="mt-1 text-xs text-red-600">{fieldErrors.views}</p>}
-            </div>
-
-            {/* Nom */}
-            <div>
-                <label className='block text-sm font-medium text-gray-700 mb-1' htmlFor='inventory-name-input'>
-                    {t('inventory.nameLabel')}
-                </label>
-                <input
-                    id='inventory-name-input'
-                    name="address_name"
-                    className={`block w-full rounded-md shadow-sm sm:text-sm h-10 ${fieldErrors.address_name ? 'border-red-500 ring-red-500 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'}`}
-                    type="text"
-                    value={formData.address_name || ''}
-                    placeholder={t('inventory.namePlaceholder')}
-                    onChange={handleInputChange}
-                />
-                {fieldErrors.address_name && <p className="mt-1 text-xs text-red-600">{fieldErrors.address_name}</p>}
-            </div>
-
-            {/* Email */}
-            <div>
-                <label className='block text-sm font-medium text-gray-700 mb-1' htmlFor='inventory-email-input'>
-                    {t('inventory.emailLabel')} <span className='text-gray-400 text-xs'>({t('common.optionalField')})</span>
-                </label>
-                <input
-                    id='inventory-email-input'
-                    name="email"
-                    className={`block w-full rounded-md shadow-sm sm:text-sm h-10 ${fieldErrors.email ? 'border-red-500 ring-red-500 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'}`}
-                    type="email"
-                    value={formData.email || ''}
-                    placeholder={t('inventory.emailPlaceholder')}
-                    onChange={handleInputChange}
-                />
-                {fieldErrors.email && <p className="mt-1 text-xs text-red-600">{fieldErrors.email}</p>}
-            </div>
-
-            {/* Coordonnées */}
-            <div className="grid grid-cols-2 gap-4">
-                <div>
-                    <label className='block text-sm font-medium text-gray-700 mb-1' htmlFor='inventory-latitude-input'>
-                        {t('inventory.latitudeLabel')}
+        <div className="inventory-form p-4 sm:p-6">
+            <div className="flex flex-col sm:flex-row gap-6">
+                {/* Section Image */}
+                <div className="sm:w-1/3">
+                    <label className='block text-sm font-medium text-gray-700 mb-1' htmlFor='inventory-image-input'>
+                        {t('inventory.imagesLabel')}
                     </label>
-                    <input
-                        id='inventory-latitude-input'
-                        name="latitude"
-                        className={`block w-full rounded-md shadow-sm sm:text-sm h-10 ${fieldErrors.latitude ? 'border-red-500 ring-red-500 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'}`}
-                        type="number"
-                        value={formData.latitude ?? ''}
-                        placeholder="Ex: 5.3600"
-                        step="any"
-                        onChange={handleInputChange}
-                    />
-                    {fieldErrors.latitude && <p className="mt-1 text-xs text-red-600">{fieldErrors.latitude}</p>}
-                </div>
-                <div>
-                    <label className='block text-sm font-medium text-gray-700 mb-1' htmlFor='inventory-longitude-input'>
-                        {t('inventory.longitudeLabel')}
+                    <label htmlFor='inventory-image-input' className={`relative block w-full aspect-video rounded-lg cursor-pointer overflow-hidden group bg-gray-100 border ${fieldErrors.views ? 'border-red-500' : 'border-gray-300'} hover:bg-gray-200`}>
+                        <div
+                            className="absolute inset-0 bg-cover bg-center transition-opacity duration-150"
+                            style={{ background: displayImage }}
+                        ></div>
+                        {showPlaceholder && (
+                            <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-400 group-hover:text-blue-500 p-2 text-center">
+                                <IoCloudUploadOutline size={40} />
+                                <span className="mt-1 text-xs">{t('inventory.selectImagePrompt')}</span>
+                            </div>
+                        )}
+                        {!showPlaceholder && (
+                            <div className="absolute bottom-2 right-2 p-1.5 bg-white/70 backdrop-blur-sm rounded-full shadow text-gray-600 group-hover:text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <RiImageEditFill size={18} />
+                            </div>
+                        )}
+                        <input id='inventory-image-input' name="views" type="file" accept='image/*' className="sr-only" onChange={handleFileChange} multiple={false} />
                     </label>
-                    <input
-                        id='inventory-longitude-input'
-                        name="longitude"
-                        className={`block w-full rounded-md shadow-sm sm:text-sm h-10 ${fieldErrors.longitude ? 'border-red-500 ring-red-500 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'}`}
-                        type="number"
-                        value={formData.longitude ?? ''}
-                        placeholder="Ex: -4.0083"
-                        step="any"
-                        onChange={handleInputChange}
+                    {fieldErrors.views && <p className="mt-1 text-xs text-red-600">{fieldErrors.views}</p>}
+                </div>
+
+                {/* Formulaire */}
+                <div className="flex-1 flex flex-col gap-5">
+                    <div>
+                        <label className='block text-sm font-medium text-gray-700 mb-1' htmlFor='inventory-name-input'>
+                            {t('inventory.nameLabel')}
+                        </label>
+                        <input
+                            id='inventory-name-input'
+                            name="address_name"
+                            className={`block w-full px-4 rounded-md shadow-sm sm:text-sm h-10 ${fieldErrors.address_name ? 'border-red-500 ring-red-500 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'}`}
+                            type="text"
+                            value={formData.address_name || ''}
+                            placeholder={t('inventory.namePlaceholder')}
+                            onChange={handleInputChange}
+                        />
+                        {fieldErrors.address_name && <p className="mt-1 text-xs text-red-600">{fieldErrors.address_name}</p>}
+                    </div>
+
+                    {/* Email */}
+                    <div>
+                        <label className='block text-sm  font-medium text-gray-700 mb-1' htmlFor='inventory-email-input'>
+                            {t('inventory.emailLabel')} <span className='text-gray-400 text-xs'>({t('common.optionalField')})</span>
+                        </label>
+                        <input
+                            id='inventory-email-input'
+                            name="email"
+                            className={`block w-full rounded-md px-4 shadow-sm sm:text-sm h-10 ${fieldErrors.email ? 'border-red-500 ring-red-500 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'}`}
+                            type="email"
+                            value={formData.email || ''}
+                            placeholder={t('inventory.emailPlaceholder')}
+                            onChange={handleInputChange}
+                        />
+                        {fieldErrors.email && <p className="mt-1 text-xs text-red-600">{fieldErrors.email}</p>}
+                    </div>
+
+                    {/* Coordonnées */}
+                    <div className="grid grid-cols-2 gap-4">
+                        <div>
+                            <label className='block text-sm font-medium text-gray-700 mb-1' htmlFor='inventory-latitude-input'>
+                                {t('inventory.latitudeLabel')}
+                            </label>
+                            <input
+                                id='inventory-latitude-input'
+                                name="latitude"
+                                className={`block w-full px-4 rounded-md shadow-sm sm:text-sm h-10 ${fieldErrors.latitude ? 'border-red-500 ring-red-500 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'}`}
+                                type="number"
+                                value={formData.latitude ?? ''}
+                                placeholder="Ex: 5.3600"
+                                step="any"
+                                onChange={handleInputChange}
+                            />
+                            {fieldErrors.latitude && <p className="mt-1 text-xs text-red-600">{fieldErrors.latitude}</p>}
+                        </div>
+                        <div>
+                            <label className='block text-sm font-medium text-gray-700 mb-1' htmlFor='inventory-longitude-input'>
+                                {t('inventory.longitudeLabel')}
+                            </label>
+                            <input
+                                id='inventory-longitude-input'
+                                name="longitude"
+                                className={`block w-full px-4 rounded-md shadow-sm sm:text-sm h-10 ${fieldErrors.longitude ? 'border-red-500 ring-red-500 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'}`}
+                                type="number"
+                                value={formData.longitude ?? ''}
+                                placeholder="Ex: -4.0083"
+                                step="any"
+                                onChange={handleInputChange}
+                            />
+                            {fieldErrors.longitude && <p className="mt-1 text-xs text-red-600">{fieldErrors.longitude}</p>}
+                        </div>
+                    </div>
+                    {/* Erreur API Générale */}
+                    {fieldErrors.api && <p className="mt-1 text-sm text-red-600">{fieldErrors.api}</p>}
+
+
+                    {/* Boutons */}
+                    <Confirm
+                        onCancel={onCancel}
+                        confirm={formData.id ? t('common.saveChanges') : t('common.create')}
+                        onConfirm={handleSubmit}
+                        canConfirm={!isLoading} // Actif si pas en chargement
+                        isLoading={isLoading} // Passer l'état de chargement à Confirm si besoin
                     />
-                    {fieldErrors.longitude && <p className="mt-1 text-xs text-red-600">{fieldErrors.longitude}</p>}
                 </div>
             </div>
-            {/* Erreur API Générale */}
-            {fieldErrors.api && <p className="mt-1 text-sm text-red-600">{fieldErrors.api}</p>}
-
-
-            {/* Boutons */}
-            <Confirm
-                onCancel={onCancel}
-                confirm={formData.id ? t('common.saveChanges') : t('common.create')}
-                onConfirm={handleSubmit}
-                canConfirm={!isLoading} // Actif si pas en chargement
-            // isLoading={isLoading} // Passer l'état de chargement à Confirm si besoin
-            />
         </div>
     );
 }

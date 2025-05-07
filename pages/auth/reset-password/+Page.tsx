@@ -1,15 +1,15 @@
-// pages/reset-password/+Page.tsx
+// pages/auth/reset-password/+Page.tsx
 
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 // Importer le hook API pour réinitialiser le mot de passe (à créer)
-import { useResetPassword } from '../../api/ReactSublymusApi';
-import logger from '../../api/Logger';
-import { ApiError } from '../../api/SublymusApi';
+import { useResetPassword } from '../../../api/ReactSublymusApi';
+import logger from '../../../api/Logger';
+import { ApiError } from '../../../api/SublymusApi';
 import { IoLockClosedOutline, IoCheckmarkCircleOutline, IoWarningOutline } from 'react-icons/io5';
 import logoUrl from '../../renderer/logo.svg';
-import { Link } from '../../renderer/Link'; // Pour lien vers connexion après succès
-import { usePageContext } from '../../renderer/usePageContext';
+import { Link } from '../../../renderer/Link'; // Pour lien vers connexion après succès
+import { usePageContext } from '../../../renderer/usePageContext';
 
 // S'assurer que le hook useResetPassword est créé dans ReactSublymusApi.tsx
 // et qu'il appelle api.auth.resetPassword({ token, password, password_confirmation })

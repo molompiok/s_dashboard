@@ -1,6 +1,7 @@
 // Components/Confirm/ConfirmDelete.tsx
 // import './ConfirmDelete.css'; // ❌ Supprimer
 
+import { useState } from 'react';
 import { getImg } from '../Utils/StringFormater'; // Garder pour le spinner
 import { useTranslation } from 'react-i18next'; // ✅ i18n
 import { IoAlertCircleOutline } from 'react-icons/io5'; // Ajouter icône d'avertissement
@@ -29,7 +30,7 @@ function ConfirmDelete({
     onCancel,
     onDelete,
     isDanger = true, // Rouge par défaut pour suppression
-    isLoading = false,
+    isLoading,
     style
 }: ConfirmDeleteProps) {
     const { t } = useTranslation(); // ✅ i18n
@@ -51,6 +52,7 @@ function ConfirmDelete({
         inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 flex-1 sm:flex-none sm:w-auto
     `;
 
+    const [loading, setLoading] = useState(false)
 
     return (
          // Conteneur principal : padding, max-width, bg, rounded, shadow
@@ -86,17 +88,20 @@ function ConfirmDelete({
                     type="button"
                     className={cancelButtonClasses}
                     onClick={onCancel}
-                    disabled={isLoading}
+                    disabled={isLoading??loading}
                 >
                     {finalCancelText}
                 </button>
                 <button
                     type="button"
                     className={confirmButtonClasses}
-                    onClick={onDelete} // Appeler onDelete au clic
-                    disabled={isLoading}
+                    onClick={()=>{
+                        setLoading(true);
+                        onDelete();
+                    }} // Appeler onDelete au clic
+                    disabled={isLoading??loading}
                 >
-                    {isLoading ? (
+                    {(isLoading??loading) ? (
                          // Spinner intégré
                          <svg className={`animate-spin h-4 w-4 text-white ${isDanger ? '' : ''}`} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                             <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>

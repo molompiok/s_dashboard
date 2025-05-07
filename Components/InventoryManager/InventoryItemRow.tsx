@@ -89,7 +89,7 @@ function InventoryItemRow({ inventory, onEdit /*, onDeleteSuccess */ }: Inventor
             </div>
 
             {/* Colonne Nom & Email */}
-            <div className="flex-grow min-w-0 flex flex-col">
+            <div className="flex-grow min-w-0 flex flex-col truncate">
                 <h3
                     className='font-medium text-sm sm:text-base text-gray-800 truncate'
                     title={inventory.address_name}
@@ -97,7 +97,7 @@ function InventoryItemRow({ inventory, onEdit /*, onDeleteSuccess */ }: Inventor
                     {inventory.address_name}
                 </h3>
                 {inventory.email && (
-                    <a href={`mailto:${inventory.email}`} className='text-xs text-gray-500 mt-0.5 flex items-center gap-1 hover:text-blue-600 w-fit' title={inventory.email}>
+                    <a href={`mailto:${inventory.email}`} className='text-xs truncate text-gray-500 mt-0.5 flex items-center gap-1 hover:text-blue-600 w-fit' title={inventory.email}>
                         <IoMailOutline className="w-3 h-3" />
                         <span className="truncate">{inventory.email}</span>
                     </a>

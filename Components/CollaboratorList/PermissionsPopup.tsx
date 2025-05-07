@@ -8,6 +8,7 @@ import logger from '../../api/Logger';
 import { ApiError } from '../../api/SublymusApi';
 import { Confirm } from '../Confirm/Confirm';
 import { Switch } from '@headlessui/react'; // Utiliser Headless UI Switch pour les toggles
+import { showErrorToast, showToast } from '../Utils/toastNotifications';
 
 interface PermissionsPopupProps {
     collaboratorRole: RoleInterface & { user: UserInterface }; // Les données du collaborateur et ses permissions actuelles
@@ -58,22 +59,23 @@ export function PermissionsPopup({ collaboratorRole, onSuccess, onCancel }: Perm
     const handleSaveChanges = () => {
         if (!hasChanges || updatePermissionsMutation.isPending) return;
         setApiError(null);
-
+      
         updatePermissionsMutation.mutate(
-            { collaborator_user_id: user.id, permissions: draftPermissions }, // Envoyer l'ID user et les permissions modifiées
-            {
-                onSuccess: () => {
-                     logger.info(`Permissions updated for collaborator ${user.id}`);
-                     onSuccess(); // Appeler callback succès
-                 },
-                 onError: (error: ApiError) => {
-                      logger.error({ error }, `Failed to update permissions for collaborator ${user.id}`);
-                      setApiError(error.message);
-                 }
-            }
+          { collaborator_user_id: user.id, permissions: draftPermissions }, // Envoyer l'ID user et les permissions modifiées
+          {
+            onSuccess: () => {
+              logger.info(`Permissions updated for collaborator ${user.id}`);
+              onSuccess(); // Appeler callback succès
+              showToast("Permissions mises à jour avec succès"); // ✅ Toast succès
+            },
+            onError: (error: ApiError) => {
+              logger.error({ error }, `Failed to update permissions for collaborator ${user.id}`);
+              setApiError(error.message);
+              showErrorToast(error); // ❌ Toast erreur
+            },
+          }
         );
-    };
-
+      };
     return (
         // Conteneur Popup : padding, gap, max-width
         <div className="permissions-popup p-4 sm:p-6 flex flex-col gap-5 w-full max-w-lg bg-white rounded-lg shadow-xl">
@@ -115,51 +117,9 @@ export function PermissionsPopup({ collaboratorRole, onSuccess, onCancel }: Perm
                 onCancel={onCancel}
                 confirm={updatePermissionsMutation.isPending ? t('common.saving') : t('common.saveChanges')} 
                 onConfirm={handleSaveChanges}
-                 // Activer seulement s'il y a des changements et pas de chargement
                  canConfirm={hasChanges && !updatePermissionsMutation.isPending}
-                 //isLoading={updatePermissionsMutation.isPending}
+                //  isLoading={updatePermissionsMutation.isPending}
              />
         </div>
     );
 }
-
-// --- Nouvelles clés i18n ---
-/*
-{
- "collaborator": {
-    // ... clés existantes ...
-    "permissionsPopupTitle": "Permissions - {{name}}"
-  },
- "permissions": {
-        "filter_client": "Voir les clients",
-        "filter_client_desc": "Permet de voir la liste des clients et leurs détails.",
-        "ban_client": "Bannir/Débannir des clients",
-        "ban_client_desc": "Autorise à bloquer l'accès d'un client à la boutique.",
-        "filter_collaborator": "Voir l'équipe",
-        "filter_collaborator_desc": "Permet de voir la liste des membres de l'équipe.",
-        "ban_collaborator": "Bannir/Débannir des collaborateurs",
-        "ban_collaborator_desc": "Autorise à bloquer l'accès d'un collaborateur au dashboard.",
-        "create_delete_collaborator": "Gérer l'équipe",
-        "create_delete_collaborator_desc": "Permet d'ajouter, supprimer et modifier les permissions des collaborateurs.",
-        "manage_interface": "Gérer l'apparence & les paramètres",
-        "manage_interface_desc": "Autorise la modification du thème, des paramètres généraux, des points de vente, etc.",
-        "filter_product": "Voir le catalogue",
-        "filter_product_desc": "Permet de voir les produits et les catégories.",
-        "edit_product": "Modifier le catalogue",
-        "edit_product_desc": "Autorise la modification des détails, prix, stocks, variantes des produits et catégories.",
-        "create_delete_product": "Ajouter/Supprimer du catalogue",
-        "create_delete_product_desc": "Permet d'ajouter ou de supprimer des produits et catégories.",
-        "manage_scene_product": "Gérer la 3D/AR",
-        "manage_scene_product_desc": "Autorise l'upload et la gestion des modèles 3D et AR des produits.",
-        "chat_client": "Support Client",
-        "chat_client_desc": "Permet de répondre aux messages des clients.",
-        "filter_command": "Voir les commandes",
-        "filter_command_desc": "Permet de voir la liste des commandes et leurs détails.",
-        "manage_command": "Gérer les commandes",
-        "manage_command_desc": "Autorise la modification des statuts des commandes (confirmation, annulation, etc.)."
- },
-  "common": {
-      // ... clés existantes ...
-  }
-}
-*/

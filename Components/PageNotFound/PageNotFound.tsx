@@ -1,18 +1,16 @@
-import { IoChevronBack, IoHomeOutline } from "react-icons/io5"
-import { getImg } from "../Utils/StringFormater"
+import { IoChevronBack, IoHomeOutline, IoWarning } from "react-icons/io5"
 import { JSX } from "react"
 
 export { PageNotFound }
 
 function PageNotFound({
-  title,
-  description,
-  image = '/res/empty/search.png',
-  back,
-  forward,
-  url,
-  iconForwardAfter,
-  iconForwardBefore,
+  title = "Page Introuvable",
+  description = "Désolé, la page que vous cherchez n'existe pas ou a été déplacée.",
+  back = true,
+  forward = "Retour à l'accueil",
+  url = "/",
+  iconForwardAfter = null,
+  iconForwardBefore = <IoHomeOutline className="w-6 h-6" />,
 }: {
   iconForwardAfter?: JSX.Element | null
   iconForwardBefore?: JSX.Element | null
@@ -21,44 +19,40 @@ function PageNotFound({
   back?: boolean
   description?: string
   title?: string
-  image?: string
 }) {
-
   return (
-    <div className="flex flex-col items-center justify-center w-full gap-3">
-      <div
-        className="w-48 h-48 bg-center bg-no-repeat bg-contain"
-        style={{ background: getImg(image) }}
-      ></div>
+    <div className="flex flex-col items-center justify-center min-h-screen w-full bg-gray-50">
+      <div className="relative flex items-center justify-center w-48 h-48 mb-6">
+        <div className="absolute w-full h-full bg-blue-100 rounded-full opacity-30"></div>
+        <IoWarning className="w-32 h-32 text-blue-600 z-10" />
+      </div>
 
-      {title && (
-        <h2 className="px-3 text-center max-w-[360px]">{title}</h2>
-      )}
+      <h2 className="text-3xl font-semibold text-gray-800 mb-4 text-center max-w-md">
+        {title}
+      </h2>
 
-      {description && (
-        <p className="text-center max-w-[360px]">{description}</p>
-      )}
+      <p className="text-gray-600 text-center max-w-md mb-8">
+        {description}
+      </p>
 
-      <div className="flex items-center gap-6 mt-3">
+      <div className="flex items-center gap-6">
         {back && (
           <button
             type="button"
             onClick={() => history.back()}
-            className="flex items-center gap-2 cursor-pointer text-blue-600 underline"
+            className="flex items-center gap-2 text-blue-600 hover:text-blue-800 transition-colors duration-200"
           >
-            <IoChevronBack className="w-6 h-6" />
-            Retour
+            <IoChevronBack className="w-5 h-5" />
+            <span className="text-lg">Retour</span>
           </button>
         )}
 
         <a
-          href={url || (!forward ? '/' : undefined)}
-          className="flex items-center gap-2 cursor-pointer text-blue-600 underline"
+          href={url}
+          className="flex items-center gap-2 text-blue-600 hover:text-blue-800 transition-colors duration-200"
         >
-          {iconForwardBefore === null ? null : iconForwardBefore || (
-            <IoHomeOutline className="w-6 h-6" />
-          )}
-          {forward || "Page d'accueil"}
+          {iconForwardBefore}
+          <span className="text-lg">{forward}</span>
           {iconForwardAfter}
         </a>
       </div>

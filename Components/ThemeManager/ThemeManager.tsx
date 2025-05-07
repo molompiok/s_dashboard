@@ -195,7 +195,7 @@ export function ThemeManager({ store }: ThemeManagerProps) {
                             nextEl: '.swiper-button-next-themes-mngr',
                             prevEl: '.swiper-button-prev-themes-mngr',
                         }}
-                        className="recent-themes-swiper"
+                        className="recent-themes-swiper h-48"
                     >
                         {isLoadingThemes ? (
                             Array.from({ length: 4 }).map((_, i) => <SwiperSlide key={`skel-th-${i}`} className="!w-48 sm:!w-52"><ThemeCardSkeleton /></SwiperSlide>)
@@ -203,7 +203,7 @@ export function ThemeManager({ store }: ThemeManagerProps) {
                             <div className="text-sm text-gray-500 italic px-1">{t('themeManager.noOtherThemes')}</div>
                         ) : (
                             availableThemes.map((theme) => (
-                                <SwiperSlide key={theme.id} className="!w-48 sm:!w-52"> {/* Largeur fixe */}
+                                <SwiperSlide key={theme.id} className="!w-48 sm:!w-52 p-1"> {/* Largeur fixe */}
                                     <ThemeCard theme={theme} isCurrent={theme.id === currentTheme?.id} /> {/* Passer isCurrent */}
                                 </SwiperSlide>
                             ))
@@ -239,7 +239,7 @@ export function ThemeCard({ theme, isCurrent = false ,isSelected,onClick}: Theme
     const handleClick = () => {
         if (isCurrent) {
             // Naviguer vers l'éditeur
-            window.location.href = `/theme/editor?store=${globalCurrentStore?.id}&theme=${theme.id}`;
+            window.location.href = `/themes/editor?store=${globalCurrentStore?.id}&theme=${theme.id}`;
         } else {
             // Naviguer vers la preview ou le marché avec ce thème sélectionné?
             // Ou déclencher l'installation? Pour l'instant, navigue vers preview

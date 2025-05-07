@@ -29,6 +29,8 @@ import { ApiError } from '../../../api/SublymusApi'; // Importer ApiError
 import { useChildViewer } from '../../../Components/ChildViewer/useChildViewer';
 import { VisibilityControl } from '../../../Components/Controls/VisibilityControl';
 import { CreateControl } from '../../../Components/Controls/CreateControl';
+import { showErrorToast, showToast } from '../../../Components/Utils/toastNotifications';
+import { CategoryFormSkeleton } from '../../../Components/Skeletons/allsKeletons';
 
 export { Page };
 
@@ -168,21 +170,24 @@ function Page() {
                     title={t('category.confirmDeleteTitle', { name: categoryFormState.name })}
                     onCancel={() => openChild(null)}
                     onDelete={() => {
-                        deleteCategoryMutation.mutate({
-                            category_id: categoryFormState.id!
-                        }, {
-                            onSuccess: () => {
-                                console.log(`Category ${categoryFormState.id} deleted`);
-                                openChild(null);
-                                setCategoryFormState({})
-                                // ClientCall(() => { window.location.href = '/categories'; });
+                        deleteCategoryMutation.mutate(
+                            {
+                                category_id: categoryFormState.id!,
                             },
-                            onError: (error) => {
-                                console.log({ error }, `Failed to delete category ${categoryFormState.id}`);
-                                openChild(null);
-                                // Afficher toast erreur
+                            {
+                                onSuccess: () => {
+                                    console.log(`Category ${categoryFormState.id} deleted`);
+                                    openChild(null);
+                                    setCategoryFormState({});
+                                    showToast('Catégorie supprimée avec succès', 'WARNING'); // ✅ Toast succès
+                                },
+                                onError: (error) => {
+                                    console.log({ error }, `Failed to delete category ${categoryFormState.id}`);
+                                    openChild(null);
+                                    showErrorToast(error); // ✅ Toast erreur
+                                },
                             }
-                        });
+                        );
                     }}
                 />
             </ChildViewer>,
@@ -221,23 +226,26 @@ function Page() {
     const createCategory = async () => {
         if (!isFilledCategory()) return
 
-        createCategoryMutation.mutate({
-            data: categoryFormState
-        }, {
-            onSuccess: (data) => {
-                console.log("Category created successfully", data);
-                setCategoryFormState(data.category); // Mettre à jour avec données serveur
-                setOriginalCategoryData(data.category);
-                setLocalImagePreviews({});
-                setFieldErrors({});
-                replaceLocation(`/categories/${data.category.id}`);
-                // Afficher toast succès
+        createCategoryMutation.mutate(
+            {
+                data: categoryFormState,
             },
-            onError: (error) => {
-                console.log({ error }, "Category creation failed");
-                // Afficher toast erreur
+            {
+                onSuccess: (data) => {
+                    console.log("Category created successfully", data);
+                    setCategoryFormState(data.category);
+                    setOriginalCategoryData(data.category);
+                    setLocalImagePreviews({});
+                    setFieldErrors({});
+                    replaceLocation(`/categories/${data.category.id}`);
+                    showToast('Catégorie créée avec succès'); // ✅ Par défaut, type SUCCESS
+                },
+                onError: (error) => {
+                    console.log({ error }, "Category creation failed");
+                    showErrorToast(error); // ✅ Toast d'erreur
+                },
             }
-        });
+        );
     }
 
     // --- Sauvegarde Manuelle / Création ---
@@ -257,29 +265,43 @@ function Page() {
 
         const c = s.collected
         s.collected = {}
-        updateCategoryMutation.mutate({
-            data: c,
-            category_id: categoryIdFromRoute
-        }, {
-            onSuccess: (data) => {
-                if (!data.category?.id) return;
-                console.log("Category updated successfully", data);
-                const updatedCategory = { ...originalCategoryData, ...data.category }; // Merger avec l'original pour garder les features/values
-                setOriginalCategoryData(updatedCategory);
-                if (hasCollected()) {
-                    debounce(() => {
-                        saveRequired()
-                    }, DEBOUNCE_CATEGORY_ID, DEBOUNCE_CATEGORY_TIME)
-                    return
-                }
-                setCategoryFormState(updatedCategory); // Mettre à jour avec données serveur
-                setLocalImagePreviews({}); // Les previews ne sont plus utiles
-                setFieldErrors({});
+        updateCategoryMutation.mutate(
+            {
+                data: c,
+                category_id: categoryIdFromRoute,
             },
-            onError: (error) => {
-                console.log({ error }, "Category update failed");
+            {
+                onSuccess: (data) => {
+                    if (!data.category?.id) return;
+
+                    console.log("Category updated successfully", data);
+
+                    const updatedCategory = {
+                        ...originalCategoryData,
+                        ...data.category,
+                    };
+
+                    setOriginalCategoryData(updatedCategory);
+
+                    if (hasCollected()) {
+                        debounce(() => {
+                            saveRequired();
+                        }, DEBOUNCE_CATEGORY_ID, DEBOUNCE_CATEGORY_TIME);
+                        return;
+                    }
+
+                    setCategoryFormState(updatedCategory);
+                    setLocalImagePreviews({});
+                    setFieldErrors({});
+
+                    debounce(() => showToast('Catégorie mise à jour avec succès'), 'category-success-update', 5000)// ✅ Toast succès
+                },
+                onError: (error) => {
+                    console.log({ error }, "Category update failed");
+                    showErrorToast(error); // ❌ Toast erreur
+                },
             }
-        });
+        );
     };
 
     useEffect(() => {
@@ -305,35 +327,31 @@ function Page() {
     const categoryName = categoryFormState?.name;
 
     // Construire les breadcrumbs
-     const breadcrumbs: BreadcrumbItem[] = useMemo(() => {
-         const crumbs: BreadcrumbItem[] = [
-             { name: t('navigation.home'), url: '/' },
-              // Lien vers la liste principale des catégories
-             { name: t('navigation.categories'), url: '/categories' },
-         ];
-         if (isNewCategory) {
-             crumbs.push({ name: t('category.createBreadcrumb') });
-         } else if (categoryName) {
-             crumbs.push({ name: limit(categoryName, 30) });
-         } else {
-              crumbs.push({ name: t('common.loading') });
-         }
-         return crumbs;
-     }, [t, isNewCategory, categoryName]);
+    const breadcrumbs: BreadcrumbItem[] = useMemo(() => {
+        const crumbs: BreadcrumbItem[] = [
+            { name: t('navigation.home'), url: '/' },
+            // Lien vers la liste principale des catégories
+            { name: t('navigation.categories'), url: '/categories' },
+        ];
+        if (isNewCategory) {
+            crumbs.push({ name: t('category.createBreadcrumb') });
+        } else if (categoryName) {
+            crumbs.push({ name: limit(categoryName, 30) });
+        } else {
+            crumbs.push({ name: t('common.loading') });
+        }
+        return crumbs;
+    }, [t, isNewCategory, categoryName]);
 
-    // --- Affichage ---
-    // Afficher PageNotFound si erreur de fetch en mode édition
-    if (!isNewCategory && isFetchError && fetchError?.status === 404) {
-        return <PageNotFound title={'option 1'} description={fetchError.message} />;
-    }
-    // Afficher un loader global pendant le chargement initial en mode édition
-    if (!isNewCategory && isLoadingCategory) {
-        return <div className="w-full min-h-screen flex items-center justify-center"><span className='text-gray-500'>{t('common.loading')}</span></div>; // Loader pleine page
-    }
-    // Si on est en mode édition mais que la catégorie n'a pas été trouvée (autre erreur 404 gérée ci-dessus)
-    if (!isNewCategory && !isLoadingCategory && !categoryFormState.id) {
-        return <PageNotFound title={t('category.notFound')} description={t('category.loadError')} back />;
-    }
+    const [isPageLoading, setIsPageLoading] = useState(true);
+    useEffect(() => {
+      setIsPageLoading(false)
+    }, []);
+
+    if (!isNewCategory && isPageLoading) return <CategoryFormSkeleton />;
+    if (!isNewCategory && isLoadingCategory) return <CategoryFormSkeleton />;  // Loader pleine page
+    if (!isNewCategory && isFetchError) return <PageNotFound />
+    if (!isNewCategory && !fetchedCategoryData?.id) return <PageNotFound />
 
     // Préparer les URLs d'image pour l'affichage (locale ou depuis serveur)
     const viewUrl = localImagePreviews.view ? getImg(localImagePreviews.view) : (typeof categoryFormState.view?.[0] === 'string' ? getImg(categoryFormState.view[0], undefined, currentStore?.url) : '');
@@ -342,7 +360,6 @@ function Page() {
     const showIconPlaceholder = !localImagePreviews.icon && (!categoryFormState.icon || categoryFormState.icon.length === 0);
 
     const hasError = Object.keys(fieldErrors).length > 0
-
 
     console.log(categoryFormState, viewUrl);
 
@@ -389,7 +406,7 @@ function Page() {
                 <div className="flex flex-col sm:flex-row items-start gap-6">
                     {/* Icône */}
                     <div className='flex-shrink-0'>
-                        <label className='block text-sm font-medium text-gray-700 mb-1  flex  items-center' htmlFor='chose-category-icon'>
+                        <label className='text-sm font-medium text-gray-700 mb-1  flex  items-center' htmlFor='chose-category-icon'>
                             {t('category.iconLabel')} <Indicator title={t('category.iconTooltipTitle')} description={t('category.iconTooltipDesc')} />
                         </label>
                         <label htmlFor='chose-category-icon' className={`relative block w-36 h-36 rounded-lg cursor-pointer overflow-hidden group bg-gray-100 border ${fieldErrors.icon ? 'border-red-500' : 'border-gray-300'} ${!showIconPlaceholder ? 'hover:opacity-90' : 'hover:bg-gray-200'}`}>
@@ -430,7 +447,7 @@ function Page() {
 
                 {/* Nom Catégorie */}
                 <div>
-                    <label className='block text-sm font-medium text-gray-700 mb-1 flex justify-between items-center' htmlFor='input-category-name'>
+                    <label className='text-sm font-medium text-gray-700 mb-1 flex justify-between items-center' htmlFor='input-category-name'>
                         <span>{t('category.nameLabel')} <IoPencil className="inline-block ml-1 w-3 h-3 text-gray-400" /></span>
                         <span className={`text-xs ${(categoryFormState.name?.trim()?.length || 0) > 255 ? 'text-red-600' : 'text-gray-400'}`}>
                             {(categoryFormState.name?.trim()?.length || 0)} / 52
@@ -451,7 +468,7 @@ function Page() {
 
                 {/* Description Catégorie */}
                 <div>
-                    <label className='block text-sm font-medium text-gray-700 mb-1 flex justify-between items-center' htmlFor='input-category-description'>
+                    <label className='text-sm font-medium text-gray-700 mb-1 flex justify-between items-center' htmlFor='input-category-description'>
                         <span>{t('category.descriptionLabel')} <IoPencil className="inline-block ml-1 w-3 h-3 text-gray-400" /></span>
                         <span className={`text-xs ${(categoryFormState.description?.trim()?.length || 0) > 1000 ? 'text-red-600' : 'text-gray-400'}`}>
                             {(categoryFormState.description?.trim()?.length || 0)} / 1000
@@ -460,9 +477,9 @@ function Page() {
                     {/* Utiliser l'éditeur Markdown */}
                     <MarkdownEditor2
                         value={categoryFormState.description || ''}
-                        setValue={(value)=>{
-                            console.log({value});
-                            
+                        setValue={(value) => {
+                            console.log({ value });
+
                             handleMarkdownChange(value)
                         }}
                         error={!!fieldErrors.description} // Passer l'état d'erreur
@@ -544,6 +561,8 @@ function Page() {
         </div>
     );
 }
+
+
 
 function ParentCategoryButton({ categoryFormState, openChild, ChildViewer, CategoriesPopup, handleParentCategorySelect, t }: any) {
 

@@ -207,7 +207,7 @@ export const useGetThemeById = (themeId: string | undefined, options: { enabled?
 export const useActivateThemeForStore = (): UseMutationResult<ChangeThemeResponse, ApiError, ChangeThemeParams> => {
     const api = useApi();
     return useMutation<ChangeThemeResponse, ApiError, ChangeThemeParams>({
-        mutationFn: (params) => api.theme.activateForStore(params), // ou api.store.changeTheme(params)
+        mutationFn: (params) => waitFor(api.theme.activateForStore(params),2000), // ou api.store.changeTheme(params)
         onSuccess: (data, variables) => {
             // Invalider les détails du store pour refléter le nouveau thème actif
             queryClient.invalidateQueries({ queryKey: ['storeDetails', variables.store_id] } as InvalidateQueryFilters);
@@ -522,7 +522,7 @@ export const useGetMe = (options: { enabled?: boolean } = {}): UseQueryResult<Ge
 export const useUpdateUser = (): UseMutationResult<UpdateUserResponse, ApiError, UpdateUserParams> => {
     const api = useApi();
     return useMutation<UpdateUserResponse, ApiError, UpdateUserParams>({
-        mutationFn: (params) => api.auth.update(params),
+        mutationFn: (params) => waitFor(api.auth.update(params),1000),
         onSuccess: (data) => {
             queryClient.setQueryData<GetMeResponse>(AUTH_QUERY_KEYS.me, (oldData) =>
                 oldData ? { user: { ...oldData.user, ...data.user } } : undefined

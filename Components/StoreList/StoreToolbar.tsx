@@ -15,7 +15,7 @@ interface StoreToolbarProps {
 export function StoreToolbar({ filter, onFilterChange , newStoreRequire}: StoreToolbarProps) {
     const { t } = useTranslation();
     const [searchTerm, setSearchTerm] = useState(filter.search || '');
-    const currentStatus = filter.status || 'all';
+    const [currentStatus, setCurrentStatus] = useState<StoreFilterType['status']>('all');
 
     // Debounce la recherche
     useEffect(() => {
@@ -33,6 +33,7 @@ export function StoreToolbar({ filter, onFilterChange , newStoreRequire}: StoreT
 
     const handleStatusChange = (status: StoreFilterType['status']) => {
         onFilterChange({ ...filter, is_active:status == 'all'?undefined:status=='active'?true:false, page: 1 });
+        setCurrentStatus(status)
     };
 
     return (

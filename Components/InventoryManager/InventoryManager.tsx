@@ -62,51 +62,58 @@ export function InventoryManager({ store }: InventoryManagerProps) {
      console.log(inventoriesData);
      
 
-    return (
-        // Section principale : fond blanc, rounded, shadow, border, padding, flex col
-        <div className="inventory-manager bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 flex flex-col gap-4">
-            {/* En-tête section */}
-            <div className="flex justify-between items-center">
-                <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
-                     <IoStorefrontOutline className="w-5 h-5 text-gray-400" />
-                     {t('inventory.sectionTitle')} 
-                 </h2>
-                 {/* Bouton Ajouter */}
-                 <button
-                     type="button"
-                     onClick={handleOpenAddPopup}
-                     className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
-                  >
-                     <IoAddSharp size={18} className="-ml-1" />
-                     {t('inventory.addButton')} 
-                 </button>
-            </div>
-
-            {/* Liste des inventaires */}
-             <div className="inventory-list flex flex-col gap-2">
-                 {isLoading && (
-                     // Afficher plusieurs skeletons
-                     Array.from({ length: 3 }).map((_, i) => <InventoryItemSkeletonRow key={`inv-skel-${i}`} />)
-                 )}
-                 {isError && (
-                     <p className="text-sm text-red-500 text-center py-4">{error?.message || t('inventory.fetchError')}</p> 
-                 )}
-                 {!isLoading && !isError && inventories.length === 0 && (
-                     <p className="text-sm text-gray-500 italic text-center py-4">{t('inventory.noInventories')}</p> 
-                 )}
-                  {!isLoading && !isError && inventories.map(inventory => (
-                      <InventoryItemRow
-                          key={inventory.id}
-                          inventory={inventory}
-                          onEdit={() => handleOpenEditPopup(inventory)} // Passer handler édition
-                      />
-                  ))}
-             </div>
-             {/* Ajouter pagination si nécessaire */}
+     return (
+        <div className="inventory-manager bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 flex flex-col gap-6 md:gap-8">
+          
+          {/* En-tête section */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+            <h2 className="text-lg font-semibold text-gray-800 flex items-center gap-2">
+              <IoStorefrontOutline className="min-w-5 w-5 h-5 text-gray-400" />
+              {t('inventory.sectionTitle')}
+            </h2>
+      
+            {/* Bouton Ajouter */}
+            <button
+              type="button"
+              onClick={handleOpenAddPopup}
+              className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all"
+            >
+              <IoAddSharp size={18} className="-ml-1" />
+              {t('inventory.addButton')}
+            </button>
+          </div>
+      
+          {/* Liste des inventaires */}
+          <div className="inventory-list flex flex-col gap-3 sm:gap-4">
+            {isLoading && (
+              Array.from({ length: 3 }).map((_, i) => (
+                <InventoryItemSkeletonRow key={`inv-skel-${i}`} />
+              ))
+            )}
+            {isError && (
+              <p className="text-sm text-red-500 text-center py-4">
+                {error?.message || t('inventory.fetchError')}
+              </p>
+            )}
+            {!isLoading && !isError && inventories.length === 0 && (
+              <p className="text-sm text-gray-500 italic text-center py-4">
+                {t('inventory.noInventories')}
+              </p>
+            )}
+            {!isLoading && !isError && inventories.map(inventory => (
+              <InventoryItemRow
+                key={inventory.id}
+                inventory={inventory}
+                onEdit={() => handleOpenEditPopup(inventory)}
+              />
+            ))}
+          </div>
+      
+          {/* Pagination future */}
+          {/* <Pagination ... /> */}
         </div>
-    );
+      );
 }
-
 
 // --- Skeleton pour InventoryItemRow (Nouveau) ---
 function InventoryItemSkeletonRow() {

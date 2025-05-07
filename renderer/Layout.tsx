@@ -2,6 +2,7 @@
 
 export { Layout };
 
+import './Layout.css'
 import React, { useEffect, useState, useMemo } from 'react'; // Ajouter useState, useMemo
 import logoUrl from './logo.svg';
 import { PageContextProvider, usePageContext } from './usePageContext';
@@ -16,6 +17,7 @@ import { useGlobalStore } from '../pages/stores/StoreStore'; // Gardé pour fetc
 import { useTranslation } from 'react-i18next'; // Pour traduction future
 import { useChildViewer } from '../Components/ChildViewer/useChildViewer'; // Hook pour popup
 import { IoHome, IoHomeOutline, IoStorefront, IoStorefrontOutline, IoPeople, IoPeopleOutline, IoDocumentText, IoDocumentTextOutline, IoCube, IoCubeOutline, IoLayers, IoLayersOutline } from 'react-icons/io5'; // Importer directement les icônes
+import { Toaster } from 'react-hot-toast';
 
 
 function Layout({ children, pageContext }: { children: React.ReactNode; pageContext: PageContext }) {
@@ -38,13 +40,35 @@ function Layout({ children, pageContext }: { children: React.ReactNode; pageCont
             <Link href="/users" activeIcon={<IoPeople className='w-5 h-5' />} defaultIcon={<IoPeopleOutline className='w-5 h-5' />}>{t('navigation.teams')}</Link>
             {/* Lien Inventaire ajouté */}
             {/* <Link href="/inventory" activeIcon={<IoHome className='w-5 h-5' />} defaultIcon={<IoHomeOutline className='w-5 h-5' />}>{t('navigation.inventory')}</Link> */}
-            <Link href="/stores" activeIcon={<IoStorefront className='w-5 h-5' />} defaultIcon={<IoStorefrontOutline className='w-5 h-5' />}>{t('navigation.stores')}</Link>
+            <Link href="/stores" add={['/themes']} activeIcon={<IoStorefront className='w-5 h-5' />} defaultIcon={<IoStorefrontOutline className='w-5 h-5' />}>{t('navigation.stores')}</Link>
             {/* Ajouter lien Settings, Stats etc. */}
           </Sidebar>
 
           {/* Contenu Principal */}
           <Content>{children}</Content>
-
+          <Toaster
+            position="top-right"
+            reverseOrder={false}
+            toastOptions={{
+              className: '',
+              duration: 4000,
+              style: {
+                background: '#363636',
+                color: '#fff',
+                fontSize: '14px',
+              },
+              success: {
+                duration: 3000,
+                iconTheme: {
+                  primary: 'green',
+                  secondary: 'black',
+                },
+              },
+              error: {
+                duration: 5000,
+              },
+            }}
+          />
         </Frame>
 
         {/* Bottombar: Affichée seulement sur mobile (inférieur à sm) */}
@@ -69,7 +93,7 @@ function OpenChild() {
   const hash = useHashWatcher();
 
   // Logique useEffect inchangée
-  useEffect(() => { 
+  useEffect(() => {
     if (!currentChild && location.hash === "#openChild") {
       ClientCall(() => {
         // history.replaceState(null, "", location.pathname);
@@ -77,10 +101,10 @@ function OpenChild() {
         openChild(null)
       });
     }
-    if(location.hash !== "#openChild") {
+    if (location.hash !== "#openChild") {
       openChild(null)
     }
-   }, [currentChild, hash]);
+  }, [currentChild, hash]);
 
   // Conversion align/justify en classes Tailwind
   const flexAlignment = useMemo(() => {
@@ -132,9 +156,9 @@ function Frame({ children }: { children: React.ReactNode }) {
 
 // --- Composant Sidebar ---
 function Sidebar({ children }: { children: React.ReactNode }) {
-  
-  const { urlPathname} = usePageContext()
-  return !(urlPathname.includes('login') ||  urlPathname.includes('register') ) && (
+
+  const { urlPathname } = usePageContext()
+  return !(urlPathname.includes('login') || urlPathname.includes('register')) && (
     <div
       id="sidebar"
       // Caché par défaut, visible à partir de sm
@@ -171,7 +195,7 @@ function Bottombar({ children }: { children: React.ReactNode }) {
 
 // --- Composant Content ---
 function Content({ children }: { children: React.ReactNode }) {
-  const {getCurrentStore } = useGlobalStore();
+  const { getCurrentStore } = useGlobalStore();
 
   // Fetch initial store (logique inchangée)
   useEffect(() => {

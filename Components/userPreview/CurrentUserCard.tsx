@@ -4,14 +4,16 @@ import { useTranslation } from "react-i18next";
 import { useGetMe } from "../../api/ReactSublymusApi"; // Hook pour récupérer l'utilisateur connecté
 import { getImg } from "../Utils/StringFormater";
 import { IoChevronForward, IoPersonCircleOutline } from "react-icons/io5";
+import { useGlobalStore } from "../../pages/stores/StoreStore";
 
 export function CurrentUserCard() {
     const { t } = useTranslation();
+    const {currentStore} = useGlobalStore()
     const { data: meData, isLoading, isError } = useGetMe(); // Récupérer données /me
     const user = meData?.user;
 
     // S'assurer que le chemin vers le placeholder est correct
-    const avatarSrc = user?.photo?.[0] ? getImg(user.photo[0]).match(/url\("?([^"]+)"?\)/)?.[1] : undefined;
+    const avatarSrc = user?.photo?.[0] ? getImg(user.photo[0],undefined,currentStore?.url) : undefined;
 
     // --- Rendu Skeleton ---
     if (isLoading) {
@@ -47,7 +49,7 @@ export function CurrentUserCard() {
             <div className="flex items-center gap-3 min-w-0">
                 {/* Avatar */}
                 <div className="w-12 h-12 rounded-full bg-cover bg-center bg-gray-200 text-blue-600 font-medium text-xl flex items-center justify-center flex-shrink-0 ring-1 ring-blue-200 ring-offset-1"
-                    style={{ backgroundImage: avatarSrc ? `url(${avatarSrc})` : 'none' }}
+                    style={{ background:avatarSrc}}
                 >
                     {!avatarSrc && (user.full_name?.substring(0, 1).toUpperCase() || <IoPersonCircleOutline />)}
                 </div>

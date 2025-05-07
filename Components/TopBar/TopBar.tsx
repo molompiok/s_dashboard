@@ -45,7 +45,7 @@ function Topbar({
     // --- Préparer les infos utilisateur pour l'avatar ---
     const userPhotoUrl = user?.photo?.[0]; // Prend la première photo
     const userInitials = user?.full_name?.slice(0, 2).toUpperCase() || '?'; // Initiales ou '?'
-    const avatarImageUrl = userPhotoUrl ? getImg(userPhotoUrl, undefined,currentStore?.url) : undefined; // Obtenir l'URL avec getImg
+    const avatarImageUrl = userPhotoUrl ? getImg(userPhotoUrl, undefined,currentStore?.url).match(/url\("?([^"]+)"?\)/)?.[1] : undefined; // Obtenir l'URL avec getImg
     const displayName = user?.full_name;
 
     // --- (Logique existante inchangée) ---

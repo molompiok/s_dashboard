@@ -13,6 +13,8 @@ import { useState } from "react";
 import { Confirm } from "../../Components/Confirm/Confirm";
 import { useChildViewer } from "../ChildViewer/useChildViewer";
 import { ChildViewer } from "../ChildViewer/ChildViewer";
+import { showErrorToast, showToast } from "../Utils/toastNotifications";
+import { ConfirmPopup } from "../Confirm/ConfirmPopup";
 
 // Enregistrer les modules Chart.js nécessaires
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
@@ -47,6 +49,7 @@ export function SelectedStoreDetails({ store, onEditRequired }: SelectedStoreDet
         },
         { enabled: !!store.id }
     );
+
     // const statsData = { // Placeholder Data
     //     order_stats: [{ date: '2023-10-01', orders_count: 5 }, { date: '2023-10-02', orders_count: 8 }],
     //     visits_stats: [{ date: '2023-10-01', visits: 50 }, { date: '2023-10-02', visits: 75 }],
@@ -72,46 +75,67 @@ export function SelectedStoreDetails({ store, onEditRequired }: SelectedStoreDet
     // --- Handlers pour les actions ---
     const _handleStartStop = () => {
         if (store.is_running) {
-            logger.warn("Stop store action not implemented");
-            store.id && stopStoreMutation.mutate({
-                store_id: store.id
-            }, {
-                onSuccess(data, variables, context) {
-                    console.log('Action Stop', data.store);
-                    if (!data.store?.id) return;
-                    setCurrentStore(data.store)
+          logger.warn("Stop store action not implemented");
+          store.id &&
+            stopStoreMutation.mutate(
+              {
+                store_id: store.id,
+              },
+              {
+                onSuccess(data) {
+                  console.log('Action Stop', data.store);
+                  if (!data.store?.id) return;
+                  setCurrentStore(data.store);
+                  openChild(null)
+                  showToast("Boutique arrêtée avec succès",'INFO'); // ✅ Toast succès
                 },
-            });
+                onError(error) {
+                    openChild(null)
+                  logger.error({ error }, `Failed to stop store ${store.id}`);
+                  showErrorToast(error); // ❌ Toast erreur
+                },
+              }
+            );
         } else {
-            logger.warn("Start store action not implemented");
-            store.id && startStoreMutation.mutate({
-                store_id: store.id
-            }, {
-                onSuccess(data, variables, context) {
-                    console.log('Action Satrt', data.store);
-
-                    if (!data.store?.id) return
-                    setCurrentStore(data.store)
+          logger.warn("Start store action not implemented");
+          store.id &&
+            startStoreMutation.mutate(
+              {
+                store_id: store.id,
+              },
+              {
+                onSuccess(data) {
+                  console.log('Action Start', data.store);
+                  if (!data.store?.id) return;
+                  setCurrentStore(data.store);
+                  openChild(null)
+                  showToast("Boutique démarrée avec succès",'SUCCESS'); // ✅ Toast succès
                 },
-            });
+                onError(error) {
+                   openChild(null)
+                  logger.error({ error }, `Failed to start store ${store.id}`);
+                  showErrorToast(error); // ❌ Toast erreur
+                },
+              }
+            );
         }
-    }
+      };
+
     const handleStartStop = () => {
         openChild(<ChildViewer>
-            <div>
-                <h3>{store.is_running ? t('storesPage.comfirm.stop') : t('storesPage.comfirm.start')}</h3>
-                <p>{store.is_running ? t('storesPage.comfirm.stopPompt') : t('storesPage.comfirm.startPompt')}</p>
-                <Confirm canConfirm
-                    cancel={t('common.cancel')}
-                    confirm={t('common.ok')}
-                    onConfirm={() => {
+                <ConfirmPopup
+                    title={store.is_running ? t('storesPage.comfirm.stop') : t('storesPage.comfirm.start')}
+                    description={store.is_running ? t('storesPage.comfirm.stopPompt') : t('storesPage.comfirm.startPompt')} 
+                    dangerLevel="confirm"
+                    cancelText={t('common.cancel')}
+                    actionText={t('common.ok')}
+                    onAction={() => {
                         _handleStartStop();
                     }}
                     onCancel={() => {
                         openChild(null)
                     }}
                 />
-            </div>
         </ChildViewer>, {
             background: '#3455'
         })

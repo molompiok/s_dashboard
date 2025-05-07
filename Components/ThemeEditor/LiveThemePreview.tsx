@@ -6,6 +6,8 @@ import { useTranslation } from "react-i18next";
 import logger from '../../api/Logger';
 import { IoExpandOutline, IoPhonePortraitOutline, IoTabletPortraitOutline, IoTvOutline, IoSyncOutline } from "react-icons/io5";
 import ClipLoader from 'react-spinners/ClipLoader';
+import { Download } from 'lucide-react';
+import { SpinnerIcon } from '../Confirm/Spinner';
 
 type PreviewDevice = 'mobile' | 'tablet' | 'desktop';
 
@@ -15,14 +17,14 @@ interface LiveThemePreviewProps {
     settings: ThemeSettingsValues; // Les paramètres DRAFT actuels à prévisualiser
     onInstall?: () => void; // Pas pertinent pour l'éditeur
     isInstalling?: boolean; // Pas pertinent pour l'éditeur
-    avalaibleWidth?:number
+    avalaibleWidth?: number
 }
 
-export function LiveThemePreview({ store, theme, settings ,avalaibleWidth}: LiveThemePreviewProps) {
+export function LiveThemePreview({ store, theme, settings, avalaibleWidth, onInstall, isInstalling }: LiveThemePreviewProps) {
     const { t } = useTranslation();
     const iframeRef = useRef<HTMLIFrameElement>(null);
     const [isLoadingIframe, setIsLoadingIframe] = useState(true);
-    const [deviceView, setDeviceView] = useState<PreviewDevice>('desktop');
+    const [deviceView, setDeviceView] = useState<PreviewDevice>('mobile');
     // État pour suivre si l'iframe est prête à recevoir des postMessages
     const [isIframeReady, setIsIframeReady] = useState(false);
     // Clé pour forcer le re-rendu de l'iframe si postMessage n'est pas fiable
@@ -96,14 +98,14 @@ export function LiveThemePreview({ store, theme, settings ,avalaibleWidth}: Live
 
     const iframeHeightClass = useMemo((): string => {
         switch (deviceView) {
-            case 'mobile': return 'h-[667px] max-h-[80vh]'; // Hauteur iPhone approx
+            case 'mobile': return 'h-[680px] max-h-[80vh]'; // Hauteur iPhone approx
             case 'tablet': return 'h-[1024px] max-h-[80vh]'; // Hauteur iPad approx
             case 'desktop':
             default: return 'h-full'; // Prend la hauteur dispo
         }
     }, [deviceView]);
 
-console.log(avalaibleWidth);
+    console.log(avalaibleWidth);
 
 
     return (
@@ -111,7 +113,7 @@ console.log(avalaibleWidth);
         <div className="live-theme-preview flex flex-col h-full w-full bg-gray-200 relative overflow-hidden">
 
             {/* Barre d'outils */}
-            <div style={{width:avalaibleWidth}} className="flex-shrink-0 bg-white border-b border-gray-300 px-3 py-2 flex items-center justify-between gap-4 shadow-sm z-10">
+            <div style={{ width: avalaibleWidth }} className="flex-shrink-0 bg-white border-b border-gray-300 px-3 py-2 flex items-center justify-between gap-4 shadow-sm z-10">
                 {/* Titre (peut être caché ou simplifié) */}
                 <div className='w-24'></div>
 
@@ -133,11 +135,17 @@ console.log(avalaibleWidth);
                     </button>
                 </div>
 
-                {/* Placeholder à droite pour équilibrer (peut contenir d'autres actions) */}
-                <div>
-                    <span className="text-xs text-gray-500">{t('themeEditor.previewing')}</span>
-                    <h3 className="text-sm font-semibold text-gray-800 truncate" title={theme.name}>{theme.name}</h3>
-                </div>
+                <button
+                    disabled={isInstalling||isLoadingIframe}
+                    onClick={onInstall} // fonction à définir
+                    className="flex items-center flex-row"
+                >
+                    {!isInstalling && <Download className="w-4 h-4" />}
+                    <span>{isInstalling ?<>
+                    <SpinnerIcon/>
+                    { t('themeMarket.installingButton')}
+                    </> : t('themeMarket.installButton')}</span>
+                </button>
             </div>
 
             {/* Conteneur Iframe */}
@@ -156,7 +164,7 @@ console.log(avalaibleWidth);
                     style={deviceView == 'desktop' ? {
                         width: '1072px',
                         height: '800px',
-                        transform: `scale(${avalaibleWidth ?avalaibleWidth/1080:0.5})`, /* 1080 * 0.5 = 540 (vue sur mobile) */
+                        transform: `scale(${avalaibleWidth ? avalaibleWidth / 1080 : 0.5})`, /* 1080 * 0.5 = 540 (vue sur mobile) */
                         transformOrigin: ' top left',
                         border: 'none',
                     } : undefined}
@@ -194,21 +202,3 @@ export function LiveThemePreviewSkeleton() {
     );
 }
 
-
-// --- Nouvelles clés i18n ---
-/*
-{
- "themeEditor": {
-    // ... clés existantes ...
-    "previewing": "Aperçu en direct",
-    "reloadPreview": "Recharger l'aperçu"
- },
- "themePreview": { // Garder les clés existantes pour les tooltips
-    "viewMobile": "Vue Mobile",
-    "viewTablet": "Vue Tablette",
-    "viewDesktop": "Vue Bureau",
-    "previewTitle": "Aperçu du thème : {{name}}"
- },
- // ...
-}
-*/

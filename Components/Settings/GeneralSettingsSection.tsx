@@ -8,6 +8,7 @@ import logger from '../../api/Logger';
 import { IoCheckmarkCircle, IoInformationCircleOutline, IoPauseCircle, IoPencil, IoPlayCircleOutline, IoStopCircleOutline, IoSyncCircleOutline } from 'react-icons/io5';
 import TimezoneSelect, { ITimezoneOption } from 'react-timezone-select'; // Utiliser un sélecteur de fuseau horaire
 import { ApiError } from '../../api/SublymusApi';
+import { showErrorToast, showToast } from '../Utils/toastNotifications';
 
 // Installer react-timezone-select: npm install react-timezone-select
 // Il faudra peut-être aussi installer les types: npm install --save-dev @types/react-timezone-select
@@ -99,19 +100,19 @@ export function GeneralSettingsSection({ store }: GeneralSettingsSectionProps) {
         action.mutate(
             { store_id: store.id },
             {
-                onSuccess: (data) => {
-                    logger.info(`Store ${actionName} requested successfully`, { storeId: store.id, jobId: data.store });
-                    // L'invalidation du cache 'storeDetails' dans le hook mettra à jour l'UI
-                    // Afficher toast succès? (Ex: "Demande de démarrage envoyée")
-                },
-                onError: (error: ApiError) => {
-                    logger.error({ error }, `Failed to request store ${actionName} for store ${store.id}`);
-                    // Afficher toast erreur?
-                    // On ne revert pas l'état is_running ici car l'état réel est côté serveur
-                    // et sera mis à jour par le refetch après invalidation.
-                }
+              onSuccess: (data) => {
+                logger.info(`Store ${actionName} requested successfully`, { storeId: store.id, jobId: data.store });
+                showToast(`Demande de ${actionName} envoyée avec succès`); // ✅ Toast succès
+                // L'invalidation du cache 'storeDetails' dans le hook mettra à jour l'UI
+              },
+              onError: (error: ApiError) => {
+                logger.error({ error }, `Failed to request store ${actionName} for store ${store.id}`);
+                showErrorToast(error); // ❌ Toast erreur
+                // On ne revert pas l'état is_running ici car l'état réel est côté serveur
+                // et sera mis à jour par le refetch après invalidation.
+              },
             }
-        );
+          );
     };
 
     // --- Sauvegarde ---
@@ -141,20 +142,20 @@ export function GeneralSettingsSection({ store }: GeneralSettingsSectionProps) {
         store.id && updateStoreMutation.mutate(
             { store_id: store.id, data: dataToUpdate }, // Passer l'objet data directement
             {
-                onSuccess: (updatedStoreData) => {
-                    logger.info(`Store ${store.id} general settings updated`);
-                    setHasChanges(false); // Reset après succès
-                    setFieldErrors({});
-                    // Afficher toast succès?
-                    // Les données seront rafraîchies via l'invalidation du hook parent useGetStoreById
-                },
-                onError: (error: ApiError) => {
-                    logger.error({ error }, `Failed to update general settings for store ${store.id}`);
-                    setFieldErrors({ api: error.message }); // Afficher erreur API
-                    // Afficher toast erreur?
-                }
+              onSuccess: () => {
+                logger.info(`Store ${store.id} general settings updated`);
+                setHasChanges(false); // Reset après succès
+                setFieldErrors({});
+                showToast("Paramètres généraux de la boutique mis à jour avec succès"); // ✅ Toast succès
+                // Les données seront rafraîchies via l'invalidation du hook parent useGetStoreById
+              },
+              onError: (error: ApiError) => {
+                logger.error({ error }, `Failed to update general settings for store ${store.id}`);
+                setFieldErrors({ api: error.message }); // Afficher erreur API
+                showErrorToast(error); // ❌ Toast erreur
+              },
             }
-        );
+          );
 
     };
 
@@ -179,10 +180,11 @@ export function GeneralSettingsSection({ store }: GeneralSettingsSectionProps) {
                     <input
                         type="text"
                         name="name"
+                        disabled
                         id="store-name"
                         value={formState.name || ''}
                         onChange={handleInputChange}
-                        className={`mt-1 block w-full px-4 rounded-md shadow-sm sm:text-sm h-10 ${fieldErrors.name ? 'border-red-500 ring-red-500 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'}`}
+                        className={`mt-1 opacity-40 block w-full px-4 rounded-md shadow-sm sm:text-sm h-10 ${fieldErrors.name ? 'border-red-500 ring-red-500 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'}`}
                     />
                     {fieldErrors.name && <p className="mt-1 text-xs text-red-600">{fieldErrors.name}</p>}
                 </div>

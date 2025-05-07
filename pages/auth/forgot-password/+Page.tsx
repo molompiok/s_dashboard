@@ -3,13 +3,13 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 // Importer le hook API pour demander la réinitialisation (à créer dans ReactSublymusApi)
-import { useRequestPasswordReset } from '../../api/ReactSublymusApi';
-import logger from '../../api/Logger';
-import { ApiError } from '../../api/SublymusApi';
+import { useRequestPasswordReset } from '../../../api/ReactSublymusApi';
+import logger from '../../../api/Logger';
+import { ApiError } from '../../../api/SublymusApi';
 import { IoMailOutline, IoArrowBack } from 'react-icons/io5';
 import logoUrl from '../../renderer/logo.svg';
-import { Link } from '../../renderer/Link'; // Pour lien retour login
-import { Host } from '../../renderer/+config';
+import { Link } from '../../../renderer/Link'; // Pour lien retour login
+import { Host } from '../../../renderer/+config';
 
 // S'assurer que le hook useRequestPasswordReset est créé dans ReactSublymusApi.tsx
 // et qu'il appelle api.auth.forgotPassword(email)
@@ -43,7 +43,7 @@ function Page() {
         requestResetMutation.mutate(
             {
                 email:  email.trim(), 
-                callback_url: `${Host}/reset-password`
+                callback_url: `${Host}/auth/reset-password`
             }, // Passer l'email et l'URL callback frontend
             {
                 onSuccess: (data:any) => {

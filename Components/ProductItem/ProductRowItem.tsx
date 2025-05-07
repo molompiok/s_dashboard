@@ -13,6 +13,7 @@ import { NO_PICTURE } from '../Utils/constants';
 import { useChildViewer } from '../ChildViewer/useChildViewer'; // Pour confirmation delete
 import { ConfirmDelete } from '../Confirm/ConfirmDelete'; // Pour confirmation delete
 import { ChildViewer } from '../ChildViewer/ChildViewer'; // Pour confirmation delete
+import { showErrorToast, showToast } from '../Utils/toastNotifications';
 
 export { ProductRowItem };
 
@@ -77,8 +78,14 @@ function ProductRowItem({ product, categoriesMap }: ProductRowItemProps) {
                         deleteProductMutation.mutate({
                             product_id: product.id
                         }, {
-                            onSuccess: () => { logger.info(`Product ${product.id} deleted`); openChild(null); },
-                            onError: (error) => { logger.error({ error }, `Failed to delete product ${product.id}`); openChild(null); }
+                            onSuccess: () => {
+                                showToast('Le Produit a bien été supprimée', 'WARNING')
+                                logger.info(`Category ${product.id} deleted`); openChild(null);
+                            },
+                            onError: (error) => {
+                                showErrorToast(error);
+                                logger.error({ error }, `Failed to delete product ${product.id}`); openChild(null);
+                            }
                         });
                     }}
                 />
@@ -98,10 +105,16 @@ function ProductRowItem({ product, categoriesMap }: ProductRowItemProps) {
                 is_visible: newVisibility
             }
         }, {
-            onSuccess: () => { logger.info(`Product ${product.id} visibility updated to ${newVisibility}`); },
+            onSuccess: () => {
+                logger.info(`Product ${product.id} visibility updated to ${newVisibility}`);
+                newVisibility
+                    ? showToast('Le produit est maintenant visible par vos client')
+                    : showToast('Le produit n\'est plus visible par vos client','CANCEL');
+            },
             onError: (error) => {
                 logger.error({ error }, `Failed to update visibility for product ${product.id}`);
                 setIsVisible(!newVisibility); // Revert UI
+                showErrorToast(error);
             }
         });
     };
@@ -134,9 +147,12 @@ function ProductRowItem({ product, categoriesMap }: ProductRowItemProps) {
                     <IoCopyOutline className={`w-3 h-3 transition-all ${copiedId ? 'text-green-500 scale-110' : 'text-gray-400 opacity-0 group-hover:opacity-60'}`} />
                 </p>
                 {/* Rating (peut être mis ici sur petit écran) */}
-                <div className="flex min-[500px]:hidden flex-wrap gap-x-3 gap-y-1 mt-1 text-xs text-gray-600">
+                <div className="flex min-[500px]:hidden w-auto flex-wrap gap-x-3 gap-y-1 mt-1 text-xs text-gray-600">
                     <span className="inline-flex gap-1 items-center"><IoStarHalf className="text-amber-500" />{(product.rating || 0).toFixed(1)}</span>
                     <span className="inline-flex gap-1 items-center"><IoPeopleSharp />{shortNumber(product.comment_count || 0)}</span>
+                    <button onClick={handleToggleVisibility} title={isVisible ? t('productList.setHidden') : t('productList.setVisible')} className="p-1 sx:hidden rounded-full hover:bg-gray-100">
+                        {isVisible ? <IoEyeOutline className="w-4 h-4 text-green-500" /> : <IoEyeOffOutline className="w-4 h-4 text-gray-400" />}
+                    </button>
                 </div>
             </div>
 
@@ -152,9 +168,9 @@ function ProductRowItem({ product, categoriesMap }: ProductRowItemProps) {
 
             {/* Rating (caché en dessous de 500px) */}
             <div className="hidden min-[500px]:flex flex-wrap gap-x-3 gap-y-1 mt-1 text-xs text-gray-600">
-                    <span className="inline-flex gap-1 items-center"><IoStarHalf className="text-amber-500" />{(product.rating || 0).toFixed(1)}</span>
-                    <span className="inline-flex gap-1 items-center"><IoPeopleSharp />{shortNumber(product.comment_count || 0)}</span>
-                </div>
+                <span className="inline-flex gap-1 items-center"><IoStarHalf className="text-amber-500" />{(product.rating || 0).toFixed(1)}</span>
+                <span className="inline-flex gap-1 items-center"><IoPeopleSharp />{shortNumber(product.comment_count || 0)}</span>
+            </div>
 
             {/* Prix (sm+) */}
             <div className="hidden sx:flex flex-col items-end flex-shrink-0 w-24">
@@ -171,11 +187,11 @@ function ProductRowItem({ product, categoriesMap }: ProductRowItemProps) {
                     }`} title={t(`productList.stockStatus.${stockStatus}`, { count: stockLevel })}>
                     {stockStatus === 'in_stock' ? t('productList.inStock') : stockStatus === 'low_stock' ? t('productList.lowStockShort', { count: stockLevel }) : t('productList.outOfStock')}
                 </span>
-                {/* Visibilité */}
-                <button onClick={handleToggleVisibility} title={isVisible ? t('productList.setHidden') : t('productList.setVisible')} className="p-1 rounded-full hover:bg-gray-100">
-                    {isVisible ? <IoEyeOutline className="w-4 h-4 text-green-500" /> : <IoEyeOffOutline className="w-4 h-4 text-gray-400" />}
-                </button>
             </div>
+            {/* Visibilité */}
+            <button onClick={handleToggleVisibility} title={isVisible ? t('productList.setHidden') : t('productList.setVisible')} className="p-1 rounded-full hidden sx:flex hover:bg-gray-100">
+                {isVisible ? <IoEyeOutline className="w-4 h-4 text-green-500" /> : <IoEyeOffOutline className="w-4 h-4 text-gray-400" />}
+            </button>
 
             {/* Actions Menu */}
             <div className="relative flex-shrink-0 ml-auto sm:ml-0">

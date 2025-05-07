@@ -9,6 +9,7 @@ import { useChildViewer } from "../ChildViewer/useChildViewer"; // Pour confirma
 import { ConfirmDelete } from "../Confirm/ConfirmDelete";
 import { ChildViewer } from "../ChildViewer/ChildViewer";
 import logger from "../../api/Logger";
+import { showErrorToast, showToast } from "../Utils/toastNotifications";
 
 interface CollaboratorItemRowProps {
     collaboratorRole: RoleInterface & { user: UserInterface }; // Type combiné attendu de l'API
@@ -35,20 +36,23 @@ export function CollaboratorItemRow({ collaboratorRole, onEditPermissions }: Col
                     title={t('collaborator.confirmDelete', { name: user.full_name || user.email })}
                     onCancel={() => openChild(null)}
                     onDelete={() => {
-                        deleteCollaboratorMutation.mutate({
-                            user_id:user.id
-                        }, { // Passer l'ID utilisateur
-                            onSuccess: () => {
-                                logger.info(`Collaborator ${user.id} removed`);
-                                openChild(null);
-                                // Invalidation gérée par le hook
-                            },
-                            onError: (error) => {
-                                logger.error({ error }, `Failed to remove collaborator ${user.id}`);
-                                openChild(null);
-                                // Afficher toast erreur?
+                        deleteCollaboratorMutation.mutate(
+                            {
+                                user_id: user.id,
+                            }, 
+                            {
+                                onSuccess: () => {
+                                    logger.info(`Collaborator ${user.id} removed`);
+                                    openChild(null);
+                                    showToast("Collaborateur supprimé avec succès",'WARNING'); // ✅ Toast succès
+                                },
+                                onError: (error) => {
+                                    logger.error({ error }, `Failed to remove collaborator ${user.id}`);
+                                    openChild(null);
+                                    showErrorToast(error); // ❌ Toast erreur
+                                },
                             }
-                        });
+                        );
                     }}
                 />
             </ChildViewer>,

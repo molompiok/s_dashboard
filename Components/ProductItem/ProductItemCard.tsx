@@ -15,6 +15,7 @@ import { useDeleteProduct, useUpdateProduct, queryClient } from '../../api/React
 import { useChildViewer } from '../ChildViewer/useChildViewer'; // Pour confirmation delete
 import { ConfirmDelete } from '../Confirm/ConfirmDelete'; // Pour confirmation delete
 import { ChildViewer } from '../ChildViewer/ChildViewer'; // Pour confirmation delete
+import { showErrorToast, showToast } from '../Utils/toastNotifications';
 
 export { ProductItemCard };
 
@@ -59,9 +60,17 @@ function ProductItemCard({ product, onClick }: ProductItemCardProps) {
                     title={t('product.confirmDelete', { name: product.name })}
                     onCancel={() => openChild(null)}
                     onDelete={() => {
-                        deleteProductMutation.mutate(product.id, {
-                            onSuccess: () => { logger.info(`Product ${product.id} deleted`); openChild(null); },
-                            onError: (error) => { logger.error({ error }, `Failed to delete product ${product.id}`); openChild(null); }
+                        deleteProductMutation.mutate({
+                            product_id: product.id
+                        }, {
+                            onSuccess: () => {
+                                showToast('Le Produit a bien été supprimée', 'WARNING')
+                                logger.info(`Category ${product.id} deleted`); openChild(null);
+                            },
+                            onError: (error) => {
+                                showErrorToast(error);
+                                logger.error({ error }, `Failed to delete product ${product.id}`); openChild(null);
+                            }
                         });
                     }}
                 />
@@ -75,15 +84,22 @@ function ProductItemCard({ product, onClick }: ProductItemCardProps) {
         setIsMenuOpen(false);
         setIsVisible(newVisibility); // Optimistic UI
 
-        const formData = new FormData();
-        formData.append('product_id', product.id);
-        formData.append('is_visible', String(newVisibility));
-
-        updateProductMutation.mutate(formData, {
-            onSuccess: () => { logger.info(`Product ${product.id} visibility updated to ${newVisibility}`); },
+        updateProductMutation.mutate({
+            product_id: product.id,
+            data: {
+                is_visible: newVisibility
+            }
+        }, {
+            onSuccess: () => {
+                logger.info(`Product ${product.id} visibility updated to ${newVisibility}`);
+                newVisibility
+                    ? showToast('Le produit est maintenant visible par vos client')
+                    : showToast('Le produit n\'est plus visible par vos client', 'CANCEL');
+            },
             onError: (error) => {
                 logger.error({ error }, `Failed to update visibility for product ${product.id}`);
                 setIsVisible(!newVisibility); // Revert UI
+                showErrorToast(error);
             }
         });
     };

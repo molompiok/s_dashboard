@@ -5,20 +5,15 @@ import { useTranslation } from 'react-i18next';
 import { useGetMe, useUpdateUser, useLogoutAllDevices, useDeleteAccount, queryClient } from '../../../api/ReactSublymusApi'; // Importer tous les hooks nécessaires
 import logger from '../../../api/Logger';
 import { ApiError } from '../../../api/SublymusApi';
-import { IoCameraOutline, IoPersonOutline, IoMailOutline, IoLockClosedOutline, IoLogOutOutline, IoTrashOutline, IoLocationOutline, IoCallOutline, IoLanguageOutline, IoChevronForward, IoTrash } from 'react-icons/io5';
-import logoUrl from '../../renderer/logo.svg'; // Pour placeholder avatar?
-import { Link } from '../../../renderer/Link'; // Pour liens settings
+import { IoCameraOutline, IoMailOutline, IoLockClosedOutline, IoLogOutOutline,IoTrash } from 'react-icons/io5';
 import { Topbar } from '../../../Components/TopBar/TopBar';
 import { PageNotFound } from '../../../Components/PageNotFound/PageNotFound';
 import { ConfirmDelete } from '../../../Components/Confirm/ConfirmDelete';
 import { useChildViewer } from '../../../Components/ChildViewer/useChildViewer';
 import { ChildViewer } from '../../../Components/ChildViewer/ChildViewer';
 import { getImg } from '../../../Components/Utils/StringFormater';
-import { NO_PICTURE } from '../../../Components/Utils/constants';
-import { UserInterface } from '../../../Interfaces/Interfaces'; // Importer UserInterface
 import { useGlobalStore } from '../../stores/StoreStore';
 import { Button } from '../../../Components/Button/Button';
-import { Confirm } from '../../../Components/Confirm/Confirm';
 
 export { Page };
 
@@ -277,7 +272,7 @@ function Page() {
       onError: (error) => {
         logger.error({ error }, "Failed to save user locale preference.");
         // Revertir le changement local? Ou juste afficher erreur?
-        // i18n.changeLanguage(currentUser?.locale ?? 'fr'); // Revenir à l'ancienne langue?
+        i18n.changeLanguage(currentUser?.locale ?? 'fr'); // Revenir à l'ancienne langue?
       }
     });
   };
@@ -375,16 +370,13 @@ function Page() {
               <label htmlFor="profile-locale" className="block text-sm font-medium text-gray-700">{t('profilePage.prefs.languageLabel')}</label>
               <select id="profile-locale" name="locale" value={selectedLocale} onChange={handleLocaleChange}
                 className="mt-1 block w-full md:w-1/2 rounded-md border-gray-300 py-2 pl-3 pr-10 text-base focus:border-blue-500 focus:outline-none focus:ring-blue-500 sm:text-sm h-10 cursor-pointer">
-                {/* Lister les langues supportées par i18n */}
-                {i18n.languages.map(lang => (
+                {/*i18n.languages*/['fr'].map(lang => (
                   <option key={lang} value={lang}>{t(`languages.${lang}`, lang)}</option>
                 ))}
               </select>
             </div>
-            {/* Ajouter préférences notifications ici (S1+) */}
-          </div>
-          {/* Pas de bouton save ici, sauvegarde directe onChange pour la langue */}
-        </section>
+         </div>
+         </section>
 
         {/* Section Sécurité */}
         <section className="bg-white rounded-lg shadow-sm border border-gray-200">

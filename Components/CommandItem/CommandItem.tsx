@@ -2,10 +2,12 @@ import { useTranslation } from "react-i18next";
 import { CommandInterface } from "../../Interfaces/Interfaces";
 import { getImg } from "../Utils/StringFormater";
 import { OrderStatusElement } from "../Status/Satus";
+import { useGlobalStore } from "../../pages/stores/StoreStore";
 
 // --- Composant CommandItem (Seulement styles Tailwind) ---
 export function CommandItem({ command }: { command: CommandInterface }) {
     const { t } = useTranslation(); // ✅ i18n
+    const { currentStore } = useGlobalStore()
     return (
         <div className="command-item  bg-white shadow-sm border border-gray-100 w-full rounded-xl gap-2 flex flex-col items-start p-3 transition duration-100 hover:bg-slate-100">
              {/* Info Client */}
@@ -15,7 +17,7 @@ export function CommandItem({ command }: { command: CommandInterface }) {
                      {/* Image Client */}
                     <div
                         className="w-14 h-14 rounded-xl flex-shrink-0 bg-cover bg-center bg-no-repeat bg-gray-200"
-                        style={{ background: getImg(command.user?.photo?.[0] ?? '/res/delivery_moto.png') }} // Utiliser photo user si dispo
+                        style={{ background: getImg(command.user?.photo?.[0] ?? '/res/delivery_moto.png', undefined, command.user?.photo?.[0]?currentStore?.url:undefined) }} // Utiliser photo user si dispo
                     ></div>
                      {/* Infos Textuelles */}
                     <div className="flex flex-col gap-0.5 flex-shrink overflow-hidden">

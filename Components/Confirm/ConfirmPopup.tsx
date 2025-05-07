@@ -1,6 +1,6 @@
 // Components/Confirm/ConfirmPopup.tsx
 
-import { JSX } from 'react';
+import { JSX, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { IoAlertCircleOutline, IoCheckmarkCircleOutline, IoInformationCircleOutline } from 'react-icons/io5'; // Ajouter icônes
 
@@ -58,7 +58,7 @@ function ConfirmPopup({
     onCancel,
     onAction, // Renommé
     dangerLevel = 'confirm', // Défaut à 'confirm' (bleu)
-    isLoading = false,
+    isLoading ,
     style,
     children // Accepter children
 }: ConfirmPopupProps) {
@@ -78,10 +78,12 @@ function ConfirmPopup({
         inline-flex items-center justify-center rounded-md border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-50 flex-1 sm:flex-none sm:w-auto
     `;
 
+    const [loading, setLoading] = useState(false)
+
 
     return (
         // Conteneur Popup
-        <div style={style} className="confirm-popup w-full max-w-sm bg-white rounded-lg shadow-xl p-4 sm:p-6 text-center">
+        <div style={style} className="confirm-popup w-full  bg-white rounded-lg shadow-xl p-4 sm:p-6 text-center">
 
             {/* Icône */}
             {/* Utiliser la couleur d'icône définie dans levelStyles */}
@@ -112,18 +114,24 @@ function ConfirmPopup({
                     type="button"
                     className={cancelButtonClasses}
                     onClick={onCancel}
-                    disabled={isLoading}
+                     disabled={isLoading??loading}
                 >
                     {finalCancelText}
                 </button>
                 <button
                     type="button"
                     className={confirmButtonClasses}
-                    onClick={onAction} // Appeler onAction
-                    disabled={isLoading}
+                    onClick={()=>{
+                        setLoading(true);
+                        onAction()}
+                    } // Appeler onAction
+                     disabled={isLoading??loading}
                 >
-                    {isLoading ? (
-                        <svg className={`animate-spin h-4 w-4 text-white`} /* ... spinner svg ... */ ></svg>
+                    {(isLoading??loading) ? (
+                       <svg className={`animate-spin h-4 w-4  text-white`} xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                       <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                       <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
                     ) : (
                         finalActionText
                     )}

@@ -20,8 +20,6 @@ function getSearch(myLocation:Location) {
   function getParams(url: string): string[] {
     if(!url) return []
     try {
-      console.log({url});
-      
       const u = new URL(url);
       const pathSegments = u.pathname.split('/').filter(Boolean);
       return pathSegments;
