@@ -213,8 +213,8 @@ export function Page() {
     return (
         <div className="flex pb-48 flex-col lg:flex-row min-h-screen bg-gray-50">
 
-            <aside className="hidden lg:block lg:w-80 min-w-80 lg:sticky lg:top-0 lg:h-screen lg:overflow-y-auto  shadow">
-                <div className="p-4">
+            <aside className="hidden lg:block lg:w-60 min-w-60 lg:sticky lg:top-0 lg:h-screen lg:overflow-y-auto  shadow">
+                <div className="">
                     {filter}
                 </div>
             </aside>
@@ -253,7 +253,7 @@ export function Page() {
                 </div>
             </div>
             
-            <div className="relative p-4 md:p-6 lg:p-8 bg-gray-50 min-h-screen">
+            <div className="relative p-2  bg-gray-50 min-h-screen">
                 <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-6">{t('stats.pageTitle')}</h1>
                 {/* Sidebar desktop */}
 

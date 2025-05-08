@@ -1215,6 +1215,7 @@
             "name_desc": "Nom (Z-A)",
             "date_desc": "Plus Récent"
         },
+        "savingSettings":"Sauvegard en cours..",
         "noThemesMatch": "Aucun thème ne correspond à vos critères.",
         "selectThemePrompt": "Sélectionnez un thème pour voir l'aperçu.",
         "installButton": "Installer ce thème",

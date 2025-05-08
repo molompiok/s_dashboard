@@ -6,7 +6,7 @@ import { useTranslation } from "react-i18next";
 import logger from '../../api/Logger';
 import { IoExpandOutline, IoPhonePortraitOutline, IoTabletPortraitOutline, IoTvOutline, IoSyncOutline } from "react-icons/io5";
 import ClipLoader from 'react-spinners/ClipLoader';
-import { Download } from 'lucide-react';
+import { Check, Download, HardDrive, Save } from 'lucide-react';
 import { SpinnerIcon } from '../Confirm/Spinner';
 
 type PreviewDevice = 'mobile' | 'tablet' | 'desktop';
@@ -17,10 +17,13 @@ interface LiveThemePreviewProps {
     settings: ThemeSettingsValues; // Les paramètres DRAFT actuels à prévisualiser
     onInstall?: () => void; // Pas pertinent pour l'éditeur
     isInstalling?: boolean; // Pas pertinent pour l'éditeur
-    avalaibleWidth?: number
+    avalaibleWidth?: number,
+    isSaving?: boolean,
+    onSave?: () => void,
+    mode: 'edit' | 'market'
 }
 
-export function LiveThemePreview({ store, theme, settings, avalaibleWidth, onInstall, isInstalling }: LiveThemePreviewProps) {
+export function LiveThemePreview({ onSave, mode, isSaving, store, theme, settings, avalaibleWidth, onInstall, isInstalling }: LiveThemePreviewProps) {
     const { t } = useTranslation();
     const iframeRef = useRef<HTMLIFrameElement>(null);
     const [isLoadingIframe, setIsLoadingIframe] = useState(true);
@@ -135,17 +138,33 @@ export function LiveThemePreview({ store, theme, settings, avalaibleWidth, onIns
                     </button>
                 </div>
 
-                <button
-                    disabled={isInstalling||isLoadingIframe}
-                    onClick={onInstall} // fonction à définir
-                    className="flex items-center flex-row"
-                >
-                    {!isInstalling && <Download className="w-4 h-4" />}
-                    <span>{isInstalling ?<>
-                    <SpinnerIcon/>
-                    { t('themeMarket.installingButton')}
-                    </> : t('themeMarket.installButton')}</span>
-                </button>
+                {
+                    mode == 'edit'
+                        ? isSaving
+                            ? <span
+                                className="flex w-4 max-w-4 items-center flex-row gap-4"
+                            >
+                                <SpinnerIcon />
+                            </span>
+                            : <button onClick={onSave} className="p-2 rounded-md hover:bg-gray-100 transition-colors">
+                                <div className="flex items-center gap-1 text-green-600">
+                                    <Save className="w-4 h-4" />
+                                    <Check className="w-4 h-4" />
+                                </div>
+                            </button>
+                        : <button
+                            disabled={isInstalling || isLoadingIframe}
+                            onClick={onInstall} // fonction à définir
+                            className="flex items-center flex-row gap-4"
+                        >
+                            {isInstalling ? <SpinnerIcon /> : <Download className="w-4 h-4" />}
+                            <span>{isInstalling ?
+                                t('themeMarket.installingButton')
+                                : t('themeMarket.installButton')
+                            }
+                            </span>
+                        </button>
+                }
             </div>
 
             {/* Conteneur Iframe */}

@@ -136,23 +136,25 @@ const KpiCards: React.FC<KpiCardsProps> = ({ kpis }) => {
                     // Card Container - applies soft background/border and shadow
                     <div
                          key={kpi.key} // Unique key for list item
-                        className={`kpi-card flex items-center p-4 rounded-lg border ${kpi.bgColorClass} shadow-sm transition hover:shadow-md`} // Added border & shadow transition
+                        className={`kpi-card flex flex-col p-4 rounded-lg border ${kpi.bgColorClass} shadow-sm transition hover:shadow-md`} // Added border & shadow transition
                     >
-                        {/* Icon Container */}
+                       
+                        {/* Label and Value */}
+                        <div className="flex items-center">
+                             {/* Icon Container */}
                         <div className={`flex-shrink-0 p-2 mr-4 rounded-full ${kpi.iconColorClass} bg-white bg-opacity-75`}> {/* Icon with contrasting background */}
                              {/* Render Lucide Icon component */}
                             <kpi.icon className="w-6 h-6" strokeWidth={1.8} /> {/* Adjusted stroke width for lighter look */}
                         </div>
 
-                        {/* Label and Value */}
-                        <div className="flex flex-col">
                             {/* Label */}
                             <div className="text-sm font-medium text-gray-700">{t(kpi.labelKey)}</div>
                             {/* Value */}
-                            <div className="text-xl font-bold text-gray-800 mt-0.5">
+                            
+                        </div>
+                        <div className="text-xl font-bold text-gray-800 mt-0.5">
                                  {formatValue(value as number, kpi.format, kpi.decimals)}
                              </div>
-                        </div>
                     </div>
                 );
             })}
