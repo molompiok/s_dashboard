@@ -7,7 +7,7 @@ import { useRequestPasswordReset } from '../../../api/ReactSublymusApi';
 import logger from '../../../api/Logger';
 import { ApiError } from '../../../api/SublymusApi';
 import { IoMailOutline, IoArrowBack } from 'react-icons/io5';
-import logoUrl from '../../renderer/logo.svg';
+import logoUrl from '../../../renderer/logo.png';
 import { Link } from '../../../renderer/Link'; // Pour lien retour login
 import { Host } from '../../../renderer/+config';
 
@@ -42,11 +42,11 @@ function Page() {
         // Appeler la mutation
         requestResetMutation.mutate(
             {
-                email:  email.trim(), 
+                email: email.trim(),
                 callback_url: `${Host}/auth/reset-password`
             }, // Passer l'email et l'URL callback frontend
             {
-                onSuccess: (data:any) => {
+                onSuccess: (data: any) => {
                     logger.info(`Password reset email request sent for ${email}`);
                     setRequestSent(true); // Afficher le message de confirmation
                 },
@@ -59,9 +59,9 @@ function Page() {
                     } else {
                         // Dans la plupart des cas (y compris 404 ou autre erreur métier masquée),
                         // on affiche quand même le message de succès générique pour la sécurité.
-                         setRequestSent(true);
-                         // Optionnel: logguer l'erreur pour debug interne sans l'afficher
-                         // logger.warn("Password reset seemed to fail client-side but API might have succeeded or masked error", error);
+                        setRequestSent(true);
+                        // Optionnel: logguer l'erreur pour debug interne sans l'afficher
+                        // logger.warn("Password reset seemed to fail client-side but API might have succeeded or masked error", error);
                     }
                 }
             }
@@ -73,20 +73,20 @@ function Page() {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-blue-100/30 px-4 py-12">
                 <div className="w-full max-w-md text-center bg-white p-8 sm:p-10 rounded-xl shadow-lg">
-                     <IoMailOutline className="mx-auto h-12 w-12 text-blue-500" />
-                     <h2 className="mt-4 text-2xl font-bold tracking-tight text-gray-900">
-                          {t('forgotPasswordPage.successTitle')} 
-                     </h2>
-                     <p className="mt-3 text-sm text-gray-600">
-                          {t('auth.forgotPassword.emailSentConfirmation')} 
-                          {' '} {/* Message générique standard */}
-                          <span className="font-medium">{email}</span>.
-                     </p>
-                      <p className="mt-6 text-sm">
-                          <Link href="/login" className="font-medium text-blue-600 hover:text-blue-500 hover:underline inline-flex items-center gap-1">
-                              <IoArrowBack className="w-4 h-4"/> {t('registerPage.backToLogin')} 
-                          </Link>
-                      </p>
+                    <IoMailOutline className="mx-auto h-12 w-12 text-blue-500" />
+                    <h2 className="mt-4 text-2xl font-bold tracking-tight text-gray-900">
+                        {t('forgotPasswordPage.successTitle')}
+                    </h2>
+                    <p className="mt-3 text-sm text-gray-600">
+                        {t('auth.forgotPassword.emailSentConfirmation')}
+                        {' '} {/* Message générique standard */}
+                        <span className="font-medium">{email}</span>.
+                    </p>
+                    <p className="mt-6 text-sm">
+                        <Link href="/login" className="font-medium text-blue-600 hover:text-blue-500 hover:underline inline-flex items-center gap-1">
+                            <IoArrowBack className="w-4 h-4" /> {t('registerPage.backToLogin')}
+                        </Link>
+                    </p>
                 </div>
             </div>
         );
@@ -101,21 +101,21 @@ function Page() {
                 <div className="flex flex-col items-center">
                     <img className="h-16 w-auto mb-4" src={logoUrl} alt="Sublymus Logo" />
                     <h2 className="text-2xl font-bold tracking-tight text-center text-gray-900">
-                        {t('forgotPasswordPage.title')} 
+                        {t('forgotPasswordPage.title')}
                     </h2>
                     <p className="mt-2 text-center text-sm text-gray-600">
-                         {t('forgotPasswordPage.subtitle')} 
+                        {t('forgotPasswordPage.subtitle')}
                     </p>
                 </div>
 
                 {/* Formulaire */}
                 <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
-                     {/* Affichage Erreur Globale */}
-                     {formError && (
-                         <div className="p-3 rounded-md bg-red-50 border border-red-200">
-                             <p className="text-sm text-red-700">{formError}</p>
-                         </div>
-                     )}
+                    {/* Affichage Erreur Globale */}
+                    {formError && (
+                        <div className="p-3 rounded-md bg-red-50 border border-red-200">
+                            <p className="text-sm text-red-700">{formError}</p>
+                        </div>
+                    )}
 
                     {/* Champ Email */}
                     <div className="relative">
@@ -127,7 +127,7 @@ function Page() {
                             type="email"
                             autoComplete="email"
                             required
-                             className={`block w-full rounded-md shadow-sm sm:text-sm h-11 pl-10 pr-3 ${formError ? 'border-red-500 ring-red-500 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'}`}
+                            className={`block w-full rounded-md shadow-sm sm:text-sm h-11 pl-10 pr-3 ${formError ? 'border-red-500 ring-red-500 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'}`}
                             placeholder={t('loginPage.emailPlaceholder')}
                             value={email}
                             onChange={(e) => { setEmail(e.target.value); setFormError(null); }}
@@ -146,18 +146,18 @@ function Page() {
                             {requestResetMutation.isPending ? (
                                 <svg className="animate-spin h-5 w-5 text-white" /* ... spinner svg ... */ ></svg>
                             ) : (
-                                 t('forgotPasswordPage.sendButton') 
+                                t('forgotPasswordPage.sendButton')
                             )}
                         </button>
                     </div>
                 </form>
 
-                 {/* Lien Retour Login */}
-                 <div className="text-sm text-center">
-                     <Link href="/login" className="font-medium text-blue-600 hover:text-blue-500 hover:underline inline-flex items-center gap-1">
-                          <IoArrowBack className="w-4 h-4"/> {t('registerPage.backToLogin')} 
-                     </Link>
-                 </div>
+                {/* Lien Retour Login */}
+                <div className="text-sm text-center">
+                    <Link href="/login" className="font-medium text-blue-600 hover:text-blue-500 hover:underline inline-flex items-center gap-1">
+                        <IoArrowBack className="w-4 h-4" /> {t('registerPage.backToLogin')}
+                    </Link>
+                </div>
 
             </div>
         </div>

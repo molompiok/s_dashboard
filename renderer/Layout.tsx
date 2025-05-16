@@ -4,7 +4,7 @@ export { Layout };
 
 import './Layout.css'
 import React, { useEffect, useState, useMemo } from 'react'; // Ajouter useState, useMemo
-import logoUrl from './logo.svg';
+import logoUrl from './logo.png';
 import { PageContextProvider, usePageContext } from './usePageContext';
 import { Link } from './Link';
 import type { PageContext } from 'vike/types';

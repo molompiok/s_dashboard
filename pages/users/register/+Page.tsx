@@ -6,7 +6,7 @@ import { useRegister } from '../../../api/ReactSublymusApi'; // ✅ Hook API
 import logger from '../../../api/Logger';
 import { ApiError } from '../../../api/SublymusApi';
 import { IoPersonOutline, IoMailOutline, IoLockClosedOutline } from 'react-icons/io5';
-import logoUrl from '../../../renderer/logo.svg';
+import logoUrl from '../../../renderer/logo.png';
 import { Link } from '../../../renderer/Link'; // Pour lien vers connexion
 
 export { Page };
@@ -98,23 +98,23 @@ function Page() {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-50 to-green-100/30 px-4 py-12">
                 <div className="w-full max-w-md text-center bg-white p-8 sm:p-10 rounded-xl shadow-lg">
-                     <IoMailOutline className="mx-auto h-12 w-12 text-green-500" />
-                     <h2 className="mt-4 text-2xl font-bold tracking-tight text-gray-900">
-                          {t('registerPage.successTitle')} 
-                     </h2>
-                     <p className="mt-3 text-sm text-gray-600">
-                         {t('registerPage.successMessage', { email: email })} 
-                     </p>
-                      <p className="mt-6 text-sm">
-                          <Link href="/login" className="font-medium text-blue-600 hover:text-blue-500 hover:underline">
-                              {t('registerPage.backToLogin')} 
-                          </Link>
-                           {/* Optionnel: Bouton pour renvoyer l'email */}
-                           {/* <span className="mx-2 text-gray-300">|</span>
+                    <IoMailOutline className="mx-auto h-12 w-12 text-green-500" />
+                    <h2 className="mt-4 text-2xl font-bold tracking-tight text-gray-900">
+                        {t('registerPage.successTitle')}
+                    </h2>
+                    <p className="mt-3 text-sm text-gray-600">
+                        {t('registerPage.successMessage', { email: email })}
+                    </p>
+                    <p className="mt-6 text-sm">
+                        <Link href="/login" className="font-medium text-blue-600 hover:text-blue-500 hover:underline">
+                            {t('registerPage.backToLogin')}
+                        </Link>
+                        {/* Optionnel: Bouton pour renvoyer l'email */}
+                        {/* <span className="mx-2 text-gray-300">|</span>
                            <Link href={`/resend-verification?email=${encodeURIComponent(email)}`} className="font-medium text-gray-500 hover:text-gray-700 hover:underline">
                                {t('registerPage.resendLink')}
                            </Link> */}
-                      </p>
+                    </p>
                 </div>
             </div>
         );
@@ -128,72 +128,72 @@ function Page() {
                 <div className="flex flex-col items-center">
                     <img className="h-16 w-auto mb-4" src={logoUrl} alt="Sublymus Logo" />
                     <h2 className="text-2xl font-bold tracking-tight text-center text-gray-900">
-                         {t('registerPage.title')} 
+                        {t('registerPage.title')}
                     </h2>
                     <p className="mt-2 text-center text-sm text-gray-600">
-                         {t('registerPage.subtitle')} {' '} 
+                        {t('registerPage.subtitle')} {' '}
                         <Link href="/users/login" className="font-medium text-blue-600 hover:text-blue-500 hover:underline">
-                             {t('registerPage.loginLink')} 
+                            {t('registerPage.loginLink')}
                         </Link>
                     </p>
                 </div>
 
                 {/* Formulaire */}
                 <form className="mt-8 space-y-5" onSubmit={handleSubmit}>
-                     {/* Erreur API Globale */}
-                     {formError && !fieldErrors.email && !fieldErrors.password && !fieldErrors.passwordConfirmation && !fieldErrors.fullName && ( // Afficher seulement si pas d'erreur spécifique
-                         <div className="p-3 rounded-md bg-red-50 border border-red-200">
-                             <p className="text-sm text-red-700">{formError}</p>
-                         </div>
-                     )}
+                    {/* Erreur API Globale */}
+                    {formError && !fieldErrors.email && !fieldErrors.password && !fieldErrors.passwordConfirmation && !fieldErrors.fullName && ( // Afficher seulement si pas d'erreur spécifique
+                        <div className="p-3 rounded-md bg-red-50 border border-red-200">
+                            <p className="text-sm text-red-700">{formError}</p>
+                        </div>
+                    )}
 
-                     {/* Champ Nom Complet */}
-                     <div className="relative">
-                          <label htmlFor="full-name" className="sr-only">{t('registerPage.nameLabel')}</label>
-                          <IoPersonOutline className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
-                          <input id="full-name" name="full_name" type="text" autoComplete="name" required
-                                 className={`block w-full rounded-md shadow-sm sm:text-sm h-11 pl-10 pr-3 ${fieldErrors.fullName ? 'border-red-500 ring-red-500 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'}`}
-                                 placeholder={t('registerPage.namePlaceholder')} 
-                                 value={fullName} onChange={(e) => { setFullName(e.target.value); setFieldErrors(p=>({...p, fullName: undefined})); }} disabled={registerMutation.isPending}
-                           />
-                           {fieldErrors.fullName && <p className="mt-1 text-xs text-red-600">{fieldErrors.fullName}</p>}
-                     </div>
+                    {/* Champ Nom Complet */}
+                    <div className="relative">
+                        <label htmlFor="full-name" className="sr-only">{t('registerPage.nameLabel')}</label>
+                        <IoPersonOutline className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                        <input id="full-name" name="full_name" type="text" autoComplete="name" required
+                            className={`block w-full rounded-md shadow-sm sm:text-sm h-11 pl-10 pr-3 ${fieldErrors.fullName ? 'border-red-500 ring-red-500 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'}`}
+                            placeholder={t('registerPage.namePlaceholder')}
+                            value={fullName} onChange={(e) => { setFullName(e.target.value); setFieldErrors(p => ({ ...p, fullName: undefined })); }} disabled={registerMutation.isPending}
+                        />
+                        {fieldErrors.fullName && <p className="mt-1 text-xs text-red-600">{fieldErrors.fullName}</p>}
+                    </div>
 
-                     {/* Champ Email */}
-                     <div className="relative">
-                          <label htmlFor="email-address" className="sr-only">{t('registerPage.emailLabel')}</label>
-                          <IoMailOutline className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
-                          <input id="email-address" name="email" type="email" autoComplete="email" required
-                                  className={`block w-full rounded-md shadow-sm sm:text-sm h-11 pl-10 pr-3 ${fieldErrors.email ? 'border-red-500 ring-red-500 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'}`}
-                                  placeholder={t('registerPage.emailPlaceholder')} 
-                                  value={email} onChange={(e) => { setEmail(e.target.value); setFieldErrors(p=>({...p, email: undefined})); }} disabled={registerMutation.isPending}
-                           />
-                           {fieldErrors.email && <p className="mt-1 text-xs text-red-600">{fieldErrors.email}</p>}
-                     </div>
+                    {/* Champ Email */}
+                    <div className="relative">
+                        <label htmlFor="email-address" className="sr-only">{t('registerPage.emailLabel')}</label>
+                        <IoMailOutline className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                        <input id="email-address" name="email" type="email" autoComplete="email" required
+                            className={`block w-full rounded-md shadow-sm sm:text-sm h-11 pl-10 pr-3 ${fieldErrors.email ? 'border-red-500 ring-red-500 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'}`}
+                            placeholder={t('registerPage.emailPlaceholder')}
+                            value={email} onChange={(e) => { setEmail(e.target.value); setFieldErrors(p => ({ ...p, email: undefined })); }} disabled={registerMutation.isPending}
+                        />
+                        {fieldErrors.email && <p className="mt-1 text-xs text-red-600">{fieldErrors.email}</p>}
+                    </div>
 
-                      {/* Champ Mot de Passe */}
-                      <div className="relative">
-                          <label htmlFor="password" className="sr-only">{t('registerPage.passwordLabel')}</label>
-                          <IoLockClosedOutline className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
-                          <input id="password" name="password" type="password" autoComplete="new-password" required
-                                  className={`block w-full rounded-md shadow-sm sm:text-sm h-11 pl-10 pr-3 ${fieldErrors.password ? 'border-red-500 ring-red-500 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'}`}
-                                  placeholder={t('registerPage.passwordPlaceholder')} 
-                                  value={password} onChange={(e) => { setPassword(e.target.value); setFieldErrors(p=>({...p, password: undefined})); }} disabled={registerMutation.isPending}
-                          />
-                          {fieldErrors.password && <p className="mt-1 text-xs text-red-600">{fieldErrors.password}</p>}
-                      </div>
+                    {/* Champ Mot de Passe */}
+                    <div className="relative">
+                        <label htmlFor="password" className="sr-only">{t('registerPage.passwordLabel')}</label>
+                        <IoLockClosedOutline className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                        <input id="password" name="password" type="password" autoComplete="new-password" required
+                            className={`block w-full rounded-md shadow-sm sm:text-sm h-11 pl-10 pr-3 ${fieldErrors.password ? 'border-red-500 ring-red-500 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'}`}
+                            placeholder={t('registerPage.passwordPlaceholder')}
+                            value={password} onChange={(e) => { setPassword(e.target.value); setFieldErrors(p => ({ ...p, password: undefined })); }} disabled={registerMutation.isPending}
+                        />
+                        {fieldErrors.password && <p className="mt-1 text-xs text-red-600">{fieldErrors.password}</p>}
+                    </div>
 
-                       {/* Champ Confirmation Mot de Passe */}
-                       <div className="relative">
-                           <label htmlFor="password-confirmation" className="sr-only">{t('registerPage.passwordConfirmLabel')}</label> 
-                           <IoLockClosedOutline className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
-                           <input id="password-confirmation" name="password_confirmation" type="password" autoComplete="new-password" required
-                                   className={`block w-full rounded-md shadow-sm sm:text-sm h-11 pl-10 pr-3 ${fieldErrors.passwordConfirmation ? 'border-red-500 ring-red-500 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'}`}
-                                   placeholder={t('registerPage.passwordConfirmPlaceholder')} 
-                                   value={passwordConfirmation} onChange={(e) => { setPasswordConfirmation(e.target.value); setFieldErrors(p=>({...p, passwordConfirmation: undefined})); }} disabled={registerMutation.isPending}
-                           />
-                           {fieldErrors.passwordConfirmation && <p className="mt-1 text-xs text-red-600">{fieldErrors.passwordConfirmation}</p>}
-                       </div>
+                    {/* Champ Confirmation Mot de Passe */}
+                    <div className="relative">
+                        <label htmlFor="password-confirmation" className="sr-only">{t('registerPage.passwordConfirmLabel')}</label>
+                        <IoLockClosedOutline className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400 pointer-events-none" />
+                        <input id="password-confirmation" name="password_confirmation" type="password" autoComplete="new-password" required
+                            className={`block w-full rounded-md shadow-sm sm:text-sm h-11 pl-10 pr-3 ${fieldErrors.passwordConfirmation ? 'border-red-500 ring-red-500 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'}`}
+                            placeholder={t('registerPage.passwordConfirmPlaceholder')}
+                            value={passwordConfirmation} onChange={(e) => { setPasswordConfirmation(e.target.value); setFieldErrors(p => ({ ...p, passwordConfirmation: undefined })); }} disabled={registerMutation.isPending}
+                        />
+                        {fieldErrors.passwordConfirmation && <p className="mt-1 text-xs text-red-600">{fieldErrors.passwordConfirmation}</p>}
+                    </div>
 
                     {/* Bouton Inscription */}
                     <div className="pt-2"> {/* Ajouter espace avant bouton */}
@@ -202,11 +202,11 @@ function Page() {
                             disabled={registerMutation.isPending}
                             className="group relative flex w-full justify-center rounded-md border border-transparent bg-blue-600 py-2.5 px-4 text-sm font-medium text-white hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 disabled:opacity-70"
                         >
-                             {registerMutation.isPending ? (
-                                 <svg className="animate-spin h-5 w-5 text-white" /* ... spinner svg ... */ ></svg>
-                             ) : (
-                                 t('registerPage.registerButton') 
-                             )}
+                            {registerMutation.isPending ? (
+                                <svg className="animate-spin h-5 w-5 text-white" /* ... spinner svg ... */ ></svg>
+                            ) : (
+                                t('registerPage.registerButton')
+                            )}
                         </button>
                     </div>
                 </form>

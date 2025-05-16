@@ -9,7 +9,7 @@ import { useAuthStore } from './AuthStore';
 import logger from '../../../api/Logger';
 import { ApiError } from '../../../api/SublymusApi';
 import { IoMailOutline, IoLockClosedOutline } from 'react-icons/io5';
-import logoUrl from '../../../renderer/logo.svg';
+import logoUrl from '../../../renderer/logo.png';
 import { Link } from '../../../renderer/Link';
 import { usePageContext } from '../../../renderer/usePageContext'; // Pour lire l'URL initiale si besoin
 import { useGlobalStore } from '../../../pages/stores/StoreStore'; // Importer pour handleSocialLogin
@@ -49,17 +49,17 @@ function Page() {
                     setGlobalToken(token);
 
                     queryClient.fetchQuery({
-                         queryKey: ['me'], // Utiliser la même clé que useGetMe
-                         queryFn: () => api.auth.getMe(), // Appeler la méthode API
-                         staleTime: 0 // Forcer le fetch même si cache existe
+                        queryKey: ['me'], // Utiliser la même clé que useGetMe
+                        queryFn: () => api.auth.getMe(), // Appeler la méthode API
+                        staleTime: 0 // Forcer le fetch même si cache existe
                     }).then(data => {
-                         logger.info("User data fetched successfully after social login", data.user);
-                         setGlobalUser(data.user);
-                         setIsProcessingToken(false);
-                         setTimeout(() => window.location.replace('/'), 100);
+                        logger.info("User data fetched successfully after social login", data.user);
+                        setGlobalUser(data.user);
+                        setIsProcessingToken(false);
+                        setTimeout(() => window.location.replace('/'), 100);
                     }).catch((error: ApiError | Error) => {
-                           setApiError(t('auth.socialLoginTokenError')); // 🌍 i18n Nouvelle clé
-                          setIsProcessingToken(false); // Fin du traitement (échec)
+                        setApiError(t('auth.socialLoginTokenError')); // 🌍 i18n Nouvelle clé
+                        setIsProcessingToken(false); // Fin du traitement (échec)
                     });
 
                 }
@@ -71,19 +71,19 @@ function Page() {
     // --- Effet après succès mutation login email/pass (inchangé) ---
     useEffect(() => {
         if (loginMutation.isSuccess) {
-             const data = loginMutation.data;
-             setGlobalUser(data.user);
-             setGlobalToken(data.token);
-             setTimeout(() => window.location.replace('/'), 100);
+            const data = loginMutation.data;
+            setGlobalUser(data.user);
+            setGlobalToken(data.token);
+            setTimeout(() => window.location.replace('/'), 100);
         }
     }, [loginMutation.isSuccess, loginMutation.data, setGlobalUser, setGlobalToken]);
 
     const handleSubmit = (event: React.FormEvent<HTMLFormElement>) => {
-         event.preventDefault();
-         setApiError(null);
-         if (!email || !password || loginMutation.isPending || isProcessingToken) return; // Ne pas soumettre si traitement token en cours
+        event.preventDefault();
+        setApiError(null);
+        if (!email || !password || loginMutation.isPending || isProcessingToken) return; // Ne pas soumettre si traitement token en cours
 
-         loginMutation.mutate({ email, password }, { onError: (error: ApiError) => { /* ... gestion erreur ... */ } });
+        loginMutation.mutate({ email, password }, { onError: (error: ApiError) => { /* ... gestion erreur ... */ } });
     };
 
     const handleSocialLogin = (provider: 'google' /* | 'facebook' */) => {
@@ -94,10 +94,10 @@ function Page() {
         }
         logger.info(`Initiating social login with ${provider}`);
         // Construire l'URL s_server (avec fallback)
-         const serverHost = Server_Host; // Utiliser variable d'env ou fallback
-         // Construire les URLs de callback pour le frontend
-         const clientSuccessUrl = `${window.location.origin}${window.location.pathname}?success`; // Retour à la page login avec ?success
-         const clientErrorUrl = `${window.location.origin}${window.location.pathname}?error=${provider}`; // Retour avec ?error=provider
+        const serverHost = Server_Host; // Utiliser variable d'env ou fallback
+        // Construire les URLs de callback pour le frontend
+        const clientSuccessUrl = `${window.location.origin}${window.location.pathname}?success`; // Retour à la page login avec ?success
+        const clientErrorUrl = `${window.location.origin}${window.location.pathname}?error=${provider}`; // Retour avec ?error=provider
         // Construire l'URL de redirection vers s_server
         const redirectUrl = `${serverHost}/auth/${provider}/redirect?store_id=${currentStore.id}&client_success=${encodeURIComponent(clientSuccessUrl)}&client_error=${encodeURIComponent(clientErrorUrl)}`;
 
@@ -112,8 +112,8 @@ function Page() {
         return (
             <div className="min-h-screen flex items-center justify-center bg-gray-100">
                 <div className="text-center">
-                     <svg className="animate-spin h-10 w-10 text-blue-600 mx-auto mb-4" /* ... spinner svg ... */ ></svg>
-                     <p className="text-gray-600">{t('auth.processingSocialLogin')}</p> 
+                    <svg className="animate-spin h-10 w-10 text-blue-600 mx-auto mb-4" /* ... spinner svg ... */ ></svg>
+                    <p className="text-gray-600">{t('auth.processingSocialLogin')}</p>
                 </div>
             </div>
         );
@@ -176,7 +176,7 @@ function Page() {
                     {/* ... séparateur ... */}
                 </div>
                 <div className="mt-6 grid grid-cols-1 gap-3">
-                    <button  disabled={isProcessingToken}  onClick={() => handleSocialLogin('google')} type="button"
+                    <button disabled={isProcessingToken} onClick={() => handleSocialLogin('google')} type="button"
                         className="inline-flex w-full justify-center items-center gap-3 rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-500 shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
                     >
                         <svg className="h-5 w-5" /* ... icône google svg ... */ ></svg>

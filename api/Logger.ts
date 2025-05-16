@@ -34,10 +34,10 @@ interface LoggerOptions {
 
 // Définition de l'interface Logger que LoadMonitorService attendra
 export interface Logger {
-  debug(message: string, metadata?: Record<string, any>): void;
-  info(message: string, metadata?: Record<string, any>): void;
-  warn(message: string, metadata?: Record<string, any>): void;
-  error(message: string | Error, metadata?: Record<string, any>): void;
+  debug(message: any, metadata?: any): void;
+  info(message: any, metadata?: any): void;
+  warn(message: any, metadata?: any): void;
+  error(message: any, metadata?: any): void;
   child(bindings: { context?: string;[key: string]: any }): Logger; // Pour créer des loggers enfants avec contexte
 }
 
@@ -46,7 +46,7 @@ export function createLogger(options?: LoggerOptions): Logger {
   const activeLogLevel = options?.level ?? currentLogLevel;
   const baseContext = options?.context ? `[${options.context}]` : '';
 
-  const log = (level: LogLevelNumber, levelName: string, message: string | Error, metadata?: Record<string, any>) => {
+  const log = (level: LogLevelNumber, levelName: string, message: string |Record<string, any>, metadata?: Record<string, any>) => {
     if (activeLogLevel <= level) {
       const timestamp = new Date().toISOString();
       const contextPrefix = baseContext ? `${baseContext} ` : '';
@@ -93,10 +93,10 @@ export function createLogger(options?: LoggerOptions): Logger {
   };
 
   const loggerInstance: Logger = {
-    debug: (message: string, metadata?: Record<string, any>) => log(LOG_LEVELS.DEBUG, 'DEBUG', message, metadata),
-    info: (message: string, metadata?: Record<string, any>) => log(LOG_LEVELS.INFO, 'INFO', message, metadata),
-    warn: (message: string, metadata?: Record<string, any>) => log(LOG_LEVELS.WARN, 'WARN', message, metadata),
-    error: (message: string | Error, metadata?: Record<string, any>) => log(LOG_LEVELS.ERROR, 'ERROR', message, metadata),
+    debug: (message: any, metadata?:any) => log(LOG_LEVELS.DEBUG, 'DEBUG', message, metadata),
+    info: (message: any, metadata?:any) => log(LOG_LEVELS.INFO, 'INFO', message, metadata),
+    warn: (message: any, metadata?:any) => log(LOG_LEVELS.WARN, 'WARN', message, metadata),
+    error: (message: any, metadata?:any) => log(LOG_LEVELS.ERROR, 'ERROR', message, metadata),
     child: (bindings: { context?: string;[key: string]: any }) => {
       // La création de logger enfant est simplifiée ici. Pour un vrai logger enfant
       // qui hérite des métadonnées parentes, il faudrait une implémentation plus complexe.
