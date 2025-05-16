@@ -71,26 +71,40 @@ test();
 ├─────────────────────────────┼──────────────────┼────────────────────────────────────┤
 │ /                           │ Filesystem Route │ /pages/index/                      │
 │ /about                      │ Filesystem Route │ /pages/about/                      │
-│ /category                   │ Filesystem Route │ /pages/category/                   │
+│ /auth/auth-notice           │ Filesystem Route │ /pages/auth/auth-notice/           │
+│ /auth/forgot-password       │ Filesystem Route │ /pages/auth/forgot-password/       │
+│ /auth/reset-password        │ Filesystem Route │ /pages/auth/reset-password/        │
+│ /auth/setup-account         │ Filesystem Route │ /pages/auth/setup-account/         │
+│ /categories                 │ Filesystem Route │ /pages/categories/                 │
+│ /categories/@id             │ Filesystem Route │ /pages/categories/@id/             │
 │ /commands                   │ Filesystem Route │ /pages/commands/                   │
 │ /commands/@id               │ Filesystem Route │ /pages/commands/@id/               │
+│ /commands/@id/receipt       │ Filesystem Route │ /pages/commands/@id/receipt/       │
 │ /notifications              │ Filesystem Route │ /pages/notifications/              │
 │ /products                   │ Filesystem Route │ /pages/products/                   │
 │ /products/@id               │ Filesystem Route │ /pages/products/@id/               │
 │ /products/@id/comments      │ Filesystem Route │ /pages/products/@id/comments/      │
 │ /products/@id/details       │ Filesystem Route │ /pages/products/@id/details/       │
-│ /products/@id/prix-stock    │ Filesystem Route │ /pages/products/@id/prix-stock/    │
-│ /profile                    │ Filesystem Route │ /pages/profile/                    │
+│ /products/@id/price-stock   │ Filesystem Route │ /pages/products/@id/price-stock/   │
 │ /s_test                     │ Filesystem Route │ /pages/s_test/                     │
 │ /star-wars                  │ Filesystem Route │ /pages/star-wars/index/            │
 │ /star-wars/@id              │ Filesystem Route │ /pages/star-wars/@id/              │
-│ /stats                      │ Filesystem Route │ /pages/stats/                      │
 │ /stores                     │ Filesystem Route │ /pages/stores/                     │
+│ /stores/@id/settings        │ Filesystem Route │ /pages/stores/@id/settings/        │
+│ /stores/stats               │ Filesystem Route │ /pages/stores/stats/               │
 │ /teams                      │ Filesystem Route │ /pages/teams/                      │
+│ /themes/editor              │ Filesystem Route │ /pages/themes/editor/              │
+│ /themes/market              │ Filesystem Route │ /pages/themes/market/              │
+│ /themes/my                  │ Filesystem Route │ /pages/themes/my/                  │
+│ /themes/preview             │ Filesystem Route │ /pages/themes/preview/             │
 │ /users                      │ Filesystem Route │ /pages/users/                      │
 │ /users/clients              │ Filesystem Route │ /pages/users/clients/              │
 │ /users/clients/@id          │ Filesystem Route │ /pages/users/clients/@id/          │
 │ /users/clients/@id/comments │ Filesystem Route │ /pages/users/clients/@id/comments/ │
+│ /users/collaborators        │ Filesystem Route │ /pages/users/collaborators/        │
+│ /users/login                │ Filesystem Route │ /pages/users/login/                │
+│ /users/profile              │ Filesystem Route │ /pages/users/profile/              │
+│ /users/register             │ Filesystem Route │ /pages/users/register/             |
 └─────────────────────────────┴──────────────────┴────────────────────────────────────┘
 
 

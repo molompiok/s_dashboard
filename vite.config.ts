@@ -5,6 +5,13 @@ import tailwindcss from '@tailwindcss/vite'
 
 const config: UserConfig = {
   plugins: [react(), vike(), tailwindcss()],
+  server: {
+    allowedHosts:true,
+    port: 3005,  
+    hmr: {
+      port: 24705,
+    },
+  },
 }
 
 export default config

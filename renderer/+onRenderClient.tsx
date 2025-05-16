@@ -8,6 +8,7 @@ import type { OnRenderClientAsync } from 'vike/types'
 import { SublymusApiProvider } from '../api/ReactSublymusApi';
 import { I18nextProvider } from 'react-i18next';
 import i18next from '../Lib/i18n';
+import './tw.css'
 import { Server_Host } from './+config';
 import { getToken } from '../pages/users/login/AuthStore';
 

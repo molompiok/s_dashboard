@@ -77,7 +77,6 @@ async function waitHere(millis: number) {
     await new Promise((rev) => setTimeout(() => rev(0), millis))
 }
 
-
 // --- Client TanStack Query (inchangé) ---
 export const queryClient = new QueryClient({
     defaultOptions: {
