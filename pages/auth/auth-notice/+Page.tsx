@@ -6,7 +6,7 @@ import { Link } from '../../../renderer/Link';
 import { usePageContext } from '../../../renderer/usePageContext';
 import { useMemo } from 'react';
 
-export { Page };
+export { Page }; 
 
 type NoticeType = 'verify' | 'reset' | 'generic_sent'; // Types de notices possibles
 
