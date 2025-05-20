@@ -16,7 +16,11 @@ RUN pnpm build
 
 ENV NODE_ENV=production
 ENV PORT=3005
-
+ENV REDIS_HOST=sublymus_infra_redis
+ENV SERVICE_ID=s_dashboard
+ENV TARGET_API_HEADER=x-target-api-service 
+ENV STORE_URL_HEADER=x-base-url
+ENV SERVER_URL_HEADER=x-server-url
 
 
 HEALTHCHECK --interval=10s --timeout=5s --start-period=10s --retries=3 \
