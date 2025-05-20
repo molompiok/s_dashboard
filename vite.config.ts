@@ -13,7 +13,7 @@ const config: UserConfig = {
     },
   },
   build:{
-    ssr: 'server/entry-server.js', // ou entry.mjs
+    ssr: 'server/entry.js', // ou entry.mjs
     outDir: 'dist',
   },
   ssr:{
