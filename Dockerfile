@@ -1,6 +1,7 @@
 # ---- Stage 1: Builder ----
 FROM node:20-alpine AS builder
 
+
 WORKDIR /app
 
 # Installe pnpm globalement
@@ -12,8 +13,6 @@ RUN pnpm install
 COPY . .
 RUN pnpm build
 
-RUN chown -R appuser:appgroup /app
-USER appuser
 
 ENV NODE_ENV=production
 ENV PORT=3005
