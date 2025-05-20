@@ -33,11 +33,7 @@ RUN chown -R appuser:appgroup /app
 USER appuser
 
 ENV NODE_ENV=production
-ENV HOST=localhost
 ENV PORT=3005
-
-HEALTHCHECK --interval=10s --timeout=5s --start-period=20s --retries=3 \
-  CMD wget --quiet --spider http://localhost:${PORT}/health || exit 1
 
 EXPOSE 3005
 CMD ["node", "dist/server/entry.mjs"]
