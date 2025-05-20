@@ -3,12 +3,13 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-RUN corepack enable && corepack prepare pnpm@latest --activate
+# Installe pnpm globalement
+RUN npm install -g pnpm
 
 COPY package.json pnpm-lock.yaml ./
 RUN pnpm install --frozen-lockfile
 
-COPY . . 
+COPY . .
 RUN pnpm build
 
 # ---- Stage 2: Runtime ----
@@ -20,7 +21,8 @@ RUN apk add --no-cache wget
 
 RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 
-RUN corepack enable && corepack prepare pnpm@latest --activate
+# Installe pnpm globalement
+RUN npm install -g pnpm
 
 COPY package.json pnpm-lock.yaml ./
 COPY tsconfig.json ./
@@ -34,12 +36,6 @@ USER appuser
 
 ENV NODE_ENV=production
 ENV PORT=3005
-ENV SERVICE_ID=s_dashboard
-
-ENV TARGET_API_HEADER=x-target-api-service
-ENV STORE_URL_HEADER=x-base-url
-ENV SERVER_URL_HEADER=x-server-url
-
 
 HEALTHCHECK --interval=10s --timeout=5s --start-period=10s --retries=3 \
   CMD wget --quiet --spider http://localhost:${PORT}/health || exit 1
