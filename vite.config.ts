@@ -2,7 +2,7 @@ import react from '@vitejs/plugin-react'
 import vike from 'vike/plugin'
 import { UserConfig } from 'vite'
 import tailwindcss from '@tailwindcss/vite'
-
+process.env.NODE_ENV = 'production'
 const config: UserConfig = {
   plugins: [react(), vike(), tailwindcss()],
   server: {
@@ -12,13 +12,6 @@ const config: UserConfig = {
       port: 24705,
     },
   },
-  build: {
-    ssr: 'server/index.ts',
-    outDir: 'dist'
-  },
-  ssr: {
-    noExternal: ['vike'],
-  }
 }
 
 export default config
