@@ -43,9 +43,10 @@ async function startServer() {
     app.use(devMiddleware)
   }
 
-  // ...
-  // Other middlewares (e.g. some RPC middleware such as Telefunc)
-  // ...
+  app.get('/health', async (_req, res) => {
+    res.status(200).json({ok:true});
+    return
+  });
 
   // Vike middleware. It should always be our last middleware (because it's a
   // catch-all middleware superseding any middleware placed after it).
