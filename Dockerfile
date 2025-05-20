@@ -39,4 +39,4 @@ HEALTHCHECK --interval=10s --timeout=5s --start-period=10s --retries=3 \
   CMD wget --quiet --spider http://localhost:${PORT}/health || exit 1
 
 EXPOSE 3005
-CMD ["node", "dist/server/entry.mjs"]
+CMD ["node", "dist/server/entry-server.js"]
