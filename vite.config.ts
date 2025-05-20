@@ -12,6 +12,13 @@ const config: UserConfig = {
       port: 24705,
     },
   },
+  build:{
+    ssr: 'server/entry-server.js', // ou entry.mjs
+    outDir: 'dist',
+  },
+  ssr:{
+    noExternal: ['vike'],
+  }
 }
 
 export default config
