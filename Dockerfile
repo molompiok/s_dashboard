@@ -25,7 +25,7 @@ RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 RUN npm install -g pnpm
 
 
-COPY . .
+COPY /app .
 
 
 RUN pnpm install --frozen-lockfile && pnpm prune --prod
