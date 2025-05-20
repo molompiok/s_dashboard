@@ -24,10 +24,9 @@ RUN addgroup -S appgroup && adduser -S appuser -G appgroup
 # Installe pnpm globalement
 RUN npm install -g pnpm
 
-COPY package.json pnpm-lock.yaml ./
-COPY tsconfig.json ./
-COPY server ./server
-COPY --from=builder /app/dist ./dist
+
+COPY . .
+
 
 RUN pnpm install --frozen-lockfile && pnpm prune --prod
 
