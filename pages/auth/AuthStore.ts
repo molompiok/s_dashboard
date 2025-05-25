@@ -1,8 +1,7 @@
 /// pages/login/AuthStore.ts
 import { create } from "zustand";
-import { UserInterface } from "../../../Interfaces/Interfaces";
+import { UserInterface } from "../../api/Interfaces/Interfaces";
 import { combine } from "zustand/middleware";
-import { ClientCall } from "../../../Components/Utils/functions";
 
 // Clés de stockage local
 const TOKEN_KEY = "auth_token";
@@ -34,7 +33,7 @@ export const useAuthStore = create(
         try {
           if (get().token) return get().token;
           if (typeof window !== "undefined") {
-            return  localStorage.getItem(TOKEN_KEY) ?? undefined;
+            return localStorage.getItem(TOKEN_KEY) ?? undefined;
           }
         } catch (e) {
           console.error("Erreur dans getToken:", e);
@@ -71,10 +70,8 @@ export const useAuthStore = create(
       },
       logoutGlobal: () => {
         set(() => {
-          // _token = undefined;
-          // _user = undefined;
-          // localStorage.removeItem(TOKEN_KEY);
-          // localStorage.removeItem(USER_KEY);
+          localStorage.removeItem(TOKEN_KEY);
+          localStorage.removeItem(USER_KEY);
           // Ajouter d'autres nettoyages si nécessaire
           return { token: undefined, user: undefined }; // Mettre à jour l'état Zustand
         });

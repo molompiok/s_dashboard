@@ -1,6 +1,6 @@
 import React from 'react';
 import { IoPersonCircleOutline } from 'react-icons/io5'; // Icône par défaut
-import { useGlobalStore } from '../../pages/stores/StoreStore';
+import { useGlobalStore } from '../../pages/index/StoreStore';
 import './userPreview.css'
 interface UserInterface {
     id: string;

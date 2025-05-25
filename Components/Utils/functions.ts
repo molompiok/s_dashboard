@@ -1,5 +1,5 @@
 //Components/Utils/functions.ts
-import { ProductInterface, ValueInterface } from "../../Interfaces/Interfaces";
+import { ProductInterface, ValueInterface } from "../../api/Interfaces/Interfaces";
 
 export {
   ClientCall,

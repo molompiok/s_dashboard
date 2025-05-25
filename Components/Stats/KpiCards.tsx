@@ -2,7 +2,7 @@
 import React from 'react';
 // Importez les icônes nécessaires de Lucide React
 import { DollarSign, ShoppingCart, Eye, Users, Percent, PackageOpen /*, autres si besoin */ } from 'lucide-react';
-import { KpiStatsResponse } from '../../Interfaces/Interfaces'; // Ajustez le chemin si nécessaire
+import { KpiStatsResponse } from '../../api/Interfaces/Interfaces'; // Ajustez le chemin si nécessaire
 import { useTranslation } from 'react-i18next'; // i18n
 
 interface KpiCardsProps {
@@ -77,14 +77,14 @@ const kpisConfig: KpiConfig[] = [
         format: 'percentage',
         decimals: 2 // Percentage needs decimals
     },
-     {
-         key: 'averageOrderValue',
-         labelKey: 'stats.kpi.averageOrderValue',
-         icon: DollarSign, // Same as Revenue, or another icon
-         iconColorClass: 'text-teal-600',
-         bgColorClass: 'bg-teal-50 border-teal-200',
-         format: 'currency'
-     },
+    {
+        key: 'averageOrderValue',
+        labelKey: 'stats.kpi.averageOrderValue',
+        icon: DollarSign, // Same as Revenue, or another icon
+        iconColorClass: 'text-teal-600',
+        bgColorClass: 'bg-teal-50 border-teal-200',
+        format: 'currency'
+    },
     // Add more KPIs as needed here following the same structure
 ];
 
@@ -107,16 +107,16 @@ const KpiCards: React.FC<KpiCardsProps> = ({ kpis }) => {
                 });
             } else if (format === 'percentage') {
                 // Format number and append %
-                 return value.toLocaleString(t('common.locale'), {
-                     minimumFractionDigits: decimals,
-                     maximumFractionDigits: decimals,
-                 }) + '%';
+                return value.toLocaleString(t('common.locale'), {
+                    minimumFractionDigits: decimals,
+                    maximumFractionDigits: decimals,
+                }) + '%';
             } else { // 'number'
-                 // Format number with separators
-                 return value.toLocaleString(t('common.locale'), {
-                      minimumFractionDigits: decimals,
-                      maximumFractionDigits: decimals,
-                 });
+                // Format number with separators
+                return value.toLocaleString(t('common.locale'), {
+                    minimumFractionDigits: decimals,
+                    maximumFractionDigits: decimals,
+                });
             }
         } catch (e) {
             console.error("Error formatting KPI value", value, format, e);
@@ -135,26 +135,26 @@ const KpiCards: React.FC<KpiCardsProps> = ({ kpis }) => {
                 return (
                     // Card Container - applies soft background/border and shadow
                     <div
-                         key={kpi.key} // Unique key for list item
+                        key={kpi.key} // Unique key for list item
                         className={`kpi-card flex flex-col p-4 rounded-lg border ${kpi.bgColorClass} shadow-sm transition hover:shadow-md`} // Added border & shadow transition
                     >
-                       
+
                         {/* Label and Value */}
                         <div className="flex items-center">
-                             {/* Icon Container */}
-                        <div className={`flex-shrink-0 p-2 mr-4 rounded-full ${kpi.iconColorClass} bg-white bg-opacity-75`}> {/* Icon with contrasting background */}
-                             {/* Render Lucide Icon component */}
-                            <kpi.icon className="w-6 h-6" strokeWidth={1.8} /> {/* Adjusted stroke width for lighter look */}
-                        </div>
+                            {/* Icon Container */}
+                            <div className={`flex-shrink-0 p-2 mr-4 rounded-full ${kpi.iconColorClass} bg-white bg-opacity-75`}> {/* Icon with contrasting background */}
+                                {/* Render Lucide Icon component */}
+                                <kpi.icon className="w-6 h-6" strokeWidth={1.8} /> {/* Adjusted stroke width for lighter look */}
+                            </div>
 
                             {/* Label */}
                             <div className="text-sm font-medium text-gray-700">{t(kpi.labelKey)}</div>
                             {/* Value */}
-                            
+
                         </div>
                         <div className="text-xl font-bold text-gray-800 mt-0.5">
-                                 {formatValue(value as number, kpi.format, kpi.decimals)}
-                             </div>
+                            {formatValue(value as number, kpi.format, kpi.decimals)}
+                        </div>
                     </div>
                 );
             })}

@@ -1,7 +1,7 @@
 // Components/CategoriesList/CategoryOrderFilterComponent.tsx
 
 import { useTranslation } from "react-i18next";
-import { CategorySortOptions } from "../../Interfaces/Interfaces"; // Importer le type de tri catégorie
+import { CategorySortOptions } from "../../api/Interfaces/Interfaces"; // Importer le type de tri catégorie
 import { useEffect, useRef } from "react";
 
 interface CategoryOrderFilterComponentProps {
@@ -47,10 +47,9 @@ export function CategoryOrderFilterComponent({ currentOrder, setOrder, onClose, 
         // Popup positionné en absolu
         <div
             ref={popupRef}
-             // Styles Tailwind similaires à VisibleFilterComponent pour position/visibilité/animation
-             className={`absolute top-full left-0 mt-1 w-56 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-30 overflow-hidden transition-all duration-150 ease-out ${
-                active ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'
-             }`}
+            // Styles Tailwind similaires à VisibleFilterComponent pour position/visibilité/animation
+            className={`absolute top-full left-0 mt-1 w-56 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-30 overflow-hidden transition-all duration-150 ease-out ${active ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'
+                }`}
         >
             <div className="py-1" role="menu" aria-orientation="vertical">
                 {categorySortOptions.map((option) => {
@@ -65,17 +64,16 @@ export function CategoryOrderFilterComponent({ currentOrder, setOrder, onClose, 
                                 onClose(); // Fermer après sélection
                             }}
                             // Styles Tailwind pour chaque item
-                            className={`flex items-center gap-2 w-full px-3 py-1.5 text-sm text-left ${
-                                isSelected
+                            className={`flex items-center gap-2 w-full px-3 py-1.5 text-sm text-left ${isSelected
                                     ? 'bg-blue-50 text-blue-700 font-medium'
                                     : 'text-gray-700 hover:bg-gray-100 hover:text-gray-900'
-                            }`}
+                                }`}
                             role="menuitem"
                         >
-                             {/* Texte de l'option traduit */}
-                             <span>{t(option.labelKey)}</span>
-                              {/* Indicateur Sélectionné (optionnel) */}
-                             {/* {isSelected && <IoCheckmark className="ml-auto w-4 h-4 text-blue-600"/>} */}
+                            {/* Texte de l'option traduit */}
+                            <span>{t(option.labelKey)}</span>
+                            {/* Indicateur Sélectionné (optionnel) */}
+                            {/* {isSelected && <IoCheckmark className="ml-auto w-4 h-4 text-blue-600"/>} */}
                         </button>
                     );
                 })}

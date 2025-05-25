@@ -12,7 +12,7 @@ import {
 import {
     BaseStatsParams, VisitStatsIncludeOptions, OrderStatsIncludeOptions,
     StatsPeriod
-} from "../../../Interfaces/Interfaces";
+} from "../../../api/Interfaces/Interfaces";
 // Composants UI
 import StatsFilters from '../../../Components/Stats/StatsFilters'; // Filtres
 import KpiCards from '../../../Components/Stats/KpiCards'; // KPIs
@@ -252,7 +252,7 @@ export function Page() {
                     </div>
                 </div>
             </div>
-            
+
             <div className="relative p-2  bg-gray-50 min-h-screen">
                 <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-6">{t('stats.pageTitle')}</h1>
                 {/* Sidebar desktop */}

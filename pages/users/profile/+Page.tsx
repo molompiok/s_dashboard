@@ -5,14 +5,14 @@ import { useTranslation } from 'react-i18next';
 import { useGetMe, useUpdateUser, useLogoutAllDevices, useDeleteAccount, queryClient } from '../../../api/ReactSublymusApi'; // Importer tous les hooks nécessaires
 import logger from '../../../api/Logger';
 import { ApiError } from '../../../api/SublymusApi';
-import { IoCameraOutline, IoMailOutline, IoLockClosedOutline, IoLogOutOutline,IoTrash } from 'react-icons/io5';
+import { IoCameraOutline, IoMailOutline, IoLockClosedOutline, IoLogOutOutline, IoTrash } from 'react-icons/io5';
 import { Topbar } from '../../../Components/TopBar/TopBar';
 import { PageNotFound } from '../../../Components/PageNotFound/PageNotFound';
 import { ConfirmDelete } from '../../../Components/Confirm/ConfirmDelete';
 import { useChildViewer } from '../../../Components/ChildViewer/useChildViewer';
 import { ChildViewer } from '../../../Components/ChildViewer/ChildViewer';
 import { getImg } from '../../../Components/Utils/StringFormater';
-import { useGlobalStore } from '../../stores/StoreStore';
+import { useGlobalStore } from '../../index/StoreStore';
 import { Button } from '../../../Components/Button/Button';
 
 export { Page };
@@ -375,8 +375,8 @@ function Page() {
                 ))}
               </select>
             </div>
-         </div>
-         </section>
+          </div>
+        </section>
 
         {/* Section Sécurité */}
         <section className="bg-white rounded-lg shadow-sm border border-gray-200">

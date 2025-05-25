@@ -3,7 +3,7 @@
 import { useState, useEffect } from 'react';
 import { IoAddSharp, IoAppsSharp, IoListSharp, IoSearch, IoChevronDown, IoEyeOutline, IoEyeOffOutline } from 'react-icons/io5';
 import { useTranslation } from 'react-i18next';
-import { CategoryFilterType, CategorySortOptions } from '../../Interfaces/Interfaces'; // Importer les types
+import { CategoryFilterType, CategorySortOptions } from '../../api/Interfaces/Interfaces'; // Importer les types
 import { debounce } from '../Utils/functions';
 // Importer les composants de filtre (adaptés ou nouveaux)
 import { CategoryOrderFilterComponent } from './CategoryOrderFilterComponent'; // Nouveau

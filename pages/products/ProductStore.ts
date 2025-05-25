@@ -1,10 +1,10 @@
 //pages/products/ProductStore.ts
 import { create } from "zustand";
 import { combine } from "zustand/middleware";
-import { useAuthStore } from "../users/login/AuthStore";
+import { useAuthStore } from "../auth/AuthStore";
 import { Api_host, Server_Host } from "../../renderer/+config";
-import { ProductInterface, ListType, FeatureInterface, ValueInterface, UpdateFeature, FilterType } from "../../Interfaces/Interfaces";
-import { useGlobalStore } from "../stores/StoreStore";
+import { ProductInterface, ListType, FeatureInterface, ValueInterface, UpdateFeature, FilterType } from "../../api/Interfaces/Interfaces";
+import { useGlobalStore } from "../index/StoreStore";
 import { EDITED_DATA, NEW_ID_START } from "../../Components/Utils/constants";
 import { features } from "process";
 

@@ -2,7 +2,7 @@
 // import './Receipt.css'; // ❌ Supprimer
 
 import { IoCloudDownloadOutline, IoDocumentsOutline, IoShareSocialOutline, IoPricetags, IoReceipt, IoCard, IoStorefront } from 'react-icons/io5';
-import { CommandInterface } from '../../../../Interfaces/Interfaces';
+import { CommandInterface } from '../../../../api/Interfaces/Interfaces';
 import { CommandProduct, CommandTop, PaymentMethodElement } from '../+Page'; // Importer les sous-composants refactorisés
 
 import { showToast, showErrorToast } from '../../../../Components/Utils/toastNotifications';
@@ -10,7 +10,7 @@ import { showToast, showErrorToast } from '../../../../Components/Utils/toastNot
 import { useTranslation } from 'react-i18next'; // ✅ i18n
 import { useEffect, useMemo, useRef, useState } from 'react'; // ✅ useMemo pour calculs
 import { FaTruck } from 'react-icons/fa';
-import { useGlobalStore } from '../../../stores/StoreStore';
+import { useGlobalStore } from '../../../index/StoreStore';
 import { usePageContext } from '../../../../renderer/usePageContext';
 import { useGetOrderDetails } from '../../../../api/ReactSublymusApi';
 import { SpinnerIcon } from '../../../../Components/Confirm/Spinner';
@@ -38,56 +38,56 @@ function Page({ command }: { command?: Partial<CommandInterface> }) {
 
     command = command || (commandFetched ?? undefined)
 
-const handleDownloadPdf = async () => {
-  if (!receiptRef.current) return;
+    const handleDownloadPdf = async () => {
+        if (!receiptRef.current) return;
 
-  try {
-    setIsGeneratingPdf(true);
+        try {
+            setIsGeneratingPdf(true);
 
-    // ⬇️ Importation dynamique (client-only)
-    const { jsPDF } = await import('jspdf');
-    const html2canvas = (await import('html2canvas-pro')).default;
+            // ⬇️ Importation dynamique (client-only)
+            const { jsPDF } = await import('jspdf');
+            const html2canvas = (await import('html2canvas-pro')).default;
 
-    // ⬇️ Capture du canvas
-    const canvas = await html2canvas(receiptRef.current, {
-      scale: 2,
-      useCORS: true,
-    });
+            // ⬇️ Capture du canvas
+            const canvas = await html2canvas(receiptRef.current, {
+                scale: 2,
+                useCORS: true,
+            });
 
-    // ⬇️ Conversion en image (base64)
-    const imgData = canvas.toDataURL('image/jpeg', 0.98);
+            // ⬇️ Conversion en image (base64)
+            const imgData = canvas.toDataURL('image/jpeg', 0.98);
 
-    // ⬇️ Création du PDF avec jsPDF
-    const pdf = new jsPDF({
-      orientation: 'portrait',
-      unit: 'px',
-      format: 'a4',
-    });
+            // ⬇️ Création du PDF avec jsPDF
+            const pdf = new jsPDF({
+                orientation: 'portrait',
+                unit: 'px',
+                format: 'a4',
+            });
 
-    const pageWidth = pdf.internal.pageSize.getWidth();
-    const pageHeight = pdf.internal.pageSize.getHeight();
+            const pageWidth = pdf.internal.pageSize.getWidth();
+            const pageHeight = pdf.internal.pageSize.getHeight();
 
-    // ⬇️ Adapter l'image au format A4
-    const imgProps = {
-      width: canvas.width,
-      height: canvas.height,
+            // ⬇️ Adapter l'image au format A4
+            const imgProps = {
+                width: canvas.width,
+                height: canvas.height,
+            };
+            const ratio = Math.min(pageWidth / imgProps.width, pageHeight / imgProps.height);
+            const imgWidth = imgProps.width * ratio;
+            const imgHeight = imgProps.height * ratio;
+
+            const x = (pageWidth - imgWidth) / 2;
+            const y = 20; // marge en haut
+
+            pdf.addImage(imgData, 'JPEG', x, y, imgWidth, imgHeight);
+            pdf.save(`receipt_${command?.id || 'document'}.pdf`);
+        } catch (error) {
+            console.error('Erreur PDF :', error);
+            showErrorToast('Erreur lors de la génération du PDF');
+        } finally {
+            setIsGeneratingPdf(false);
+        }
     };
-    const ratio = Math.min(pageWidth / imgProps.width, pageHeight / imgProps.height);
-    const imgWidth = imgProps.width * ratio;
-    const imgHeight = imgProps.height * ratio;
-
-    const x = (pageWidth - imgWidth) / 2;
-    const y = 20; // marge en haut
-
-    pdf.addImage(imgData, 'JPEG', x, y, imgWidth, imgHeight);
-    pdf.save(`receipt_${command?.id || 'document'}.pdf`);
-  } catch (error) {
-    console.error('Erreur PDF :', error);
-    showErrorToast('Erreur lors de la génération du PDF');
-  } finally {
-    setIsGeneratingPdf(false);
-  }
-};
 
     // --- Calculs pour le résumé ---
     const subTotal = useMemo(() => {

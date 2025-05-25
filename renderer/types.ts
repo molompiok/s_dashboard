@@ -41,6 +41,10 @@ declare global {
       initialLanguage?: string; // ✅ Type pour la langue initiale
       lang:string,
 
+      // App urls
+      serverUrl: string,
+      apiUrl: string,
+      baseUrl:string
     }
   }
 }

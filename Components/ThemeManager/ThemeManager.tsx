@@ -1,9 +1,9 @@
 // Components/ThemeManager/ThemeManager.tsx
 
-import { StoreInterface, ThemeInterface } from "../../Interfaces/Interfaces"; // Importer les interfaces
+import { StoreInterface, ThemeInterface } from "../../api/Interfaces/Interfaces"; // Importer les interfaces
 import { useTranslation } from "react-i18next";
 import { getImg } from "../Utils/StringFormater";
-import { useGlobalStore } from "../../pages/stores/StoreStore"; // Pour l'URL de base des images?
+import { useGlobalStore } from "../../pages/index/StoreStore"; // Pour l'URL de base des images?
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { FreeMode, Navigation } from 'swiper/modules'; // Ajouter Navigation
 import { IoColorPaletteOutline, IoTextOutline, IoMegaphoneOutline, IoChatbubblesOutline, IoNewspaperOutline, IoChevronForward, IoBrushOutline, IoCheckmarkCircle, IoChevronBack, IoLanguageOutline, IoGlobeOutline, IoTicketOutline, IoStorefrontOutline } from "react-icons/io5"; // Icônes pour options
@@ -65,12 +65,12 @@ export function ThemeManager({ store }: ThemeManagerProps) {
 
     // Options de personnalisation (peut venir de l'API du thème plus tard)
     const customizationSections = [
-        { key: 'general',    titleKey: 'themeEditor.section.general' },
-        { key: 'colors',     titleKey: 'themeEditor.section.colors' },
+        { key: 'general', titleKey: 'themeEditor.section.general' },
+        { key: 'colors', titleKey: 'themeEditor.section.colors' },
         { key: 'typography', titleKey: 'themeEditor.section.typography' },
-        { key: 'layout',     titleKey: 'themeEditor.section.layout' },
-        { key: 'header',     titleKey: 'themeEditor.section.header' },
-        { key: 'footer',     titleKey: 'themeEditor.section.footer' },
+        { key: 'layout', titleKey: 'themeEditor.section.layout' },
+        { key: 'header', titleKey: 'themeEditor.section.header' },
+        { key: 'footer', titleKey: 'themeEditor.section.footer' },
         // Ajouter d'autres sections pertinentes de l'éditeur ici
     ];
 
@@ -226,11 +226,11 @@ export function ThemeManager({ store }: ThemeManagerProps) {
 interface ThemeCardProps {
     theme: Partial<ThemeInterface>;
     isCurrent?: boolean; // Indiquer si c'est le thème actuel
-    isSelected?:boolean,
-    onClick?:() => void
+    isSelected?: boolean,
+    onClick?: () => void
 }
 
-export function ThemeCard({ theme, isCurrent = false ,isSelected,onClick}: ThemeCardProps) {
+export function ThemeCard({ theme, isCurrent = false, isSelected, onClick }: ThemeCardProps) {
     const { t } = useTranslation();
     const { currentStore: globalCurrentStore } = useGlobalStore(); // Pour URL base image
     const [imgError, setImgError] = useState(false);
@@ -254,7 +254,7 @@ export function ThemeCard({ theme, isCurrent = false ,isSelected,onClick}: Theme
     return (
         <button // Rendre la carte cliquable
             type="button"
-            onClick={onClick||handleClick}
+            onClick={onClick || handleClick}
             className={`theme-card w-full h-full flex flex-col bg-white rounded-lg shadow-sm border overflow-hidden transition duration-150 ${isCurrent ? 'border-blue-500 ring-1 ring-blue-400' : 'border-gray-200 hover:shadow-md hover:border-gray-300'
                 }`}
         >

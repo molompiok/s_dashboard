@@ -4,7 +4,7 @@ import { useState } from 'react';
 import { BreadcrumbItem, Topbar } from '../../../Components/TopBar/TopBar';
 import { useTranslation } from 'react-i18next';
 import { useGetCollaborators, useCreateCollaborator } from '../../../api/ReactSublymusApi'; // Importer hooks
-import { UserInterface, Role as RoleInterface, TypeJsonRole } from '../../../Interfaces/Interfaces'; // Importer Role interface
+import { UserInterface, Role as RoleInterface, TypeJsonRole } from '../../../api/Interfaces/Interfaces'; // Importer Role interface
 import { CollaboratorItemRow } from '../../../Components/CollaboratorList/CollaboratorItemRow'; // Nouveau composant
 import { CommandItemSkeleton } from '../../../Components/CommandItem/CommandItem'; // Nouveau skeleton
 import { AddCollaboratorPopup } from '../../../Components/CollaboratorList/AddCollaboratorPopup'; // Nouveau popup

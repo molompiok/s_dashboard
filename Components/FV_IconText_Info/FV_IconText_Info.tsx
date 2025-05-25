@@ -2,10 +2,10 @@
 // import './FV_IconText_Info.css'; // ❌ Supprimer
 
 import { useRef, useState, useEffect } from 'react';
-import { FeatureInterface, ValueInterface } from '../../Interfaces/Interfaces';
+import { FeatureInterface, ValueInterface } from '../../api/Interfaces/Interfaces';
 import { IoClose, IoCloudUploadOutline, IoPencil } from 'react-icons/io5';
 import { getImg } from '../Utils/StringFormater';
-import { useGlobalStore } from '../../pages/stores/StoreStore';
+import { useGlobalStore } from '../../pages/index/StoreStore';
 import { RiImageEditFill } from 'react-icons/ri';
 import { Confirm } from '../Confirm/Confirm'; // Gardé
 import { ValuePricing } from '../ValuePricing/ValuePricing'; // Gardé

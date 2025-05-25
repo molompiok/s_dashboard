@@ -490,10 +490,6 @@
         "spamHint": "Pensez à vérifier votre dossier de courrier indésirable (spam).",
         "resendLink": "Renvoyer l'email ?"
     },
-    "authNotice": {
-        "genericSentTitle": "Opération Réussie",
-        "genericSentMessage": "Votre demande a été traitée. Veuillez consulter votre boîte de réception si nécessaire."
-    },
     "roles": {
         "client": "Client",
         "collaborator": "Collaborateur",
@@ -561,6 +557,32 @@
         "backToLogin": "Aller à la connexion"
     },
     "auth": {
+        "loginTab": "Connexion",
+        "registerTab": "Inscription",
+        "loginTitle": "Ravi de vous revoir !",
+        "loginSubtitle": "Accédez à votre tableau de bord Sublymus.",
+        "registerTitle": "Créez votre Compte",
+        "registerSubtitle": "Commencez à gérer votre boutique en ligne dès aujourd'hui.",
+        "emailPlaceholder": "Adresse e-mail",
+        "passwordPlaceholder": "Mot de passe",
+        "fullNamePlaceholder": "Nom complet",
+        "passwordConfirmPlaceholder": "Confirmez le mot de passe",
+        "forgotPasswordLink": "Mot de passe oublié ?",
+        "loginButton": "Se connecter",
+        "registerButton": "Créer un compte",
+        "orContinueWith": "Ou continuer avec",
+        "googleButton": "Se connecter avec Google",
+        "noAccountPrompt": "Pas encore de compte ?",
+        "registerNowLink": "Inscrivez-vous",
+        "alreadyAccountPrompt": "Déjà un compte ?",
+        "loginNowLink": "Connectez-vous ici",
+        "missingFields": "Veuillez remplir tous les champs requis.",
+        "passwordsDoNotMatch": "Les mots de passe ne correspondent pas.",
+        "registerSuccessCheckEmail": "Inscription réussie ! Veuillez consulter vos e-mails pour vérifier votre compte.",
+        "socialLoginTokenError": "Échec du traitement de la connexion sociale. Veuillez réessayer.",
+        "welcomeTitle": "Bienvenue sur Sublymus",
+        "welcomeSubtitle": "Gérez votre commerce en ligne avec facilité.",
+        "processingSocialLogin": "Verification en cours..",
         "resetPassword": {
             "success": "Votre mot de passe a été réinitialisé avec succès. Vous pouvez maintenant vous connecter.",
             "invalidToken": "Ce lien de réinitialisation est invalide ou a expiré. Veuillez refaire une demande.",
@@ -600,6 +622,48 @@
         "profileUpdateFailed": "La mise à jour du profil a échoué.",
         "accountDeleteSuccess": "Compte supprimé avec succès.",
         "accountDeleteFailed": "Échec de la suppression du compte."
+    },
+    "authNotice": {
+        "verify": {
+            "title": "Vérifiez votre e-mail",
+            "messageWithEmail": "Nous avons envoyé un lien de vérification à {{email}}. Veuillez cliquer sur le lien pour activer votre compte.",
+            "messageGeneric": "Un lien de vérification a été envoyé à votre adresse e-mail. Veuillez cliquer sur le lien pour activer votre compte.",
+            "spamHint": "Si vous ne voyez pas l'e-mail, veuillez vérifier votre dossier spam ou courrier indésirable."
+        },
+        "emailVerified": {
+            "title": "E-mail Vérifié !",
+            "message": "Votre adresse e-mail a été vérifiée avec succès. Vous pouvez maintenant vous connecter."
+        },
+        "passwordResetSent": {
+            "title": "E-mail de réinitialisation envoyé",
+            "messageWithEmail": "Si un compte existe pour {{email}}, vous recevrez sous peu un e-mail avec les instructions pour réinitialiser votre mot de passe.",
+            "messageGeneric": "Si votre adresse e-mail est dans notre système, vous recevrez sous peu un e-mail de réinitialisation de mot de passe."
+        },
+        "passwordResetSuccess": {
+            "title": "Mot de passe réinitialisé !",
+            "message": "Votre mot de passe a été mis à jour avec succès. Vous pouvez maintenant vous connecter avec votre nouveau mot de passe."
+        },
+        "accountSetupSuccess": {
+            "title": "Configuration du compte terminée !",
+            "message": "Votre compte a été configuré avec succès. Vous pouvez maintenant vous connecter."
+        },
+        "generic": {
+            "title": "Information",
+            "message": "Votre demande a été traitée."
+        },
+        "error": {
+            "title": "Une erreur est survenue",
+            "defaultMessage": "Un problème est survenu. Veuillez réessayer plus tard ou contacter le support si le problème persiste."
+        },
+        "action": {
+            "backToLogin": "Retour à la connexion",
+            "proceedToLogin": "Se connecter",
+            "resendVerification": "Renvoyer l'e-mail de vérification",
+            "backToHome": "Retour à l'accueil"
+        }
+    },
+    "footer": {
+        "allRightsReserved": "Tous droits réservés."
     },
     "emails": {
         "verifySubject": "Vérifiez votre adresse email - Sublymus"
@@ -1215,7 +1279,7 @@
             "name_desc": "Nom (Z-A)",
             "date_desc": "Plus Récent"
         },
-        "savingSettings":"Sauvegard en cours..",
+        "savingSettings": "Sauvegard en cours..",
         "noThemesMatch": "Aucun thème ne correspond à vos critères.",
         "selectThemePrompt": "Sélectionnez un thème pour voir l'aperçu.",
         "installButton": "Installer ce thème",

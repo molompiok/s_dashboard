@@ -1,8 +1,8 @@
 //pages/commands/CommandStore.ts
 import { create } from "zustand"
 import { combine } from "zustand/middleware"
-import { CommandFilterType, CommandInterface, EventStatus, ListType } from "../../Interfaces/Interfaces"
-import { useAuthStore } from "../users/login/AuthStore"
+import { CommandFilterType, CommandInterface, EventStatus, ListType } from "../../api/Interfaces/Interfaces"
+import { useAuthStore } from "../auth/AuthStore"
 
 
 

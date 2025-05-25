@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react"
 import { ClientCall } from "../Components/Utils/functions";
 export  {useMyLocation,getSearch}
+import { navigate } from 'vike/client/router'
 
 function getSearch(myLocation:Location) {
     if(!myLocation.search) return {}
@@ -69,6 +70,6 @@ function getSearch(myLocation:Location) {
     },  replaceLocation(url:string){
       history.replaceState(null, "", url);
     },nextPage(url:string){
-      window.location.assign(url)
+     navigate(url,{ keepScrollPosition: true })
     }}
 }

@@ -8,7 +8,7 @@ import { Navigation } from 'swiper/modules'; // Utiliser Navigation standard
 import { IoCheckmarkCircle, IoChevronBack, IoChevronForward, IoCloseCircle, IoPencil, IoWarning } from 'react-icons/io5';
 import { useCheckStoreNameAvailability, useCreateStore, useUpdateStore } from '../../api/ReactSublymusApi'; // ✅ Hooks API
 import { ApiError } from '../../api/SublymusApi'; // Pour typer erreur
-import { StoreInterface } from '../../Interfaces/Interfaces'; // Types locaux
+import { StoreInterface } from '../../api/Interfaces/Interfaces'; // Types locaux
 import { getImg } from '../../Components/Utils/StringFormater';
 import { ClientCall, debounce, toNameString } from '../../Components/Utils/functions';
 import { useTranslation } from 'react-i18next'; // ✅ i18n
@@ -40,7 +40,7 @@ export function StoreCreationEditionWizard({
     const { t } = useTranslation(); // ✅ i18n
     const [swiper, setSwiper] = useState<SwiperType | null>(null);
     const [activeIndex, setActiveIndex] = useState(0);
-    const [maxReachedIndex, setMaxReachedIndex] = useState(initialStoreData?3:0); // Index max atteint valablement
+    const [maxReachedIndex, setMaxReachedIndex] = useState(initialStoreData ? 3 : 0); // Index max atteint valablement
 
     const isEditing = !!initialStoreData?.id;
 
@@ -50,7 +50,7 @@ export function StoreCreationEditionWizard({
     const [savedStore, setSavedStore] = useState<StoreInterface | null>(null);
 
     const [s] = useState({
-        collected:{} as StoreInterface
+        collected: {} as StoreInterface
     })
     // --- État du Formulaire ---
     const [collected, setCollected] = useState({
@@ -188,7 +188,7 @@ export function StoreCreationEditionWizard({
             processedValue = value.substring(0, 128); // Limiter description
         }
 
-        s.collected = {...s.collected,[name]: processedValue}
+        s.collected = { ...s.collected, [name]: processedValue }
         setCollected(prev => ({ ...prev, [name]: processedValue }));
 
         // Reset erreurs spécifiques au champ
@@ -200,7 +200,7 @@ export function StoreCreationEditionWizard({
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, field: 'logo' | 'cover_image') => {
         const file = e.target.files?.[0];
         if (!file) return;
-        s.collected = {...s.collected,[field]: [file]}
+        s.collected = { ...s.collected, [field]: [file] }
         setCollected(prev => ({ ...prev, [field]: [file] })); // Remplacer par le nouveau fichier
         // Reset erreurs
         if (field === 'logo') setLogoError('');
@@ -236,7 +236,7 @@ export function StoreCreationEditionWizard({
                     onSuccess: (data) => {
                         setLoadingState('success');
                         setSavedStore(data.store); // Sauver pour écran succès
-                        onSaveSuccess(data.store,'updated'); // Appeler callback parent
+                        onSaveSuccess(data.store, 'updated'); // Appeler callback parent
                     },
                     onError: (error: ApiError) => {
                         setLoadingState('error');
@@ -251,7 +251,7 @@ export function StoreCreationEditionWizard({
                 onSuccess: (data) => {
                     setLoadingState('success');
                     setSavedStore(data.store);
-                    onSaveSuccess(data.store,'created');
+                    onSaveSuccess(data.store, 'created');
                 },
                 onError: (error: ApiError) => {
                     // setLoadingState('error');
@@ -289,7 +289,7 @@ export function StoreCreationEditionWizard({
     // --- Rendu ---
     return (
         // Conteneur principal avec padding
-        <div className="store-creation-wizard w-full h-full overflow-y-auto flex flex-col justify-start max-w-2xl m-auto p-4 sm:p-6">
+        <div className="store-creation-wizard w-full h-full overflow-y-auto flex flex-col justify-center max-w-2xl m-auto p-4 sm:p-6">
 
             <div className="relative mb-6">
                 <h1 className="text-2xl font-semibold text-center text-gray-800">
@@ -334,7 +334,7 @@ export function StoreCreationEditionWizard({
 
             {/* Swiper pour les étapes */}
             {/* Donner une hauteur fixe ou min-height pour éviter les sauts */}
-            <div className="swiper-container min-h-[350px] sm:h-[400px] relative"> {/* Hauteur ajustée */}
+            <div className="swiper-container h-[500px] relative "> {/* Hauteur ajustée */}
                 <Swiper
                     onSwiper={setSwiper}
                     onActiveIndexChange={(s) => {
@@ -344,13 +344,13 @@ export function StoreCreationEditionWizard({
                             setMaxReachedIndex(prev => Math.max(prev, s.previousIndex + 1));
                         }
                     }}
-                    className={`h-[350px] sm:h-[400px] ${createStoreMutation.isPending ? 'opacity-50 pointer-events-none' : ''}`} // Désactiver pendant la création
+                    className={`h-[500px] ${createStoreMutation.isPending ? 'opacity-50 pointer-events-none' : ''}`} // Désactiver pendant la création
                     allowTouchMove={false} // Empêcher swipe manuel
                     modules={[Navigation]} // Seulement Navigation (contrôlée par boutons)
                 // navigation // Cacher la navigation par défaut de Swiper
                 >
                     {/* Slide 1: Nom */}
-                    <SwiperSlide style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }} className='flex flex w-full h-full items-center justify-center gap-6 px-4 text-center'>
+                    <SwiperSlide style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }} className='flex  w-full h-full items-center justify-center gap-6 px-4 text-center'>
                         <h2 className="text-lg font-medium text-gray-700">{t('storeCreate.stepNameTitle')}</h2>
                         <div className='w-full mx-auto max-w-sm flex flex-col items-center justify-center'>
                             <label htmlFor='input-store-name' className="sr-only">{t('storeCreate.nameLabel')}</label>
@@ -413,7 +413,7 @@ export function StoreCreationEditionWizard({
                         <h2 className="text-lg font-medium text-gray-700">{t('storeCreate.stepCoverTitle')}</h2>
                         <label htmlFor='store-cover_image-input' className={`relative  group w-full max-w-md aspect-video rounded-lg cursor-pointer overflow-hidden bg-gray-100 border-2 ${coverError ? 'border-red-400' : 'border-dashed border-gray-300'} hover:border-blue-400 hover:bg-gray-50`}>
                             <div
-                                style={{background:getImg(coverPreview || '/res/empty/drag-and-drop.png')}}
+                                style={{ background: getImg(coverPreview || '/res/empty/drag-and-drop.png') }}
                                 className={`w-auto h-[70%]  ${collected.cover_image.length > 0 ? 'object-cover' : 'object-contain opacity-50'}`}
                                 onError={(e) => (e.currentTarget.style.background = getImg('/res/empty/drag-and-drop.png'))}
                             >
@@ -428,12 +428,12 @@ export function StoreCreationEditionWizard({
                     </SwiperSlide>
 
                     {/* Slide 4: Infos (Titre, Description) */}
-                    <SwiperSlide style={{ display: 'flex', flexDirection: 'column', justifyContent: 'start', alignItems: 'center' }} className='flex flex-col overflow-y-auto items-center justify-center gap-6 px-4 text-center'>
+                    <SwiperSlide style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }} className='flex flex-col w-full h-full items-center justify-center gap-6 px-4 text-center'>
                         <h2 className="text-lg font-medium text-gray-700">{t('storeCreate.stepInfoTitle')}</h2>
                         <div className="w-full max-w-sm flex flex-col gap-4">
                             {/* Titre */}
                             <div>
-                                <label htmlFor='input-store-title' className='block text-sm font-medium text-gray-700 mb-1 text-left flex justify-between items-center'>
+                                <label htmlFor='input-store-title' className=' text-sm font-medium text-gray-700 mb-1 text-left flex justify-between items-center'>
                                     <span>{t('storeCreate.titleLabel')}</span>
                                     <span className={`text-xs ${collected.title.length > 52 ? 'text-red-600' : 'text-gray-400'}`}>{collected.title.length} / 52</span>
                                 </label>
@@ -452,7 +452,7 @@ export function StoreCreationEditionWizard({
                             </div>
                             {/* Description */}
                             <div>
-                                <label htmlFor='input-store-description' className='block text-sm font-medium text-gray-700 mb-1 text-left flex justify-between items-center'>
+                                <label htmlFor='input-store-description' className=' text-sm font-medium text-gray-700 mb-1 text-left flex justify-between items-center'>
                                     <span>{t('storeCreate.descriptionLabel')}</span>
                                     <span className={`text-xs ${collected.description.length > 128 ? 'text-red-600' : 'text-gray-400'}`}>{collected.description.length} / 128</span>
                                 </label>
@@ -477,7 +477,7 @@ export function StoreCreationEditionWizard({
                                 </div>
                                 <div>
                                     <h3 className='text-sm font-medium text-blue-800 leading-tight'>{collected.title || t('storeCreate.previewDefaultTitle')}</h3>
-                                    <p className='text-xs text-green-700'>{`https://${collected.name || 'votrenom'}.sublymus.com`}</p>
+                                    <p className='text-xs text-green-700 line-clamp-1'>{`https://${collected.name || 'votrenom'}.sublymus.com`}</p>
                                 </div>
                             </div>
                             <p className="text-xs text-gray-600 mt-1 line-clamp-2">{collected.description || t('storeCreate.previewDefaultDesc')}</p>

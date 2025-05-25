@@ -2,7 +2,7 @@
 // import './FV_Color_Info.css'; // ❌ Supprimer
 
 import { useRef, useState, useEffect } from 'react';
-import { FeatureInterface, ValueInterface } from '../../Interfaces/Interfaces';
+import { FeatureInterface, ValueInterface } from '../../api/Interfaces/Interfaces';
 import { IoClose, IoPencil } from 'react-icons/io5';
 import { Confirm } from '../Confirm/Confirm'; // Gardé
 import { Colors } from '../Utils/constants'; // Gardé

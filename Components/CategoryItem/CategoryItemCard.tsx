@@ -1,9 +1,9 @@
 // Components/CategoryItem/CategoryItemCard.tsx
 
-import { CategoryInterface } from "../../Interfaces/Interfaces";
+import { CategoryInterface } from "../../api/Interfaces/Interfaces";
 import { IoPricetagsOutline, IoCalendarOutline, IoEyeOffOutline, IoPencil, IoTrash, IoEllipsisVertical, IoChevronForward, IoEyeOutline } from "react-icons/io5";
 import { getImg } from "../Utils/StringFormater";
-import { useGlobalStore } from "../../pages/stores/StoreStore";
+import { useGlobalStore } from "../../pages/index/StoreStore";
 import { useTranslation } from "react-i18next";
 import { DateTime } from "luxon";
 import { useState, useEffect } from 'react'; // Ajouter useEffect

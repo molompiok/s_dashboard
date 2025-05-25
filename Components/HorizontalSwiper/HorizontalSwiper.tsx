@@ -13,13 +13,13 @@ import './HorizontalSwiper.css';
 // import required modules
 import { Pagination, Navigation } from 'swiper/modules';
 import { useWindowSize } from '../../Hooks/useWindowSize';
-import { ValueInterface } from '../../Interfaces/Interfaces';
+import { ValueInterface } from '../../api/Interfaces/Interfaces';
 import { IoArrowBackCircleOutline, IoArrowForwardCircleOutline, IoChevronBack, IoChevronForward, IoTrash } from 'react-icons/io5';
 import { BiSolidImageAdd } from 'react-icons/bi';
 import { getFileType } from '../Utils/functions';
 import { ChildViewer } from '../ChildViewer/ChildViewer';
 import { ConfirmDelete } from '../Confirm/ConfirmDelete';
-import { useGlobalStore } from '../../pages/stores/StoreStore';
+import { useGlobalStore } from '../../pages/index/StoreStore';
 import { getImg } from '../Utils/StringFormater';
 import { useChildViewer } from '../ChildViewer/useChildViewer';
 import { globalActionZust } from '../../renderer/AppStore/globalActionZust';
@@ -32,7 +32,7 @@ function HoriszontalSwiper({ values, onActiveIndexChange, onDeleteValue, goBack,
     const [swiperRef, setSwiperRef] = useState<SwiperType | null>(null);
     const { currentStore } = useGlobalStore()
     const { openChild } = useChildViewer();
-    const {t} = useTranslation()
+    const { t } = useTranslation()
 
     const s = useWindowSize().width;
     const n = s <= 580 ? ((s - 260) / 200) + 2

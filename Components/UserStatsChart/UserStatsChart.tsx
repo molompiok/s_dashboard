@@ -11,7 +11,7 @@ import {
   Legend,
 } from 'chart.js';
 import { Bar, Line } from 'react-chartjs-2';
-import { OrderStatsResponse, OrderStatsResultItem, VisitStatsResponse } from '../../Interfaces/Interfaces';
+import { OrderStatsResponse, OrderStatsResultItem, VisitStatsResponse } from '../../api/Interfaces/Interfaces';
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Tooltip, Legend);
 
@@ -19,7 +19,7 @@ type PeriodType = 'day' | 'week' | 'month';
 
 interface StatsData {
   visits_stats?: VisitStatsResponse;
-  order_stats?:OrderStatsResponse;
+  order_stats?: OrderStatsResponse;
 }
 
 interface StatsChartProps {
@@ -198,7 +198,7 @@ export default function StatsChart({ period, data, setAvailable, setResume }: St
       },
     },
   }
-  
+
   // Gestion du scroll avec la molette
   const handleWheel = (event: WheelEvent) => {
     event.preventDefault();

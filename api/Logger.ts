@@ -1,5 +1,4 @@
-// common/logger.ts (ou chemin partagé)
-
+//api/Logger.ts
 export const LOG_LEVELS = {
   DEBUG: 1,
   INFO: 2,

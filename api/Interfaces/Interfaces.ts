@@ -1,7 +1,7 @@
 
+// api/Interfaces/Interfaces.ts
 export type ThemeSettingsValues = Record<string, any>;
 
-// src/Interfaces/Interfaces.ts
 
 // --- Types pour Stats (Nouvelle Structure) ---
 export type StatsPeriod = 'day' | 'week' | 'month'; // Utiliser celui de StatsUtils?

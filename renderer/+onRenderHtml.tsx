@@ -9,9 +9,8 @@ import type { OnRenderHtmlAsync } from 'vike/types'
 import { getPageTitle } from './getPageTitle'
 import { I18nextProvider } from 'react-i18next';
 import './tw.css'
+import { getToken } from "../pages/auth/AuthStore";
 import { SublymusApiProvider } from "../api/ReactSublymusApi";
-import { Server_Host } from "./+config";
-import { getToken } from "../pages/users/login/AuthStore";
 const onRenderHtml: OnRenderHtmlAsync = async (pageContext): ReturnType<OnRenderHtmlAsync> => {
   const { Page } = pageContext
   const i18n = i18next.cloneInstance();
@@ -19,9 +18,23 @@ const onRenderHtml: OnRenderHtmlAsync = async (pageContext): ReturnType<OnRender
   // onRenderHtml() to support SPA
   if (!Page) throw new Error('My onRenderHtml() hook expects pageContext.Page to be defined')
 
+  const headersOriginal = pageContext.headers as Record<string, string> || {};
+  const baseUrlFromHeader = headersOriginal['x-base-url'] || '/';
+  const apiUrlFromHeader = headersOriginal['x-target-api-service'] || '/';
+  const serverUrlFromHeader = headersOriginal['x-server-url'] || '/';
+  const serverApiFromHeader = headersOriginal['x-server-api-url'] //|| 'server.'+serverUrlFromHeader;
+
+
+  console.log({
+    baseUrl: baseUrlFromHeader,
+    serverUrl: (process.env.NODE_ENV =='production'?'https://':'http://' ) + serverApiFromHeader,
+    apiUrl: apiUrlFromHeader,
+    server: serverUrlFromHeader
+  });
+
   // Alternatively, we can use an HTML stream, see https://vike.dev/streaming
   const pageHtml = ReactDOMServer.renderToString(
-    <SublymusApiProvider serverApiUrl={Server_Host} getToken={getToken}>
+    <SublymusApiProvider  storeApiUrl={apiUrlFromHeader} mainServerUrl={serverApiFromHeader} getAuthToken={getToken}>
       <I18nextProvider i18n={i18n}>
         <Layout pageContext={pageContext}>
           <Page />
@@ -34,7 +47,6 @@ const onRenderHtml: OnRenderHtmlAsync = async (pageContext): ReturnType<OnRender
   const desc = pageContext.data?.description || pageContext.config.description || 'Demo of using Vike'
   const lang = pageContext.headers?.['accept-language']?.includes('fr') ? 'fr' : 'en';
   await i18n.changeLanguage(lang);
-  const isPreviewMode = pageContext.urlOriginal.includes('preview')
   console.log(pageContext.urlOriginal);
 
   // const logo = (pageContext.data as any)?.logoUrl || logoUrl
@@ -58,7 +70,9 @@ const onRenderHtml: OnRenderHtmlAsync = async (pageContext): ReturnType<OnRender
     documentHtml,
     pageContext: {
       lang,
-      // We can add custom pageContext properties here, see https://vike.dev/pageContext#custom
+      baseUrl: baseUrlFromHeader,
+      serverUrl: serverUrlFromHeader,
+      apiUrl: apiUrlFromHeader,
     }
   }
 }

@@ -1,6 +1,6 @@
 // Components/StoreList/StoreItemCard.tsx
 
-import { StoreInterface } from "../../Interfaces/Interfaces";
+import { StoreInterface } from "../../api/Interfaces/Interfaces";
 import { getImg } from "../../Components/Utils/StringFormater";
 import { IoCheckmarkCircle, IoEyeOff, IoEyeSharp, IoPauseCircle } from "react-icons/io5";
 import { useTranslation } from "react-i18next";
@@ -68,7 +68,7 @@ export function StoreItemCard({ store, isSelected, onClick }: StoreItemCardProps
                     </div>
                     <div className={`mt-2 ml-auto flex items-center gap-1 text-xs font-medium ${store.is_running ? 'text-green-600' : 'text-gray-500'}`}>
                         <span>{store.is_running ? <IoEyeSharp className="w-4 h-4" /> : <IoEyeOff className="w-4 h-4" />}</span>
-                        <span>{store.is_running ? t('common.visible'):t('common.hidden')} </span>
+                        <span>{store.is_running ? t('common.visible') : t('common.hidden')} </span>
                     </div>
                 </div>
             </div>
@@ -79,9 +79,9 @@ export function StoreItemCard({ store, isSelected, onClick }: StoreItemCardProps
 // --- Skeleton Card ---
 export function StoreItemSkeletonCard() {
     return (
-        <div className="store-item-card w-full h-full flex flex-col rounded-xl overflow-hidden shadow-sm border-2 border-gray-200 animate-pulse">
+        <div className="store-item-card w-48 h-full flex flex-col rounded-xl overflow-hidden shadow-sm border-2 border-gray-200 animate-pulse">
             {/* Cover Placeholder */}
-            <div className="w-full h-24 sm:h-28 flex-shrink-0 bg-gray-300 relative">
+            <div className="w-48 h-24 sm:h-28 flex-shrink-0 bg-gray-300 relative">
                 {/* Logo Placeholder */}
                 <div className="absolute bottom-2 left-2 w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-white bg-gray-200 shadow"></div>
             </div>

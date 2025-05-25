@@ -15,7 +15,7 @@ import { getImg } from '../Utils/StringFormater';
 import { getFileType } from '../Utils/functions';
 import { NEW_VIEW } from '../Utils/constants';
 import { ConfirmDelete } from '../Confirm/ConfirmDelete';
-import { useGlobalStore } from '../../pages/stores/StoreStore';
+import { useGlobalStore } from '../../pages/index/StoreStore';
 import { globalActionZust } from '../../renderer/AppStore/globalActionZust';
 import { useTranslation } from 'react-i18next';
 

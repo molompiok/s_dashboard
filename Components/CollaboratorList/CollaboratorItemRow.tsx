@@ -1,6 +1,6 @@
 // Components/CollaboratorList/CollaboratorItemRow.tsx
 
-import { Role as RoleInterface, TypeJsonRole, UserInterface } from "../../Interfaces/Interfaces";
+import { Role as RoleInterface, TypeJsonRole, UserInterface } from "../../api/Interfaces/Interfaces";
 import { useTranslation } from "react-i18next";
 import { getImg } from "../Utils/StringFormater";
 import { IoMailOutline, IoPencil, IoShieldCheckmarkOutline, IoTrash } from "react-icons/io5"; // Icônes
@@ -39,12 +39,12 @@ export function CollaboratorItemRow({ collaboratorRole, onEditPermissions }: Col
                         deleteCollaboratorMutation.mutate(
                             {
                                 user_id: user.id,
-                            }, 
+                            },
                             {
                                 onSuccess: () => {
                                     logger.info(`Collaborator ${user.id} removed`);
                                     openChild(null);
-                                    showToast("Collaborateur supprimé avec succès",'WARNING'); // ✅ Toast succès
+                                    showToast("Collaborateur supprimé avec succès", 'WARNING'); // ✅ Toast succès
                                 },
                                 onError: (error) => {
                                     logger.error({ error }, `Failed to remove collaborator ${user.id}`);

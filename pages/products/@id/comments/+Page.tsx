@@ -1,7 +1,7 @@
 // pages/products/@id/comments/+Page.tsx
 
 import React, { useState, useEffect, useMemo } from 'react'; // Ajouter useMemo
-import { CommentInterface, ProductInterface, StoreInterface, ValueInterface } from '../../../../Interfaces/Interfaces'; // Ajouter ValueInterface
+import { CommentInterface, ProductInterface, StoreInterface, ValueInterface } from '../../../../api/Interfaces/Interfaces'; // Ajouter ValueInterface
 import { motion, AnimatePresence } from 'framer-motion';
 // import './+Page.css'; // ❌ Supprimer
 import { IoChevronForward, IoStar, IoTrash } from 'react-icons/io5';
@@ -9,7 +9,7 @@ import { IoChevronForward, IoStar, IoTrash } from 'react-icons/io5';
 // import { useProductStore } from '../../ProductStore'; // Remplacé
 import { Topbar } from '../../../../Components/TopBar/TopBar';
 import { ProductPreview } from '../../../../Components/ProductPreview/ProductPreview';
-import { getTransmit, useGlobalStore } from '../../../stores/StoreStore';
+import { getTransmit, useGlobalStore } from '../../../index/StoreStore';
 import { usePageContext } from '../../../../renderer/usePageContext';
 import { PageNotFound } from '../../../../Components/PageNotFound/PageNotFound';
 import { getImg } from '../../../../Components/Utils/StringFormater';
@@ -42,7 +42,7 @@ export default function Page() {
     const productId = routeParams?.['id'];
 
     // ✅ Récupérer Produit
-    const { data: productData, isLoading: isLoadingProduct,isError,error } = useGetProductList(
+    const { data: productData, isLoading: isLoadingProduct, isError, error } = useGetProductList(
         { product_id: productId, with_feature: true }, // Charger features/values pour image
         { enabled: !!productId }
     );

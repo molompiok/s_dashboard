@@ -1,8 +1,8 @@
 import { useTranslation } from "react-i18next";
-import { CommandInterface } from "../../Interfaces/Interfaces";
+import { CommandInterface } from "../../api/Interfaces/Interfaces";
 import { getImg } from "../Utils/StringFormater";
 import { OrderStatusElement } from "../Status/Satus";
-import { useGlobalStore } from "../../pages/stores/StoreStore";
+import { useGlobalStore } from "../../pages/index/StoreStore";
 
 // --- Composant CommandItem (Seulement styles Tailwind) ---
 export function CommandItem({ command }: { command: CommandInterface }) {
@@ -10,33 +10,33 @@ export function CommandItem({ command }: { command: CommandInterface }) {
     const { currentStore } = useGlobalStore()
     return (
         <div className="command-item  bg-white shadow-sm border border-gray-100 w-full rounded-xl gap-2 flex flex-col items-start p-3 transition duration-100 hover:bg-slate-100">
-             {/* Info Client */}
+            {/* Info Client */}
             <div className="w-full flex flex-col sl2:flex-row sl2:items-center gap-2 cursor-pointer">
-                 {/* Image + Infos */}
+                {/* Image + Infos */}
                 <div className='flex items-center gap-2 min-w-0'>
-                     {/* Image Client */}
+                    {/* Image Client */}
                     <div
                         className="w-14 h-14 rounded-xl flex-shrink-0 bg-cover bg-center bg-no-repeat bg-gray-200"
-                        style={{ background: getImg(command.user?.photo?.[0] ?? '/res/delivery_moto.png', undefined, command.user?.photo?.[0]?currentStore?.url:undefined) }} // Utiliser photo user si dispo
+                        style={{ background: getImg(command.user?.photo?.[0] ?? '/res/delivery_moto.png', undefined, command.user?.photo?.[0] ? currentStore?.url : undefined) }} // Utiliser photo user si dispo
                     ></div>
-                     {/* Infos Textuelles */}
+                    {/* Infos Textuelles */}
                     <div className="flex flex-col gap-0.5 flex-shrink overflow-hidden">
                         <h2 className='font-medium text-base text-gray-800 overflow-hidden text-ellipsis whitespace-nowrap'>
                             {command.user?.full_name || t('common.anonymous')} {/* Afficher nom ou 'Anonyme' */}
                         </h2>
-                         <p className='text-xs text-gray-500 whitespace-nowrap'>{t('dashboard.itemCount', { count: command.items_count || 0 })}</p> {/* 🌍 i18n */}
-                         <p className='text-xs text-gray-500 whitespace-nowrap'>ID : #{command.id.substring(0, command.id.indexOf('-') ?? 8)}</p>
+                        <p className='text-xs text-gray-500 whitespace-nowrap'>{t('dashboard.itemCount', { count: command.items_count || 0 })}</p> {/* 🌍 i18n */}
+                        <p className='text-xs text-gray-500 whitespace-nowrap'>ID : #{command.id.substring(0, command.id.indexOf('-') ?? 8)}</p>
                     </div>
                 </div>
                 {/* Partie Droite */}
-                 <div className="ml-auto flex flex-row sl2:flex-col-reverse sl2:items-end gap-2 md:flex-row md:items-center md:gap-3 flex-shrink-0">
+                <div className="ml-auto flex flex-row sl2:flex-col-reverse sl2:items-end gap-2 md:flex-row md:items-center md:gap-3 flex-shrink-0">
                     {/* Statut */}
                     <span className='flex justify-end'>
-                         <OrderStatusElement status={(command.status || command.payment_status)?.toUpperCase() as any || ''} />
+                        <OrderStatusElement status={(command.status || command.payment_status)?.toUpperCase() as any || ''} />
                     </span>
                     {/* Prix */}
                     <h3 className='px-2.5 py-1 bg-gray-100 rounded-lg font-normal text-sm whitespace-nowrap text-gray-700'>
-                         {Number(command.total_price || 0).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })} {command.currency || 'FCFA'} {/* Formatage prix */}
+                        {Number(command.total_price || 0).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 })} {command.currency || 'FCFA'} {/* Formatage prix */}
                     </h3>
                 </div>
             </div>

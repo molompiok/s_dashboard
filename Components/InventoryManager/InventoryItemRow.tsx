@@ -1,9 +1,9 @@
 // Components/InventoryManager/InventoryItemRow.tsx
 
-import { Inventory as InventoryInterface } from "../../Interfaces/Interfaces"; // Utiliser alias
+import { Inventory as InventoryInterface } from "../../api/Interfaces/Interfaces"; // Utiliser alias
 import { IoLocationOutline, IoMailOutline, IoPencil, IoTrash, IoEllipsisVertical, IoImageOutline } from "react-icons/io5"; // Ajouter icônes
 import { getImg } from "../Utils/StringFormater";
-import { useGlobalStore } from "../../pages/stores/StoreStore";
+import { useGlobalStore } from "../../pages/index/StoreStore";
 import { useTranslation } from "react-i18next";
 import { useState } from 'react';
 import logger from '../../api/Logger';

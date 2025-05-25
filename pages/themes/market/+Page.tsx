@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { BreadcrumbItem, Topbar } from '../../../Components/TopBar/TopBar';
-import { ThemeInterface } from '../../../Interfaces/Interfaces'; // Ajouter ThemeFilterType
+import { ThemeInterface } from '../../../api/Interfaces/Interfaces'; // Ajouter ThemeFilterType
 import { useGetThemes, useActivateThemeForStore } from '../../../api/ReactSublymusApi'; // Hook pour lister et activer
 import { useTranslation } from 'react-i18next';
 import { ThemeListItem } from '../../../Components/ThemeList/ThemeListItem'; // Nouveau
@@ -11,7 +11,7 @@ import { ThemeFilters } from '../../../Components/ThemeList/ThemeFilters'; // No
 import logger from '../../../api/Logger';
 // import { useStore } from '../stores/'; // Pour obtenir le storeId lors de l'installation
 import { usePageContext } from '../../../renderer/usePageContext'; // Pour lire le storeId initial des params?
-import { useGlobalStore } from '../../stores/StoreStore';
+import { useGlobalStore } from '../../index/StoreStore';
 import { useWindowSize } from '../../../Hooks/useWindowSize';
 import { FaEdit, FaTimes } from 'react-icons/fa';
 import { Menu } from 'lucide-react';
@@ -93,15 +93,15 @@ function Page() {
             { store_id: storeIdForInstall, themeId: themeToInstall.id },
             {
                 onSuccess: () => {
-                  logger.info(`Theme ${themeToInstall.name} successfully activated for store ${storeIdForInstall}`);
-                  showToast(`Thème ${themeToInstall.name} activé avec succès`); // ✅ Toast succès
-                  // Optionnel: rediriger vers la page /stores ou les paramètres du store?
+                    logger.info(`Theme ${themeToInstall.name} successfully activated for store ${storeIdForInstall}`);
+                    showToast(`Thème ${themeToInstall.name} activé avec succès`); // ✅ Toast succès
+                    // Optionnel: rediriger vers la page /stores ou les paramètres du store?
                 },
                 onError: (err) => {
-                  logger.error({ err }, `Failed to activate theme ${themeToInstall.id} for store ${storeIdForInstall}`);
-                  showErrorToast(err); // ❌ Toast erreur
+                    logger.error({ err }, `Failed to activate theme ${themeToInstall.id} for store ${storeIdForInstall}`);
+                    showErrorToast(err); // ❌ Toast erreur
                 },
-              }
+            }
         );
     };
 
@@ -196,7 +196,7 @@ function Page() {
                         <LiveThemePreviewSkeleton />
                     ) : selectedTheme ? (
                         <LiveThemePreview
-                            onInstall={()=>handleInstallTheme(selectedTheme)}
+                            onInstall={() => handleInstallTheme(selectedTheme)}
                             isInstalling={activateThemeMutation.isPending}
                             avalaibleWidth={contentWidth - (size.width >= 1024 ? 330 : 0)}
                             store={{ id: currentStore?.id || '' } as any}

@@ -1,6 +1,6 @@
 // Components/StoreDetails/SelectedStoreDetails.tsx
 
-import { PeriodType, StoreInterface } from "../../Interfaces/Interfaces";
+import { PeriodType, StoreInterface } from "../../api/Interfaces/Interfaces";
 import { useTranslation } from "react-i18next";
 import { IoBarChart, IoCheckmarkCircle, IoChevronForward, IoClose, IoDesktop, IoFingerPrint, IoGlobe, IoGlobeOutline, IoPauseCircle, IoPencil, IoSettings, IoTrash } from "react-icons/io5"; // Ajouter icônes actions
 import { Bar } from 'react-chartjs-2'; // Importer Bar pour exemple stats
@@ -8,7 +8,7 @@ import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Toolti
 import { Progrees } from "../Progress/Pregress"; // Utiliser le composant Progress
 import { useGetVisitDetails, useGetOrderDetailsStats, useStartStore, useStopStore } from "../../api/ReactSublymusApi"; // Hook pour stats (si applicable au store)
 import logger from "../../api/Logger";
-import { useGlobalStore } from "../../pages/stores/StoreStore";
+import { useGlobalStore } from "../../pages/index/StoreStore";
 import { useState } from "react";
 import { Confirm } from "../../Components/Confirm/Confirm";
 import { useChildViewer } from "../ChildViewer/useChildViewer";
@@ -75,67 +75,67 @@ export function SelectedStoreDetails({ store, onEditRequired }: SelectedStoreDet
     // --- Handlers pour les actions ---
     const _handleStartStop = () => {
         if (store.is_running) {
-          logger.warn("Stop store action not implemented");
-          store.id &&
-            stopStoreMutation.mutate(
-              {
-                store_id: store.id,
-              },
-              {
-                onSuccess(data) {
-                  console.log('Action Stop', data.store);
-                  if (!data.store?.id) return;
-                  setCurrentStore(data.store);
-                  openChild(null)
-                  showToast("Boutique arrêtée avec succès",'INFO'); // ✅ Toast succès
-                },
-                onError(error) {
-                    openChild(null)
-                  logger.error({ error }, `Failed to stop store ${store.id}`);
-                  showErrorToast(error); // ❌ Toast erreur
-                },
-              }
-            );
+            logger.warn("Stop store action not implemented");
+            store.id &&
+                stopStoreMutation.mutate(
+                    {
+                        store_id: store.id,
+                    },
+                    {
+                        onSuccess(data) {
+                            console.log('Action Stop', data.store);
+                            if (!data.store?.id) return;
+                            setCurrentStore(data.store);
+                            openChild(null)
+                            showToast("Boutique arrêtée avec succès", 'INFO'); // ✅ Toast succès
+                        },
+                        onError(error) {
+                            openChild(null)
+                            logger.error({ error }, `Failed to stop store ${store.id}`);
+                            showErrorToast(error); // ❌ Toast erreur
+                        },
+                    }
+                );
         } else {
-          logger.warn("Start store action not implemented");
-          store.id &&
-            startStoreMutation.mutate(
-              {
-                store_id: store.id,
-              },
-              {
-                onSuccess(data) {
-                  console.log('Action Start', data.store);
-                  if (!data.store?.id) return;
-                  setCurrentStore(data.store);
-                  openChild(null)
-                  showToast("Boutique démarrée avec succès",'SUCCESS'); // ✅ Toast succès
-                },
-                onError(error) {
-                   openChild(null)
-                  logger.error({ error }, `Failed to start store ${store.id}`);
-                  showErrorToast(error); // ❌ Toast erreur
-                },
-              }
-            );
+            logger.warn("Start store action not implemented");
+            store.id &&
+                startStoreMutation.mutate(
+                    {
+                        store_id: store.id,
+                    },
+                    {
+                        onSuccess(data) {
+                            console.log('Action Start', data.store);
+                            if (!data.store?.id) return;
+                            setCurrentStore(data.store);
+                            openChild(null)
+                            showToast("Boutique démarrée avec succès", 'SUCCESS'); // ✅ Toast succès
+                        },
+                        onError(error) {
+                            openChild(null)
+                            logger.error({ error }, `Failed to start store ${store.id}`);
+                            showErrorToast(error); // ❌ Toast erreur
+                        },
+                    }
+                );
         }
-      };
+    };
 
     const handleStartStop = () => {
         openChild(<ChildViewer>
-                <ConfirmPopup
-                    title={store.is_running ? t('storesPage.comfirm.stop') : t('storesPage.comfirm.start')}
-                    description={store.is_running ? t('storesPage.comfirm.stopPompt') : t('storesPage.comfirm.startPompt')} 
-                    dangerLevel="confirm"
-                    cancelText={t('common.cancel')}
-                    actionText={t('common.ok')}
-                    onAction={() => {
-                        _handleStartStop();
-                    }}
-                    onCancel={() => {
-                        openChild(null)
-                    }}
-                />
+            <ConfirmPopup
+                title={store.is_running ? t('storesPage.comfirm.stop') : t('storesPage.comfirm.start')}
+                description={store.is_running ? t('storesPage.comfirm.stopPompt') : t('storesPage.comfirm.startPompt')}
+                dangerLevel="confirm"
+                cancelText={t('common.cancel')}
+                actionText={t('common.ok')}
+                onAction={() => {
+                    _handleStartStop();
+                }}
+                onCancel={() => {
+                    openChild(null)
+                }}
+            />
         </ChildViewer>, {
             background: '#3455'
         })
@@ -181,7 +181,7 @@ export function SelectedStoreDetails({ store, onEditRequired }: SelectedStoreDet
 
             {/* Section 1: Infos générales et Actions */}
             <div className="flex flex-col md:flex-row md:items-start gap-4 md:gap-6 pb-6 border-b border-gray-100">
-                 <div className="flex-grow min-w-0">
+                <div className="flex-grow min-w-0">
                     {/* Titre et Statut */}
                     <div className="flex items-center gap-3 mb-1">
                         <h2 className="text-xl font-semibold text-gray-800 truncate" title={store.name}>{store.name}</h2>

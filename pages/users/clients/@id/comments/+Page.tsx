@@ -1,9 +1,9 @@
 // pages/users/clients/@id/comments/+Page.tsx (Adapter chemin si nécessaire)
 
 import { useEffect, useState, useMemo } from "react"; // Ajouter useMemo
-import { getTransmit, useGlobalStore } from "../../../../stores/StoreStore";
+import { getTransmit, useGlobalStore } from "../../../../index/StoreStore";
 // import { useClientStore } from "../../ClientStore"; // Remplacé par hook API
-import { CommentInterface, StoreInterface, UserInterface, ValueInterface } from "../../../../../Interfaces/Interfaces";
+import { CommentInterface, StoreInterface, UserInterface, ValueInterface } from "../../../../../api/Interfaces/Interfaces";
 import { usePageContext } from "../../../../../renderer/usePageContext";
 // import { useApp } from "../../../../../renderer/AppStore/UseApp"; // Remplacé par useChildViewer
 import { useChildViewer } from "../../../../../Components/ChildViewer/useChildViewer"; // ✅ Hook popup

@@ -7,10 +7,10 @@ import { Topbar } from '../../Components/TopBar/TopBar'; // Garder Topbar
 import { useGetCollaborators, useGetUserStats } from '../../api/ReactSublymusApi'; // ✅ Hook pour les stats
 // import { useGlobalStore  } from '../stores/StoreStore'; // Gardé si besoin pour currentStore
 import { useGetUsers } from '../../api/ReactSublymusApi'; // ✅ Hook pour les users
-import { UserInterface } from '../../Interfaces/Interfaces';
+import { UserInterface } from '../../api/Interfaces/Interfaces';
 import { getImg } from '../../Components/Utils/StringFormater';
 import { useTranslation } from 'react-i18next'; // ✅ i18n
-import { useGlobalStore } from '../stores/StoreStore';
+import { useGlobalStore } from '../index/StoreStore';
 import { ClientList } from '../../Components/ClientList/ClientList';
 import { CurrentUserCard } from '../../Components/userPreview/CurrentUserCard';
 import { GetCollaboratorsResponse } from '../../api/SublymusApi';
@@ -28,28 +28,28 @@ interface StatCardInfo {
 
 export default function Page() {
   const { t } = useTranslation(); // ✅ i18n
- 
-  const { currentStore } = useGlobalStore (); // Utilisé par les hooks API via useApi()
 
-  const { data: userStatsData, isLoading:clientsStatLoading, isError, error } = useGetUserStats({
+  const { currentStore } = useGlobalStore(); // Utilisé par les hooks API via useApi()
+
+  const { data: userStatsData, isLoading: clientsStatLoading, isError, error } = useGetUserStats({
     with_active_users: true,
     with_total_clients: true,
-    with_online_clients:true,
-    with_satisfied_clients:true,
-},{
-  enabled: !!currentStore
-});
-  
+    with_online_clients: true,
+    with_satisfied_clients: true,
+  }, {
+    enabled: !!currentStore
+  });
+
   // Extraire les données de stats nécessaires (exemple)
   const userStats = useMemo(() => {
     // TODO: Mapper statsApiData aux valeurs attendues par les cartes (totalClients, activeUsers, etc.)
     // Pour l'instant, on utilise des placeholders ou les données brutes si possible
     return {
-      totalClients: userStatsData?.stats.totalClients||0, // Exemple très simplifié
-      ratedUsersCount: userStatsData?.stats.ratedUsersCount||0, // Placeholder
-      activeUsers: userStatsData?.stats.activeUsers||0, // Placeholder
-      onlineClients: userStatsData?.stats.onlineClients||0, // Placeholder
-      averageSatisfaction: userStatsData?.stats.averageSatisfaction||0 // Placeholder
+      totalClients: userStatsData?.stats.totalClients || 0, // Exemple très simplifié
+      ratedUsersCount: userStatsData?.stats.ratedUsersCount || 0, // Placeholder
+      activeUsers: userStatsData?.stats.activeUsers || 0, // Placeholder
+      onlineClients: userStatsData?.stats.onlineClients || 0, // Placeholder
+      averageSatisfaction: userStatsData?.stats.averageSatisfaction || 0 // Placeholder
     };
   }, [userStatsData]);
 
@@ -61,10 +61,10 @@ export default function Page() {
   );
   const clientPrev = clientsData?.list ?? [];
 
-  const { data: collaboratorsData , isLoading:isLoadingCollabs} = useGetCollaborators(
-    {limit:5},
+  const { data: collaboratorsData, isLoading: isLoadingCollabs } = useGetCollaborators(
+    { limit: 5 },
     // { enabled: true } // Activé par défaut
-); // Remplacé par hook
+  ); // Remplacé par hook
   const collaboratorPrev = collaboratorsData?.list ?? [];
 
 
@@ -103,14 +103,14 @@ export default function Page() {
     // Ajouter d'autres cartes si nécessaire
   ];
 
-  const isLoading = isLoadingClients || isLoadingCollabs||clientsStatLoading;
+  const isLoading = isLoadingClients || isLoadingCollabs || clientsStatLoading;
 
   return (
     // Utiliser flex flex-col
     <div className="users-pages pb-48 w-full flex flex-col min-h-screen bg-gray-100">
       <Topbar title={t('usersPage.title')} search={false} /> {/* Titre pour la page */}
       <main className="flex-grow p-4 md:p-6 lg:p-8"> {/* Ajouter padding */}
-      <CurrentUserCard />
+        <CurrentUserCard />
         {/* Cartes de Stats */}
         {/* Utiliser grid, gap, mb */}
         <div className="grid mt-6 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-6">
@@ -145,10 +145,10 @@ interface StatCardProps {
 function StatCard({ stat, clientPreviews, collabPreviews }: StatCardProps) {
   const { t } = useTranslation();
   // Choisir les bons avatars à afficher
-  const usersToDisplay = stat.id === 'client' ? clientPreviews : (collabPreviews as GetCollaboratorsResponse['list']).map(u=> u.user);
+  const usersToDisplay = stat.id === 'client' ? clientPreviews : (collabPreviews as GetCollaboratorsResponse['list']).map(u => u.user);
 
-  console.log({stat,collabPreviews});
-  
+  console.log({ stat, collabPreviews });
+
   return (
     // Utiliser p-5, rounded-2xl, shadow, text-gray-800, transition
     <div className={`stat-card p-5 rounded-2xl shadow-md text-gray-800 transition transform hover:-translate-y-1 bg-gradient-to-br ${stat.gradient}`}>

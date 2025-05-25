@@ -13,15 +13,39 @@ import '../Lib/i18n'; // Garder pour initialisation i18n
 // import { StoreCreate } from '../pages/StoreCreate/StoreCreate'; // Supposé non utilisé ici directement
 import { ClientCall } from '../Components/Utils/functions';
 import { useHashWatcher } from '../Hooks/useHashWatcher';
-import { useGlobalStore } from '../pages/stores/StoreStore'; // Gardé pour fetch initial store
+import { useGlobalStore } from '../pages/index/StoreStore'; // Gardé pour fetch initial store
 import { useTranslation } from 'react-i18next'; // Pour traduction future
 import { useChildViewer } from '../Components/ChildViewer/useChildViewer'; // Hook pour popup
 import { IoHome, IoHomeOutline, IoStorefront, IoStorefrontOutline, IoPeople, IoPeopleOutline, IoDocumentText, IoDocumentTextOutline, IoCube, IoCubeOutline, IoLayers, IoLayersOutline } from 'react-icons/io5'; // Importer directement les icônes
 import { Toaster } from 'react-hot-toast';
+import { useMyLocation } from '../Hooks/useRepalceState';
+import { useAuthStore } from '../pages/auth/AuthStore';
 
 
 function Layout({ children, pageContext }: { children: React.ReactNode; pageContext: PageContext }) {
   const { t } = useTranslation()
+  const { nextPage } = useMyLocation()
+
+  const { getToken } = useAuthStore();
+  useEffect(() => {
+    const token = getToken()
+    if (!token) {
+      console.log('------------->>>>>', token);
+
+      // nextPage('/auth/login') // ou replace pour ne pas garder la page dans l'historique
+    }
+  }, []);
+
+  // Si token absent, retourne null (le router va rediriger)
+  const token = getToken()
+  if (!token) {
+    console.log('Error', token);
+
+    // nextPage('/auth/login')
+    // return <p>Loading ...</p>
+  }
+
+
   return (
     <React.StrictMode>
       <PageContextProvider pageContext={pageContext}>
@@ -158,7 +182,12 @@ function Frame({ children }: { children: React.ReactNode }) {
 function Sidebar({ children }: { children: React.ReactNode }) {
 
   const { urlPathname } = usePageContext()
-  return !(urlPathname.includes('login') || urlPathname.includes('register')) && (
+   const openBar = !(
+    urlPathname=='/' ||
+    urlPathname.startsWith('/auth') ||
+    urlPathname.startsWith('/themes')
+  )
+  return openBar && (
     <div
       id="sidebar"
       // Caché par défaut, visible à partir de sm
@@ -177,8 +206,15 @@ function Sidebar({ children }: { children: React.ReactNode }) {
 // --- Composant Bottombar ---
 function Bottombar({ children }: { children: React.ReactNode }) {
   const { blur } = useChildViewer();
-  // Affiché seulement sur mobile (inférieur à sm), fixe en bas
-  return (
+  const { urlPathname } = usePageContext()
+  const openBar = !(
+    urlPathname=='/' ||
+    urlPathname.startsWith('/auth') ||
+    urlPathname.startsWith('/themes')
+  )
+  console.log({ openBar, urlPathname });
+
+  return openBar && (
     <div
       id="bottombar"
       className="sm:hidden fixed bottom-0 left-0 right-0 z-50 h-16 // Hauteur fixe
@@ -210,7 +246,6 @@ function Content({ children }: { children: React.ReactNode }) {
     >
       {/* Conteneur interne pour padding, etc. */}
       <div id="page-content" className="w-full "> {/* Moins de padding bottom sur desktop */}
-        {/* <div className="corrige-le-bug-content-overflow-x" style={{ width: '1200px' }}></div> // Supprimer ce hack */}
         {children}
       </div>
     </div>

@@ -2,7 +2,7 @@
 // import './FeatureInfo.css'; // ❌ Supprimer
 
 import { JSX, useRef, useState, useEffect } from 'react';
-import { FeatureInterface } from '../../Interfaces/Interfaces'; // Importer FeatureType
+import { FeatureInterface } from '../../api/Interfaces/Interfaces'; // Importer FeatureType
 import { FeatureTypes } from '../FeatureTypes/FeatureTypes'; // Gardé
 import { IoPencil } from 'react-icons/io5';
 import { Confirm } from '../Confirm/Confirm'; // Gardé

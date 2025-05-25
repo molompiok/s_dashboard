@@ -1,8 +1,8 @@
 //pages/users/clients/ClientStore.ts
 import { create } from "zustand";
 import { combine } from "zustand/middleware";
-import { ListType, UserFilterType, UserInterface } from "../../../Interfaces/Interfaces";
-import { useAuthStore } from "../login/AuthStore";
+import { ListType, UserFilterType, UserInterface } from "../../../api/Interfaces/Interfaces";
+import { useAuthStore } from "../../auth/AuthStore";
 
 export { useClientStore }
 const useClientStore = create(combine({

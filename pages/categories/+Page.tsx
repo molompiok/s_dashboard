@@ -7,7 +7,7 @@ import { Pagination } from '../../Components/Pagination/Pagination'; // Nouveau 
 import { useGetCategories } from '../../api/ReactSublymusApi'; // ✅ Hook API
 import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { CategoryFilterType } from '../../Interfaces/Interfaces'; // Assumer type FilterType adapté aux catégories
+import { CategoryFilterType } from '../../api/Interfaces/Interfaces'; // Assumer type FilterType adapté aux catégories
 import { ClientCall } from '../../Components/Utils/functions';
 
 export { Page };
@@ -88,9 +88,9 @@ function Page() {
                     <>
                         {/* Conteneur de la liste (Grid ou Flex) */}
                         <div className={viewType === 'card' ? "grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-4" : "flex flex-col gap-2"}>
-                            
+
                             {viewType === 'card' && <AddCategoryCard />}
-                            
+
                             {viewType === 'row' && <AddCategoryRow />}
 
                             {categories.map((category) => (

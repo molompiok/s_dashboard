@@ -3,9 +3,9 @@
 // --- Imports ---
 import { useEffect, useRef, useState, useMemo } from 'react';
 import { usePageContext } from '../../../renderer/usePageContext';
-import { useGlobalStore } from '../../stores/StoreStore';
+import { useGlobalStore } from '../../index/StoreStore';
 import { useGetCategory, useCreateCategory, useUpdateCategory, useDeleteCategory } from '../../../api/ReactSublymusApi'; // ✅ Hooks API
-import { CategoryInterface, FilterType } from '../../../Interfaces/Interfaces';
+import { CategoryInterface, FilterType } from '../../../api/Interfaces/Interfaces';
 import { BreadcrumbItem, Topbar } from '../../../Components/TopBar/TopBar';
 import { IoAdd, IoBagHandle, IoCloudUploadOutline, IoLayers, IoPencil, IoTrash } from 'react-icons/io5';
 import { RiImageEditFill } from 'react-icons/ri';
@@ -345,7 +345,7 @@ function Page() {
 
     const [isPageLoading, setIsPageLoading] = useState(true);
     useEffect(() => {
-      setIsPageLoading(false)
+        setIsPageLoading(false)
     }, []);
 
     if (!isNewCategory && isPageLoading) return <CategoryFormSkeleton />;

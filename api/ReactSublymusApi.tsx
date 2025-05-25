@@ -66,12 +66,12 @@ import {
     GetUserStatsResponse,
     GetCategoryParams
 } from './SublymusApi'; // Importer la classe et l'erreur, et TOUS les types
-import { useAuthStore } from '../pages/users/login/AuthStore'; // Pour le token
-import { useGlobalStore } from '../pages/stores/StoreStore'; // Pour l'URL du store
+import { useAuthStore } from '../pages/auth/AuthStore'; // Pour le token
+import { useGlobalStore } from '../pages/index/StoreStore'; // Pour l'URL du store
 import logger from './Logger';
-import { BaseStatsParams, CommentInterface, FeatureInterface, ForgotPasswordParams, KpiStatsResponse, OrderStatsIncludeOptions, OrderStatsResponse, ResetPasswordParams, SetupAccountParams, SetupAccountResponse, VisitStatsIncludeOptions, VisitStatsResponse } from '../Interfaces/Interfaces';
+import { BaseStatsParams, CommentInterface, FeatureInterface, ForgotPasswordParams, KpiStatsResponse, OrderStatsIncludeOptions, OrderStatsResponse, ResetPasswordParams, SetupAccountParams, SetupAccountResponse, VisitStatsIncludeOptions, VisitStatsResponse } from './Interfaces/Interfaces';
 import { useTranslation } from 'react-i18next';
-import { Api_host, Server_Host } from '../renderer/+config';
+import { usePageContext } from '../renderer/usePageContext';
 
 async function waitHere(millis: number) {
     await new Promise((rev) => setTimeout(() => rev(0), millis))
@@ -104,42 +104,40 @@ const SublymusApiContext = createContext<SublymusApiContextType>({ api: null });
 // Provider pour l'API et TanStack Query
 interface SublymusApiProviderProps {
     children: ReactNode;
-    serverApiUrl: string,
-    getToken: () => string | undefined
+    handleUnauthorized?: (action?: string, token?: string) => void
+    mainServerUrl?: string,
+    storeApiUrl?: string,
+    getAuthToken: () => string | undefined | null
 }
 
-export const SublymusApiProvider: React.FC<SublymusApiProviderProps> = ({ children, serverApiUrl, getToken }) => {
-    const { currentStore } = useGlobalStore(); // Utiliser alias
+export const SublymusApiProvider: React.FC<SublymusApiProviderProps> = ({ handleUnauthorized, children, storeApiUrl, getAuthToken, mainServerUrl }) => {
     const { t } = useTranslation();
     const api = useMemo(() => {
-        const storeApiUrl = currentStore?.url; // Peut être null/undefined
 
         // Server URL est toujours requis
 
-        if (!serverApiUrl) {
-            logger.error("SublymusApiProvider: serverApiUrl prop is missing!");
-            return null;
-        }
+        // if (!storeApiUrl) {
+        //     logger.error("SublymusApiProvider: storeApiUrl prop is missing!");
+        //     return null;
+        // }
 
         // Créer l'instance avec les deux URLs
+        console.log('---------  React Server ----------', {
+            serverUrl: mainServerUrl || 'https://server.sublymus.com/',
+            storeApiUrl: storeApiUrl,
+        });
+
         return new SublymusApi({
             handleUnauthorized(action, token) {
-                console.log({ action, token });
-                window.location.href = '/users/login?sessionExpired=true';
+                console.log(action, token);
+
             },
-            getAuthTokenApi() {
-                const token = getToken();
-                console.log(token);
-                return token || ''
-            },
-            getAuthTokenServer() {
-                return 'oat_MzU.ZVc2SUhad1A4dmh6ellfZjFrejJGcEdtOW5ZckN0OWFfN19KeEs2UTE3NzAxNjc4MzE'
-            },
-            serverUrl: Server_Host,
-            storeApiUrl: Api_host,
+            getAuthToken,
+            serverUrl: mainServerUrl,
+            storeApiUrl: storeApiUrl,
             t
         });
-    }, [currentStore?.url, serverApiUrl]);
+    }, [storeApiUrl, mainServerUrl]);
 
     return (
         <QueryClientProvider client={queryClient}>
@@ -151,7 +149,7 @@ export const SublymusApiProvider: React.FC<SublymusApiProviderProps> = ({ childr
     );
 };
 
-const waitFor = (async(fn:Promise<any>, time=2000):Promise<any>=>{
+const waitFor = (async (fn: Promise<any>, time = 2000): Promise<any> => {
     await waitHere(time)
     const res = await fn;
     return res
@@ -206,7 +204,7 @@ export const useGetThemeById = (themeId: string | undefined, options: { enabled?
 export const useActivateThemeForStore = (): UseMutationResult<ChangeThemeResponse, ApiError, ChangeThemeParams> => {
     const api = useApi();
     return useMutation<ChangeThemeResponse, ApiError, ChangeThemeParams>({
-        mutationFn: (params) => waitFor(api.theme.activateForStore(params),2000), // ou api.store.changeTheme(params)
+        mutationFn: (params) => waitFor(api.theme.activateForStore(params), 2000), // ou api.store.changeTheme(params)
         onSuccess: (data, variables) => {
             // Invalider les détails du store pour refléter le nouveau thème actif
             queryClient.invalidateQueries({ queryKey: ['storeDetails', variables.store_id] } as InvalidateQueryFilters);
@@ -377,7 +375,7 @@ export const useRestartStore = (): UseMutationResult<StoreActionResponse, ApiErr
 export const useAddStoreDomain = (): UseMutationResult<ManageDomainResponse, ApiError, ManageDomainParams> => {
     const api = useApi();
     return useMutation<ManageDomainResponse, ApiError, ManageDomainParams>({
-        mutationFn: (params) => api.store.addDomain(params), 
+        mutationFn: (params) => api.store.addDomain(params),
         onSuccess: (data, variables) => {
             queryClient.invalidateQueries({ queryKey: ['storeDetails', variables.store_id] } as InvalidateQueryFilters);
             logger.info("Store domain added via mutation", { storeId: variables.store_id, domain: variables.domainName });
@@ -399,10 +397,6 @@ export const useCheckStoreNameAvailability = (name: string | undefined, options:
     });
 };
 
-// ========================
-// == Authentification ==
-// ========================
-
 // Clés de Query communes pour Auth
 const AUTH_QUERY_KEYS = {
     me: ['me'] as const,
@@ -410,28 +404,44 @@ const AUTH_QUERY_KEYS = {
 
 
 
+// ========================
+// == Authentification SERVER ==
+// ========================
+
+
+// Hook pour finaliser la création de compte collaborateur
+
+// ========================
+// == Authentification API ==
+// ========================
+
+const getAuthBackend = (api: SublymusApi, target?: 'api' | 'server') => {
+    return api[target == 'api' ? 'authApi' : 'authServer']
+}
+
+
 // Hook pour demander la réinitialisation du mot de passe
-export const useRequestPasswordReset = (): UseMutationResult<MessageResponse, ApiError, ForgotPasswordParams> => {
+export const useRequestPasswordReset = (options?: { backend_target?: 'api' | 'server' }): UseMutationResult<MessageResponse, ApiError, ForgotPasswordParams> => {
     const api = useApi();
     return useMutation<MessageResponse, ApiError, ForgotPasswordParams>({
-        mutationFn: (params) => api.auth.forgotPassword(params), // Assumer que la méthode existe dans api.auth
+        mutationFn: (params) => getAuthBackend(api, options?.backend_target).forgotPassword(params), // Assumer que la méthode existe dans api.authApi
         // Pas de onSuccess/onError générique ici, géré dans le composant
     });
 };
 
-export const useResetPassword = (): UseMutationResult<MessageResponse, ApiError, ResetPasswordParams> => {
+export const useResetPassword = (options?: { backend_target?: 'api' | 'server' }): UseMutationResult<MessageResponse, ApiError, ResetPasswordParams> => {
     const api = useApi();
     return useMutation<MessageResponse, ApiError, ResetPasswordParams>({
-        mutationFn: (params) => api.auth.resetPassword(params), // Assumer que la méthode existe dans api.auth
+        mutationFn: (params) => getAuthBackend(api, options?.backend_target).resetPassword(params), // Assumer que la méthode existe dans api.authApi
         // Pas de onSuccess/onError générique ici, géré dans le composant
     });
 };
 
 
-export const useLogin = (): UseMutationResult<LoginResponse, ApiError, LoginParams> => {
+export const useLogin = (options?: { backend_target?: 'api' | 'server' }): UseMutationResult<LoginResponse, ApiError, LoginParams> => {
     const api = useApi();
     return useMutation<LoginResponse, ApiError, LoginParams>({
-        mutationFn: (credentials) => api.auth.login(credentials),
+        mutationFn: (credentials) => getAuthBackend(api, options?.backend_target).login(credentials),
         onSuccess: (data) => {
             queryClient.setQueryData(AUTH_QUERY_KEYS.me, { user: data.user });
             logger.info("Login successful via mutation", { userId: data.user.id });
@@ -441,19 +451,19 @@ export const useLogin = (): UseMutationResult<LoginResponse, ApiError, LoginPara
     });
 };
 
-export const useRegister = (): UseMutationResult<RegisterResponse, ApiError, RegisterParams> => {
+export const useRegister = (options?: { backend_target?: 'api' | 'server' }): UseMutationResult<RegisterResponse, ApiError, RegisterParams> => {
     const api = useApi();
     return useMutation<RegisterResponse, ApiError, RegisterParams>({
-        mutationFn: (data) => api.auth.register(data),
+        mutationFn: (data) => getAuthBackend(api, options?.backend_target).register(data),
         onSuccess: (data) => { logger.info("Registration successful via mutation", { userId: data.user_id }); },
         onError: (error) => { logger.error({ error }, "Registration failed via mutation"); }
     });
 };
 
-export const useVerifyEmail = (): UseMutationResult<MessageResponse, ApiError, VerifyEmailParams> => {
+export const useVerifyEmail = (options?: { backend_target?: 'api' | 'server' }): UseMutationResult<MessageResponse, ApiError, VerifyEmailParams> => {
     const api = useApi();
     return useMutation<MessageResponse, ApiError, VerifyEmailParams>({
-        mutationFn: (params) => api.auth.verifyEmail(params),
+        mutationFn: (params) => getAuthBackend(api, options?.backend_target).verifyEmail(params),
         onSuccess: (data) => {
             logger.info("Email verified via mutation", data);
             queryClient.invalidateQueries({ queryKey: AUTH_QUERY_KEYS.me });
@@ -462,19 +472,19 @@ export const useVerifyEmail = (): UseMutationResult<MessageResponse, ApiError, V
     });
 };
 
-export const useResendVerificationEmail = (): UseMutationResult<MessageResponse, ApiError, ResendVerificationParams> => {
+export const useResendVerificationEmail = (options?: { backend_target?: 'api' | 'server' }): UseMutationResult<MessageResponse, ApiError, ResendVerificationParams> => {
     const api = useApi();
     return useMutation<MessageResponse, ApiError, ResendVerificationParams>({
-        mutationFn: (params) => api.auth.resendVerificationEmail(params),
+        mutationFn: (params) => getAuthBackend(api, options?.backend_target).resendVerificationEmail(params),
         onSuccess: (data) => { logger.info("Resend verification email requested via mutation", data); },
         onError: (error) => { logger.error({ error }, "Resend verification email failed via mutation"); }
     });
 };
 
-export const useLogout = (): UseMutationResult<MessageResponse, ApiError, void> => {
+export const useLogout = (options?: { backend_target?: 'api' | 'server' }): UseMutationResult<MessageResponse, ApiError, void> => {
     const api = useApi();
     return useMutation<MessageResponse, ApiError, void>({
-        mutationFn: () => api.auth.logout(),
+        mutationFn: () => getAuthBackend(api, options?.backend_target).logout(),
         onSuccess: (data) => {
             queryClient.removeQueries({ queryKey: AUTH_QUERY_KEYS.me });
             queryClient.clear(); // Vider tout le cache
@@ -491,11 +501,11 @@ export const useLogout = (): UseMutationResult<MessageResponse, ApiError, void> 
     });
 };
 
-export const useLogoutAllDevices = (): UseMutationResult<MessageResponse, ApiError, void> => {
+export const useLogoutAllDevices = (options?: { backend_target?: 'api' | 'server' }): UseMutationResult<MessageResponse, ApiError, void> => {
     const api = useApi();
-    const logoutMutation = useLogout(); // Utiliser pour le nettoyage client
+    const logoutMutation = useLogout(options); // Utiliser pour le nettoyage client
     return useMutation<MessageResponse, ApiError, void>({
-        mutationFn: () => api.auth.logoutAllDevices(),
+        mutationFn: () => getAuthBackend(api, options?.backend_target).logoutAllDevices(),
         onSuccess: (data) => {
             logger.info("Logout All Devices successful via mutation", data);
             logoutMutation.mutate(); // Déclencher nettoyage client
@@ -508,20 +518,20 @@ export const useLogoutAllDevices = (): UseMutationResult<MessageResponse, ApiErr
     });
 };
 
-export const useGetMe = (options: { enabled?: boolean } = {}): UseQueryResult<GetMeResponse, ApiError> => {
+export const useGetMe = (options: { enabled?: boolean, backend_target?: 'api' | 'server' } = {}): UseQueryResult<GetMeResponse, ApiError> => {
     const api = useApi();
     return useQuery<GetMeResponse, ApiError>({
         queryKey: AUTH_QUERY_KEYS.me,
-        queryFn: () => api.auth.getMe(),
+        queryFn: () => getAuthBackend(api, options?.backend_target).getMe(),
         enabled: options.enabled !== undefined ? options.enabled : true,
         staleTime: 15 * 60 * 1000,
     });
 };
 
-export const useUpdateUser = (): UseMutationResult<UpdateUserResponse, ApiError, UpdateUserParams> => {
+export const useUpdateUser = (options?: { backend_target?: 'api' | 'server' }): UseMutationResult<UpdateUserResponse, ApiError, UpdateUserParams> => {
     const api = useApi();
     return useMutation<UpdateUserResponse, ApiError, UpdateUserParams>({
-        mutationFn: (params) => waitFor(api.auth.update(params),1000),
+        mutationFn: (params) => waitFor(getAuthBackend(api, options?.backend_target).update(params), 1000),
         onSuccess: (data) => {
             queryClient.setQueryData<GetMeResponse>(AUTH_QUERY_KEYS.me, (oldData) =>
                 oldData ? { user: { ...oldData.user, ...data.user } } : undefined
@@ -534,11 +544,11 @@ export const useUpdateUser = (): UseMutationResult<UpdateUserResponse, ApiError,
     });
 };
 
-export const useDeleteAccount = (): UseMutationResult<MessageResponse, ApiError, void> => {
+export const useDeleteAccount = (options?: { backend_target?: 'api' | 'server' }): UseMutationResult<MessageResponse, ApiError, void> => {
     const api = useApi();
-    const logoutMutation = useLogout();
+    const logoutMutation = useLogout(options);
     return useMutation<MessageResponse, ApiError, void>({
-        mutationFn: () => api.auth.deleteAccount(),
+        mutationFn: () => getAuthBackend(api, options?.backend_target).deleteAccount(),
         onSuccess: (data) => {
             logger.info("Account deleted via mutation", data);
             logoutMutation.mutate(); // Nettoyer après suppression
@@ -548,10 +558,10 @@ export const useDeleteAccount = (): UseMutationResult<MessageResponse, ApiError,
 };
 
 // Hook pour finaliser la création de compte collaborateur
-export const useSetupAccount = (): UseMutationResult<SetupAccountResponse, ApiError, SetupAccountParams> => {
+export const useSetupAccount = (options?: { backend_target?: 'api' | 'server' }): UseMutationResult<SetupAccountResponse, ApiError, SetupAccountParams> => {
     const api = useApi();
     return useMutation<SetupAccountResponse, ApiError, SetupAccountParams>({
-        mutationFn: (params) => api.auth.setupAccount(params),
+        mutationFn: (params) => getAuthBackend(api, options?.backend_target).setupAccount(params),
         // Pas de onSuccess/onError générique, géré dans la page SetupAccountPage
     });
 };
@@ -1117,7 +1127,7 @@ export const useGetOrderDetails = (
 export const useUpdateOrderStatus = (): UseMutationResult<UpdateOrderStatusResponse, ApiError, UpdateOrderStatusParams> => {
     const api = useApi();
     return useMutation<UpdateOrderStatusResponse, ApiError, UpdateOrderStatusParams>({
-        mutationFn: (params) => waitFor(api.orders.updateStatus(params),3000),
+        mutationFn: (params) => waitFor(api.orders.updateStatus(params), 3000),
         onSuccess: (data, variables) => {
             logger.info("Order status updated via mutation", data.order);
             const orderId = variables.user_order_id;

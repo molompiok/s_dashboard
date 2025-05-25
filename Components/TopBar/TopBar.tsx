@@ -6,11 +6,11 @@ import { TopSearch } from '../TopSearch/TopSearch';
 import { IoSearch, IoNotifications, IoChevronBack, IoChevronForward } from "react-icons/io5";
 import { useChildViewer } from '../ChildViewer/useChildViewer';
 import { useTranslation } from 'react-i18next';
-import { useAuthStore } from '../../pages/users/login/AuthStore';
+import { useAuthStore } from '../../pages/auth/AuthStore';
 import { Host } from '../../renderer/+config';
 import { getImg } from '../Utils/StringFormater'; // ✅ Importer getImg
 import { useGetAllOrders, useGetMe } from '../../api/ReactSublymusApi';
-import { useGlobalStore } from '../../pages/stores/StoreStore';
+import { useGlobalStore } from '../../pages/index/StoreStore';
 
 export { Topbar };
 
@@ -37,15 +37,15 @@ function Topbar({
     breadcrumbs = []
 }: TopbarProps) {
     const { t } = useTranslation();
-    const {currentStore} = useGlobalStore()
+    const { currentStore } = useGlobalStore()
     const { openChild } = useChildViewer();
-    const { data } = useGetMe({enabled:!!currentStore?.id})
+    const { data } = useGetMe({ enabled: !!currentStore?.id })
     const user = data?.user
 
     // --- Préparer les infos utilisateur pour l'avatar ---
     const userPhotoUrl = user?.photo?.[0]; // Prend la première photo
     const userInitials = user?.full_name?.slice(0, 2).toUpperCase() || '?'; // Initiales ou '?'
-    const avatarImageUrl = userPhotoUrl ? getImg(userPhotoUrl, undefined,currentStore?.url).match(/url\("?([^"]+)"?\)/)?.[1] : undefined; // Obtenir l'URL avec getImg
+    const avatarImageUrl = userPhotoUrl ? getImg(userPhotoUrl, undefined, currentStore?.url).match(/url\("?([^"]+)"?\)/)?.[1] : undefined; // Obtenir l'URL avec getImg
     const displayName = user?.full_name;
 
     // --- (Logique existante inchangée) ---
@@ -101,7 +101,7 @@ function Topbar({
                     <nav aria-label="Breadcrumb">
                         <ol className="flex items-center gap-1.5 text-sm">
                             {/* ... (logique breadcrumbs inchangée) ... */}
-                             {breadcrumbs.map((crumb, index) => (
+                            {breadcrumbs.map((crumb, index) => (
                                 <li key={index} className="flex items-center gap-1.5">
                                     {index > 0 && (
                                         <IoChevronForward className="w-3 h-3 text-gray-400 flex-shrink-0" />
@@ -155,10 +155,10 @@ function Topbar({
                     <div className="relative">
                         <button
                             className="flex items-center justify-center w-9 h-9 rounded-full bg-gray-200 text-gray-600 text-sm font-semibold overflow-hidden hover:ring-2 hover:ring-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-1"
-                            onClick={()=>{
+                            onClick={() => {
                                 window.location.href = `${Host}/users/profile`;
                             }}
-                             title={displayName ? `${t('topbar.profileMenuTitle')} - ${displayName}` : t('topbar.profileMenuTitle')}
+                            title={displayName ? `${t('topbar.profileMenuTitle')} - ${displayName}` : t('topbar.profileMenuTitle')}
                         >
                             {avatarImageUrl ? (
                                 <img

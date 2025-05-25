@@ -6,7 +6,7 @@ import { OrderStatus, PaymentMethod } from '../../../Components/Utils/constants'
 import { OrderStatusElement, statusColors } from '../../../Components/Status/Satus';
 import { BreadcrumbItem, Topbar } from '../../../Components/TopBar/TopBar';
 import { copyToClipboard, FeatureType, getId, limit } from '../../../Components/Utils/functions'; // Garder utilitaires
-import { CommandInterface, CommandItemInterface, EventStatus, ProductInterface, UserInterface, ValueInterface } from '../../../Interfaces/Interfaces'; // Garder Interfaces
+import { CommandInterface, CommandItemInterface, EventStatus, ProductInterface, UserInterface, ValueInterface } from '../../../api/Interfaces/Interfaces'; // Garder Interfaces
 import { FaTruck } from 'react-icons/fa';
 import { IoCall, IoStorefront, IoMail, IoLocationSharp, IoPhonePortraitOutline, IoCard, IoCash, IoPricetag, IoCloseOutline } from 'react-icons/io5'; // Ajouter IoCash, IoCard
 import { useWindowSize } from '../../../Hooks/useWindowSize';
@@ -14,8 +14,8 @@ import { useEffect, useMemo, useState } from 'react'; // Ajouter useMemo
 // import { useApp } from '../../../renderer/AppStore/UseApp'; // Supprimé si non utilisé
 import { ChildViewer } from '../../../Components/ChildViewer/ChildViewer'; // Importer le hook useChildViewer
 // import { getTransmit, useGlobalStore  } from '../../stores/StoreStore'; // Assurer chemin correct
-import { useGlobalStore } from '../../../pages/stores/StoreStore';
-import { getTransmit } from '../../../pages/stores/StoreStore';
+import { useGlobalStore } from '../../index/StoreStore';
+import { getTransmit } from '../../index/StoreStore';
 import { usePageContext } from '../../../renderer/usePageContext';
 import { markdownToPlainText } from '../../../Components/MarkdownViewer/MarkdownViewer';
 import { getImg } from '../../../Components/Utils/StringFormater';
@@ -57,7 +57,7 @@ function Page() {
     const command_id = routeParams?.['id'];
 
     // ✅ Utiliser le hook pour récupérer les détails
-    const { data: command, isLoading, isError, error: apiError , refetch} = useGetOrderDetails(
+    const { data: command, isLoading, isError, error: apiError, refetch } = useGetOrderDetails(
         {
             order_id: command_id
         },
@@ -65,7 +65,7 @@ function Page() {
     );
 
     // ✅ Utiliser la mutation pour mettre à jour le statut
-    
+
     const low = useMemo(() => size.width < 380, [size.width]);
 
     // ✅ Logique SSE (inchangée mais vérifiée)
@@ -80,8 +80,8 @@ function Page() {
             try {
                 await subscription.create();
                 subscription.onMessage<{ id: string }>((data) => {
-                    console.log({data});
-                    
+                    console.log({ data });
+
                     if (data.id === command_id) {
                         console.log(`Received SSE update for current order ${command_id}. Invalidating...`);
                         refetch()
@@ -136,7 +136,7 @@ function Page() {
         setIsPageLoading(false)
     }, []);
     // --- Rendu ---
-    if (isLoading || isPageLoading) return <OrderDetailSkeleton/>
+    if (isLoading || isPageLoading) return <OrderDetailSkeleton />
     if (isError) return <PageNotFound />
     if (!command) return <PageNotFound />
 
@@ -279,7 +279,7 @@ export function CommandUser({ user, command }: { command: Partial<CommandInterfa
         <div className="flex flex-col min-[420px]:flex-row max-[420px]:items-center items-start gap-4 p-4 bg-white rounded-lg shadow-min-[500px] border border-gray-200">
             <div
                 className={`w-24 h-24 flex items-center ${user.photo?.[0] ? '' : 'gb-gray-300'} font-bold text-gray-500 justify-center text-4xl rounded-full object-cover border-4 border-white shadow`}
-                style={{ background: user.photo?.[0] ? getImg(user.photo[0], undefined,currentStore?.url) : 'var(--color-gray-100)' }}
+                style={{ background: user.photo?.[0] ? getImg(user.photo[0], undefined, currentStore?.url) : 'var(--color-gray-100)' }}
             >
                 {!user.photo?.[0] && (user.full_name?.substring(0, 2).toUpperCase() || '?')}
             </div>
@@ -415,7 +415,7 @@ export function CommandProduct({ item }: { item: CommandItemInterface }) {
 
 // --- Composant CommandStatusHistory ---
 export function CommandStatusHistory({ events, low }: { events: EventStatus[], low: boolean }) {
-    const { t ,i18n} = useTranslation(); // ✅ i18n
+    const { t, i18n } = useTranslation(); // ✅ i18n
     // S'assurer que les événements sont triés du plus récent au plus ancien
     const sortedEvents = useMemo(() => [...events].sort((a, b) => DateTime.fromISO(a.change_at).toMillis() - DateTime.fromISO(b.change_at).toMillis()), [events]);
 
@@ -499,21 +499,21 @@ export function StatusUpdatePopup({ currentStatus, orderId, onClose, isDelivery 
 
     const handleUpdate = (newStatus: OrderStatus) => {
         mutation.mutate(
-          { user_order_id: orderId, status: newStatus },
-          {
-            onSuccess: () => {
-              logger.info("Order status update success, closing popup.");
-              showToast("Statut de la commande mis à jour avec succès"); // ✅ Toast succès
-              onClose();
-            },
-            onError: (error) => {
-              logger.error({ orderId, newStatus, error }, "Order status update mutation failed.");
-              showErrorToast(error); // ❌ Toast erreur
-              // onClose(); // On ne ferme pas pour laisser l'utilisateur voir l'erreur
-            },
-          }
+            { user_order_id: orderId, status: newStatus },
+            {
+                onSuccess: () => {
+                    logger.info("Order status update success, closing popup.");
+                    showToast("Statut de la commande mis à jour avec succès"); // ✅ Toast succès
+                    onClose();
+                },
+                onError: (error) => {
+                    logger.error({ orderId, newStatus, error }, "Order status update mutation failed.");
+                    showErrorToast(error); // ❌ Toast erreur
+                    // onClose(); // On ne ferme pas pour laisser l'utilisateur voir l'erreur
+                },
+            }
         );
-      };
+    };
 
     return (
         <div className="bg-white p-6 rounded-lg shadow-xl  w-full"> {/* Augmenté max-w un peu */}

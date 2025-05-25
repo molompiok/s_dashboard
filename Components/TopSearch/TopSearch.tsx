@@ -6,7 +6,7 @@ import 'swiper/css/free-mode';
 import 'swiper/css/pagination'; // Si utilisé
 
 import { useEffect, useState } from 'react';
-import { CategoryInterface, CommandInterface, ProductInterface, UserInterface } from '../../Interfaces/Interfaces'; // Ajouter UserInterface
+import { CategoryInterface, CommandInterface, ProductInterface, UserInterface } from '../../api/Interfaces/Interfaces'; // Ajouter UserInterface
 // import { useGlobalStore } from '../../pages/stores/StoreStore'; // Déjà importé via useStore
 // import { useApp, type GlobalSearchType } from '../../renderer/AppStore/UseApp'; // Remplacé par hook API et useChildViewer
 import { useGlobalSearch } from '../../api/ReactSublymusApi'; // ✅ Importer hook API
@@ -21,7 +21,7 @@ import { useChildViewer } from '../ChildViewer/useChildViewer';
 import { useTranslation } from 'react-i18next'; // ✅ i18n
 import { debounce } from '../Utils/functions'; // Garder debounce
 import logger from '../../api/Logger';
-import { useGlobalStore } from '../../pages/stores/StoreStore';
+import { useGlobalStore } from '../../pages/index/StoreStore';
 // Importer potentiellement CommandItem ou ClientItem pour afficher commandes/clients
 // import { CommandItem } from '../CommandesList/CommandItem';
 // import { ClientItem } from '../ClientList/ClientItem'; // Supposons qu'il existe

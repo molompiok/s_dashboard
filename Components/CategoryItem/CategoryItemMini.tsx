@@ -1,9 +1,9 @@
 // Components/CategoryItem/CategoryItemMini.tsx
 import { useEffect, useState } from "react";
-import { CategoryInterface } from "../../Interfaces/Interfaces";
+import { CategoryInterface } from "../../api/Interfaces/Interfaces";
 import { IoClose } from "react-icons/io5";
 import { useGetCategory } from "../../api/ReactSublymusApi";
-import { useGlobalStore } from "../../pages/stores/StoreStore";
+import { useGlobalStore } from "../../pages/index/StoreStore";
 import { getImg } from "../Utils/StringFormater"; // Import de getImg
 import { useTranslation } from "react-i18next";
 import logger from "../../api/Logger";
@@ -76,7 +76,7 @@ function CategoryItemMini({
         ? { href: `/categories/${category.id}` }
         : { onClick: onClick ? handleClick : undefined, role: onClick ? 'button' : undefined, tabIndex: onClick ? 0 : undefined };
 
-        
+
     return (
         <ContainerElement
             {...containerProps}

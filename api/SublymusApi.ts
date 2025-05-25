@@ -20,7 +20,7 @@ import type {
     OrderStatsIncludeOptions,
     VisitStatsResponse,
     OrderStatsResponse
-} from '../Interfaces/Interfaces'; // Adapter le chemin
+} from './Interfaces/Interfaces'; // Adapter le chemin
 
 export { StatParamType, UserFilterType, CommandFilterType, Inventory }
 import logger from './Logger';
@@ -338,15 +338,15 @@ type PrepareMultipleFeaturesValuesParams = {
 
 // --- Classe Principale SublymusApi ---
 export class SublymusApi {
-    public readonly storeApiUrl: string;
-    public readonly getAuthTokenApi: () => string | null;
-    public readonly getAuthTokenServer: () => string | null;
+    public readonly storeApiUrl: string|undefined;
+    public readonly getAuthToken: () =>string | undefined| null;
     public readonly handleUnauthorized: ((action: 'api' | 'server', token?: string) => void) | undefined
     private serverUrl: string;
     public readonly t: (key: string, params?: any) => string; // Ajouter params optionnel
 
     // --- Namespaces (déclarations) ---
-    public auth: AuthApiNamespace;
+    public authServer: AuthApiNamespace;
+    public authApi: AuthApiNamespace;
     public products: ProductsApiNamespace;
     public categories: CategoriesApiNamespace;
     public features: FeaturesApiNamespace;
@@ -366,24 +366,26 @@ export class SublymusApi {
     public store: StoreNamespace;
     public readonly theme: ThemeNamespace;
 
-    constructor({ getAuthTokenApi, getAuthTokenServer, serverUrl, storeApiUrl, t, handleUnauthorized }: { handleUnauthorized?: (action: 'api' | 'server', token?: string) => void, storeApiUrl: string, serverUrl: string, getAuthTokenApi: () => string | null, getAuthTokenServer: () => string | null, t: (key: string, params?: any) => string }) {
-        if (!storeApiUrl) throw new Error("API URL is required for initialization."); // Utiliser message brut ou clé i18n pré-initialisée?
+    constructor({ getAuthToken, serverUrl, storeApiUrl, t, handleUnauthorized }: { handleUnauthorized?: (action: 'api' | 'server', token?: string) => void, storeApiUrl?: string, serverUrl?: string, getAuthToken: () => string | undefined| null, t: (key: string, params?: any) => string }) {
+        
         this.t = t;
+        console.log('------------>>>>>>>>>>>>>>>',serverUrl);
+        
         // Server URL est requis
         if (!serverUrl) {
             throw new Error("SublymusApi: serverUrl is required.");
         }
-        this.serverUrl = serverUrl.replace(/\/$/, '');
-        this.storeApiUrl = storeApiUrl ? storeApiUrl.replace(/\/$/, '') : '';
-        this.getAuthTokenApi = getAuthTokenApi;
-        this.getAuthTokenServer = getAuthTokenServer;
+        this.serverUrl = serverUrl || 'https://server.sublymus.com';
+        this.storeApiUrl = storeApiUrl;
+        this.getAuthToken = getAuthToken;
         this.handleUnauthorized = handleUnauthorized
         logger.info(`SublymusApi initialized with URL: ${this.storeApiUrl}`);
 
         // Initialiser les namespaces
         this.store = new StoreNamespace(this)
         this.theme = new ThemeNamespace(this);
-        this.auth = new AuthApiNamespace(this);
+        this.authApi = new AuthApiNamespace(this);
+        this.authServer = new AuthApiNamespace(this, true);
         this.products = new ProductsApiNamespace(this);
         this.categories = new CategoriesApiNamespace(this);
         this.features = new FeaturesApiNamespace(this);
@@ -408,20 +410,18 @@ export class SublymusApi {
         // ... (code de _request inchangé, utilise this.t pour les erreurs génériques) ...
 
         console.log({ endpoint });
-        let token = undefined
+        let token = this.getAuthToken();
         let action: 'api' | 'server' = 'api';
-        let baseUrl: string;
+        let baseUrl: string='';
         if (endpoint.startsWith('/{{main_server}}')) {
             endpoint = endpoint.replace('/{{main_server}}', '');
             baseUrl = this.serverUrl;
             action = 'server'
-            token = this.getAuthTokenServer();
         } else if (this.storeApiUrl) {
             baseUrl = this.storeApiUrl;
-            token = this.getAuthTokenApi();
         } else {
             logger.error({ endpoint }, "Attempted to call store-specific API endpoint without a configured storeApiUrl.");
-            throw new ApiError(this.t('api.contextError.noStoreUrl'), 500); // Ou une erreur 400?
+            // throw new ApiError(this.t('api.contextError.noStoreUrl'), 500); // Ou une erreur 400?
         }
 
         let url = `${baseUrl}${endpoint}`;
@@ -519,12 +519,12 @@ export class SublymusApi {
                     console.log(`le champs "${key}" doit contenir un tableau, (string|blob)[]`)
                 }
             } else if (Array.isArray(value)) {
-                if(value.length==0){
+                if (value.length == 0) {
                     formData.append(key, JSON.stringify(value));
-                }else
-                for (const v of value) {
-                    (v ?? undefined) !== undefined && formData.append(key, v);
-                }
+                } else
+                    for (const v of value) {
+                        (v ?? undefined) !== undefined && formData.append(key, v);
+                    }
             } else {
                 (value ?? undefined) !== undefined && formData.append(key, value);
             }
@@ -841,43 +841,47 @@ class StoreNamespace {
 // ==================================
 class AuthApiNamespace {
     private _api: SublymusApi;
-    constructor(apiInstance: SublymusApi) { this._api = apiInstance; }
+    private isServer ?: boolean = false;
+    constructor(apiInstance: SublymusApi, isServer?:boolean) { this._api = apiInstance; this.isServer = isServer}
 
     // 1 - Adapter les URLs
     login(params: LoginParams): Promise<LoginResponse> {
-        return this._api._request('/api/v1/auth/login', { method: 'POST', body: params });
+        return this._api._request(`${this.isServer?'/{{main_server}}':'/api/v1'}/auth/login`, { method: 'POST', body: params });
     }
     register(params: RegisterParams): Promise<RegisterResponse> {
-        return this._api._request('/api/v1/auth/register', { method: 'POST', body: params });
+        return this._api._request(`${this.isServer?'/{{main_server}}':'/api/v1'}/auth/register`, { method: 'POST', body: params });
     }
     verifyEmail(params: VerifyEmailParams): Promise<MessageResponse> {
-        return this._api._request('/api/v1/auth/verify-email', { method: 'GET', params });
+        return this._api._request(`${this.isServer?'/{{main_server}}':'/api/v1'}/auth/verify-email`, { method: 'GET', params });
     }
     resendVerificationEmail(params: ResendVerificationParams): Promise<MessageResponse> {
-        return this._api._request('/api/v1/auth/resend-verification', { method: 'POST', body: params });
+        return this._api._request(`${this.isServer?'/{{main_server}}':'/api/v1'}/auth/resend-verification`, { method: 'POST', body: params });
     }
     logout(): Promise<MessageResponse> {
-        return this._api._request('/api/v1/auth/logout', { method: 'POST' });
+        return this._api._request(`${this.isServer?'/{{main_server}}':'/api/v1'}/auth/logout`, { method: 'POST' });
     }
+    
     logoutAllDevices(): Promise<MessageResponse> {
         // Garder l'ancien nom de méthode mais appeler la nouvelle route
-        return this._api._request('/api/v1/auth/logout-all', { method: 'POST' });
+        return this._api._request(`${this.isServer?'/{{main_server}}':'/api/v1'}/auth/logout-all`, { method: 'POST' });
     }
     getMe(): Promise<GetMeResponse> {
-        return this._api._request('/api/v1/auth/me', { method: 'GET' });
+        return this._api._request(`${this.isServer?'/{{main_server}}':'/api/v1'}/auth/me`, { method: 'GET' });
     }
+
     async update({ data }: UpdateUserParams): Promise<UpdateUserResponse> { // 2 - Type Params modifié
         const formData = await this._api._buildFormData({ data, dataFilesFelds: ['photo'] })
-        return this._api._request('/api/v1/auth/me', { method: 'PUT', body: formData, isFormData: true });
+        return this._api._request(`${this.isServer?'/{{main_server}}':'/api/v1'}/auth/me`, { method: 'PUT', body: formData, isFormData: true });
     }
+
     deleteAccount(): Promise<MessageResponse> {
         // Utiliser la méthode DELETE sur /me
-        return this._api._request('/api/v1/auth/me', { method: 'DELETE' });
+        return this._api._request(`${this.isServer?'/{{main_server}}':'/api/v1'}/auth/me`, { method: 'DELETE' });
     }
     // handleSocialCallbackInternal reste non exposé publiquement
 
     forgotPassword(params: ForgotPasswordParams): Promise<MessageResponse> {
-        return this._api._request('/api/v1/auth/forgot-password', {
+        return this._api._request(`${this.isServer?'/{{main_server}}':'/api/v1'}/auth/forgot-password`, {
             method: 'POST',
             body: { email: params.email, callback_url: params.callback_url }
         });
@@ -885,7 +889,7 @@ class AuthApiNamespace {
 
     resetPassword(params: ResetPasswordParams): Promise<MessageResponse> {
         // Validation faite par le backend + schéma Vine
-        return this._api._request('/api/v1/auth/reset-password', { method: 'POST', body: params });
+        return this._api._request(`${this.isServer?'/{{main_server}}':'/api/v1'}/auth/reset-password`, { method: 'POST', body: params });
     }
 
     // --- NOUVELLE MÉTHODE ACCOUNT SETUP ---
@@ -894,7 +898,7 @@ class AuthApiNamespace {
      */
     setupAccount(params: SetupAccountParams): Promise<SetupAccountResponse> { // Utiliser type retour spécifique
         // La validation (longueur mdp, confirmation) est faite par le backend via Vine
-        return this._api._request('/api/v1/auth/setup-account', { method: 'POST', body: params });
+        return this._api._request(`${this.isServer?'/{{main_server}}':'/api/v1'}/auth/setup-account`, { method: 'POST', body: params });
     }
 }
 

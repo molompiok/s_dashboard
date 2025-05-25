@@ -1,7 +1,7 @@
 // Components/InventoryManager/InventoryFormPopup.tsx
 
 import { useState, useEffect, useRef } from 'react';
-import { Inventory as InventoryInterface } from "../../Interfaces/Interfaces";
+import { Inventory as InventoryInterface } from "../../api/Interfaces/Interfaces";
 import { useTranslation } from "react-i18next";
 import { useCreateInventory, useUpdateInventory } from "../../api/ReactSublymusApi"; // Importer mutations
 import logger from '../../api/Logger';
@@ -9,7 +9,7 @@ import { IoCloudUploadOutline, IoImageOutline } from 'react-icons/io5';
 import { RiImageEditFill } from 'react-icons/ri';
 import { Confirm } from '../Confirm/Confirm'; // Utiliser Confirm pour boutons
 import { getImg } from '../Utils/StringFormater'; // Pour preview
-import { useGlobalStore } from '../../pages/stores/StoreStore'; // Pour URL base image
+import { useGlobalStore } from '../../pages/index/StoreStore'; // Pour URL base image
 import { ApiError } from '../../api/SublymusApi';
 import { showErrorToast, showToast } from '../Utils/toastNotifications';
 
@@ -45,8 +45,8 @@ export function InventoryFormPopup({ initialData, onSaveSuccess, onCancel }: Inv
         };
     });
 
-    const  [s] = useState({
-        collected:{} as Partial<InventoryInterface>
+    const [s] = useState({
+        collected: {} as Partial<InventoryInterface>
     })
     const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({});
 
@@ -90,7 +90,7 @@ export function InventoryFormPopup({ initialData, onSaveSuccess, onCancel }: Inv
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const { name, value, type } = e.target;
         const parsedValue = type === 'number' ? (value === '' ? undefined : parseFloat(value)) : value;
-        (s.collected as any)[name]= parsedValue 
+        (s.collected as any)[name] = parsedValue
         setFormData(prev => ({ ...prev, [name]: parsedValue }));
         setFieldErrors(prev => ({ ...prev, [name]: '' })); // Reset erreur champ
     };
@@ -102,8 +102,8 @@ export function InventoryFormPopup({ initialData, onSaveSuccess, onCancel }: Inv
             return;
         }
         const newFiles = Array.from(files);
-        s.collected.views = newFiles 
-        
+        s.collected.views = newFiles
+
         const newPreviews = newFiles.map(file => URL.createObjectURL(file));
 
         // Révoquer les anciennes previews locales avant d'en créer de nouvelles

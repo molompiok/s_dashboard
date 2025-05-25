@@ -3,7 +3,7 @@
 // --- Imports ---
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { usePageContext } from '../../../../renderer/usePageContext';
-import { useGlobalStore } from '../../../stores/StoreStore';
+import { useGlobalStore } from '../../../index/StoreStore';
 // ✅ Importer les hooks API nécessaires
 import {
     useGetProductList, // Pour charger le produit
@@ -12,7 +12,7 @@ import {
     useUpdateDetail,
     useDeleteDetail,
 } from '../../../../api/ReactSublymusApi';
-import { DetailInterface, ListType, ProductInterface } from '../../../../Interfaces/Interfaces';
+import { DetailInterface, ListType, ProductInterface } from '../../../../api/Interfaces/Interfaces';
 import { Topbar } from '../../../../Components/TopBar/TopBar';
 import { PageNotFound } from '../../../../Components/PageNotFound/PageNotFound';
 import { Indicator } from '../../../../Components/Indicator/Indicator';
@@ -168,49 +168,49 @@ function Page() {
     const updateDetail = (detailId: string, data: Partial<DetailInterface>) => {
         const formData = new FormData();
         Object.entries(data).forEach(([key, value]) => {
-          if (value !== undefined && value !== null) {
-            formData.append(key, String(value));
-          }
+            if (value !== undefined && value !== null) {
+                formData.append(key, String(value));
+            }
         });
         // **Important**: Il faut aussi envoyer l'ID dans le corps pour le schéma de validation updateDetailSchema
         formData.append('id', detailId);
         // Pas besoin de passer l'ID dans l'URL pour l'API updateDetail telle que définie
         return updateDetailMutation.mutateAsync(
-          {
-            detail_id: detailId,
-            data,
-          },
-          {
-            onSuccess: () => {
-              logger.info(`Detail ${detailId} updated successfully`);
-              refetchDetails();
-              debounce(()=>showToast("Détail mis à jour avec succès"),'details-update',3000) // ✅ Toast succès
+            {
+                detail_id: detailId,
+                data,
             },
-            onError: (error) => {
-              logger.error({ error, detailId }, `Failed to update detail ${detailId}`);
-              showErrorToast(error); // ❌ Toast erreur
-            },
-          }
+            {
+                onSuccess: () => {
+                    logger.info(`Detail ${detailId} updated successfully`);
+                    refetchDetails();
+                    debounce(() => showToast("Détail mis à jour avec succès"), 'details-update', 3000) // ✅ Toast succès
+                },
+                onError: (error) => {
+                    logger.error({ error, detailId }, `Failed to update detail ${detailId}`);
+                    showErrorToast(error); // ❌ Toast erreur
+                },
+            }
         ); // Utiliser la mutation
-      };
-      
-      const createDetail = (data: Partial<DetailInterface>) => {
+    };
+
+    const createDetail = (data: Partial<DetailInterface>) => {
         return createDetailMutation.mutateAsync(
-          {
-            data,
-          },
-          {
-            onSuccess: () => {
-              logger.info("Detail created successfully");
-              showToast("Détail créé avec succès"); // ✅ Toast succès
+            {
+                data,
             },
-            onError: (error) => {
-              logger.error({ error }, "Failed to create detail");
-              showErrorToast(error); // ❌ Toast erreur
-            },
-          }
+            {
+                onSuccess: () => {
+                    logger.info("Detail created successfully");
+                    showToast("Détail créé avec succès"); // ✅ Toast succès
+                },
+                onError: (error) => {
+                    logger.error({ error }, "Failed to create detail");
+                    showErrorToast(error); // ❌ Toast erreur
+                },
+            }
         ); // Utiliser la mutation
-      };
+    };
 
     useEffect(() => {
         if (createRequired) {
@@ -219,16 +219,16 @@ function Page() {
         }
     }, [createRequired])
 
-  const [isPageLoading, setIsPageLoading] = useState(true);
+    const [isPageLoading, setIsPageLoading] = useState(true);
     useEffect(() => {
         setIsPageLoading(false)
     }, []);
-    
+
     // --- Rendu ---
-    if(isPageLoading) return <PageSkeleton/>
-    if (isLoading && !product) return<PageSkeleton/>
+    if (isPageLoading) return <PageSkeleton />
+    if (isLoading && !product) return <PageSkeleton />
     if (isFetchError) return <PageNotFound title={t('product.notFound')} description={fetchError?.message} />;
-    if (!product) return  <PageSkeleton/>
+    if (!product) return <PageSkeleton />
 
 
     const isDetailMaxReached = (sortedDetails?.length || 0) >= DETAIL_LIMIT;
@@ -466,7 +466,7 @@ function DetailInfo({ detail: initialDetail, onSave, onCancel }: {
     };
 
     // Affichage de l'image (preview locale ou URL serveur)
-    const viewUrlForDisplay = localPreview ? getImg(localPreview) : (typeof collected?.view?.[0] === 'string' ? getImg(collected.view[0], undefined, currentStore?.url) :undefined);
+    const viewUrlForDisplay = localPreview ? getImg(localPreview) : (typeof collected?.view?.[0] === 'string' ? getImg(collected.view[0], undefined, currentStore?.url) : undefined);
     const showPlaceholder = !localPreview && (!collected?.view || collected.view.length === 0 || typeof collected.view[0] !== 'string');
 
 
@@ -550,47 +550,47 @@ function DetailInfo({ detail: initialDetail, onSave, onCancel }: {
 
 function PageSkeleton() {
     return (
-      <div className="page-detail w-full flex flex-col bg-gray-100 min-h-screen animate-pulse">
-        {/* Topbar */}
-        <div className="w-full h-16 bg-gray-200 flex items-center px-4">
-          <div className="h-8 w-8 bg-gray-300 rounded-full" />
-          <div className="ml-4 h-6 w-1/3 bg-gray-300 rounded" />
-        </div>
-  
-        <main className="w-full max-w-4xl mx-auto p-4 md:p-6 lg:p-8 flex flex-col gap-6">
-          {/* Aperçu Produit */}
-          <div className="mb-6">
-            <div className="w-full h-64 bg-gray-200 rounded-lg" />
-          </div>
-  
-          {/* Section Ajout Détail */}
-          <div className="flex items-center justify-between p-4 bg-white rounded-lg shadow-sm border border-gray-200">
-            <div className="flex items-center gap-2">
-              <div className="h-6 w-40 bg-gray-300 rounded" />
-              <div className="h-5 w-16 bg-gray-300 rounded" />
+        <div className="page-detail w-full flex flex-col bg-gray-100 min-h-screen animate-pulse">
+            {/* Topbar */}
+            <div className="w-full h-16 bg-gray-200 flex items-center px-4">
+                <div className="h-8 w-8 bg-gray-300 rounded-full" />
+                <div className="ml-4 h-6 w-1/3 bg-gray-300 rounded" />
             </div>
-            <div className="h-10 w-32 bg-gray-300 rounded-md" />
-          </div>
-  
-          {/* Liste des Détails */}
-          <div className="details flex flex-col gap-4">
-            {[...Array(3)].map((_, i) => (
-              <div
-                key={i}
-                className="p-4 bg-white rounded-lg shadow-sm border border-gray-200 flex flex-col gap-4"
-              >
-                <div className="h-6 w-3/4 bg-gray-300 rounded" />
-                <div className="h-4 w-full bg-gray-300 rounded" />
-                <div className="h-4 w-5/6 bg-gray-300 rounded" />
-                <div className="flex gap-2">
-                  <div className="h-8 w-8 bg-gray-300 rounded-full" />
-                  <div className="h-8 w-8 bg-gray-300 rounded-full" />
-                  <div className="h-8 w-8 bg-gray-300 rounded-full" />
+
+            <main className="w-full max-w-4xl mx-auto p-4 md:p-6 lg:p-8 flex flex-col gap-6">
+                {/* Aperçu Produit */}
+                <div className="mb-6">
+                    <div className="w-full h-64 bg-gray-200 rounded-lg" />
                 </div>
-              </div>
-            ))}
-          </div>
-        </main>
-      </div>
+
+                {/* Section Ajout Détail */}
+                <div className="flex items-center justify-between p-4 bg-white rounded-lg shadow-sm border border-gray-200">
+                    <div className="flex items-center gap-2">
+                        <div className="h-6 w-40 bg-gray-300 rounded" />
+                        <div className="h-5 w-16 bg-gray-300 rounded" />
+                    </div>
+                    <div className="h-10 w-32 bg-gray-300 rounded-md" />
+                </div>
+
+                {/* Liste des Détails */}
+                <div className="details flex flex-col gap-4">
+                    {[...Array(3)].map((_, i) => (
+                        <div
+                            key={i}
+                            className="p-4 bg-white rounded-lg shadow-sm border border-gray-200 flex flex-col gap-4"
+                        >
+                            <div className="h-6 w-3/4 bg-gray-300 rounded" />
+                            <div className="h-4 w-full bg-gray-300 rounded" />
+                            <div className="h-4 w-5/6 bg-gray-300 rounded" />
+                            <div className="flex gap-2">
+                                <div className="h-8 w-8 bg-gray-300 rounded-full" />
+                                <div className="h-8 w-8 bg-gray-300 rounded-full" />
+                                <div className="h-8 w-8 bg-gray-300 rounded-full" />
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </main>
+        </div>
     );
-  }
+}

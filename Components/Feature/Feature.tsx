@@ -1,6 +1,6 @@
 // Components/Feature/Feature.tsx
 
-import { FeatureInterface, ValueInterface } from '../../Interfaces/Interfaces';
+import { FeatureInterface, ValueInterface } from '../../api/Interfaces/Interfaces';
 import { IoAdd, IoClose, IoEllipsisHorizontal, IoTrash } from 'react-icons/io5';
 import { ClientCall, FeatureType } from '../Utils/functions';
 import { IconTextValue, TextValue } from '../FV_IconText_Info/FV_IconText_Info';
@@ -31,21 +31,21 @@ function Feature({ feature, setFeature, onDelete }: FeatureProps) {
     const handleValueChange = (updatedValue: ValueInterface) => {
         updatedValue._request_mode = 'edited';
         setFeature((current) => {
-             return {
-                 ...current,
-                 values: (current?.values ?? []).map(_v => (_v.id === updatedValue.id) ? updatedValue : _v),
-             };
-         });
+            return {
+                ...current,
+                values: (current?.values ?? []).map(_v => (_v.id === updatedValue.id) ? updatedValue : _v),
+            };
+        });
         openChild(null); // Fermer le popup
     };
 
-     const handleValueCreate = (newValue: ValueInterface) => {
-         newValue._request_mode = 'new'
-         setFeature((current) => ({
-             ...current,
-             values: [...(current?.values ?? []), newValue],
-         }));
-         openChild(null);
+    const handleValueCreate = (newValue: ValueInterface) => {
+        newValue._request_mode = 'new'
+        setFeature((current) => ({
+            ...current,
+            values: [...(current?.values ?? []), newValue],
+        }));
+        openChild(null);
     };
 
 
@@ -58,56 +58,56 @@ function Feature({ feature, setFeature, onDelete }: FeatureProps) {
     };
 
     const handleFeatureDelete = () => {
-         openChild(<ChildViewer>
-             <ConfirmDelete
-                 title={t('feature.confirmDelete', { name: feature?.name || 'cette variante' })}
-                 onCancel={() => openChild(null)}
-                 onDelete={() => {
-                     onDelete(); // Appeler le callback parent pour supprimer du state global
-                     openChild(null);
-                 }} />
-         </ChildViewer>, { background: '#3455' });
+        openChild(<ChildViewer>
+            <ConfirmDelete
+                title={t('feature.confirmDelete', { name: feature?.name || 'cette variante' })}
+                onCancel={() => openChild(null)}
+                onDelete={() => {
+                    onDelete(); // Appeler le callback parent pour supprimer du state global
+                    openChild(null);
+                }} />
+        </ChildViewer>, { background: '#3455' });
     };
 
     const handleOpenFeatureSettings = () => {
         // Utiliser onOpenRequired ou ouvrir directement FeatureInfo si on internalise
-         openChild(<ChildViewer title={t('feature.editTitle')}> 
-             <FeatureInfo
-                 feature={feature as FeatureInterface} // Passer la feature complète
-                 onChange={(updatedFeature) => {
-                      updatedFeature._request_mode= 'edited'; // Marquer comme éditée
-                      setFeature(() => updatedFeature); // Remplacer la feature dans l'état parent
-                      openChild(null);
-                 }}
-                 onCancel={() => openChild(null)}
-             />
-         </ChildViewer>, { background: '#3455' });
-         // ou onOpenRequired?.(feature)
+        openChild(<ChildViewer title={t('feature.editTitle')}>
+            <FeatureInfo
+                feature={feature as FeatureInterface} // Passer la feature complète
+                onChange={(updatedFeature) => {
+                    updatedFeature._request_mode = 'edited'; // Marquer comme éditée
+                    setFeature(() => updatedFeature); // Remplacer la feature dans l'état parent
+                    openChild(null);
+                }}
+                onCancel={() => openChild(null)}
+            />
+        </ChildViewer>, { background: '#3455' });
+        // ou onOpenRequired?.(feature)
     };
 
-     const handleOpenValuePopup = (value?: ValueInterface) => {
+    const handleOpenValuePopup = (value?: ValueInterface) => {
         // Si pas de valeur, c'est une création
         const isCreating = !value;
         const valueData = value ?? {
-             id:  ClientCall(()=>Date.now().toString(32)+Math.random().toString(32),0), // ID temporaire
-             feature_id: feature?.id || '',
-             index: (feature?.values?.length ?? 0) + 1, // Index suivant
-             text: '', // Valeurs par défaut
-         };
+            id: ClientCall(() => Date.now().toString(32) + Math.random().toString(32), 0), // ID temporaire
+            feature_id: feature?.id || '',
+            index: (feature?.values?.length ?? 0) + 1, // Index suivant
+            text: '', // Valeurs par défaut
+        };
 
-        openChild(<ChildViewer title={isCreating ? t('value.createTitle') : t('value.editTitle')}> 
-             {(feature||undefined) && getInfoPopup({ // Utiliser getInfoPopup pour choisir le bon formulaire
-                 feature,
-                 value: valueData as ValueInterface,
-                 onChange: isCreating ? handleValueCreate : handleValueChange,
-                 onCancel: () => openChild(null),
-             })||undefined}
-         </ChildViewer>, { background: '#3455' });
+        openChild(<ChildViewer title={isCreating ? t('value.createTitle') : t('value.editTitle')}>
+            {(feature || undefined) && getInfoPopup({ // Utiliser getInfoPopup pour choisir le bon formulaire
+                feature,
+                value: valueData as ValueInterface,
+                onChange: isCreating ? handleValueCreate : handleValueChange,
+                onCancel: () => openChild(null),
+            }) || undefined}
+        </ChildViewer>, { background: '#3455' });
     };
 
     // Vérifier si on peut ajouter une valeur
     const canAddValue = (feature?.values?.length ?? 0) < VALUE_LIMIT;
-    const hashIconAdd = ([FeatureType.COLOR,FeatureType.DATE,FeatureType.ICON,FeatureType.ICON_TEXT] satisfies FeatureType[] ).includes(feature.type as any);
+    const hashIconAdd = ([FeatureType.COLOR, FeatureType.DATE, FeatureType.ICON, FeatureType.ICON_TEXT] satisfies FeatureType[]).includes(feature.type as any);
     return (
         // Conteneur Feature : bordure, padding, rounded, etc.
         <div className="feature border border-gray-200 rounded-lg p-3 bg-white/50">
@@ -116,27 +116,27 @@ function Feature({ feature, setFeature, onDelete }: FeatureProps) {
                 {/* Utiliser text-base font-medium */}
                 <h3 className="text-base font-medium text-gray-800 m-0">
                     {feature?.name || t('feature.untitled')} {/* 🌍 i18n */}
-                     {/* Afficher type et requis de manière discrète */}
+                    {/* Afficher type et requis de manière discrète */}
                     <span className="ml-2 text-xs font-normal text-gray-500">
                         ({t(`featureTypes.${feature?.type}`, feature?.type ?? '')}) {/* 🌍 i18n */}
-                        {feature?.required && <span className="ml-1 text-red-500 font-medium">* {t('common.required')}</span>} 
+                        {feature?.required && <span className="ml-1 text-red-500 font-medium">* {t('common.required')}</span>}
                     </span>
                 </h3>
                 <div className="flex items-center gap-2">
                     <button onClick={handleOpenFeatureSettings} className="p-1 text-gray-400 hover:text-gray-600" title={t('feature.editSettings')}> {/* 🌍 i18n */}
                         <IoEllipsisHorizontal className='icon-25' />
                     </button>
-                     {/* Ne pas permettre suppression de la feature par défaut */}
-                     {!feature?.is_default && (
-                         <button onClick={handleFeatureDelete} className="p-1 text-gray-400 hover:text-red-600" title={t('common.delete')}> 
-                             <IoTrash className='icon-25' />
-                         </button>
-                     )}
+                    {/* Ne pas permettre suppression de la feature par défaut */}
+                    {!feature?.is_default && (
+                        <button onClick={handleFeatureDelete} className="p-1 text-gray-400 hover:text-red-600" title={t('common.delete')}>
+                            <IoTrash className='icon-25' />
+                        </button>
+                    )}
                 </div>
             </div>
 
             {/* Liste des Valeurs + Bouton Ajouter */}
-             {/* Utiliser flex flex-wrap gap-2 */}
+            {/* Utiliser flex flex-wrap gap-2 */}
             <div className="list-values flex flex-wrap gap-2 items-center">
                 {(feature?.values ?? []).map((v) => (
                     // Le composant Value choisit le bon rendu
@@ -144,33 +144,33 @@ function Feature({ feature, setFeature, onDelete }: FeatureProps) {
                         key={v.id}
                         value={v}
                         feature={feature as FeatureInterface} // Passer la feature typée
-                         onRemove={feature?.is_default ? undefined : () => handleValueRemove(v.id)} // Pas de suppression pour valeur de feature défaut?
-                         onClick={() => handleOpenValuePopup(v)}
+                        onRemove={feature?.is_default ? undefined : () => handleValueRemove(v.id)} // Pas de suppression pour valeur de feature défaut?
+                        onClick={() => handleOpenValuePopup(v)}
                     />
                 ))}
 
                 {/* Bouton Ajouter Valeur */}
                 {canAddValue && (
-                     <button
-                         type="button"
-                         onClick={() => handleOpenValuePopup()}
-                         disabled={!canAddValue}
-                         className={`add-new flex flex-col items-center  justify-center w-16  sm:w-20  rounded-lg border-2 border-dashed border-gray-300 text-gray-400 hover:border-blue-400 hover:text-blue-500 transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${hashIconAdd?'h-16':'h-8 px-12'} `}
-                     >
-                        
+                    <button
+                        type="button"
+                        onClick={() => handleOpenValuePopup()}
+                        disabled={!canAddValue}
+                        className={`add-new flex flex-col items-center  justify-center w-16  sm:w-20  rounded-lg border-2 border-dashed border-gray-300 text-gray-400 hover:border-blue-400 hover:text-blue-500 transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${hashIconAdd ? 'h-16' : 'h-8 px-12'} `}
+                    >
+
                         {
-                             hashIconAdd &&  
-                         <IoAdd className='w-6 h-6 sm:w-8 sm:h-8' />
-                         }
-                         <span className='text-[10px] sm:text-xs font-medium whitespace-nowrap mt-1'>
-                             {t('value.add')} ({feature?.values?.length ?? 0}/{VALUE_LIMIT})
-                         </span>
-                     </button>
+                            hashIconAdd &&
+                            <IoAdd className='w-6 h-6 sm:w-8 sm:h-8' />
+                        }
+                        <span className='text-[10px] sm:text-xs font-medium whitespace-nowrap mt-1'>
+                            {t('value.add')} ({feature?.values?.length ?? 0}/{VALUE_LIMIT})
+                        </span>
+                    </button>
                 )}
                 {!canAddValue && (
-                     <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg border-2 border-dashed border-gray-200 flex items-center justify-center">
-                         <span className="text-[10px] text-gray-400 px-1 text-center">{t('value.limitReached', { limit: VALUE_LIMIT })}</span> 
-                     </div>
+                    <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg border-2 border-dashed border-gray-200 flex items-center justify-center">
+                        <span className="text-[10px] text-gray-400 px-1 text-center">{t('value.limitReached', { limit: VALUE_LIMIT })}</span>
+                    </div>
                 )}
             </div>
         </div>
@@ -224,7 +224,7 @@ export function getInfoPopup({ value, feature, onChange, onCancel }: {
         case FeatureType.ICON_TEXT:
         case FeatureType.ICON:
         case FeatureType.TEXT:
-        // TODO: Ajouter cas INPUT, FILE, etc. qui utilisent potentiellement FV_IconText_Info ou un autre
+            // TODO: Ajouter cas INPUT, FILE, etc. qui utilisent potentiellement FV_IconText_Info ou un autre
             return <FV_IconText_Info feature={feature} onChange={onChange} value={value} onCancel={onCancel} />;
         case FeatureType.COLOR:
             return <ColorInfo feature={feature} onChange={onChange} value={value} onCancel={onCancel} />;
@@ -233,7 +233,7 @@ export function getInfoPopup({ value, feature, onChange, onCancel }: {
         //   return <DateInfo ... />
         default:
             logger.warn(`No specific info popup defined for feature type: ${feature.type}`);
-             // Retourner un formulaire générique ou null? Pour l'instant IconText.
-             return <FV_IconText_Info feature={feature} onChange={onChange} value={value} onCancel={onCancel} />;
+            // Retourner un formulaire générique ou null? Pour l'instant IconText.
+            return <FV_IconText_Info feature={feature} onChange={onChange} value={value} onCancel={onCancel} />;
     }
 }

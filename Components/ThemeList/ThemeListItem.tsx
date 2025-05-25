@@ -1,12 +1,12 @@
 // Components/ThemeList/ThemeListItem.tsx
 
-import { ThemeInterface } from "../../Interfaces/Interfaces";
+import { ThemeInterface } from "../../api/Interfaces/Interfaces";
 import { getImg } from "../Utils/StringFormater";
 import { useTranslation } from "react-i18next";
 import { NO_PICTURE } from "../Utils/constants";
 import { useState } from 'react';
 import { IoCheckmarkCircleSharp } from "react-icons/io5"; // Pour thème sélectionné
-import { useGlobalStore } from "../../pages/stores/StoreStore";
+import { useGlobalStore } from "../../pages/index/StoreStore";
 
 interface ThemeListItemProps {
     theme: ThemeInterface;

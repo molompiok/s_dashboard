@@ -2,7 +2,7 @@
 // import './ClientList.css'; // ❌ Supprimer
 
 import { IoChevronDown, IoSearch } from 'react-icons/io5';
-import { UserFilterType, UserInterface } from '../../Interfaces/Interfaces';
+import { UserFilterType, UserInterface } from '../../api/Interfaces/Interfaces';
 import { useEffect, useState } from 'react';
 import { OrderStatusElement } from '../Status/Satus'; // Peut-être renommer/généraliser?
 import { DateRange, DayPicker } from "react-day-picker";
@@ -10,7 +10,7 @@ import "react-day-picker/style.css"; // Garder CSS DayPicker
 import { ClientCall, debounce } from '../Utils/functions';
 import { getImg } from '../Utils/StringFormater';
 // import { getTransmit, useGlobalStore  } from '../../pages/stores/StoreStore'; // Transmit non pertinent ici a priori
-import { useGlobalStore } from '../../pages/stores/StoreStore';
+import { useGlobalStore } from '../../pages/index/StoreStore';
 // import { useClientStore } from '../../pages/users/clients/ClientStore'; // Remplacé par hook API
 import { useGetUsers } from '../../api/ReactSublymusApi'; // ✅ Importer hook API
 import { ClientStatusColor } from '../Utils/constants'; // Garder pour les couleurs spécifiques client?
@@ -140,8 +140,8 @@ export function ClientItem({ client }: { client: UserInterface }) {
 
   const displayPhone = client.user_phones?.[0]
     ? IMask.pipe(client.user_phones?.[0]?.phone_number || '', {
-        mask: client.user_phones?.[0]?.format || '',
-      })
+      mask: client.user_phones?.[0]?.format || '',
+    })
     : t('common.notProvided');
 
   return (
@@ -192,25 +192,25 @@ export function ClientItem({ client }: { client: UserInterface }) {
         {displayPhone}
       </p>
       <div className='ml-auto flex items-center gap-6'>
-         {/* Date d'inscription */}
-      <p className=" sm:block text-xs text-gray-400 w-24 text-right shrink-0">
-        {DateTime.fromISO(client.created_at)
-          .setLocale(t('common.locale'))
-          .toFormat('dd MMM yy')}
-      </p>
+        {/* Date d'inscription */}
+        <p className=" sm:block text-xs text-gray-400 w-24 text-right shrink-0">
+          {DateTime.fromISO(client.created_at)
+            .setLocale(t('common.locale'))
+            .toFormat('dd MMM yy')}
+        </p>
 
-      {/* Statut */}
-      <div className=" sm:w-auto sm:ml-auto flex justify-end shrink-0">
-        <span
-          className="px-2.5 py-0.5 rounded-full text-xs font-medium capitalize"
-          style={{
-            backgroundColor: statusBgColor,
-            color: statusColor,
-          }}
-        >
-          {t(`clientStatus.${clientStatus.toLowerCase()}`, clientStatus)}
-        </span>
-      </div>
+        {/* Statut */}
+        <div className=" sm:w-auto sm:ml-auto flex justify-end shrink-0">
+          <span
+            className="px-2.5 py-0.5 rounded-full text-xs font-medium capitalize"
+            style={{
+              backgroundColor: statusBgColor,
+              color: statusColor,
+            }}
+          >
+            {t(`clientStatus.${clientStatus.toLowerCase()}`, clientStatus)}
+          </span>
+        </div>
       </div>
     </div>
   );

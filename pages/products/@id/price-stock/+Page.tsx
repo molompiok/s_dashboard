@@ -5,11 +5,11 @@ import { useEffect, useState, useMemo } from "react";
 import { IoCheckmark } from "react-icons/io5";
 import { Value } from "../../../../Components/Feature/Feature"; // Composant d'affichage de valeur
 import { getAllCombinations, ClientCall, getOptions } from "../../../../Components/Utils/functions"; // Utilitaires
-import { FeatureInterface, ProductInterface, ValueInterface } from "../../../../Interfaces/Interfaces";
+import { FeatureInterface, ProductInterface, ValueInterface } from "../../../../api/Interfaces/Interfaces";
 // import { useProductStore } from "../../ProductStore"; // Remplacé par hooks API
 import { useGetProductList, useMultipleUpdateFeaturesValues } from '../../../../api/ReactSublymusApi'; // ✅ Hooks API
 import { usePageContext } from "../../../../renderer/usePageContext";
-import { useGlobalStore } from "../../../stores/StoreStore";
+import { useGlobalStore } from "../../../index/StoreStore";
 // import { useApp } from "../../../../renderer/AppStore/UseApp"; // Remplacé par useChildViewer
 import { ChildViewer } from "../../../../Components/ChildViewer/ChildViewer";
 import { ValuePricing } from "../../../../Components/ValuePricing/ValuePricing"; // Formulaire prix/stock
@@ -128,14 +128,14 @@ function Page() {
         });
     };
 
-  const [isPageLoading, setIsPageLoading] = useState(true);
+    const [isPageLoading, setIsPageLoading] = useState(true);
     useEffect(() => {
         setIsPageLoading(false)
     }, []);
-    
+
     // --- Rendu ---
-    if(isPageLoading) return <StockProductSkeleton/>
-    if (isLoadingProduct) return <StockProductSkeleton/>
+    if (isPageLoading) return <StockProductSkeleton />
+    if (isLoadingProduct) return <StockProductSkeleton />
     if (isFetchError) return <PageNotFound title={t('product.notFound')} description={fetchError?.message} />;
     if (!product) return <PageNotFound title={t('product.notFound')} />;
 

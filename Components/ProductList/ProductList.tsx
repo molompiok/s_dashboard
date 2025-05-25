@@ -5,10 +5,10 @@ import { ProductRowItem } from '../ProductItem/ProductRowItem';
 
 import { useGetProductList } from '../../api/ReactSublymusApi';
 import { useEffect, useState } from 'react';
-import { useGlobalStore } from '../../pages/stores/StoreStore';
+import { useGlobalStore } from '../../pages/index/StoreStore';
 import { IoAppsSharp, IoListSharp, IoChevronDown, IoSearch } from 'react-icons/io5';
 import { OrderFilterComponent, PriceFilterComponent } from '../CommandesList/CommandesList';
-import { CategoryInterface, FilterType, ProductInterface } from '../../Interfaces/Interfaces';
+import { CategoryInterface, FilterType, ProductInterface } from '../../api/Interfaces/Interfaces';
 import { useTranslation } from 'react-i18next';
 import { ClientCall, debounce } from '../Utils/functions';
 import { ProductItemSkeletonCard } from '../ProductItem/ProductItemCard';
@@ -86,8 +86,8 @@ function ProductList({ baseFilter, title, addTo }: { title?: string, addTo?: { c
                     ? 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 gap-4'
                     : 'flex flex-col gap-3'
                     }`}>
-                    {viewType === 'card'  && <AddProductCard addTo={addTo} />}
-                    {viewType === 'row'  && <AddProductRow addTo={addTo} />}
+                    {viewType === 'card' && <AddProductCard addTo={addTo} />}
+                    {viewType === 'row' && <AddProductRow addTo={addTo} />}
                     {isLoading && (
                         viewType === 'card'
                             ? Array.from({ length: 5 }).map((_, i) => <ProductItemSkeletonCard />)

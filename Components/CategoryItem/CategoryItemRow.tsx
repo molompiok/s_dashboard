@@ -1,9 +1,9 @@
 // Components/CategoryItem/CategoryItemRow.tsx
 
-import { CategoryInterface } from "../../Interfaces/Interfaces";
+import { CategoryInterface } from "../../api/Interfaces/Interfaces";
 import { IoCalendarOutline, IoChevronForward, IoEllipsisVertical, IoEyeOffOutline, IoEyeOutline, IoPencil, IoPricetagsOutline, IoTrash } from "react-icons/io5";
 import { getImg } from "../Utils/StringFormater";
-import { useGlobalStore } from "../../pages/stores/StoreStore";
+import { useGlobalStore } from "../../pages/index/StoreStore";
 import { useTranslation } from "react-i18next";
 import { DateTime } from "luxon";
 import { useState, useEffect } from 'react'; // Ajouter useEffect
@@ -61,7 +61,7 @@ function CategoryItemRow({ category /*, onDeleteSuccess, onVisibilityChangeSucce
                             onSuccess: () => {
                                 logger.info(`Category ${category.id} deleted`);
                                 openChild(null);
-                                showToast('La catégorie a bien été supprimée','WARNING')
+                                showToast('La catégorie a bien été supprimée', 'WARNING')
                             },
                             onError: (error) => {
                                 logger.error({ error }, `Failed to delete category ${category.id}`);

@@ -1,6 +1,6 @@
 import { getDefaultValues } from "../Utils/parseData";
-import { ProductInterface } from "../../Interfaces/Interfaces";
-import { useGlobalStore } from "../../pages/stores/StoreStore";
+import { ProductInterface } from "../../api/Interfaces/Interfaces";
+import { useGlobalStore } from "../../pages/index/StoreStore";
 import { getImg } from "../Utils/StringFormater";
 import { getFileType, limit, shortNumber } from "../Utils/functions";
 import { markdownToPlainText } from "../MarkdownViewer/MarkdownViewer";

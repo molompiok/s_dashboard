@@ -1,7 +1,7 @@
 // Components/ThemeEditor/LiveThemePreview.tsx
 
 import { useState, useRef, useEffect, useCallback, useMemo } from 'react';
-import { ThemeInterface, StoreInterface, ThemeSettingsValues } from "../../Interfaces/Interfaces"; // Importer types nécessaires
+import { ThemeInterface, StoreInterface, ThemeSettingsValues } from "../../api/Interfaces/Interfaces"; // Importer types nécessaires
 import { useTranslation } from "react-i18next";
 import logger from '../../api/Logger';
 import { IoExpandOutline, IoPhonePortraitOutline, IoTabletPortraitOutline, IoTvOutline, IoSyncOutline } from "react-icons/io5";

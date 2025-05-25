@@ -2,13 +2,13 @@
 // ❌ Supprimer les imports CSS
 
 import { useEffect, useRef, useState, useMemo } from 'react';
-import { PeriodType, StatsData, UserInterface } from '../../../../Interfaces/Interfaces'; // Garder Interfaces
+import { PeriodType, StatsData, UserInterface } from '../../../../api/Interfaces/Interfaces'; // Garder Interfaces
 import { CommandeList } from '../../../../Components/CommandesList/CommandesList'; // Garder CommandeList
 import { Mail, Phone, Star, ShoppingCart, MessageCircle, CreditCard, CalendarClock, UserCircle } from 'lucide-react'; // Utiliser Lucide
 import { usePageContext } from '../../../../renderer/usePageContext';
-import { getTransmit, useGlobalStore } from '../../../stores/StoreStore'; // Garder Store
+import { getTransmit, useGlobalStore } from '../../../index/StoreStore'; // Garder Store
 // import { useClientStore } from '../ClientStore'; // Remplacé par hooks API
-import { useGetUsers, useGetVisitDetails , useGetOrderDetailsStats} from '../../../../api/ReactSublymusApi'; // ✅ Importer hooks API
+import { useGetUsers, useGetVisitDetails, useGetOrderDetailsStats } from '../../../../api/ReactSublymusApi'; // ✅ Importer hooks API
 import IMask from 'imask';
 import { getImg } from '../../../../Components/Utils/StringFormater';
 import { ClientStatusColor, NO_PICTURE } from '../../../../Components/Utils/constants'; // Garder couleurs statut
@@ -118,7 +118,7 @@ function Page() {
     };
 
     // --- Rendu ---
-    const isLoading = isLoadingUser || isLoadingOderStats||isLoadingVisitStats;
+    const isLoading = isLoadingUser || isLoadingOderStats || isLoadingVisitStats;
 
     if (isLoading && !user) return <div className="p-6 text-center text-gray-500">{t('common.loading')}</div>;
     if (isUserError && userError?.status === 404) return <PageNotFound title={t('user.notFound')} description={userError.message} />;
@@ -230,8 +230,8 @@ function Page() {
                         <StatsChart
                             period={period}
                             data={{
-                                order_stats:orderStatsData||[],
-                                visits_stats:visitStatsData||[]
+                                order_stats: orderStatsData || [],
+                                visits_stats: visitStatsData || []
                             }} // Passer les données fetchées
                             // Props pour configurer le graphique
                             setAvailable={() => { }} // Gérer si besoin

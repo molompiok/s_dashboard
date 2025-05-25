@@ -6,8 +6,8 @@ import { IoPeopleSharp, IoCart, IoEllipsisHorizontalSharp, IoEyeOff, IoEyeSharp 
 import { Nuage } from "../Nuage"; // Garder Nuage
 import MyChart from "../MiniChart"; // Garder MiniChart
 import { useGetVisitDetails, useGetOrderDetailsStats } from "../../../api/ReactSublymusApi"; // ✅ Importer le hook
-import { PeriodType, StatsData } from "../../../Interfaces/Interfaces";
-import { useGlobalStore } from "../../stores/StoreStore";
+import { PeriodType, StatsData } from "../../../api/Interfaces/Interfaces";
+import { useGlobalStore } from "../../index/StoreStore";
 import { useTranslation } from "react-i18next"; // ✅ Importer useTranslation
 
 export function HomeStat() {
@@ -27,17 +27,17 @@ export function HomeStat() {
     const {
         data: orderStatsData,
         isLoading: isLoadingOderStats,
-        isError:isErrorVisit
+        isError: isErrorVisit
     } = useGetOrderDetailsStats(
         {
             period: period
         },
-        { enabled:  !!currentStore }
+        { enabled: !!currentStore }
     );
     const {
         data: visitStatsData,
         isLoading: isLoadingVisitStats,
-        isError:isErrorOder
+        isError: isErrorOder
     } = useGetVisitDetails(
         {
             period: period

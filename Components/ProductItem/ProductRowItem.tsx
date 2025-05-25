@@ -1,10 +1,10 @@
 // Components/ProductItem/ProductRowItem.tsx
 import { IoChevronForward, IoCopyOutline, IoEllipsisVertical, IoEyeOffOutline, IoEyeOutline, IoPencil, IoPeopleSharp, IoStarHalf, IoTrash, IoWarningOutline } from 'react-icons/io5';
-import { ProductInterface, CategoryInterface } from '../../Interfaces/Interfaces';
+import { ProductInterface, CategoryInterface } from '../../api/Interfaces/Interfaces';
 import { getFileType, shortNumber, getId, limit, copyToClipboard } from '../Utils/functions';
 import { getImg } from '../Utils/StringFormater';
 import { getDefaultValues } from '../Utils/parseData';
-import { useGlobalStore } from '../../pages/stores/StoreStore';
+import { useGlobalStore } from '../../pages/index/StoreStore';
 import { useTranslation } from 'react-i18next';
 import { useState, useEffect, useMemo } from 'react'; // Ajouter useEffect
 import { useDeleteProduct, useUpdateProduct, queryClient } from '../../api/ReactSublymusApi'; // ✅ Importer mutations
@@ -109,7 +109,7 @@ function ProductRowItem({ product, categoriesMap }: ProductRowItemProps) {
                 logger.info(`Product ${product.id} visibility updated to ${newVisibility}`);
                 newVisibility
                     ? showToast('Le produit est maintenant visible par vos client')
-                    : showToast('Le produit n\'est plus visible par vos client','CANCEL');
+                    : showToast('Le produit n\'est plus visible par vos client', 'CANCEL');
             },
             onError: (error) => {
                 logger.error({ error }, `Failed to update visibility for product ${product.id}`);

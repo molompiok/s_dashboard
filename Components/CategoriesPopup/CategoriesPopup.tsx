@@ -2,10 +2,10 @@
 // import './CategoriesPopup.css'; // ❌ Supprimer
 
 import { useEffect, useState, useMemo } from 'react';
-import { CategoryInterface, FilterType } from '../../Interfaces/Interfaces';
+import { CategoryInterface, FilterType } from '../../api/Interfaces/Interfaces';
 // import { useCategory } from '../../pages/category/CategoryStore'; // Remplacé
 import { useGetCategories } from '../../api/ReactSublymusApi'; // ✅ Importer hook API
-import { useGlobalStore } from '../../pages/stores/StoreStore';
+import { useGlobalStore } from '../../pages/index/StoreStore';
 // import { useApp } from '../../renderer/AppStore/UseApp'; // Supposé non utilisé ici
 import { CategoryItemMini } from '../CategoryItem/CategoryItemMini'; // Utiliser le Mini Item ici aussi? Ou un RowItem? Prenons Mini pour l'instant.
 import { IoSearch } from 'react-icons/io5';
@@ -23,7 +23,7 @@ interface CategoriesPopupProps {
 }
 
 function CategoriesPopup({ onSelected, ignore = [], initialSearch = '' }: CategoriesPopupProps) {
-    const { t } = useTranslation(); 
+    const { t } = useTranslation();
     const { currentStore } = useGlobalStore();
     const [searchTerm, setSearchTerm] = useState(initialSearch);
     const [debouncedSearchTerm, setDebouncedSearchTerm] = useState(initialSearch);
@@ -35,7 +35,7 @@ function CategoriesPopup({ onSelected, ignore = [], initialSearch = '' }: Catego
 
     // ✅ Utiliser React Query pour fetcher les catégories avec le filtre de recherche
     const { data: categoriesData, isLoading, isError } = useGetCategories(
-        { search: debouncedSearchTerm || undefined, limit: 100,with_product_count:true }, // Limite haute pour tout afficher, ajouter pagination si besoin
+        { search: debouncedSearchTerm || undefined, limit: 100, with_product_count: true }, // Limite haute pour tout afficher, ajouter pagination si besoin
         { enabled: !!currentStore }
     );
 
