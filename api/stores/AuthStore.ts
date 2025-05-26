@@ -1,6 +1,6 @@
 /// pages/login/AuthStore.ts
 import { create } from "zustand";
-import { UserInterface } from "../../api/Interfaces/Interfaces";
+import { UserInterface } from "../Interfaces/Interfaces";
 import { combine } from "zustand/middleware";
 
 // Clés de stockage local

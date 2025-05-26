@@ -14,11 +14,11 @@ import { useEffect, useMemo, useState } from 'react'; // Ajouter useMemo
 // import { useApp } from '../../../renderer/AppStore/UseApp'; // Supprimé si non utilisé
 import { ChildViewer } from '../../../Components/ChildViewer/ChildViewer'; // Importer le hook useChildViewer
 // import { getTransmit, useGlobalStore  } from '../../stores/StoreStore'; // Assurer chemin correct
-import { useGlobalStore } from '../../index/StoreStore';
-import { getTransmit } from '../../index/StoreStore';
+import { useGlobalStore } from '../../../api/stores/StoreStore';
+import { getTransmit } from '../../../api/stores/StoreStore';
 import { usePageContext } from '../../../renderer/usePageContext';
 import { markdownToPlainText } from '../../../Components/MarkdownViewer/MarkdownViewer';
-import { getImg } from '../../../Components/Utils/StringFormater';
+import { getMedia } from '../../../Components/Utils/StringFormater';
 import IMask from "imask";
 import { useTranslation } from 'react-i18next'; // ✅ i18n
 import { DateTime } from 'luxon';
@@ -70,8 +70,8 @@ function Page() {
 
     // ✅ Logique SSE (inchangée mais vérifiée)
     useEffect(() => {
-        if (!currentStore?.url || !command_id) return;
-        const transmit = getTransmit(currentStore.url);
+        if (!currentStore?.api_url || !command_id) return;
+        const transmit = getTransmit(currentStore.api_url);
         const channel = `store/${'9b1192a3-0727-43a4-861b-05775bf2fd0d'/* TODO currentStore.id*/}/update_command`;
         logger.info(`Subscribing to SSE channel for order updates: ${channel}`);
         const subscription = transmit?.subscription(channel);
@@ -98,7 +98,7 @@ function Page() {
             logger.info(`Unsubscribing from SSE channel: ${channel}`);
             subscription?.delete();
         };
-    }, [currentStore?.id, currentStore?.url, command_id]);
+    }, [currentStore?.id, currentStore?.api_url, command_id]);
 
     // --- Handlers (avec gestion chargement/erreur) ---
     const handleOpenStatusUpdate = () => {
@@ -279,7 +279,7 @@ export function CommandUser({ user, command }: { command: Partial<CommandInterfa
         <div className="flex flex-col min-[420px]:flex-row max-[420px]:items-center items-start gap-4 p-4 bg-white rounded-lg shadow-min-[500px] border border-gray-200">
             <div
                 className={`w-24 h-24 flex items-center ${user.photo?.[0] ? '' : 'gb-gray-300'} font-bold text-gray-500 justify-center text-4xl rounded-full object-cover border-4 border-white shadow`}
-                style={{ background: user.photo?.[0] ? getImg(user.photo[0], undefined, currentStore?.url) : 'var(--color-gray-100)' }}
+                style={{ background: user.photo?.[0] ? getMedia({ isBackground: true, source: user.photo[0], from: 'api' }) : 'var(--color-gray-100)' }}
             >
                 {!user.photo?.[0] && (user.full_name?.substring(0, 2).toUpperCase() || '?')}
             </div>
@@ -352,7 +352,7 @@ export function CommandProduct({ item }: { item: CommandItemInterface }) {
             {/* Image */}
             <div
                 className="w-16 h-16 md:w-20 md:h-20 rounded-lg flex-shrink-0 bg-cover bg-center bg-gray-200"
-                style={{ background: getImg(imageUrl, undefined, currentStore?.url) }} // Passer URL base store pour images relatives
+                style={{ background: getMedia({ isBackground: true, source: imageUrl, from: 'api' }) }} // Passer URL base store pour images relatives
             ></div>
             {/* Infos */}
             <div className="flex-grow flex flex-col gap-2 min-w-0">
@@ -395,7 +395,7 @@ export function CommandProduct({ item }: { item: CommandItemInterface }) {
                             return (
                                 <li key={key} className="flex items-center border border-gray-200 rounded text-xs leading-none max-w-full">
                                     <span className='bg-gray-100 text-gray-600 px-1.5 py-1 rounded-l'>{limit(featureName, 12)}</span>
-                                    {valueIcon && <span className='w-5 h-5 rounded mx-1 bg-cover bg-center' style={{ background: getImg(valueIcon) }}></span>}
+                                    {valueIcon && <span className='w-5 h-5 rounded mx-1 bg-cover bg-center' style={{ background: getMedia({ isBackground: true, source: valueIcon }) }}></span>}
                                     {valueKey && featureType === FeatureType.COLOR && !valueIcon && <span className='w-3 h-3 rounded-full mx-1.5 border border-gray-300' style={{ backgroundColor: valueKey }}></span>}
                                     <span className='text-gray-800 px-1.5 py-1 truncate rounded-r' title={valueText || undefined}>{limit(valueText, 16)}</span>
                                 </li>

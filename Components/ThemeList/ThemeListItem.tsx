@@ -1,12 +1,12 @@
 // Components/ThemeList/ThemeListItem.tsx
 
 import { ThemeInterface } from "../../api/Interfaces/Interfaces";
-import { getImg } from "../Utils/StringFormater";
+import { getMedia } from "../Utils/StringFormater";
 import { useTranslation } from "react-i18next";
 import { NO_PICTURE } from "../Utils/constants";
 import { useState } from 'react';
 import { IoCheckmarkCircleSharp } from "react-icons/io5"; // Pour thème sélectionné
-import { useGlobalStore } from "../../pages/index/StoreStore";
+import { useGlobalStore } from "../../api/stores/StoreStore";
 
 interface ThemeListItemProps {
     theme: ThemeInterface;
@@ -21,7 +21,7 @@ export function ThemeListItem({ className, theme, isSelected, onClick }: ThemeLi
     const [imgError, setImgError] = useState(false);
 
     const imageUrl = theme.preview_images?.[0] ?? NO_PICTURE;
-    const imageSrc = getImg(imageUrl, undefined, currentStore?.url).match(/url\("?([^"]+)"?\)/)?.[1];
+    const imageSrc = getMedia({ source: imageUrl, from: 'api' });
     const isFree = theme.price === 0 || theme.is_premium === false;
 
     return (

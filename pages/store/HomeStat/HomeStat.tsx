@@ -7,7 +7,7 @@ import { Nuage } from "../Nuage"; // Garder Nuage
 import MyChart from "../MiniChart"; // Garder MiniChart
 import { useGetVisitDetails, useGetOrderDetailsStats } from "../../../api/ReactSublymusApi"; // ✅ Importer le hook
 import { PeriodType, StatsData } from "../../../api/Interfaces/Interfaces";
-import { useGlobalStore } from "../../index/StoreStore";
+import { useGlobalStore } from "../../../api/stores/StoreStore";
 import { useTranslation } from "react-i18next"; // ✅ Importer useTranslation
 
 export function HomeStat() {

@@ -13,7 +13,7 @@ import logger from '../../../api/Logger';
 import { useChildViewer } from '../../../Components/ChildViewer/useChildViewer'; // Pour le popup de sélection de store
 import { ChildViewer } from '../../../Components/ChildViewer/ChildViewer'; // Pour le popup
 import { NO_PICTURE } from '../../../Components/Utils/constants';
-import { getImg } from '../../../Components/Utils/StringFormater';
+import { getMedia } from '../../../Components/Utils/StringFormater';
 import { ApiError } from '../../../api/SublymusApi'; // Importer ApiError pour le typing de la mutation
 
 // --- Hook API Placeholder (à créer dans ReactSublymusApi.tsx) ---
@@ -21,7 +21,7 @@ import { ApiError } from '../../../api/SublymusApi'; // Importer ApiError pour l
 // Devrait appeler un endpoint spécifique sur s_server ou s_api
 // AJOUT: Marquer que la fonction est un hook React Query valide
 import { useQuery } from '@tanstack/react-query';
-import { useGlobalStore } from '../../index/StoreStore';
+import { useGlobalStore } from '../../../api/stores/StoreStore';
 
 const useGetMyThemes = (options: { enabled?: boolean } = {}) => {
     // Vrai hook (exemple simplifié)
@@ -140,7 +140,7 @@ function MyThemeCard({ theme, onCustomize, onInstall }: MyThemeCardProps) {
     const [imgError, setImgError] = useState(false);
 
     const imageUrl = theme.preview_images?.[0] ?? NO_PICTURE;
-    const imageSrc = getImg(imageUrl, undefined, globalCurrentStore?.url).match(/url\("?([^"]+)"?\)/)?.[1];
+    const imageSrc = getMedia({ source: imageUrl, from: 'api' });
     const installedCount = theme.installed_on?.length ?? 0;
 
     return (
@@ -255,7 +255,7 @@ function StoreSelectorPopup({ actionType, themeToApply, onStoreSelected, onCance
                                 className="w-full flex items-center gap-3 p-2 rounded-md hover:bg-gray-100 text-left disabled:opacity-50"
                             >
                                 {/* Logo/Initiales */}
-                                <div className="w-8 h-8 rounded-full bg-gray-200 flex-shrink-0 flex items-center justify-center text-xs font-medium text-gray-500" style={{ backgroundImage: getImg(store.logo?.[0], undefined, store.url) }}>
+                                <div className="w-8 h-8 rounded-full bg-gray-200 flex-shrink-0 flex items-center justify-center text-xs font-medium text-gray-500" style={{ background: getMedia({ isBackground: true, source: store.logo?.[0], from: 'server' }) }}>
                                     {!store.logo?.[0] && store.name?.substring(0, 2).toUpperCase()}
                                 </div>
                                 {/* Nom */}

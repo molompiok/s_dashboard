@@ -8,8 +8,8 @@ import logger from '../../api/Logger';
 import { IoCloudUploadOutline, IoImageOutline } from 'react-icons/io5';
 import { RiImageEditFill } from 'react-icons/ri';
 import { Confirm } from '../Confirm/Confirm'; // Utiliser Confirm pour boutons
-import { getImg } from '../Utils/StringFormater'; // Pour preview
-import { useGlobalStore } from '../../pages/index/StoreStore'; // Pour URL base image
+import { getMedia } from '../Utils/StringFormater'; // Pour preview
+import { useGlobalStore } from '../../api/stores/StoreStore'; // Pour URL base image
 import { ApiError } from '../../api/SublymusApi';
 import { showErrorToast, showToast } from '../Utils/toastNotifications';
 
@@ -188,8 +188,8 @@ export function InventoryFormPopup({ initialData, onSaveSuccess, onCancel }: Inv
 
     // --- Affichage Image Preview ---
     // Prioriser les previews locales, sinon les URLs existantes
-    const displayImage = (formData.viewPreviews?.[0] ? getImg(formData.viewPreviews?.[0]) : null) ??
-        (typeof formData.views?.[0] === 'string' ? getImg(formData.views[0], undefined, currentStore?.url) : undefined);
+    const displayImage = (formData.viewPreviews?.[0] ? getMedia({ isBackground: true, source: formData.viewPreviews?.[0] }) : null) ??
+        (typeof formData.views?.[0] === 'string' ? getMedia({ isBackground: true, source: formData.views[0], from: 'api' }) : undefined);
     const showPlaceholder = !displayImage;
 
     return (

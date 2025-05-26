@@ -19,8 +19,8 @@ import { BiSolidImageAdd } from 'react-icons/bi';
 import { getFileType } from '../Utils/functions';
 import { ChildViewer } from '../ChildViewer/ChildViewer';
 import { ConfirmDelete } from '../Confirm/ConfirmDelete';
-import { useGlobalStore } from '../../pages/index/StoreStore';
-import { getImg } from '../Utils/StringFormater';
+import { useGlobalStore } from '../../api/stores/StoreStore';
+import { getMedia } from '../Utils/StringFormater';
 import { useChildViewer } from '../ChildViewer/useChildViewer';
 import { globalActionZust } from '../../renderer/AppStore/globalActionZust';
 import { useTranslation } from 'react-i18next';
@@ -70,14 +70,9 @@ function HoriszontalSwiper({ values, onActiveIndexChange, onDeleteValue, goBack,
                                 v.views?.slice(0, 4).map(((i, _) => (
                                     getFileType(i) == 'image' ?
                                         <div key={_} className={`img_${_}`} style={{
-                                            background: getImg(
-                                                typeof i == 'string' ? i
-                                                    : URL.createObjectURL(i),
-                                                undefined, typeof i == 'string' ?
-                                                currentStore?.url : undefined
-                                            )
+                                            background: getMedia({ isBackground: true, source: i, from: 'api' })
                                         }}></div>
-                                        : <video className={`img_${_}`} key={_} muted={true} src={typeof i == 'string' ? `${currentStore?.url}${i.startsWith('/') ? i : '/' + i}` : URL.createObjectURL(i)} />
+                                        : <video className={`img_${_}`} key={_} muted={true} src={getMedia({ source: i, from: 'api' })} />
                                 )))
                             }
                             <span className='trash' onClick={(e) => {

@@ -2,7 +2,7 @@
 import { create } from "zustand";
 import { combine } from "zustand/middleware";
 import { ListType, UserFilterType, UserInterface } from "../../../api/Interfaces/Interfaces";
-import { useAuthStore } from "../../auth/AuthStore";
+import { useAuthStore } from "../../../api/stores/AuthStore";
 
 export { useClientStore }
 const useClientStore = create(combine({

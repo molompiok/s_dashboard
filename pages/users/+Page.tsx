@@ -8,9 +8,9 @@ import { useGetCollaborators, useGetUserStats } from '../../api/ReactSublymusApi
 // import { useGlobalStore  } from '../stores/StoreStore'; // Gardé si besoin pour currentStore
 import { useGetUsers } from '../../api/ReactSublymusApi'; // ✅ Hook pour les users
 import { UserInterface } from '../../api/Interfaces/Interfaces';
-import { getImg } from '../../Components/Utils/StringFormater';
+import { getMedia } from '../../Components/Utils/StringFormater';
 import { useTranslation } from 'react-i18next'; // ✅ i18n
-import { useGlobalStore } from '../index/StoreStore';
+import { useGlobalStore } from '../../api/stores/StoreStore';
 import { ClientList } from '../../Components/ClientList/ClientList';
 import { CurrentUserCard } from '../../Components/userPreview/CurrentUserCard';
 import { GetCollaboratorsResponse } from '../../api/SublymusApi';
@@ -169,7 +169,7 @@ function StatCard({ stat, clientPreviews, collabPreviews }: StatCardProps) {
       <div className="flex gap-1 mb-4 -space-x-2"> {/* Chevauchement des avatars */}
         {usersToDisplay.slice(0, 4).map((user, idx) => ( // Limiter à 4 avatars
           <div key={idx} className="w-8 h-8 rounded-full border-2 border-white bg-cover bg-center bg-gray-300 flex items-center justify-center text-white text-xs font-bold"
-            style={{ backgroundImage: user.photo?.[0] ? getImg(user.photo[0]) : undefined }}
+            style={{ background: getMedia({ isBackground: true, source: user.photo?.[0], from: 'api' }) }}
             title={user.full_name}
           >
             {!user.photo?.[0] && user.full_name?.substring(0, 2).toUpperCase()}

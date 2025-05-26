@@ -12,7 +12,7 @@ import { CategoryInterface, CommandInterface, ProductInterface, UserInterface } 
 import { useGlobalSearch } from '../../api/ReactSublymusApi'; // ✅ Importer hook API
 import { CategoryItemMini } from '../CategoryItem/CategoryItemMini';
 import { IoSearch } from 'react-icons/io5';
-import { getImg } from '../Utils/StringFormater';
+import { getMedia } from '../Utils/StringFormater';
 import { ProductItemCard } from '../ProductItem/ProductItemCard';
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { FreeMode } from 'swiper/modules';
@@ -21,7 +21,7 @@ import { useChildViewer } from '../ChildViewer/useChildViewer';
 import { useTranslation } from 'react-i18next'; // ✅ i18n
 import { debounce } from '../Utils/functions'; // Garder debounce
 import logger from '../../api/Logger';
-import { useGlobalStore } from '../../pages/index/StoreStore';
+import { useGlobalStore } from '../../api/stores/StoreStore';
 // Importer potentiellement CommandItem ou ClientItem pour afficher commandes/clients
 // import { CommandItem } from '../CommandesList/CommandItem';
 // import { ClientItem } from '../ClientList/ClientItem'; // Supposons qu'il existe
@@ -191,7 +191,7 @@ function TopSearch({ onClientSelected, onProductSelected, onCategorySelected, on
             {/* Message si aucune correspondance */}
             {!hasResults && (
                 <div className="text-center py-10 text-gray-500">
-                    <div className="w-32 h-32 mx-auto bg-contain bg-center bg-no-repeat mb-4 opacity-70" style={{ background: getImg('/res/empty/search.png') }}></div>
+                    <div className="w-32 h-32 mx-auto bg-contain bg-center bg-no-repeat mb-4 opacity-70" style={{ background: getMedia({ isBackground: true, source: '/res/empty/search.png' }) }}></div>
                     {t('topSearch.noResultsFound', { term: debouncedSearchTerm })}
                 </div>
             )}

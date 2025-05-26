@@ -2,11 +2,11 @@
 import React from 'react';
 import { ProductInterface } from '../../api/Interfaces/Interfaces'; // Assurez-vous que le chemin est correct
 import { useTranslation } from 'react-i18next';
-import { getImg } from '../Utils/StringFormater'; // Assurez-vous que le chemin est correct
+import { getMedia } from '../Utils/StringFormater'; // Assurez-vous que le chemin est correct
 import { Star, ShoppingCart, MessageCircle, Tag, Eye } from 'lucide-react'; // Icônes Lucide
 import { getDefaultValues } from '../Utils/parseData';
 import { NO_PICTURE } from '../Utils/constants';
-import { useGlobalStore } from '../../pages/index/StoreStore';
+import { useGlobalStore } from '../../api/stores/StoreStore';
 import { usePageContext } from '../../renderer/usePageContext';
 
 interface ProductPreviewProps {
@@ -21,7 +21,7 @@ const ProductPreview: React.FC<ProductPreviewProps> = ({ product }) => {
     usePageContext()
     const { currentStore } = useGlobalStore()
     const values = getDefaultValues(product)[0]
-    const mainImage = values?.views?.[0] ? getImg(values.views?.[0], undefined, currentStore?.url) : getImg(NO_PICTURE); // Image par défaut
+    const mainImage = values?.views?.[0] ? getMedia({ isBackground: true, source: values.views?.[0], from: 'api' }) : getMedia({ isBackground: true, source: NO_PICTURE }); // Image par défaut
 
     // Helper pour formater le prix
     const formatCurrency = (value: number | null | undefined, currency: string = 'FCFA'): string => {

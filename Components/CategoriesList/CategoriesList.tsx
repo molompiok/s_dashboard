@@ -2,10 +2,8 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react';
 import { IoAddSharp, IoArrowForward, IoClose } from "react-icons/io5";
 import { CgExtensionAdd } from "react-icons/cg";
-import { CategoryInterface } from '../../api/Interfaces/Interfaces';
 import { useGetCategories } from '../../api/ReactSublymusApi';
-import { useGlobalStore } from '../../pages/index/StoreStore';
-import { getImg } from '../Utils/StringFormater';
+import { useGlobalStore } from '../../api/stores/StoreStore';
 import { useTranslation } from 'react-i18next';
 import { CategoryItemMini } from '../CategoryItem/CategoryItemMini';
 

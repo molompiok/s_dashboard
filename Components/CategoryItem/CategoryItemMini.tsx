@@ -3,8 +3,8 @@ import { useEffect, useState } from "react";
 import { CategoryInterface } from "../../api/Interfaces/Interfaces";
 import { IoClose } from "react-icons/io5";
 import { useGetCategory } from "../../api/ReactSublymusApi";
-import { useGlobalStore } from "../../pages/index/StoreStore";
-import { getImg } from "../Utils/StringFormater"; // Import de getImg
+import { useGlobalStore } from "../../api/stores/StoreStore";
+import { getMedia } from "../Utils/StringFormater"; // Import de getMedia
 import { useTranslation } from "react-i18next";
 import logger from "../../api/Logger";
 import { NO_PICTURE } from "../Utils/constants";
@@ -29,7 +29,6 @@ function CategoryItemMini({
     onDelete
 }: CategoryItemMiniProps) {
     const { t } = useTranslation();
-    const { currentStore } = useGlobalStore();
     const [category, setCategory] = useState(initialCategory);
 
     const { data: fetchedCategory, isLoading, isError } = useGetCategory({
@@ -50,9 +49,9 @@ function CategoryItemMini({
     // Priorité: icon[0], sinon view[0], sinon placeholder
     const primaryImageUrl = category.icon?.[0] ?? category.view?.[0] ?? NO_PICTURE;
     const imageStyle = {
-        // Utiliser getImg pour construire la propriété background-image
+        // Utiliser getMedia pour construire la propriété background-image
         // Passer currentStore.url pour gérer les URLs relatives
-        background: getImg(primaryImageUrl, 'contain', currentStore?.url),
+        background: getMedia({ isBackground: true, source: primaryImageUrl, size: 'contain', from: 'api' }),
     };
     // --- Fin Gestion Image ---
 

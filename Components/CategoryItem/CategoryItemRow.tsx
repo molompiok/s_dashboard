@@ -2,8 +2,8 @@
 
 import { CategoryInterface } from "../../api/Interfaces/Interfaces";
 import { IoCalendarOutline, IoChevronForward, IoEllipsisVertical, IoEyeOffOutline, IoEyeOutline, IoPencil, IoPricetagsOutline, IoTrash } from "react-icons/io5";
-import { getImg } from "../Utils/StringFormater";
-import { useGlobalStore } from "../../pages/index/StoreStore";
+import { getMedia } from "../Utils/StringFormater";
+import { useGlobalStore } from "../../api/stores/StoreStore";
 import { useTranslation } from "react-i18next";
 import { DateTime } from "luxon";
 import { useState, useEffect } from 'react'; // Ajouter useEffect
@@ -26,7 +26,6 @@ interface CategoryItemRowProps {
 
 function CategoryItemRow({ category /*, onDeleteSuccess, onVisibilityChangeSuccess */ }: CategoryItemRowProps) {
     const { t } = useTranslation();
-    const { currentStore } = useGlobalStore();
     const { openChild } = useChildViewer(); // ✅ Hook pour popup
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     const [imgError, setImgError] = useState(false);
@@ -44,7 +43,7 @@ function CategoryItemRow({ category /*, onDeleteSuccess, onVisibilityChangeSucce
 
     const createdAt = DateTime.fromISO(category.created_at).setLocale(useTranslation().i18n.language).toLocaleString(DateTime.DATE_SHORT);
     const imageUrl = category.icon?.[0] ?? category.view?.[0] ?? NO_PICTURE;
-    const src = getImg(imageUrl, undefined, currentStore?.url).match(/url\("?([^"]+)"?\)/)?.[1];
+    const src = getMedia({ isBackground: true, source: imageUrl, from: 'api' }).match(/url\("?([^"]+)"?\)/)?.[1];
 
     // --- Handlers ---
     const handleDelete = () => {

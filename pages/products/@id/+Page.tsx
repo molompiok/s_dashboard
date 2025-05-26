@@ -3,7 +3,7 @@
 // --- Imports ---
 import { useEffect, useState, useCallback, useMemo } from 'react'; // Ajouter useCallback
 import { usePageContext } from '../../../renderer/usePageContext';
-import { useGlobalStore } from '../../index/StoreStore';
+import { useGlobalStore } from '../../../api/stores/StoreStore';
 // ✅ Importer les hooks API nécessaires
 import {
     useGetProductList, // Pourrait être utilisé pour charger l'original

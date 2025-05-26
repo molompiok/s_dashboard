@@ -1,7 +1,7 @@
 // pages/users/clients/@id/comments/+Page.tsx (Adapter chemin si nécessaire)
 
 import { useEffect, useState, useMemo } from "react"; // Ajouter useMemo
-import { getTransmit, useGlobalStore } from "../../../../index/StoreStore";
+import { getTransmit, useGlobalStore } from "../../../../../api/stores/StoreStore";
 // import { useClientStore } from "../../ClientStore"; // Remplacé par hook API
 import { CommentInterface, StoreInterface, UserInterface, ValueInterface } from "../../../../../api/Interfaces/Interfaces";
 import { usePageContext } from "../../../../../renderer/usePageContext";
@@ -16,7 +16,7 @@ import { PageNotFound } from "../../../../../Components/PageNotFound/PageNotFoun
 import { AnimatePresence, motion } from "framer-motion"; // Garder pour animation
 import { IoChevronForward, IoStar, IoTrash } from "react-icons/io5";
 import { limit } from "../../../../../Components/Utils/functions"; // Garder utilitaire
-import { getImg } from "../../../../../Components/Utils/StringFormater";
+import { getMedia } from "../../../../../Components/Utils/StringFormater";
 import UserPreview from "../../../../../Components/userPreview/userPreview"; // Garder composant preview
 // import '../../../../products/@id/comments/+Page.css'; // ❌ Supprimer
 import { getDefaultValues } from "../../../../../Components/Utils/parseData";
@@ -56,8 +56,8 @@ export default function Page() {
 
     // --- Logique SSE (inchangée mais utilise refetchComments) ---
     useEffect(() => {
-        if (!currentStore?.url || !userId) return;
-        const transmit = getTransmit(currentStore.url);
+        if (!currentStore?.api_url || !userId) return;
+        const transmit = getTransmit(currentStore.api_url);
         const channel = `store/${currentStore.id}/user/${userId}/comment`; // Écouter les changements de CE user
         logger.info(`Subscribing to SSE channel for user comments: ${channel}`);
         const subscription = transmit?.subscription(channel);
@@ -81,7 +81,7 @@ export default function Page() {
             logger.info(`Unsubscribing from SSE channel: ${channel}`);
             subscription?.delete();
         };
-    }, [currentStore?.id, currentStore?.url, userId, refetchComments]); // Ajouter refetchComments
+    }, [currentStore?.id, currentStore?.api_url, userId, refetchComments]); // Ajouter refetchComments
 
     // --- Handler Suppression ---
     const handleDelete = (commentId: string, commentTitle?: string) => {
@@ -144,7 +144,7 @@ export default function Page() {
                 {/* Message si aucun commentaire */}
                 {!isLoadingComments && comments.length === 0 && (
                     <PageNotFound
-                        image='/res/font.png' // Image plus pertinente
+                        url='/res/font.png' // Image plus pertinente
                         description={t('userComments.noCommentsDesc')}
                         title={t('userComments.noCommentsTitle')}
                         back={true} // Pas de bouton retour ici
@@ -194,7 +194,7 @@ const CommentsDashboard: React.FC<Props> = ({ deleteCommentMutation, comments, c
                     // Image du produit commenté
                     const v = comment.product && getDefaultValues(comment.product)?.[0];
                     const imageUrl = v?.views?.[0] ?? comment.product?.features?.find(f => f.is_default)?.values?.[0]?.views?.[0] ?? NO_PICTURE;
-                    const imageSrc = getImg(imageUrl, undefined, currentStore?.url).match(/url\("?([^"]+)"?\)/)?.[1];
+                    const imageSrc = getMedia({ source: imageUrl, from: 'api' });
 
                     return (
                         <motion.div

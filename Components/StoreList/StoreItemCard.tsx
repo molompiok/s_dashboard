@@ -1,7 +1,7 @@
 // Components/StoreList/StoreItemCard.tsx
 
 import { StoreInterface } from "../../api/Interfaces/Interfaces";
-import { getImg } from "../../Components/Utils/StringFormater";
+import { getMedia } from "../../Components/Utils/StringFormater";
 import { IoCheckmarkCircle, IoEyeOff, IoEyeSharp, IoPauseCircle } from "react-icons/io5";
 import { useTranslation } from "react-i18next";
 import { NO_PICTURE } from "../../Components/Utils/constants";
@@ -19,8 +19,8 @@ export function StoreItemCard({ store, isSelected, onClick }: StoreItemCardProps
     const [logoError, setLogoError] = useState(false);
     const [coverError, setCoverError] = useState(false);
 
-    const logoSrc = getImg(store.logo?.[0], undefined, Server_Host).match(/url\("?([^"]+)"?\)/)?.[1];
-    const coverSrc = store.cover_image?.[0] && getImg(store.cover_image[0], 'cover', Server_Host)
+    const logoSrc = getMedia({source:store.logo?.[0],from:'server'});
+    const coverSrc = store.cover_image?.[0] && getMedia({isBackground:true,source:store.cover_image[0], from:'server'})
 
     return (
         // Carte cliquable avec styles Tailwind

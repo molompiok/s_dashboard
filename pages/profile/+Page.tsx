@@ -11,11 +11,11 @@ import { PageNotFound } from '../../Components/PageNotFound/PageNotFound';
 import { ConfirmDelete } from '../../Components/Confirm/ConfirmDelete';
 import { useChildViewer } from '../../Components/ChildViewer/useChildViewer';
 import { ChildViewer } from '../../Components/ChildViewer/ChildViewer';
-import { getImg } from '../../Components/Utils/StringFormater';
-import { useGlobalStore } from '../index/StoreStore';
+import { getMedia } from '../../Components/Utils/StringFormater';
+import { useGlobalStore } from '../../api/stores/StoreStore';
 import { Button } from '../../Components/Button/Button';
 import { showErrorToast, showToast } from '../../Components/Utils/toastNotifications';
-import { useAuthStore } from '../auth/AuthStore';
+import { useAuthStore } from '../../api/stores/AuthStore';
 import { usePageContext } from '../../renderer/usePageContext';
 
 export { Page };
@@ -36,7 +36,7 @@ function Page() {
   const { t, i18n } = useTranslation();
   const { openChild } = useChildViewer();
   const { currentStore } = useGlobalStore();
-  const {setUser} = useAuthStore()
+  const { setUser } = useAuthStore()
   const { serverUrl } = usePageContext()
 
   // --- Récupération Données Utilisateur ---
@@ -143,12 +143,12 @@ function Page() {
         setUser(data.user)
         showToast("Profil mis à jour avec succès", "SUCCESS")
         queryClient.invalidateQueries({ queryKey: ['me'] }); // Forcer rafraîchissement
-        
+
       },
       onError: (error: ApiError) => {
         logger.error({ error }, "Profile update failed");
         setApiError(error.message);
-         showErrorToast(error)
+        showErrorToast(error)
       }
     });
   };
@@ -184,13 +184,13 @@ function Page() {
       onSuccess: (data) => {
         logger.info("Password changed successfully");
         setPasswordForm({}); // Vider le formulaire mdp
-       setUser(data.user)
+        setUser(data.user)
         showToast("Profil mis à jour avec succès", "SUCCESS")
       },
       onError: (error: ApiError) => {
         logger.error({ error }, "Password change failed");
         setApiError(error.message);
-         showErrorToast(error)
+        showErrorToast(error)
       }
     });
   };
@@ -283,7 +283,7 @@ function Page() {
       },
       onError: (error) => {
         logger.error({ error }, "Failed to save user locale preference.");
-       showErrorToast(error)
+        showErrorToast(error)
         i18n.changeLanguage(currentUser?.locale ?? 'fr'); // Revenir à l'ancienne langue?
       }
     });
@@ -297,7 +297,7 @@ function Page() {
 
 
   // URL Avatar
-  const avatarUrl = avatarPreview ?? (currentUser.photo?.[0] ? getImg(currentUser.photo[0], undefined, `${process.env.NODE_ENV=='production'?'https':'http'}://server.`+serverUrl).match(/url\("?([^"]+)"?\)/)?.[1] : null);
+  const avatarUrl = avatarPreview ?? (currentUser.photo?.[0] ? getMedia({ source: currentUser.photo[0], from: 'server' }) : null);
 
   return (
     <div className="w-full pb-48 min-h-screen flex flex-col bg-gray-100">

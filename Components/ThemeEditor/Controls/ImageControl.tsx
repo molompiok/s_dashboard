@@ -4,8 +4,7 @@ import { useTranslation } from "react-i18next";
 import { ThemeOptionDefinition } from "../../../pages/themes/editor/+Page";
 import { useState, useEffect, useRef } from 'react';
 import { IoCloudUploadOutline, IoImageOutline, IoPencil, IoTrash } from "react-icons/io5";
-import { getImg } from "../../Utils/StringFormater"; // Pour preview
-import { useGlobalStore } from "../../../pages/index/StoreStore";
+import { useGlobalStore } from "../../../api/stores/StoreStore";
 
 interface ImageControlProps {
     option: ThemeOptionDefinition;
@@ -29,7 +28,7 @@ export function ImageControl({ option, value, onChange }: ImageControlProps) {
             setFileName(value.name);
         } else if (typeof value === 'string' && value) {
             // Construire l'URL complète si value est une URL relative
-            const baseUrl = currentStore?.url || ''; // ou une autre source pour l'URL de base des médias
+            const baseUrl = currentStore?.api_url || ''; // ou une autre source pour l'URL de base des médias
             const fullUrl = value.startsWith('http') ? value : `${baseUrl.replace(/\/$/, '')}${value.startsWith('/') ? '' : '/'}${value}`;
             setPreviewUrl(fullUrl);
             setFileName(value.substring(value.lastIndexOf('/') + 1)); // Extraire nom de fichier de l'URL
@@ -42,7 +41,7 @@ export function ImageControl({ option, value, onChange }: ImageControlProps) {
         return () => {
             if (objectUrl) URL.revokeObjectURL(objectUrl);
         };
-    }, [value, currentStore?.url]);
+    }, [value, currentStore?.api_url]);
 
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {

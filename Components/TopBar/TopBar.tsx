@@ -6,11 +6,11 @@ import { TopSearch } from '../TopSearch/TopSearch';
 import { IoSearch, IoNotifications, IoChevronBack, IoChevronForward } from "react-icons/io5";
 import { useChildViewer } from '../ChildViewer/useChildViewer';
 import { useTranslation } from 'react-i18next';
-import { useAuthStore } from '../../pages/auth/AuthStore';
+import { useAuthStore } from '../../api/stores/AuthStore';
 import { Host } from '../../renderer/+config';
-import { getImg } from '../Utils/StringFormater'; // ✅ Importer getImg
+import { getMedia } from '../Utils/StringFormater'; // ✅ Importer getMedia
 import { useGetAllOrders, useGetMe } from '../../api/ReactSublymusApi';
-import { useGlobalStore } from '../../pages/index/StoreStore';
+import { useGlobalStore } from '../../api/stores/StoreStore';
 import { useMyLocation } from '../../Hooks/useRepalceState';
 import { usePageContext } from '../../renderer/usePageContext';
 
@@ -41,15 +41,15 @@ function Topbar({
     const { t } = useTranslation();
     const { currentStore } = useGlobalStore()
     const { openChild } = useChildViewer();
-    const { nextPage} = useMyLocation()
+    const { nextPage } = useMyLocation()
     const { serverUrl } = usePageContext()
-    const {user} = useAuthStore()
+    const { user } = useAuthStore()
 
     // --- Préparer les infos utilisateur pour l'avatar ---
     const userPhotoUrl = user?.photo?.[0]; // Prend la première photo
     const userInitials = user?.full_name?.slice(0, 2).toUpperCase() || '?'; // Initiales ou '?'
-    const avatarImageUrl = userPhotoUrl ? 
-    getImg(userPhotoUrl, undefined, `${process.env.NODE_ENV=='production'?'https':'http'}://server.`+serverUrl).match(/url\("?([^"]+)"?\)/)?.[1] : undefined; // Obtenir l'URL avec getImg
+    const avatarImageUrl = userPhotoUrl ?
+        getMedia({ source: userPhotoUrl, from: 'server' }) : undefined;
     const displayName = user?.full_name;
 
     // --- (Logique existante inchangée) ---

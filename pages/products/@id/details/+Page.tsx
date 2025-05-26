@@ -3,7 +3,7 @@
 // --- Imports ---
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { usePageContext } from '../../../../renderer/usePageContext';
-import { useGlobalStore } from '../../../index/StoreStore';
+import { useGlobalStore } from '../../../../api/stores/StoreStore';
 // ✅ Importer les hooks API nécessaires
 import {
     useGetProductList, // Pour charger le produit
@@ -22,7 +22,7 @@ import { MarkdownViewer } from '../../../../Components/MarkdownViewer/MarkdownVi
 import { ProductPreview } from '../../../../Components/ProductPreview/ProductPreview';
 import { ChildViewer } from '../../../../Components/ChildViewer/ChildViewer';
 import { Confirm } from '../../../../Components/Confirm/Confirm'; // Pour popup DetailInfo
-import { getImg } from '../../../../Components/Utils/StringFormater';
+import { getMedia } from '../../../../Components/Utils/StringFormater';
 import { debounce, getFileType, limit } from '../../../../Components/Utils/functions'; // Garder limit
 import { DETAIL_LIMIT } from '../../../../Components/Utils/constants';
 import { IoAdd, IoChevronDown, IoChevronUp, IoCloudUploadOutline, IoEllipsisHorizontal, IoPencil, IoTrash } from 'react-icons/io5';
@@ -328,9 +328,9 @@ function DetailItem({ detail, onDelete, onOption, onUp, onDown, canDown, canUp }
             {view && ( // Afficher seulement si une vue existe
                 <div className="w-full md:w-40 lg:w-48 aspect-square rounded-md flex-shrink-0 bg-gray-100 overflow-hidden">
                     {getFileType(view) === 'image' ? (
-                        <img src={getImg(view, undefined, currentStore?.url).match(/url\("?([^"]+)"?\)/)?.[1]} alt={detail.title || 'Detail view'} className="w-full h-full object-cover" />
+                        <img src={getMedia({ source: view, from: 'api' })} alt={detail.title || 'Detail view'} className="w-full h-full object-cover" />
                     ) : (
-                        <video loop autoPlay muted playsInline className="w-full h-full object-cover" src={getImg(view, undefined, currentStore?.url).match(/url\("?([^"]+)"?\)/)?.[1]} />
+                        <video loop autoPlay muted playsInline className="w-full h-full object-cover" src={getMedia({ source: view, from: 'api' })} />
                     )}
                 </div>
             )}
@@ -466,7 +466,7 @@ function DetailInfo({ detail: initialDetail, onSave, onCancel }: {
     };
 
     // Affichage de l'image (preview locale ou URL serveur)
-    const viewUrlForDisplay = localPreview ? getImg(localPreview) : (typeof collected?.view?.[0] === 'string' ? getImg(collected.view[0], undefined, currentStore?.url) : undefined);
+    const viewUrlForDisplay = localPreview ? getMedia({ isBackground: true, source: localPreview }) : (typeof collected?.view?.[0] === 'string' ? getMedia({ isBackground: true, source: collected.view[0], from: 'api' }) : undefined);
     const showPlaceholder = !localPreview && (!collected?.view || collected.view.length === 0 || typeof collected.view[0] !== 'string');
 
 

@@ -8,9 +8,9 @@ import { OrderStatusElement } from '../Status/Satus'; // Peut-être renommer/gé
 import { DateRange, DayPicker } from "react-day-picker";
 import "react-day-picker/style.css"; // Garder CSS DayPicker
 import { ClientCall, debounce } from '../Utils/functions';
-import { getImg } from '../Utils/StringFormater';
+import { getMedia } from '../Utils/StringFormater';
 // import { getTransmit, useGlobalStore  } from '../../pages/stores/StoreStore'; // Transmit non pertinent ici a priori
-import { useGlobalStore } from '../../pages/index/StoreStore';
+import { useGlobalStore } from '../../api/stores/StoreStore';
 // import { useClientStore } from '../../pages/users/clients/ClientStore'; // Remplacé par hook API
 import { useGetUsers } from '../../api/ReactSublymusApi'; // ✅ Importer hook API
 import { ClientStatusColor } from '../Utils/constants'; // Garder pour les couleurs spécifiques client?
@@ -96,7 +96,7 @@ function ClientList({ product_id, user_id, initialClients }: { initialClients: U
         {isError && <div className="p-6 text-center text-red-500">{apiError?.message || t('error_occurred')}</div>}
         {!isLoading && !isError && clients.length === 0 && (
           <div className="flex flex-col items-center justify-center p-10 text-center text-gray-500">
-            <div className="w-40 h-40 bg-contain bg-center bg-no-repeat mb-4 opacity-70" style={{ backgroundImage: getImg('/res/empty/users.png') }}></div>
+            <div className="w-40 h-40 bg-contain bg-center bg-no-repeat mb-4 opacity-70" style={{ backgroundImage: getMedia({ isBackground: true, source: '/res/empty/users.png' }) }}></div>
             {t('clientList.noClientsFound')}
           </div>
         )}
@@ -152,9 +152,7 @@ export function ClientItem({ client }: { client: UserInterface }) {
         <div
           className="w-12 h-12 rounded-full bg-cover bg-center bg-gray-200 text-gray-500 font-semibold text-sm flex items-center justify-center shrink-0"
           style={{
-            background: client.photo?.[0]
-              ? `url(${getImg(client.photo[0])})`
-              : undefined,
+            background: getMedia({ isBackground: true, source: client?.photo?.[0] })
           }}
         >
           {!client.photo?.[0] &&

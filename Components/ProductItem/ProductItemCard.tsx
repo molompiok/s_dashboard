@@ -3,9 +3,9 @@
 import { IoPeopleSharp, IoStarHalf, IoEyeOffOutline, IoWarningOutline, IoPencil, IoTrash, IoEllipsisVertical, IoEyeOutline, IoChevronForward } from 'react-icons/io5';
 import { ProductInterface } from '../../api/Interfaces/Interfaces';
 import { getFileType, shortNumber } from '../Utils/functions';
-import { getImg } from '../Utils/StringFormater';
+import { getMedia } from '../Utils/StringFormater';
 import { getDefaultValues } from '../Utils/parseData';
-import { useGlobalStore } from '../../pages/index/StoreStore';
+import { useGlobalStore } from '../../api/stores/StoreStore';
 import { markdownToPlainText } from '../MarkdownViewer/MarkdownViewer';
 import { useTranslation } from 'react-i18next';
 import { NO_PICTURE } from '../Utils/constants';
@@ -49,7 +49,7 @@ function ProductItemCard({ product, onClick }: ProductItemCardProps) {
     const defaultValues = getDefaultValues(product);
     const defaultView = defaultValues[0]?.views?.[0] ?? NO_PICTURE;
     const fileType = getFileType(defaultView);
-    const src = getImg(defaultView, undefined, currentStore?.url).match(/url\("?([^"]+)"?\)/)?.[1];
+    const src = getMedia({ source: defaultView, from: 'api' });
 
     // --- Handlers ---
     const handleDelete = () => {

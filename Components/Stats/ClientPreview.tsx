@@ -5,7 +5,7 @@ import { UserInterface, } from '../../api/Interfaces/Interfaces'; // Types User 
 // Importez les icônes pour les stats client (comme dans votre page @id)
 import { Star, MessageCircle, ShoppingCart, CreditCard, CalendarClock, Mail, Phone, DollarSign } from 'lucide-react'; // Icônes
 // Utilitaires
-import { getImg } from '../Utils/StringFormater'; // Image helper
+import { getMedia } from '../Utils/StringFormater'; // Image helper
 import { ClientStatusColor } from '../Utils/constants'; // Couleurs de statut client
 import IMask from 'imask'; // Masquage téléphone
 import { DateTime } from 'luxon'; // Formatage date
@@ -140,7 +140,7 @@ const ClientPreview: React.FC<ClientPreviewProps> = ({ client /*, currency, minD
                 <div className="relative flex-shrink-0">
                     <div
                         className="w-20 h-20 flex items-center font-bold text-gray-500 justify-center text-3xl rounded-full object-cover border-4 border-white shadow-sm"
-                        style={{ background: client.photo?.[0] ? getImg(client.photo[0]) : 'none', backgroundImage: client.photo?.[0] ? `url(${getImg(client.photo[0])})` : undefined }} // Background image
+                        style={{ background: getMedia({isBackground:true,source:client.photo?.[0],from:'api'})}}
                     >
                         {!client.photo?.[0] && (client.full_name?.substring(0, 2).toUpperCase() || '?')}
                     </div>

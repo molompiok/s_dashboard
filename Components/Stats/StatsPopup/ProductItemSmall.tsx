@@ -1,9 +1,9 @@
 // components/Stats/Modals/ProductItemSmall.tsx
 import React from 'react';
 import { ProductInterface } from '../../../api/Interfaces/Interfaces'; // Ajustez le chemin
-import { getImg } from '../../Utils/StringFormater'; // Ajustez le chemin
+import { getMedia } from '../../Utils/StringFormater'; // Ajustez le chemin
 import { useTranslation } from 'react-i18next'; // i18n
-import { useGlobalStore } from '../../../pages/index/StoreStore';
+import { useGlobalStore } from '../../../api/stores/StoreStore';
 import { getDefaultValues } from '../../Utils/parseData';
 import { NO_PICTURE } from '../../Utils/constants';
 
@@ -16,7 +16,7 @@ const ProductItemSmall: React.FC<ProductItemSmallProps> = ({ product }) => {
 
     const { currentStore } = useGlobalStore()
     const values = getDefaultValues(product)[0]
-    const mainImage = values?.views?.[0] ? getImg(values.views?.[0], undefined, currentStore?.url) : getImg(NO_PICTURE); // Image par défaut
+    const mainImage = values?.views?.[0] ? getMedia({ isBackground: true, source: values.views?.[0], from: 'api' }) : getMedia({ isBackground: true, source: NO_PICTURE }); // Image par défaut
 
     const currency = product.currency || 'FCFA'; // Utiliser devise du produit ou fallback
 

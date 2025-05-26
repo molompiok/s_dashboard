@@ -2,9 +2,9 @@
 
 import { useTranslation } from "react-i18next";
 import { useGetMe } from "../../api/ReactSublymusApi"; // Hook pour récupérer l'utilisateur connecté
-import { getImg } from "../Utils/StringFormater";
+import { getMedia } from "../Utils/StringFormater";
 import { IoChevronForward, IoPersonCircleOutline } from "react-icons/io5";
-import { useGlobalStore } from "../../pages/index/StoreStore";
+import { useGlobalStore } from "../../api/stores/StoreStore";
 
 export function CurrentUserCard() {
     const { t } = useTranslation();
@@ -13,7 +13,7 @@ export function CurrentUserCard() {
     const user = meData?.user;
 
     // S'assurer que le chemin vers le placeholder est correct
-    const avatarSrc = user?.photo?.[0] ? getImg(user.photo[0], undefined, currentStore?.url) : undefined;
+    const avatarSrc = user?.photo?.[0] ? getMedia({ isBackground: true, source: user.photo[0], from: 'api' }) : undefined;
 
     // --- Rendu Skeleton ---
     if (isLoading) {

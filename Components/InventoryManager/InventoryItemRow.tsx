@@ -2,8 +2,8 @@
 
 import { Inventory as InventoryInterface } from "../../api/Interfaces/Interfaces"; // Utiliser alias
 import { IoLocationOutline, IoMailOutline, IoPencil, IoTrash, IoEllipsisVertical, IoImageOutline } from "react-icons/io5"; // Ajouter icônes
-import { getImg } from "../Utils/StringFormater";
-import { useGlobalStore } from "../../pages/index/StoreStore";
+import { getMedia } from "../Utils/StringFormater";
+import { useGlobalStore } from "../../api/stores/StoreStore";
 import { useTranslation } from "react-i18next";
 import { useState } from 'react';
 import logger from '../../api/Logger';
@@ -31,7 +31,7 @@ function InventoryItemRow({ inventory, onEdit /*, onDeleteSuccess */ }: Inventor
 
     // Utiliser la première image de 'views' comme miniature
     const imageUrl = inventory.views?.[0] ?? NO_PICTURE;
-    const imageSrc = getImg(imageUrl, undefined, currentStore?.url).match(/url\("?([^"]+)"?\)/)?.[1];
+    const imageSrc = getMedia({ source: imageUrl, from: 'api' });
 
     // Initialiser la mutation de suppression
     const deleteInventoryMutation = useDeleteInventory();

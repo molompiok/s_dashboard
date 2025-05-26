@@ -1,7 +1,8 @@
 import React from 'react';
 import { IoPersonCircleOutline } from 'react-icons/io5'; // Icône par défaut
-import { useGlobalStore } from '../../pages/index/StoreStore';
+import { useGlobalStore } from '../../api/stores/StoreStore';
 import './userPreview.css'
+import { getMedia } from '../Utils/StringFormater';
 interface UserInterface {
     id: string;
     full_name: string;
@@ -25,7 +26,7 @@ const UserPreview: React.FC<UserPreviewProps> = ({ user }) => {
                 {/* Avatar de l'utilisateur */}
                 {user.photo && user.photo.length > 0 ? (
                     <img
-                        src={user.photo[0]?.startsWith('/') ? `${currentStore?.url || ''}${user.photo[0]}` : user.photo[0]}
+                        src={getMedia({source:user.photo[0],from:'api'})}
                         alt={`${user.full_name}'s avatar`}
                         className="user-avatar"
                     />

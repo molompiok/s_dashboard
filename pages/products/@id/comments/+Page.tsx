@@ -9,10 +9,10 @@ import { IoChevronForward, IoStar, IoTrash } from 'react-icons/io5';
 // import { useProductStore } from '../../ProductStore'; // Remplacé
 import { Topbar } from '../../../../Components/TopBar/TopBar';
 import { ProductPreview } from '../../../../Components/ProductPreview/ProductPreview';
-import { getTransmit, useGlobalStore } from '../../../index/StoreStore';
+import { getTransmit, useGlobalStore } from '../../../../api/stores/StoreStore';
 import { usePageContext } from '../../../../renderer/usePageContext';
 import { PageNotFound } from '../../../../Components/PageNotFound/PageNotFound';
-import { getImg } from '../../../../Components/Utils/StringFormater';
+import { getMedia } from '../../../../Components/Utils/StringFormater';
 import { getFileType, limit } from '../../../../Components/Utils/functions';
 // import { useApp } from '../../../../renderer/AppStore/UseApp'; // Remplacé
 import { useChildViewer } from '../../../../Components/ChildViewer/useChildViewer'; // ✅ Hook popup
@@ -60,8 +60,8 @@ export default function Page() {
 
     // --- Logique SSE ---
     useEffect(() => {
-        if (!currentStore?.url || !productId) return;
-        const transmit = getTransmit(currentStore.url);
+        if (!currentStore?.api_url || !productId) return;
+        const transmit = getTransmit(currentStore.api_url);
         const channel = `store/${'9b1192a3-0727-43a4-861b-05775bf2fd0d'/* TODO currentStore.id*/}/comment`; // Écouter tous les events commentaires du store
         logger.info(`Subscribing to SSE channel for comments: ${channel}`);
         const subscription = transmit?.subscription(channel);
@@ -86,7 +86,7 @@ export default function Page() {
             logger.info(`Unsubscribing from SSE channel: ${channel}`);
             subscription?.delete();
         };
-    }, [currentStore?.id, currentStore?.url, productId, refetchComments]);
+    }, [currentStore?.id, currentStore?.api_url, productId, refetchComments]);
 
     // --- Handler Suppression ---
     const handleDelete = (commentId: string, commentTitle?: string) => {
@@ -171,7 +171,7 @@ function ViewMore({ imagesUrls }: { imagesUrls: string[] }) {
     const { openChild } = useChildViewer()
     const [photoIndex, setPhotoIndex] = useState(0);
     const { currentStore } = useGlobalStore()
-    const images = imagesUrls.map(i => ({ src: i.startsWith('/') ? currentStore?.url + i : i }))
+    const images = imagesUrls.map(i => ({ src: i.startsWith('/') ? currentStore?.api_url + i : i }))
 
     return <Lightbox
         open={true}
@@ -226,7 +226,7 @@ export const CommentsDashboard = ({ comments, currentStore, onDelete }: Comments
                                 <div className="flex items-center gap-2 mb-2">
                                     {comment.user?.photo?.[0] ? (
                                         <div
-                                            style={{ background: getImg(comment.user.photo[0], undefined, currentStore.url) }}
+                                            style={{ background: getMedia({ isBackground: true, source: comment.user.photo[0], from: 'api' }) }}
                                             className="w-10 h-10 rounded-full object-cover"
                                         ></div>
                                     ) : (
@@ -277,7 +277,7 @@ export const CommentsDashboard = ({ comments, currentStore, onDelete }: Comments
                                             <li key={key} className="flex items-center gap-2">
                                                 <span className="text-sm font-medium text-gray-700">{limit(key?.split(':')[0])}</span>
                                                 {value.icon?.[0] ? (
-                                                    <span className="w-4 h-4 bg-center bg-cover" style={{ backgroundImage: `url(${getImg(value.icon?.[0])})` }}></span>
+                                                    <span className="w-4 h-4 bg-center bg-cover" style={{ background: getMedia({ isBackground: true, source: value.icon?.[0], from: 'api' }) }}></span>
                                                 ) : value.key && (!key?.split(':')[1] || key?.split(':')[1] === 'color') ? (
                                                     <span
                                                         className="w-4 h-4 rounded-full border"

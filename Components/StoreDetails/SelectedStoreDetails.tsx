@@ -8,7 +8,7 @@ import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Toolti
 import { Progrees } from "../Progress/Pregress"; // Utiliser le composant Progress
 import { useGetVisitDetails, useGetOrderDetailsStats, useStartStore, useStopStore } from "../../api/ReactSublymusApi"; // Hook pour stats (si applicable au store)
 import logger from "../../api/Logger";
-import { useGlobalStore } from "../../pages/index/StoreStore";
+import { useGlobalStore } from "../../api/stores/StoreStore";
 import { useState } from "react";
 import { Confirm } from "../../Components/Confirm/Confirm";
 import { useChildViewer } from "../ChildViewer/useChildViewer";
@@ -226,7 +226,6 @@ export function SelectedStoreDetails({ store, onEditRequired }: SelectedStoreDet
                             } disabled:opacity-50`}
                     >
                         {
-                            // isActionLoading ? <div className="w-6 h-6" style={{background: getImg('/res/loading_white.gif')}}></div>:
                             store.is_running
                                 ? <IoClose size={16} />
                                 : <IoDesktop size={16} />}

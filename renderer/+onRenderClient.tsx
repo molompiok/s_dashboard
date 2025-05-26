@@ -8,8 +8,9 @@ import type { OnRenderClientAsync } from 'vike/types'
 import { I18nextProvider } from 'react-i18next';
 import i18next from '../Lib/i18n';
 import './tw.css'
-import { getToken, logoutUserGlobally } from "../pages/auth/AuthStore";
+import { getToken, logoutUserGlobally } from "../api/stores/AuthStore";
 import { SublymusApiProvider } from '../api/ReactSublymusApi';
+import { Data } from './AppStore/Data';
 
 let root: ReactDOM.Root
 const onRenderClient: OnRenderClientAsync = async (pageContext): ReturnType<OnRenderClientAsync> => {
@@ -23,21 +24,24 @@ const onRenderClient: OnRenderClientAsync = async (pageContext): ReturnType<OnRe
   const container = document.getElementById('root')
   if (!container) throw new Error('DOM element #root not found')
 
-    console.log({
+  console.log({
     baseUrl: pageContext.baseUrl,
     serverUrl: pageContext.serverUrl,
     apiUrl: pageContext.apiUrl,
   });
-    const page = (
-    <SublymusApiProvider 
-    storeApiUrl={undefined}  
-    mainServerUrl={'http://server.sublymus-server.com'} 
-    getAuthToken={getToken} 
-    handleUnauthorized={(action)=>{
-      console.warn('handleUnauthorized',action);
-      
-      if(action=='server') logoutUserGlobally()
-    }}
+
+  Data.serverUrl = 'http://server.sublymus-server.com';
+
+  const page = (
+    <SublymusApiProvider
+      storeApiUrl={undefined}
+      mainServerUrl={'http://server.sublymus-server.com'}
+      getAuthToken={getToken}
+      handleUnauthorized={(action) => {
+        console.warn('handleUnauthorized', action);
+
+        if (action == 'server') logoutUserGlobally()
+      }}
     >
       <I18nextProvider i18n={i18n}>
         <Layout pageContext={pageContext}>

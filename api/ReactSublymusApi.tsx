@@ -66,8 +66,8 @@ import {
     GetUserStatsResponse,
     GetCategoryParams
 } from './SublymusApi'; // Importer la classe et l'erreur, et TOUS les types
-import { useAuthStore } from '../pages/auth/AuthStore'; // Pour le token
-import { useGlobalStore } from '../pages/index/StoreStore'; // Pour l'URL du store
+import { useAuthStore } from './stores/AuthStore'; // Pour le token
+import { useGlobalStore } from './stores/StoreStore'; // Pour l'URL du store
 import logger from './Logger';
 import { BaseStatsParams, CommentInterface, FeatureInterface, ForgotPasswordParams, KpiStatsResponse, OrderStatsIncludeOptions, OrderStatsResponse, ResetPasswordParams, SetupAccountParams, SetupAccountResponse, VisitStatsIncludeOptions, VisitStatsResponse } from './Interfaces/Interfaces';
 import { useTranslation } from 'react-i18next';
@@ -163,7 +163,7 @@ export const useApi = (): SublymusApi => {
     const { t } = useTranslation();
     if (!context || !context.api) {
         const { currentStore } = useGlobalStore.getState();
-        if (!currentStore?.url) {
+        if (!currentStore?.api_url) {
             throw new Error(t('api.contextError.noStoreUrl'));
         }
         throw new Error(t('api.contextError.providerMissing'));

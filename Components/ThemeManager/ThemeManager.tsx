@@ -2,8 +2,8 @@
 
 import { StoreInterface, ThemeInterface } from "../../api/Interfaces/Interfaces"; // Importer les interfaces
 import { useTranslation } from "react-i18next";
-import { getImg } from "../Utils/StringFormater";
-import { useGlobalStore } from "../../pages/index/StoreStore"; // Pour l'URL de base des images?
+import { getMedia } from "../Utils/StringFormater";
+import { useGlobalStore } from "../../api/stores/StoreStore"; // Pour l'URL de base des images?
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { FreeMode, Navigation } from 'swiper/modules'; // Ajouter Navigation
 import { IoColorPaletteOutline, IoTextOutline, IoMegaphoneOutline, IoChatbubblesOutline, IoNewspaperOutline, IoChevronForward, IoBrushOutline, IoCheckmarkCircle, IoChevronBack, IoLanguageOutline, IoGlobeOutline, IoTicketOutline, IoStorefrontOutline } from "react-icons/io5"; // Icônes pour options
@@ -57,7 +57,7 @@ export function ThemeManager({ store }: ThemeManagerProps) {
     // TODO: Remplacer par un appel API pour les thèmes disponibles/récents
     const { data: themes, isLoading: isLoadingThemes } = useGetThemes({
 
-    },{
+    }, {
         enabled: true
     });
 
@@ -103,7 +103,7 @@ export function ThemeManager({ store }: ThemeManagerProps) {
     }
 
     const currentThemeImage = currentTheme.preview_images?.[0] ?? NO_PICTURE;
-    const currentThemeImageSrc = getImg(currentThemeImage, undefined, Server_Host).match(/url\("?([^"]+)"?\)/)?.[1];
+    const currentThemeImageSrc = getMedia({ source: currentThemeImage, from: 'server' });
     return (
         // Conteneur principal
         <div className="theme-manager bg-white rounded-lg shadow-sm border border-gray-200 flex flex-col gap-6">
@@ -251,7 +251,7 @@ export function ThemeCard({ theme, isCurrent = false, isSelected, onClick }: The
         }
     };
 
-    const imageSrc = theme.preview_images?.[0] ? getImg(theme.preview_images?.[0], undefined, Server_Host).match(/url\("?([^"]+)"?\)/)?.[1] : NO_PICTURE;
+    const imageSrc = theme.preview_images?.[0] ? getMedia({ source: theme.preview_images?.[0], from: 'server' }) : NO_PICTURE;
     const isFree = theme.price === 0 || theme.is_premium === false; // Ajuster logique gratuit/premium
 
 

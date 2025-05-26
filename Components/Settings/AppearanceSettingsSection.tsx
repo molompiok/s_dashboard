@@ -6,8 +6,8 @@ import { useTranslation } from "react-i18next";
 import { useUpdateStore } from "../../api/ReactSublymusApi"; // Hook pour la mise à jour
 import logger from '../../api/Logger';
 import { IoCloudUploadOutline, IoImageOutline } from 'react-icons/io5';
-import { getImg } from '../Utils/StringFormater'; // Pour preview
-import { useGlobalStore } from '../../pages/index/StoreStore'; // Pour URL base image
+import { getMedia } from '../Utils/StringFormater'; // Pour preview
+import { useGlobalStore } from '../../api/stores/StoreStore'; // Pour URL base image
 import { NO_PICTURE } from '../Utils/constants'; // Placeholder
 import { ApiError } from '../../api/SublymusApi';
 import { Server_Host } from '../../renderer/+config';
@@ -137,9 +137,9 @@ export function AppearanceSettingsSection({ store }: AppearanceSettingsSectionPr
     };
 
     // --- URLs pour affichage ---
-    let currentLogoUrl = formState.logoPreview ?? (store.logo?.[0] ? getImg(store.logo[0], undefined, Server_Host).match(/url\("?([^"]+)"?\)/)?.[1] : null);
-    let currentCoverUrl = formState.coverPreview ?? (store.cover_image?.[0] ? getImg(store.cover_image[0], undefined, Server_Host).match(/url\("?([^"]+)"?\)/)?.[1] : null);
-    const currentFaviconUrl = formState.faviconPreview ?? (store.favicon ? getImg(store.favicon[0], undefined, Server_Host).match(/url\("?([^"]+)"?\)/)?.[1] : null); // Assumer store.favicon est l'URL directe
+    let currentLogoUrl = formState.logoPreview ?? (store.logo?.[0] ? getMedia({ source: store.logo[0], from: 'server' }) : null);
+    let currentCoverUrl = formState.coverPreview ?? (store.cover_image?.[0] ? getMedia({ source: store.cover_image[0], from: 'server' }) : null);
+    const currentFaviconUrl = formState.faviconPreview ?? (store.favicon ? getMedia({ source: store.favicon[0], from: 'server' }) : null); // Assumer store.favicon est l'URL directe
 
     return (
         // Conteneur Section

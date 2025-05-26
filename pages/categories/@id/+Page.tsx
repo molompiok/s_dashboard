@@ -3,15 +3,14 @@
 // --- Imports ---
 import { useEffect, useRef, useState, useMemo } from 'react';
 import { usePageContext } from '../../../renderer/usePageContext';
-import { useGlobalStore } from '../../index/StoreStore';
+import { useGlobalStore } from '../../../api/stores/StoreStore';
 import { useGetCategory, useCreateCategory, useUpdateCategory, useDeleteCategory } from '../../../api/ReactSublymusApi'; // ✅ Hooks API
 import { CategoryInterface, FilterType } from '../../../api/Interfaces/Interfaces';
 import { BreadcrumbItem, Topbar } from '../../../Components/TopBar/TopBar';
 import { IoAdd, IoBagHandle, IoCloudUploadOutline, IoLayers, IoPencil, IoTrash } from 'react-icons/io5';
 import { RiImageEditFill } from 'react-icons/ri';
 import { FaRedo } from 'react-icons/fa';
-import { getImg } from '../../../Components/Utils/StringFormater';
-import { useApp } from '../../../renderer/AppStore/UseApp'; // Gardé pour openChild
+import { getMedia } from '../../../Components/Utils/StringFormater';
 import { ChildViewer } from '../../../Components/ChildViewer/ChildViewer'; // Utiliser le hook
 import { CategoriesPopup } from '../../../Components/CategoriesPopup/CategoriesPopup'; // Gardé pour sélection parent
 import { CategoryItemMini } from '../../../Components/CategoryItem/CategoryItemMini'; // Utiliser Mini pour parent
@@ -354,8 +353,8 @@ function Page() {
     if (!isNewCategory && !fetchedCategoryData?.id) return <PageNotFound />
 
     // Préparer les URLs d'image pour l'affichage (locale ou depuis serveur)
-    const viewUrl = localImagePreviews.view ? getImg(localImagePreviews.view) : (typeof categoryFormState.view?.[0] === 'string' ? getImg(categoryFormState.view[0], undefined, currentStore?.url) : '');
-    const iconUrl = localImagePreviews.icon ? getImg(localImagePreviews.icon) : (typeof categoryFormState.icon?.[0] === 'string' ? getImg(categoryFormState.icon[0], 'contain', currentStore?.url) : '');
+    const viewUrl = localImagePreviews.view ? getMedia({ isBackground: true, source: localImagePreviews.view }) : getMedia({ isBackground: true, source: categoryFormState.view?.[0], from: 'api' });
+    const iconUrl = localImagePreviews.icon ? getMedia({ isBackground: true, source: localImagePreviews.icon }) : getMedia({ isBackground: true, source: categoryFormState.icon?.[0], from: 'api' });
     const showViewPlaceholder = !localImagePreviews.view && (!categoryFormState.view || categoryFormState.view.length === 0);
     const showIconPlaceholder = !localImagePreviews.icon && (!categoryFormState.icon || categoryFormState.icon.length === 0);
 

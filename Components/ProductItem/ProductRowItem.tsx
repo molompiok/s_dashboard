@@ -2,9 +2,9 @@
 import { IoChevronForward, IoCopyOutline, IoEllipsisVertical, IoEyeOffOutline, IoEyeOutline, IoPencil, IoPeopleSharp, IoStarHalf, IoTrash, IoWarningOutline } from 'react-icons/io5';
 import { ProductInterface, CategoryInterface } from '../../api/Interfaces/Interfaces';
 import { getFileType, shortNumber, getId, limit, copyToClipboard } from '../Utils/functions';
-import { getImg } from '../Utils/StringFormater';
+import { getMedia } from '../Utils/StringFormater';
 import { getDefaultValues } from '../Utils/parseData';
-import { useGlobalStore } from '../../pages/index/StoreStore';
+import { useGlobalStore } from '../../api/stores/StoreStore';
 import { useTranslation } from 'react-i18next';
 import { useState, useEffect, useMemo } from 'react'; // Ajouter useEffect
 import { useDeleteProduct, useUpdateProduct, queryClient } from '../../api/ReactSublymusApi'; // ✅ Importer mutations
@@ -48,7 +48,7 @@ function ProductRowItem({ product, categoriesMap }: ProductRowItemProps) {
 
     const defaultValues = getDefaultValues(product);
     const defaultView = defaultValues[0]?.views?.[0] || NO_PICTURE;
-    const src = getImg(defaultView, undefined, currentStore?.url).match(/url\("?([^"]+)"?\)/)?.[1];
+    const src = getMedia({ source: defaultView, from: 'api' });
     const fileType = getFileType(defaultView);
 
     // Récupérer les noms des catégories depuis la Map fournie

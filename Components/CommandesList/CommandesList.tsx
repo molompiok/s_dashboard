@@ -12,10 +12,10 @@ import { DateRange, DayPicker } from "react-day-picker";
 import "react-day-picker/style.css"; // Garder l'import CSS de react-day-picker
 import { ClientCall, debounce } from '../Utils/functions'; // Garder debounce, ClientCall
 // import { FiMaximize } from 'react-icons/fi'; // Non utilisé
-import { getImg } from '../Utils/StringFormater';
+import { getMedia } from '../Utils/StringFormater';
 import { useCommandStore } from '../../pages/commands/CommandStore'; // Sera remplacé par hook API
 import { useGetAllOrders } from '../../api/ReactSublymusApi'; // ✅ Importer le hook
-import { getTransmit, useGlobalStore } from '../../pages/index/StoreStore';
+import { getTransmit, useGlobalStore } from '../../api/stores/StoreStore';
 import { useTranslation } from 'react-i18next'; // ✅ Importer useTranslation
 import { queryClient } from '../../api/ReactSublymusApi'; // Importer queryClient pour invalidation SSE
 import { DateTime } from 'luxon';
@@ -46,9 +46,9 @@ function CommandeList({ product_id, user_id }: { user_id?: string; product_id?: 
 
     // Gestion SSE pour rafraîchissement temps réel
     useEffect(() => {
-        if (!currentStore?.url) return;
+        if (!currentStore?.api_url) return;
 
-        const transmit = getTransmit(currentStore.url);
+        const transmit = getTransmit(currentStore.api_url);
         const channel = `store/${'9b1192a3-0727-43a4-861b-05775bf2fd0d'/* TODO currentStore.id*/}/new_command`; // Utiliser ID du store courant
         // const channelUpdate = `store/${currentStore.id}/update_command`; // Écouter aussi les MAJ
 
@@ -90,7 +90,7 @@ function CommandeList({ product_id, user_id }: { user_id?: string; product_id?: 
             // subscriptionUpdate?.delete();
         };
 
-    }, [currentStore?.id, currentStore?.url]); // Dépendances pour re-subscribe si store change
+    }, [currentStore?.id, currentStore?.api_url]); // Dépendances pour re-subscribe si store change
 
     // --- Logique d'affichage des dates (inchangée) ---
     const accuDate: string[] = [];
@@ -159,7 +159,7 @@ function CommandeList({ product_id, user_id }: { user_id?: string; product_id?: 
                 {!isLoading && !isError && commands.length === 0 && (
                     // Message "Aucun résultat"
                     <div className="flex flex-col items-center justify-center p-10 text-center text-gray-500">
-                        <div className="w-40 h-40 bg-contain bg-center bg-no-repeat mb-4" style={{ background: getImg('/res/empty/search.png') }}></div>
+                        <div className="w-40 h-40 bg-contain bg-center bg-no-repeat mb-4" style={{ background: getMedia({ isBackground: true, source: '/res/empty/search.png' }) }}></div>
                         {t('common.noResults')}
                     </div>
                 )}

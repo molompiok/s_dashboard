@@ -6,11 +6,11 @@ import { PeriodType, StatsData, UserInterface } from '../../../../api/Interfaces
 import { CommandeList } from '../../../../Components/CommandesList/CommandesList'; // Garder CommandeList
 import { Mail, Phone, Star, ShoppingCart, MessageCircle, CreditCard, CalendarClock, UserCircle } from 'lucide-react'; // Utiliser Lucide
 import { usePageContext } from '../../../../renderer/usePageContext';
-import { getTransmit, useGlobalStore } from '../../../index/StoreStore'; // Garder Store
+import { getTransmit, useGlobalStore } from '../../../../api/stores/StoreStore'; // Garder Store
 // import { useClientStore } from '../ClientStore'; // Remplacé par hooks API
 import { useGetUsers, useGetVisitDetails, useGetOrderDetailsStats } from '../../../../api/ReactSublymusApi'; // ✅ Importer hooks API
 import IMask from 'imask';
-import { getImg } from '../../../../Components/Utils/StringFormater';
+import { getMedia } from '../../../../Components/Utils/StringFormater';
 import { ClientStatusColor, NO_PICTURE } from '../../../../Components/Utils/constants'; // Garder couleurs statut
 // import { useApp } from '../../../../renderer/AppStore/UseApp'; // Supprimé
 import StatsChart from '../../../../Components/UserStatsChart/UserStatsChart'; // Garder StatsChart
@@ -77,8 +77,8 @@ function Page() {
 
     // Logique SSE pour mettre à jour les données si une nouvelle commande arrive pour ce client
     useEffect(() => {
-        if (!currentStore?.url || !userId) return;
-        const transmit = getTransmit(currentStore.url);
+        if (!currentStore?.api_url || !userId) return;
+        const transmit = getTransmit(currentStore.api_url);
         const channel = `store/${currentStore.id}/new_command`; // Ou un canal spécifique user?
         logger.info(`Subscribing to SSE channel for potential user updates: ${channel}`);
         const subscription = transmit?.subscription(channel);
@@ -101,7 +101,7 @@ function Page() {
             logger.info(`Unsubscribing from SSE channel: ${channel}`);
             subscription?.delete();
         };
-    }, [currentStore?.id, currentStore?.url, userId]);
+    }, [currentStore?.id, currentStore?.api_url, userId]);
 
     // --- Handlers ---
     const focusCommands = () => {
@@ -154,7 +154,7 @@ function Page() {
                     <div className="relative flex-shrink-0">
                         <div
                             className="w-24 h-24 flex items-center font-bold text-gray-500 justify-center text-4xl rounded-full object-cover border-4 border-white shadow"
-                            style={{ background: user.photo?.[0] ? getImg(user.photo[0], undefined,) : 'none' }}
+                            style={{ background: getMedia({ isBackground: true, source: user.photo?.[0], from: 'api' }) }}
                         >
                             {!user.photo?.[0] && (user.full_name?.substring(0, 2).toUpperCase() || '?')}
                         </div>

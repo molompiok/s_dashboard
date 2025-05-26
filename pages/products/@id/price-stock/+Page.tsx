@@ -9,7 +9,7 @@ import { FeatureInterface, ProductInterface, ValueInterface } from "../../../../
 // import { useProductStore } from "../../ProductStore"; // Remplacé par hooks API
 import { useGetProductList, useMultipleUpdateFeaturesValues } from '../../../../api/ReactSublymusApi'; // ✅ Hooks API
 import { usePageContext } from "../../../../renderer/usePageContext";
-import { useGlobalStore } from "../../../index/StoreStore";
+import { useGlobalStore } from "../../../../api/stores/StoreStore";
 // import { useApp } from "../../../../renderer/AppStore/UseApp"; // Remplacé par useChildViewer
 import { ChildViewer } from "../../../../Components/ChildViewer/ChildViewer";
 import { ValuePricing } from "../../../../Components/ValuePricing/ValuePricing"; // Formulaire prix/stock

@@ -7,7 +7,7 @@ import { SelectedStoreDetails } from '../../Components/StoreDetails/SelectedStor
 import { ThemeManager } from '../../Components/ThemeManager/ThemeManager'; // Nouveau
 import { StoreToolbar } from '../../Components/StoreList/StoreToolbar'; // Nouveau
 import { StoreFilterType, StoreInterface } from '../../api/Interfaces/Interfaces';
-import { useGlobalStore } from './StoreStore'; // Garder Zustand pour état global stores/currentStore
+import { useGlobalStore } from '../../api/stores/StoreStore'; // Garder Zustand pour état global stores/currentStore
 import { useGetStoreList } from '../../api/ReactSublymusApi'; // Hook pour fetch la liste
 import { useTranslation } from 'react-i18next';
 import logger from '../../api/Logger';

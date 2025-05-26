@@ -11,11 +11,11 @@ import { EffectCoverflow, Pagination } from 'swiper/modules';
 import { useEffect, useRef, useState } from 'react';
 import { IoAddSharp, IoArrowBackCircleOutline, IoArrowForwardCircleOutline, IoChevronBack, IoCloudUploadOutline, IoTrash } from 'react-icons/io5';
 import { BiImageAdd } from 'react-icons/bi';
-import { getImg } from '../Utils/StringFormater';
+import { getMedia } from '../Utils/StringFormater';
 import { getFileType } from '../Utils/functions';
 import { NEW_VIEW } from '../Utils/constants';
 import { ConfirmDelete } from '../Confirm/ConfirmDelete';
-import { useGlobalStore } from '../../pages/index/StoreStore';
+import { useGlobalStore } from '../../api/stores/StoreStore';
 import { globalActionZust } from '../../renderer/AppStore/globalActionZust';
 import { useTranslation } from 'react-i18next';
 
@@ -173,29 +173,9 @@ function SwiperProducts({ views, setViews }: { views: (string | Blob)[], setView
                   <div className={`img_${index} view`} style={{
                     width: '100%',
                     height: '100%',
-                    background: getImg(
-                      typeof i == 'string' ? i
-                        : URL.createObjectURL(i),
-                      undefined, typeof i == 'string' ?
-                      currentStore?.url : undefined
-                    )
+                    background: getMedia({ isBackground: true, source: i, from: 'api' })
                   }}></div>
-                  : <video style={{ filter: `blur(${requireDetele == index ? 5 : 0}px)` }} loop autoPlay={index == currentIndex} className={`img_${index} view`} key={index} muted={true} src={typeof i == 'string' ? `${currentStore?.url}${i.startsWith('/') ? i : '/' + i}` : URL.createObjectURL(i)} />
-              // getFileType(i) == 'image' ?
-              //   // <img style={{ filter: `blur(${requireDetele == index ? 5 : 0}px)` }} src={typeof i == 'string' ? i : URL.createObjectURL(i)} />
-              //   <div className='' style={{
-              //     width:'100%',
-              //     height:'100%',
-              //     filter: `blur(${requireDetele == index ? 5 : 0}px)`,
-              //     background: getImg(
-              //       typeof i == 'string' ? i
-              //         : URL.createObjectURL(i),
-              //       'contain', typeof i == 'string' ?
-              //       currentStore?.url : undefined
-              //     )
-              //   }}></div>
-              //   : <video style={{ filter: `blur(${requireDetele == index ? 5 : 0}px)` }} loop autoPlay={index == currentIndex} controls={false} muted={index != currentIndex} src={typeof i == 'string' ? i : URL.createObjectURL(i)} />
-
+                  : <video style={{ filter: `blur(${requireDetele == index ? 5 : 0}px)` }} loop autoPlay={index == currentIndex} className={`img_${index} view`} key={index} muted={true} src={getMedia({ source: i, from: 'api' })} />
             }
             {
               requireDetele == index && <ConfirmDelete style={{ position: 'absolute' }} title='' onCancel={() => setRequireDetele(-1)} onDelete={() => {

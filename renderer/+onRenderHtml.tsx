@@ -9,8 +9,9 @@ import type { OnRenderHtmlAsync } from 'vike/types'
 import { getPageTitle } from './getPageTitle'
 import { I18nextProvider } from 'react-i18next';
 import './tw.css'
-import { getToken } from "../pages/auth/AuthStore";
+import { getToken } from "../api/stores/AuthStore";
 import { SublymusApiProvider } from "../api/ReactSublymusApi";
+import { Data } from "./AppStore/Data";
 const onRenderHtml: OnRenderHtmlAsync = async (pageContext): ReturnType<OnRenderHtmlAsync> => {
   const { Page } = pageContext
   const i18n = i18next.cloneInstance();
@@ -27,14 +28,15 @@ const onRenderHtml: OnRenderHtmlAsync = async (pageContext): ReturnType<OnRender
 
   console.log({
     baseUrl: baseUrlFromHeader,
-    serverUrl: (process.env.NODE_ENV =='production'?'https://':'http://' ) + serverApiFromHeader,
+    serverUrl: (process.env.NODE_ENV == 'production' ? 'https://' : 'http://') + serverApiFromHeader,
     apiUrl: apiUrlFromHeader,
     server: serverUrlFromHeader
   });
+  Data.serverUrl = serverApiFromHeader;
 
   // Alternatively, we can use an HTML stream, see https://vike.dev/streaming
   const pageHtml = ReactDOMServer.renderToString(
-    <SublymusApiProvider  storeApiUrl={apiUrlFromHeader} mainServerUrl={serverApiFromHeader} getAuthToken={getToken}>
+    <SublymusApiProvider storeApiUrl={apiUrlFromHeader} mainServerUrl={serverApiFromHeader} getAuthToken={getToken}>
       <I18nextProvider i18n={i18n}>
         <Layout pageContext={pageContext}>
           <Page />

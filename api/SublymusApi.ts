@@ -847,42 +847,42 @@ class AuthApiNamespace {
 
     // 1 - Adapter les URLs
     login(params: LoginParams): Promise<LoginResponse> {
-        return this._api._request(`${this.isServer?'/{{main_server}}':'/api/v1'}/auth/login`, { method: 'POST', body: params });
+        return this._api._request(`${this.isServer?'/{{main_server}}':'/v1'}/auth/login`, { method: 'POST', body: params });
     }
     register(params: RegisterParams): Promise<RegisterResponse> {
-        return this._api._request(`${this.isServer?'/{{main_server}}':'/api/v1'}/auth/register`, { method: 'POST', body: params });
+        return this._api._request(`${this.isServer?'/{{main_server}}':'/v1'}/auth/register`, { method: 'POST', body: params });
     }
     verifyEmail(params: VerifyEmailParams): Promise<MessageResponse> {
-        return this._api._request(`${this.isServer?'/{{main_server}}':'/api/v1'}/auth/verify-email`, { method: 'GET', params });
+        return this._api._request(`${this.isServer?'/{{main_server}}':'/v1'}/auth/verify-email`, { method: 'GET', params });
     }
     resendVerificationEmail(params: ResendVerificationParams): Promise<MessageResponse> {
-        return this._api._request(`${this.isServer?'/{{main_server}}':'/api/v1'}/auth/resend-verification`, { method: 'POST', body: params });
+        return this._api._request(`${this.isServer?'/{{main_server}}':'/v1'}/auth/resend-verification`, { method: 'POST', body: params });
     }
     logout(): Promise<MessageResponse> {
-        return this._api._request(`${this.isServer?'/{{main_server}}':'/api/v1'}/auth/logout`, { method: 'POST' });
+        return this._api._request(`${this.isServer?'/{{main_server}}':'/v1'}/auth/logout`, { method: 'POST' });
     }
     
     logoutAllDevices(): Promise<MessageResponse> {
         // Garder l'ancien nom de méthode mais appeler la nouvelle route
-        return this._api._request(`${this.isServer?'/{{main_server}}':'/api/v1'}/auth/logout-all`, { method: 'POST' });
+        return this._api._request(`${this.isServer?'/{{main_server}}':'/v1'}/auth/logout-all`, { method: 'POST' });
     }
     getMe(): Promise<GetMeResponse> {
-        return this._api._request(`${this.isServer?'/{{main_server}}':'/api/v1'}/auth/me`, { method: 'GET' });
+        return this._api._request(`${this.isServer?'/{{main_server}}':'/v1'}/auth/me`, { method: 'GET' });
     }
 
     async update({ data }: UpdateUserParams): Promise<UpdateUserResponse> { // 2 - Type Params modifié
         const formData = await this._api._buildFormData({ data, dataFilesFelds: ['photo'] })
-        return this._api._request(`${this.isServer?'/{{main_server}}':'/api/v1'}/auth/me`, { method: 'PUT', body: formData, isFormData: true });
+        return this._api._request(`${this.isServer?'/{{main_server}}':'/v1'}/auth/me`, { method: 'PUT', body: formData, isFormData: true });
     }
 
     deleteAccount(): Promise<MessageResponse> {
         // Utiliser la méthode DELETE sur /me
-        return this._api._request(`${this.isServer?'/{{main_server}}':'/api/v1'}/auth/me`, { method: 'DELETE' });
+        return this._api._request(`${this.isServer?'/{{main_server}}':'/v1'}/auth/me`, { method: 'DELETE' });
     }
     // handleSocialCallbackInternal reste non exposé publiquement
 
     forgotPassword(params: ForgotPasswordParams): Promise<MessageResponse> {
-        return this._api._request(`${this.isServer?'/{{main_server}}':'/api/v1'}/auth/forgot-password`, {
+        return this._api._request(`${this.isServer?'/{{main_server}}':'/v1'}/auth/forgot-password`, {
             method: 'POST',
             body: { email: params.email, callback_url: params.callback_url }
         });
@@ -890,7 +890,7 @@ class AuthApiNamespace {
 
     resetPassword(params: ResetPasswordParams): Promise<MessageResponse> {
         // Validation faite par le backend + schéma Vine
-        return this._api._request(`${this.isServer?'/{{main_server}}':'/api/v1'}/auth/reset-password`, { method: 'POST', body: params });
+        return this._api._request(`${this.isServer?'/{{main_server}}':'/v1'}/auth/reset-password`, { method: 'POST', body: params });
     }
 
     // --- NOUVELLE MÉTHODE ACCOUNT SETUP ---
@@ -899,7 +899,7 @@ class AuthApiNamespace {
      */
     setupAccount(params: SetupAccountParams): Promise<SetupAccountResponse> { // Utiliser type retour spécifique
         // La validation (longueur mdp, confirmation) est faite par le backend via Vine
-        return this._api._request(`${this.isServer?'/{{main_server}}':'/api/v1'}/auth/setup-account`, { method: 'POST', body: params });
+        return this._api._request(`${this.isServer?'/{{main_server}}':'/v1'}/auth/setup-account`, { method: 'POST', body: params });
     }
 
     socialAuthBackendSource(params?: {provider:string,redirectSuccess?:string,redirectError?:string,storeId?:string}): string { // Utiliser type retour spécifique
@@ -923,7 +923,7 @@ class ProductsApiNamespace {
 
     // 3 - Séparation getList / getOne
     getList(params: GetProductListParams): Promise<GetProductListResponse> {
-        return this._api._request('/api/v1/products', { method: 'GET', params });
+        return this._api._request('/v1/products', { method: 'GET', params });
     }
     async getOne(params: GetProductParams): Promise<GetProductResponse> {
         // Utiliser getList avec les bons filtres et prendre le premier élément
@@ -940,28 +940,28 @@ class ProductsApiNamespace {
     async create(params: CreateProductParams): Promise<CreateProductResponse> {
         // _buildFormData gère déjà la structure { product, views }
         const formData = await this._api._buildFormData({ data: params.product, files: { views: params.views || [] }, dataFilesFelds: ['views'] }); // Assumer 'views' est la clé pour les fichiers
-        return this._api._request('/api/v1/products', { method: 'POST', body: formData, isFormData: true });
+        return this._api._request('/v1/products', { method: 'POST', body: formData, isFormData: true });
     }
 
     async update(params: UpdateProductParams): Promise<UpdateProductResponse> { // 2 - Type Params modifié
         const { product_id, data } = params;
         if (!product_id) throw new Error("Product ID is required for update.");
         const formData = await this._api._buildFormData({ data: data }); // Ajouter product_id au corps si API l'attend là
-        // Appel PUT sur /api/v1/products/:id (l'API doit lire l'ID de l'URL)
+        // Appel PUT sur /v1/products/:id (l'API doit lire l'ID de l'URL)
         // Ici, l'ancien contrôleur attendait product_id dans le body, on garde ça pour l'instant
-        return this._api._request(`/api/v1/products/${product_id}`, { method: 'PUT', body: formData, isFormData: true });
-        //   return this._api._request(`/api/v1/products/${product_id}`, { method: 'PUT', body: data }); // TEMP: Envoyer JSON si pas de fichiers pour l'instant
+        return this._api._request(`/v1/products/${product_id}`, { method: 'PUT', body: formData, isFormData: true });
+        //   return this._api._request(`/v1/products/${product_id}`, { method: 'PUT', body: data }); // TEMP: Envoyer JSON si pas de fichiers pour l'instant
     }
 
     async delete(productId: string): Promise<DeleteProductResponse> {
-        return this._api._request(`/api/v1/products/${productId}`, { method: 'DELETE' });
+        return this._api._request(`/v1/products/${productId}`, { method: 'DELETE' });
     }
 
     // Méthode pour multipleUpdateFeaturesValues
     async multipleUpdateFeaturesValues(params: { product_id: string, currentFeatures: Partial<FeatureInterface>[], initialFeatures: Partial<FeatureInterface>[] }): Promise<MultipleUpdateFeaturesValuesResponse> {
         const formData = await this._api._buildFormDataForFeaturesValues(params);
         if (!formData) return Promise.reject(new ApiError(this._api.t('feature.multipleUpdateFailed'), 400));
-        return this._api._request('/api/v1/features/multiple-updates', { method: 'POST', body: formData, isFormData: true });
+        return this._api._request('/v1/features/multiple-updates', { method: 'POST', body: formData, isFormData: true });
     }
 }
 // --- Fin Partie 1/3 ---
@@ -984,7 +984,7 @@ class CategoriesApiNamespace {
 
     // 3 - Séparation getList / getOne
     getList(params?: GetCategoriesParams): Promise<GetCategoriesResponse> { // Rendre params optionnel
-        return this._api._request<GetCategoriesResponse>('/api/v1/categories', { method: 'GET', params });
+        return this._api._request<GetCategoriesResponse>('/v1/categories', { method: 'GET', params });
     }
     async getOne(params: GetCategoryFiltersParams): Promise<GetCategoryResponse> {
         // Utilise getList avec limit: 1
@@ -995,27 +995,27 @@ class CategoriesApiNamespace {
 
     async create(params: CreateCategoryParams): Promise<CreateCategoryResponse> {
         const formData = await this._api._buildFormData({ data: params.data, dataFilesFelds: ['view', 'icon'] });
-        return this._api._request('/api/v1/categories', { method: 'POST', body: formData, isFormData: true });
+        return this._api._request('/v1/categories', { method: 'POST', body: formData, isFormData: true });
     }
 
     async update(params: UpdateCategoryParams): Promise<UpdateCategoryResponse> { // 2 - Type Params modifié
         // 1 - Adapter URL (utilise ID dans l'URL)
         const { category_id, data } = params;
         const formData = await this._api._buildFormData({ data, dataFilesFelds: ['view', 'icon'] });
-        return this._api._request(`/api/v1/categories/${category_id}`, { method: 'PUT', body: formData, isFormData: true });
+        return this._api._request(`/v1/categories/${category_id}`, { method: 'PUT', body: formData, isFormData: true });
     }
 
     async delete(params: DeleteCategoryParams): Promise<DeleteCategoryResponse> { // 2 - Type Params modifié
         const { category_id } = params;
-        return this._api._request(`/api/v1/categories/${category_id}`, { method: 'DELETE' });
+        return this._api._request(`/v1/categories/${category_id}`, { method: 'DELETE' });
     }
 
     getSubCategories(params: GetSubCategoriesParams): Promise<GetSubCategoriesResponse> {
-        return this._api._request('/api/v1/categories/sub-categories', { method: 'GET', params });
+        return this._api._request('/v1/categories/sub-categories', { method: 'GET', params });
     }
 
     getFilters(params: GetCategoryFiltersParams): Promise<GetCategoryFiltersResponse> {
-        return this._api._request('/api/v1/categories/filters', { method: 'GET', params });
+        return this._api._request('/v1/categories/filters', { method: 'GET', params });
     }
 }
 
@@ -1032,7 +1032,7 @@ class FeaturesApiNamespace {
 
     // 3 - getList (sans ID)
     getList(params: Omit<GetFeaturesParams, 'feature_id'> = {}): Promise<GetFeaturesResponse> { // Exclure feature_id
-        return this._api._request('/api/v1/features', { method: 'GET', params });
+        return this._api._request('/v1/features', { method: 'GET', params });
     }
 
     // 3 - getOne (avec ID)
@@ -1044,7 +1044,7 @@ class FeaturesApiNamespace {
 
     // 3 - getListWithValues
     getListWithValues(params: GetFeaturesWithValuesParams = {}): Promise<GetFeaturesWithValuesResponse> {
-        return this._api._request('/api/v1/features/with-values', { method: 'GET', params });
+        return this._api._request('/v1/features/with-values', { method: 'GET', params });
     }
     // 3 - getOneWithValues (si besoin)
     async getOneWithValues(params: { feature_id: string }): Promise<FeatureInterface | null> {
@@ -1074,7 +1074,7 @@ class ValuesApiNamespace {
 
     // 3 - Séparation getList / getOne
     getList(params: Omit<GetValuesParams, 'value_id'> = {}): Promise<GetValuesResponse> {
-        return this._api._request('/api/v1/values', { method: 'GET', params });
+        return this._api._request('/v1/values', { method: 'GET', params });
     }
     async getOne(params: { value_id: string }): Promise<GetValueResponse> {
         // Utilise getList avec limit=1
@@ -1084,19 +1084,19 @@ class ValuesApiNamespace {
 
     async create(params: CreateValueParams): Promise<CreateValueResponse> {
         const formData = await this._api._buildFormData({ data: params.data, dataFilesFelds: ['icon', 'views'] });
-        return this._api._request('/api/v1/values', { method: 'POST', body: formData, isFormData: true });
+        return this._api._request('/v1/values', { method: 'POST', body: formData, isFormData: true });
     }
 
     async update(params: UpdateValueParams): Promise<UpdateValueResponse> { // 2 - Type Params modifié
         // 1 - Adapter URL (utilise ID dans l'URL)
         const { value_id, data } = params;
         const formData = await this._api._buildFormData({ data, dataFilesFelds: ['icon', 'views'] }); // Ajouter value_id au corps si API l'attend là
-        return this._api._request(`/api/v1/values/${value_id}`, { method: 'PUT', body: formData, isFormData: true });
+        return this._api._request(`/v1/values/${value_id}`, { method: 'PUT', body: formData, isFormData: true });
     }
 
     async delete(params: DeleteValueParams): Promise<DeleteValueResponse> { // 2 - Type Params modifié
         const { value_id } = params;
-        return this._api._request(`/api/v1/values/${value_id}`, { method: 'DELETE' }); // Retourne 204
+        return this._api._request(`/v1/values/${value_id}`, { method: 'DELETE' }); // Retourne 204
     }
 }
 
@@ -1119,7 +1119,7 @@ class DetailsApiNamespace {
 
     // 3 - Séparation getList / getOne
     getList(params: GetDetailListParams): Promise<GetDetailListResponse> {
-        return this._api._request<GetDetailListResponse>('/api/v1/details', { method: 'GET', params });
+        return this._api._request<GetDetailListResponse>('/v1/details', { method: 'GET', params });
     }
     async getOne(params: GetDetailParams): Promise<GetDetailResponse> {
         // Utilise getList avec limit=1
@@ -1129,19 +1129,19 @@ class DetailsApiNamespace {
 
     async create(params: CreateDetailParams): Promise<CreateDetailResponse> {
         const formData = await this._api._buildFormData({ data: params.data, dataFilesFelds: ['view'] });
-        return this._api._request('/api/v1/details', { method: 'POST', body: formData, isFormData: true });
+        return this._api._request('/v1/details', { method: 'POST', body: formData, isFormData: true });
     }
 
     async update(params: UpdateDetailParams): Promise<UpdateDetailResponse> { // 2 - Type Params modifié
         // 1 - Adapter URL (utilise ID dans l'URL)
         const { detail_id, data } = params;
         const formData = await this._api._buildFormData({ data, dataFilesFelds: ['view'] });
-        return this._api._request(`/api/v1/details/${detail_id}`, { method: 'PUT', body: formData, isFormData: true });
+        return this._api._request(`/v1/details/${detail_id}`, { method: 'PUT', body: formData, isFormData: true });
     }
 
     async delete(params: DeleteDetailParams): Promise<DeleteDetailResponse> { // 2 - Type Params modifié
         const { detail_id } = params;
-        return this._api._request(`/api/v1/details/${detail_id}`, { method: 'DELETE' });
+        return this._api._request(`/v1/details/${detail_id}`, { method: 'DELETE' });
     }
 }
 
@@ -1159,18 +1159,18 @@ class OrdersApiNamespace {
     constructor(apiInstance: SublymusApi) { this._api = apiInstance; }
 
     create(params: CreateOrderParams): Promise<CreateOrderResponse> {
-        return this._api._request('/api/v1/orders', { method: 'POST', body: params });
+        return this._api._request('/v1/orders', { method: 'POST', body: params });
     }
 
     // 3 - Séparation getList / getOne (pour les commandes de l'utilisateur)
     getMyList(params?: GetMyOrdersParams): Promise<GetMyOrdersResponse> { // Renommé, params optionnels
-        return this._api._request('/api/v1/orders/my-orders', { method: 'GET', params });
+        return this._api._request('/v1/orders/my-orders', { method: 'GET', params });
     }
     // Pas de getMyOne car un user ne devrait pas accéder à une commande via ID direct? Ou alors utiliser getOne.
 
     // 3 - Séparation getList / getOne (pour toutes les commandes - admin)
     getList(params: CommandFilterType): Promise<GetAllOrdersResponse> {
-        return this._api._request('/api/v1/orders', { method: 'GET', params });
+        return this._api._request('/v1/orders', { method: 'GET', params });
     }
     async getOne(params: GetOrderParams): Promise<GetOrderResponse> {
         // L'API getAllOrders peut filtrer par ID, on l'utilise
@@ -1182,12 +1182,12 @@ class OrdersApiNamespace {
     updateStatus(params: UpdateOrderStatusParams): Promise<UpdateOrderStatusResponse> { // 2 - Type Params inchangé structurellement mais nom différent
         // 1 - Adapter URL (utilise ID dans l'URL)
         const { user_order_id, ...data } = params;
-        return this._api._request(`/api/v1/orders/${user_order_id}/status`, { method: 'PUT', body: data });
+        return this._api._request(`/v1/orders/${user_order_id}/status`, { method: 'PUT', body: data });
     }
 
     delete(params: DeleteOrderParams): Promise<DeleteOrderResponse> { // 2 - Type Params modifié
         const { order_id } = params;
-        return this._api._request(`/api/v1/orders/${order_id}`, { method: 'DELETE' });
+        return this._api._request(`/v1/orders/${order_id}`, { method: 'DELETE' });
     }
 }
 
@@ -1199,13 +1199,13 @@ class CartApiNamespace {
     constructor(apiInstance: SublymusApi) { this._api = apiInstance; }
 
     update(params: UpdateCartParams): Promise<UpdateCartResponse> {
-        return this._api._request('/api/v1/cart/update', { method: 'POST', body: params });
+        return this._api._request('/v1/cart/update', { method: 'POST', body: params });
     }
     view(): Promise<ViewCartResponse> {
-        return this._api._request('/api/v1/cart', { method: 'GET' });
+        return this._api._request('/v1/cart', { method: 'GET' });
     }
     mergeOnLogin(): Promise<MergeCartResponse> {
-        return this._api._request('/api/v1/cart/merge', { method: 'POST' });
+        return this._api._request('/v1/cart/merge', { method: 'POST' });
     }
 }
 
@@ -1222,7 +1222,7 @@ class CommentsApiNamespace {
 
     async create(params: { data: CreateCommentParams, files?: { views?: File[] } }): Promise<CreateCommentResponse> {
         const formData = await this._api._buildFormData({ data: params.data, files: params.files, dataFilesFelds: ['views'] });
-        return this._api._request('/api/v1/comments', { method: 'POST', body: formData, isFormData: true });
+        return this._api._request('/v1/comments', { method: 'POST', body: formData, isFormData: true });
     }
 
     // 3 - Séparation getList / getOne
@@ -1230,7 +1230,7 @@ class CommentsApiNamespace {
         // S'assurer que comment_id n'est pas passé ici
         const { comment_id, ...restParams } = params;
         if (comment_id) console.log("Use getOne to fetch comment by ID");
-        return this._api._request('/api/v1/comments', { method: 'GET', params: restParams });
+        return this._api._request('/v1/comments', { method: 'GET', params: restParams });
     }
     async getOne(params: { comment_id: string, with_users?: boolean }): Promise<CommentInterface | null> {
         // Utilise getList avec l'ID
@@ -1240,19 +1240,19 @@ class CommentsApiNamespace {
 
     // 3 - getForOrderItem reste une méthode spécifique
     getForOrderItem(params: GetCommentForOrderItemParams): Promise<GetCommentForOrderItemResponse> {
-        return this._api._request('/api/v1/comments/for-item', { method: 'GET', params });
+        return this._api._request('/v1/comments/for-item', { method: 'GET', params });
     }
 
     async update(params: UpdateCommentParams, files?: { views?: File[] }): Promise<UpdateCommentResponse> { // 2 - Type Params modifié
         // 1 - Adapter URL (utilise ID dans l'URL)
         const { comment_id, data } = params;
         const formData = await this._api._buildFormData({ data, files, dataFilesFelds: ['views'] });
-        return this._api._request(`/api/v1/comments/${comment_id}`, { method: 'PUT', body: formData, isFormData: true });
+        return this._api._request(`/v1/comments/${comment_id}`, { method: 'PUT', body: formData, isFormData: true });
     }
 
     async delete(params: DeleteCommentParams): Promise<DeleteCommentResponse> { // 2 - Type Params modifié
         const { comment_id } = params;
-        return this._api._request(`/api/v1/comments/${comment_id}`, { method: 'DELETE' });
+        return this._api._request(`/v1/comments/${comment_id}`, { method: 'DELETE' });
     }
 }
 
@@ -1268,12 +1268,12 @@ class FavoritesApiNamespace {
     constructor(apiInstance: SublymusApi) { this._api = apiInstance; }
 
     add(params: AddFavoriteParams): Promise<AddFavoriteResponse> {
-        return this._api._request('/api/v1/favorites', { method: 'POST', body: params });
+        return this._api._request('/v1/favorites', { method: 'POST', body: params });
     }
 
     // 3 - Séparation getList / getOne
     getList(params?: Omit<GetFavoritesParams, 'favorite_id'>): Promise<GetFavoritesResponse> { // Rendre params optionnel
-        return this._api._request('/api/v1/favorites', { method: 'GET', params });
+        return this._api._request('/v1/favorites', { method: 'GET', params });
     }
     async getOne(params: { favorite_id: string }): Promise<FavoriteInteraface & { product: ProductInterface } | null> {
         // Utilise getList avec limit=1
@@ -1284,12 +1284,12 @@ class FavoritesApiNamespace {
     update(params: UpdateFavoriteParams): Promise<UpdateFavoriteResponse> { // 2 - Type Params modifié
         // 1 - Adapter URL (utilise ID dans l'URL)
         const { favorite_id, data } = params;
-        return this._api._request(`/api/v1/favorites/${favorite_id}`, { method: 'PUT', body: data }); // L'API attendait favorite_id dans body aussi, on l'enlève
+        return this._api._request(`/v1/favorites/${favorite_id}`, { method: 'PUT', body: data }); // L'API attendait favorite_id dans body aussi, on l'enlève
     }
 
     remove(params: DeleteFavoriteParams): Promise<DeleteFavoriteResponse> { // 2 - Type Params modifié
         const { favorite_id } = params;
-        return this._api._request(`/api/v1/favorites/${favorite_id}`, { method: 'DELETE' });
+        return this._api._request(`/v1/favorites/${favorite_id}`, { method: 'DELETE' });
     }
 }
 
@@ -1300,11 +1300,11 @@ class UserProfileApiNamespace {
 
     // Adresses
     createAddress(params: CreateAddressParams): Promise<AddressResponse> {
-        return this._api._request('/api/v1/user-addresses', { method: 'POST', body: params });
+        return this._api._request('/v1/user-addresses', { method: 'POST', body: params });
     }
     // 3 - Séparation getList / getOne
     getAddressList(params?: Omit<GetAddressesParams, 'id'>): Promise<GetAddressesResponse> {
-        return this._api._request('/api/v1/user-addresses', { method: 'GET', params });
+        return this._api._request('/v1/user-addresses', { method: 'GET', params });
     }
     async getAddress(params: { id: string }): Promise<AddressType | null> {
         const result = await this.getAddressList(params);
@@ -1313,20 +1313,20 @@ class UserProfileApiNamespace {
 
     updateAddress(params: UpdateAddressParams): Promise<AddressResponse> { // 2 - Type Params modifié
         const { address_id, data } = params;
-        return this._api._request(`/api/v1/user-addresses/${address_id}`, { method: 'PUT', body: data });
+        return this._api._request(`/v1/user-addresses/${address_id}`, { method: 'PUT', body: data });
     }
     deleteAddress(params: DeleteAddressParams): Promise<DeleteResponse> { // 2 - Type Params modifié
         const { address_id } = params;
-        return this._api._request(`/api/v1/user-addresses/${address_id}`, { method: 'DELETE' });
+        return this._api._request(`/v1/user-addresses/${address_id}`, { method: 'DELETE' });
     }
 
     // Téléphones
     createPhone(params: CreatePhoneParams): Promise<PhoneResponse> {
-        return this._api._request('/api/v1/user-phones', { method: 'POST', body: params.data });
+        return this._api._request('/v1/user-phones', { method: 'POST', body: params.data });
     }
     // 3 - Séparation getList / getOne
     getPhoneList(params?: Omit<GetPhonesParams, 'id'>): Promise<GetPhonesResponse> {
-        return this._api._request('/api/v1/user-phones', { method: 'GET', params });
+        return this._api._request('/v1/user-phones', { method: 'GET', params });
     }
     async getPhone(params: { id: string }): Promise<PhoneType | null> {
         const result = await this.getPhoneList(params);
@@ -1335,11 +1335,11 @@ class UserProfileApiNamespace {
 
     updatePhone(params: UpdatePhoneParams): Promise<PhoneResponse> { // 2 - Type Params modifié
         const { phone_id, data } = params;
-        return this._api._request(`/api/v1/user-phones/${phone_id}`, { method: 'PUT', body: data });
+        return this._api._request(`/v1/user-phones/${phone_id}`, { method: 'PUT', body: data });
     }
     deletePhone(params: DeletePhoneParams): Promise<DeleteResponse> { // 2 - Type Params modifié
         const { phone_id } = params;
-        return this._api._request(`/api/v1/user-phones/${phone_id}`, { method: 'DELETE' });
+        return this._api._request(`/v1/user-phones/${phone_id}`, { method: 'DELETE' });
     }
 }
 
@@ -1352,12 +1352,12 @@ class UsersApiNamespace {
 
     // 3 - getList (getOne n'est pas défini dans le contrôleur pour l'instant)
     getList(params: UserFilterType): Promise<GetUsersResponse> {
-        return this._api._request('/api/v1/users', { method: 'GET', params });
+        return this._api._request('/v1/users', { method: 'GET', params });
     }
     // Ajouter delete si l'API le permet
     async getUserStats(params: GetUserStatsParams = {}): Promise<GetUserStatsResponse> {
         // L'API actuelle retourne { stats: {...} }, donc on type le retour global
-        const response = await this._api._request<GetUserStatsResponse>('/api/v1/stats/clients_stats', { method: 'GET', params });
+        const response = await this._api._request<GetUserStatsResponse>('/v1/stats/clients_stats', { method: 'GET', params });
         // Retourner un objet vide si la clé 'stats' est manquante pour éviter les erreurs
         return response ?? { stats: {} };
     }
@@ -1375,17 +1375,17 @@ class RolesApiNamespace {
 
     // 3 - getList (pas de getOne pour les roles/collaborateurs)
     getCollaborators(params: GetCollaboratorsParams): Promise<GetCollaboratorsResponse> {
-        return this._api._request('/api/v1/roles/collaborators', { method: 'GET', params });
+        return this._api._request('/v1/roles/collaborators', { method: 'GET', params });
     }
     createCollaborator(params: CreateCollaboratorParams): Promise<CreateCollaboratorResponse> {
-        return this._api._request('/api/v1/roles/collaborators', { method: 'POST', body: params }); // POST est plus standard
+        return this._api._request('/v1/roles/collaborators', { method: 'POST', body: params }); // POST est plus standard
     }
     updatePermissions(params: UpdateCollaboratorParams): Promise<UpdateCollaboratorResponse> {
-        return this._api._request('/api/v1/roles/collaborators/permissions', { method: 'POST', body: params });
+        return this._api._request('/v1/roles/collaborators/permissions', { method: 'POST', body: params });
     }
     removeCollaborator(params: DeleteCollaboratorParams): Promise<RemoveCollaboratorResponse> { // 2 - Type Params modifié
         const { user_id } = params;
-        return this._api._request(`/api/v1/roles/collaborators/${user_id}`, { method: 'DELETE' });
+        return this._api._request(`/v1/roles/collaborators/${user_id}`, { method: 'DELETE' });
     }
 }
 
@@ -1405,25 +1405,25 @@ class InventoriesApiNamespace {
 
     // 3 - Séparation getList / getOne
     getList(params?: Omit<GetInventoriesParams, 'inventory_id'>): Promise<GetInventoriesResponse> { // Rendre params optionnel
-        return this._api._request<GetInventoriesResponse>('/api/v1/inventories', { method: 'GET', params });
+        return this._api._request<GetInventoriesResponse>('/v1/inventories', { method: 'GET', params });
     }
     async getOne(params: { inventory_id: string }): Promise<GetInventoryResponse> {
         // Utilise l'endpoint /:id
-        return this._api._request<Inventory>(`/api/v1/inventories/${params.inventory_id}`, { method: 'GET' });
+        return this._api._request<Inventory>(`/v1/inventories/${params.inventory_id}`, { method: 'GET' });
     }
 
     async create(params: CreateInventoryParams): Promise<InventoryResponse> {
         const formData = await this._api._buildFormData({ data: params.data, dataFilesFelds: ['views'] });
-        return this._api._request('/api/v1/inventories', { method: 'POST', body: formData, isFormData: true });
+        return this._api._request('/v1/inventories', { method: 'POST', body: formData, isFormData: true });
     }
     async update(params: UpdateInventoryParams): Promise<InventoryResponse> { // 2 - Type Params modifié
         const { inventory_id, data } = params;
         const formData = await this._api._buildFormData({ data, dataFilesFelds: ['views'] });
-        return this._api._request(`/api/v1/inventories/${inventory_id}`, { method: 'PUT', body: formData, isFormData: true });
+        return this._api._request(`/v1/inventories/${inventory_id}`, { method: 'PUT', body: formData, isFormData: true });
     }
     async delete(params: DeleteInventoryParams): Promise<DeleteInventoryResponse> { // 2 - Type Params modifié
         const { inventory_id } = params;
-        return this._api._request(`/api/v1/inventories/${inventory_id}`, { method: 'DELETE' });
+        return this._api._request(`/v1/inventories/${inventory_id}`, { method: 'DELETE' });
     }
 }
 
@@ -1435,7 +1435,7 @@ class StatsApiNamespace {
     constructor(apiInstance: SublymusApi) { this._api = apiInstance; }
 
     async getKpis(params: BaseStatsParams = {}): Promise<KpiStatsResponse> {
-        return this._api._request('/api/v1/stats/kpi', { method: 'GET', params });
+        return this._api._request('/v1/stats/kpi', { method: 'GET', params });
     }
 
     async getVisitDetails(params: BaseStatsParams & { include?: VisitStatsIncludeOptions } = {}): Promise<VisitStatsResponse> {
@@ -1458,7 +1458,7 @@ class StatsApiNamespace {
         // L'API backend /stats/visits ne semble pas utiliser le param 'stats', le retirer
         delete apiParams.stats;
 
-        return this._api._request('/api/v1/stats/visits', { method: 'GET', params: apiParams });
+        return this._api._request('/v1/stats/visits', { method: 'GET', params: apiParams });
     }
 
     async getOrderDetails(params: BaseStatsParams & { include?: OrderStatsIncludeOptions } = {}): Promise<OrderStatsResponse> {
@@ -1479,12 +1479,12 @@ class StatsApiNamespace {
         // L'API backend /stats/orders ne semble pas utiliser le param 'stats', le retirer
         delete apiParams.stats;
 
-        return this._api._request('/api/v1/stats/orders', { method: 'GET', params: apiParams });
+        return this._api._request('/v1/stats/orders', { method: 'GET', params: apiParams });
     }
 
     // Garder ou adapter si nécessaire
     getVisitsSummary(params: { period?: string, user_id?: string }): Promise<any> {
-        return this._api._request('/api/v1/stats/summary', { method: 'GET', params });
+        return this._api._request('/v1/stats/summary', { method: 'GET', params });
     }
 
 }
@@ -1497,7 +1497,7 @@ class GeneralApiNamespace {
     constructor(apiInstance: SublymusApi) { this._api = apiInstance; }
 
     globalSearch(params: GlobalSearchParams): Promise<GlobalSearchResponse> {
-        return this._api._request('/api/v1/global/search', { method: 'GET', params });
+        return this._api._request('/v1/global/search', { method: 'GET', params });
     }
     // Implémenter import/export si nécessaire
 }
@@ -1510,10 +1510,10 @@ class DebugApiNamespace {
     constructor(apiInstance: SublymusApi) { this._api = apiInstance; }
 
     requestScaleUp(): Promise<ScaleResponse> {
-        return this._api._request('/api/v1/debug/scale-up', { method: 'GET' });
+        return this._api._request('/v1/debug/scale-up', { method: 'GET' });
     }
     requestScaleDown(): Promise<ScaleResponse> {
-        return this._api._request('/api/v1/debug/scale-down', { method: 'GET' });
+        return this._api._request('/v1/debug/scale-down', { method: 'GET' });
     }
 }
 

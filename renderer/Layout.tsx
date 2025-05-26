@@ -13,13 +13,13 @@ import '../Lib/i18n'; // Garder pour initialisation i18n
 // import { StoreCreate } from '../pages/StoreCreate/StoreCreate'; // Supposé non utilisé ici directement
 import { ClientCall } from '../Components/Utils/functions';
 import { useHashWatcher } from '../Hooks/useHashWatcher';
-import { useGlobalStore } from '../pages/index/StoreStore'; // Gardé pour fetch initial store
+import { useGlobalStore } from '../api/stores/StoreStore'; // Gardé pour fetch initial store
 import { useTranslation } from 'react-i18next'; // Pour traduction future
 import { useChildViewer } from '../Components/ChildViewer/useChildViewer'; // Hook pour popup
 import { IoHome, IoHomeOutline, IoStorefront, IoStorefrontOutline, IoPeople, IoPeopleOutline, IoDocumentText, IoDocumentTextOutline, IoCube, IoCubeOutline, IoLayers, IoLayersOutline } from 'react-icons/io5'; // Importer directement les icônes
 import { Toaster } from 'react-hot-toast';
 import { useMyLocation } from '../Hooks/useRepalceState';
-import { useAuthStore } from '../pages/auth/AuthStore';
+import { useAuthStore } from '../api/stores/AuthStore';
 
 
 function Layout({ children, pageContext }: { children: React.ReactNode; pageContext: PageContext }) {
@@ -30,11 +30,11 @@ function Layout({ children, pageContext }: { children: React.ReactNode; pageCont
   useEffect(() => {
     const token = getToken()
     const user = getUser()
-    console.log({user});
-    
+    console.log({ user });
+
     if (!token) {
       nextPage('/auth/login') // ou replace pour ne pas garder la page dans l'historique
-    }else{
+    } else {
       setUser(user);
     }
   }, []);
@@ -185,8 +185,8 @@ function Frame({ children }: { children: React.ReactNode }) {
 function Sidebar({ children }: { children: React.ReactNode }) {
 
   const { urlPathname } = usePageContext()
-   const openBar = !(
-    urlPathname=='/' ||
+  const openBar = !(
+    urlPathname == '/' ||
     urlPathname.startsWith('/auth') ||
     urlPathname.startsWith('/profile') ||
     urlPathname.startsWith('/setting') ||
@@ -213,7 +213,7 @@ function Bottombar({ children }: { children: React.ReactNode }) {
   const { blur } = useChildViewer();
   const { urlPathname } = usePageContext()
   const openBar = !(
-    urlPathname=='/' ||
+    urlPathname == '/' ||
     urlPathname.startsWith('/auth') ||
     urlPathname.startsWith('/profile') ||
     urlPathname.startsWith('/setting') ||

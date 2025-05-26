@@ -5,11 +5,11 @@ import { useEffect, useState, useMemo } from 'react';
 import { CategoryInterface, FilterType } from '../../api/Interfaces/Interfaces';
 // import { useCategory } from '../../pages/category/CategoryStore'; // Remplacé
 import { useGetCategories } from '../../api/ReactSublymusApi'; // ✅ Importer hook API
-import { useGlobalStore } from '../../pages/index/StoreStore';
+import { useGlobalStore } from '../../api/stores/StoreStore';
 // import { useApp } from '../../renderer/AppStore/UseApp'; // Supposé non utilisé ici
 import { CategoryItemMini } from '../CategoryItem/CategoryItemMini'; // Utiliser le Mini Item ici aussi? Ou un RowItem? Prenons Mini pour l'instant.
 import { IoSearch } from 'react-icons/io5';
-import { getImg } from '../Utils/StringFormater';
+import { getMedia } from '../Utils/StringFormater';
 import { useTranslation } from 'react-i18next'; // ✅ i18n
 import { debounce } from '../Utils/functions'; // Garder debounce
 import { CategoryItemSkeletonMini } from '../CategoryItem/CategoryItemMini';
@@ -73,7 +73,7 @@ function CategoriesPopup({ onSelected, ignore = [], initialSearch = '' }: Catego
 
                 {!isLoading && !isError && filteredList.length === 0 && (
                     <div className="w-full flex flex-col items-center text-center text-gray-500 py-6">
-                        <div className="w-32 h-32 bg-contain bg-center bg-no-repeat mb-4" style={{ backgroundImage: getImg('/res/empty/search.png') }}></div>
+                        <div className="w-32 h-32 bg-contain bg-center bg-no-repeat mb-4" style={{ background: getMedia({ isBackground: true, source: '/res/empty/search.png' }) }}></div>
                         {t('common.noResults')}
                     </div>
                 )}

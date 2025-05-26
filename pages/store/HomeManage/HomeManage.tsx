@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next'; // ✅ Importer useTranslation
 // Importer les hooks pour récupérer les données dynamiques si nécessaire
 import { useGetProductList } from '../../../api/ReactSublymusApi';
 import { useGetCategories } from '../../../api/ReactSublymusApi';
-import { useGlobalStore } from '../../index/StoreStore'; // Pour le nombre de stores si dynamique
+import { useGlobalStore } from '../../../api/stores/StoreStore'; // Pour le nombre de stores si dynamique
 
 export { HomeManage };
 

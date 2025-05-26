@@ -10,7 +10,7 @@ import { showToast, showErrorToast } from '../../../../Components/Utils/toastNot
 import { useTranslation } from 'react-i18next'; // ✅ i18n
 import { useEffect, useMemo, useRef, useState } from 'react'; // ✅ useMemo pour calculs
 import { FaTruck } from 'react-icons/fa';
-import { useGlobalStore } from '../../../index/StoreStore';
+import { useGlobalStore } from '../../../../api/stores/StoreStore';
 import { usePageContext } from '../../../../renderer/usePageContext';
 import { useGetOrderDetails } from '../../../../api/ReactSublymusApi';
 import { SpinnerIcon } from '../../../../Components/Confirm/Spinner';

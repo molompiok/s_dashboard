@@ -1,17 +1,33 @@
 //Components/Utils/StringFormater.ts
-import { Host } from "../../renderer/+config";
+
+import { useGlobalStore } from "../../api/stores/StoreStore"
+import { Data } from "../../renderer/AppStore/Data"
+
+const MediaCache: Record<string, any> = {}
 
 
-export const getImg = (img?: string | Blob, size = 'cover', _host?: string | null | undefined) => {
-    const _img = typeof img == 'string'
-        ? img :
-        img instanceof Blob ?
-            URL.createObjectURL(img) : ''
-        
-    return `no-repeat center/${size} url(${(
-            _img?.startsWith('/') && _host !== null
-                ? _host || Host
-                : ''
-        )
-        }${img})`
+export const getMedia = ({ size = 'cover', host, from, isBackground, source }: {
+    source?: string | Blob,
+    size?: 'cover' | 'contain',
+    host?: string | null | undefined,
+    from?: 'server' | 'api' | 'local' | null,
+    isBackground?: true
+}) => {
+    const _source = typeof source == 'string'
+        ? source :
+        source instanceof Blob ?
+            MediaCache[(source as File).name + source.size + source.type] || (MediaCache[(source as File).name + source.size + source.type] = URL.createObjectURL(source)) : ''
+
+    const _host = from == 'api' ?
+        useGlobalStore.getState().currentStore?.api_url :
+        from == 'server' ? `${Data.serverUrl}` : ''
+    const url = `${(
+        _source?.startsWith('/') && (host || _host || '')
+    )
+        }${_source}`
+    if (isBackground) {
+        return `no-repeat center/${size} url(${url})`
+    }
+
+    return url;
 }

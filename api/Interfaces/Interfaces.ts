@@ -191,6 +191,8 @@ export type StoreInterface = Partial<{
   created_at: string;
   updated_at: string;
   url?: string;
+  default_domain:string;
+  api_url:string;
   timezone?: string,
   currency?: string,
   currentApi?: ApiInterface; // Définir ApiInterface

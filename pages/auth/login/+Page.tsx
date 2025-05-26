@@ -11,7 +11,7 @@ import {
     useApi,
     // useApi, // Plus besoin si on utilise getAuthBackend directement dans les hooks
 } from '../../../api/ReactSublymusApi';
-import { useAuthStore } from '../AuthStore';
+import { useAuthStore } from '../../../api/stores/AuthStore';
 import logger from '../../../api/Logger';
 import { ApiError, LoginParams, RegisterParams } from '../../../api/SublymusApi'; // Importer les types Params
 import { IoMailOutline, IoLockClosedOutline, IoPersonOutline, IoLogoGoogle /*, IoLogoFacebook*/ } from 'react-icons/io5';
@@ -139,9 +139,9 @@ function Page() {
 
     const handleSocialLogin = (provider: 'google') => {
         const redirectSuccess = `${window.location.origin}${window.location.pathname}`; // Retour à cette page
-        const redirectError = `${window.location.origin}/auth/auth-notice`; 
+        const redirectError = `${window.location.origin}/auth/auth-notice`;
 
-        const socialAuthUrl = api.authServer.socialAuthBackendSource({provider,redirectError,redirectSuccess});
+        const socialAuthUrl = api.authServer.socialAuthBackendSource({ provider, redirectError, redirectSuccess });
         alert(socialAuthUrl)
 
         window.location.href = socialAuthUrl;

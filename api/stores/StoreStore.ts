@@ -1,11 +1,10 @@
 //pages/stores/StoreStore.ts
 import { create } from "zustand";
 import { combine } from "zustand/middleware";
-import { useAuthStore } from "../auth/AuthStore";
-import { ListType, StoreInterface } from "../../api/Interfaces/Interfaces";
+import { ListType, StoreInterface } from "../Interfaces/Interfaces";
 
 import { Transmit } from '@adonisjs/transmit-client'
-import { ClientCall } from "../../Components/Utils/functions";
+import { Data } from "../../renderer/AppStore/Data";
 
 export { useGlobalStore, getTransmit }
 
@@ -46,6 +45,7 @@ const useGlobalStore = create(combine({
     },
     async setCurrentStore(currentStore: StoreInterface | undefined) {
         currentStore && (currentStore.url = '')
+        Data.apiUrl
         set(() => ({ currentStore: currentStore }));
         if (currentStore)
             localStorage.setItem('current_store', JSON.stringify(currentStore));

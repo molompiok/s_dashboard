@@ -2,7 +2,7 @@
 import { create } from "zustand"
 import { combine } from "zustand/middleware"
 import { CommandFilterType, CommandInterface, EventStatus, ListType } from "../../api/Interfaces/Interfaces"
-import { useAuthStore } from "../auth/AuthStore"
+import { useAuthStore } from "../../api/stores/AuthStore"
 
 
 

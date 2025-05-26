@@ -5,7 +5,7 @@ import { ProductRowItem } from '../ProductItem/ProductRowItem';
 
 import { useGetProductList } from '../../api/ReactSublymusApi';
 import { useEffect, useState } from 'react';
-import { useGlobalStore } from '../../pages/index/StoreStore';
+import { useGlobalStore } from '../../api/stores/StoreStore';
 import { IoAppsSharp, IoListSharp, IoChevronDown, IoSearch } from 'react-icons/io5';
 import { OrderFilterComponent, PriceFilterComponent } from '../CommandesList/CommandesList';
 import { CategoryInterface, FilterType, ProductInterface } from '../../api/Interfaces/Interfaces';

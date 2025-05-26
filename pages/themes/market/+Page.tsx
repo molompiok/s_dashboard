@@ -11,7 +11,7 @@ import { ThemeFilters } from '../../../Components/ThemeList/ThemeFilters'; // No
 import logger from '../../../api/Logger';
 // import { useStore } from '../stores/'; // Pour obtenir le storeId lors de l'installation
 import { usePageContext } from '../../../renderer/usePageContext'; // Pour lire le storeId initial des params?
-import { useGlobalStore } from '../../index/StoreStore';
+import { useGlobalStore } from '../../../api/stores/StoreStore';
 import { useWindowSize } from '../../../Hooks/useWindowSize';
 import { FaEdit, FaTimes } from 'react-icons/fa';
 import { Menu } from 'lucide-react';

@@ -4,8 +4,8 @@
 import { useRef, useState, useEffect } from 'react';
 import { FeatureInterface, ValueInterface } from '../../api/Interfaces/Interfaces';
 import { IoClose, IoCloudUploadOutline, IoPencil } from 'react-icons/io5';
-import { getImg } from '../Utils/StringFormater';
-import { useGlobalStore } from '../../pages/index/StoreStore';
+import { getMedia } from '../Utils/StringFormater';
+import { useGlobalStore } from '../../api/stores/StoreStore';
 import { RiImageEditFill } from 'react-icons/ri';
 import { Confirm } from '../Confirm/Confirm'; // Gardé
 import { ValuePricing } from '../ValuePricing/ValuePricing'; // Gardé
@@ -98,7 +98,7 @@ function FV_IconText_Info({ value: initialValue, feature, onChange, onCancel }: 
     };
 
     // URL de l'icône à afficher (preview locale ou URL serveur)
-    const iconUrl = localIconPreview ?? (typeof v.icon?.[0] === 'string' ? getImg(v.icon[0], 'contain', useGlobalStore.getState().currentStore?.url) : undefined);
+    const iconUrl = localIconPreview ? getMedia({ isBackground: true, source: localIconPreview }) : getMedia({ isBackground: true, source: v.icon?.[0], size: 'contain', from: 'api' });
     const showIconPlaceholder = !iconUrl;
     const showIconUpload = feature.type === 'icon' || feature.type === 'icon_text';
 
@@ -115,7 +115,7 @@ function FV_IconText_Info({ value: initialValue, feature, onChange, onCancel }: 
                     <label htmlFor='icon-text-icon-input' className={`relative block w-36 h-36 rounded-lg cursor-pointer overflow-hidden group bg-gray-100 border ${imageError ? 'border-red-500' : 'border-gray-300'} hover:bg-gray-200`}>
                         <div
                             className="absolute inset-0 bg-contain bg-center bg-no-repeat"
-                            style={{ background: getImg(iconUrl) }}
+                            style={{ background: iconUrl }}
                         ></div>
                         {showIconPlaceholder && (
                             <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-400 group-hover:text-blue-500 p-2 text-center">
@@ -137,7 +137,7 @@ function FV_IconText_Info({ value: initialValue, feature, onChange, onCancel }: 
             {/* Nom de l'option */}
             {(feature.type?.includes('text')) && ( // Afficher si type contient 'text'
                 <div>
-                    <label className='block text-sm font-medium text-gray-700 mb-1 flex justify-between items-center' htmlFor="icon-text-name-input">
+                    <label className=' text-sm font-medium text-gray-700 mb-1 flex justify-between items-center' htmlFor="icon-text-name-input">
                         <span>{t('value.nameLabel')} <IoPencil className="inline-block ml-1 w-3 h-3 text-gray-400" /></span>
                         <span className={`text-xs ${(v.text?.trim()?.length || 0) > 32 ? 'text-red-600' : 'text-gray-400'}`}>
                             {(v.text?.trim()?.length || 0)} / 32
@@ -205,7 +205,7 @@ function IconTextValue({ value, feature, onRemove, onClick }: { onClick?: () => 
             {(feature?.type?.includes('icon')) && (
                 <div
                     className="icon-value w-12 h-12 rounded-md bg-contain bg-center bg-no-repeat bg-gray-100 mb-1" // Utiliser contain
-                    style={{ background: getImg(icon, 'contain', currentStore?.url) || getImg('/res/empty/empty-image.jpg', 'contain') }} // Placeholder si pas d'icône
+                    style={{ background: getMedia({ isBackground: true, source: icon, size: 'contain', from: 'api' }) || getMedia({ isBackground: true, source: '/res/empty/empty-image.jpg', size: 'contain' }) }} // Placeholder si pas d'icône
                 ></div>
             )}
             {/* Texte */}

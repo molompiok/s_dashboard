@@ -9,7 +9,7 @@ import { IoCheckmarkCircle, IoChevronBack, IoChevronForward, IoCloseCircle, IoPe
 import { useCheckStoreNameAvailability, useCreateStore, useUpdateStore } from '../../api/ReactSublymusApi'; // ✅ Hooks API
 import { ApiError } from '../../api/SublymusApi'; // Pour typer erreur
 import { StoreInterface } from '../../api/Interfaces/Interfaces'; // Types locaux
-import { getImg } from '../../Components/Utils/StringFormater';
+import { getMedia } from '../../Components/Utils/StringFormater';
 import { ClientCall, debounce, toNameString } from '../../Components/Utils/functions';
 import { useTranslation } from 'react-i18next'; // ✅ i18n
 import logger from '../../api/Logger';
@@ -285,7 +285,7 @@ export function StoreCreationEditionWizard({
 
     // --- Préparation des URLs pour preview ---
     const getPreviewUrl = (fileOrUrl: string | Blob | undefined): string | undefined => {
-        if (typeof fileOrUrl === 'string') return getImg(fileOrUrl, undefined, Server_Host).match(/url\("?([^"]+)"?\)/)?.[1];
+        if (typeof fileOrUrl === 'string') return getMedia({source:fileOrUrl,from:'server'});
         if (fileOrUrl instanceof File) return URL.createObjectURL(fileOrUrl);
         return undefined;
     };
@@ -295,8 +295,8 @@ export function StoreCreationEditionWizard({
 
 
 
-    console.log({savedStore,loadingState});
-    
+    console.log({ savedStore, loadingState });
+
 
 
 
@@ -451,9 +451,9 @@ export function StoreCreationEditionWizard({
                         <h2 className="text-lg font-medium text-gray-700">{t('storeCreate.stepCoverTitle')}</h2>
                         <label htmlFor='store-cover_image-input' className={`relative  group w-full max-w-md aspect-video rounded-lg cursor-pointer overflow-hidden bg-gray-100 border-2 ${coverError ? 'border-red-400' : 'border-dashed border-gray-300'} hover:border-blue-400 hover:bg-gray-50`}>
                             <div
-                                style={{ background: getImg(coverPreview || '/res/empty/drag-and-drop.png') }}
+                                style={{ background: getMedia({isBackground:true,source:coverPreview || '/res/empty/drag-and-drop.png'}) }}
                                 className={`relative mx-auto group w-full max-w-md aspect-video rounded-lg cursor-pointer overflow-hidden bg-gray-100 border-2 ${coverError ? 'border-red-400' : 'border-dashed border-gray-300'} hover:border-blue-400 hover:bg-gray-50  ${collected.cover_image.length > 0 ? 'object-cover' : 'object-contain opacity-50'} w-auto h-[70%]`}//className={` }`}
-                                onError={(e) => (e.currentTarget.style.background = getImg('/res/empty/drag-and-drop.png'))}
+                                onError={(e) => (e.currentTarget.style.background = getMedia({isBackground:true,source:'/res/empty/drag-and-drop.png'}))}
                             >
                             </div>
                             <div className="absolute m-auto inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
@@ -604,11 +604,11 @@ export function FeedbackOverlay({
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
             <div className="bg-white  rounded-2xl shadow-xl w-full max-w-md p-6 flex flex-col sx:flex-row items-center gap-6"
-            onClick={(e)=>{
-                if(e.target == e.currentTarget){
-                    // action
-                }
-            }}>
+                onClick={(e) => {
+                    if (e.target == e.currentTarget) {
+                        // action
+                    }
+                }}>
                 {/* Icône avec fond coloré */}
                 <div className={`p-4 rounded-full  bg-${bgColor}-${bg}`}>
                     {renderIcon()}

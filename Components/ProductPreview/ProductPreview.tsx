@@ -1,7 +1,7 @@
 import { getDefaultValues } from "../Utils/parseData";
 import { ProductInterface } from "../../api/Interfaces/Interfaces";
-import { useGlobalStore } from "../../pages/index/StoreStore";
-import { getImg } from "../Utils/StringFormater";
+import { useGlobalStore } from "../../api/stores/StoreStore";
+import { getMedia } from "../Utils/StringFormater";
 import { getFileType, limit, shortNumber } from "../Utils/functions";
 import { markdownToPlainText } from "../MarkdownViewer/MarkdownViewer";
 import { IoPeopleSharp, IoPricetag, IoStarHalf } from "react-icons/io5";
@@ -22,7 +22,7 @@ function ProductPreview({ product }: { product: Partial<ProductInterface> }) {
 
   const defaultValues = getDefaultValues(product);
   const defaultView = defaultValues[0]?.views?.[0] || NO_PICTURE;
-  const src = getImg(defaultView, undefined, currentStore?.url).match(/url\("?([^"]+)"?\)/)?.[1];
+  const src = getMedia({ source: defaultView, from: 'api' });
   const fileType = getFileType(defaultView);
   const { t } = useTranslation()
 

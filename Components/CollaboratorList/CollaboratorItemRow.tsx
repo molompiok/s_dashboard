@@ -2,7 +2,7 @@
 
 import { Role as RoleInterface, TypeJsonRole, UserInterface } from "../../api/Interfaces/Interfaces";
 import { useTranslation } from "react-i18next";
-import { getImg } from "../Utils/StringFormater";
+import { getMedia } from "../Utils/StringFormater";
 import { IoMailOutline, IoPencil, IoShieldCheckmarkOutline, IoTrash } from "react-icons/io5"; // Icônes
 import { useRemoveCollaborator } from "../../api/ReactSublymusApi"; // Hook suppression
 import { useChildViewer } from "../ChildViewer/useChildViewer"; // Pour confirmation
@@ -66,7 +66,7 @@ export function CollaboratorItemRow({ collaboratorRole, onEditPermissions }: Col
 
             {/* Avatar/Initiales */}
             <div className="flex-shrink-0 w-10 h-10 rounded-full bg-cover bg-center bg-gray-200 text-gray-500 font-medium text-sm flex items-center justify-center"
-                style={{ backgroundImage: user.photo?.[0] ? getImg(user.photo[0]) : 'none' }}
+                style={{ background: user.photo?.[0] ? getMedia({isBackground:true,source:user.photo[0]}) : 'none' }}
             >
                 {!user.photo?.[0] && (user.full_name?.substring(0, 2).toUpperCase() || '?')}
             </div>

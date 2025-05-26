@@ -1,5 +1,5 @@
 //Components/FeatureTypes/FeatureTypes.tsx
-import { getImg } from '../Utils/StringFormater';
+import { getMedia } from '../Utils/StringFormater';
 
 import './FeatureTypes.css'
 import { Swiper, SwiperSlide } from 'swiper/react'
@@ -30,11 +30,11 @@ const Types = [
 function FeatureTypes({ className, onSelected, active }: { active?: string, onSelected: (type: string) => void, className?: string }) {
 
   const { t } = useTranslation();
-    const s = useWindowSize().width;
-    const n = s <= 580 ? ((s - 220) / 360) + 1
-        : 2;
-    
-    return <Swiper
+  const s = useWindowSize().width;
+  const n = s <= 580 ? ((s - 220) / 360) + 1
+    : 2;
+
+  return <Swiper
     slidesPerView={n}
     grid={{
       rows: 2,
@@ -45,7 +45,7 @@ function FeatureTypes({ className, onSelected, active }: { active?: string, onSe
     }}
     modules={[Grid, Pagination]}
     style={{
-        overflow:'visible'
+      overflow: 'visible'
     }}
     className={`list-type mb-6 w-full h-[220px] ${className}`}
   >
@@ -53,16 +53,15 @@ function FeatureTypes({ className, onSelected, active }: { active?: string, onSe
       Types.map(typeInfo => (
         <SwiperSlide key={typeInfo.name}>
           <div
-           className={`no-select flex items-center w-full h-full gap-3 sm:gap-4 rounded-xl cursor-pointer p-2 sm:p-3 transition duration-200 ease-in-out border ${
-            active === typeInfo.name
+            className={`no-select flex items-center w-full h-full gap-3 sm:gap-4 rounded-xl cursor-pointer p-2 sm:p-3 transition duration-200 ease-in-out border ${active === typeInfo.name
                 ? 'bg-blue-100 border-blue-300 ring-1 ring-blue-400' // Style actif
                 : 'bg-white border-gray-200 hover:bg-gray-50 hover:border-gray-300' // Style normal
-        }`}
+              }`}
             onClick={() => onSelected(typeInfo.name)}
           >
             <div
               className="min-w-[100px] w-[100px] h-[100px]"
-              style={{ background: getImg(typeInfo.url) }}
+              style={{ background: getMedia({isBackground:true,source:typeInfo.url}) }}
             ></div>
             <div className="name">{t(typeInfo.showKey)}</div>
           </div>

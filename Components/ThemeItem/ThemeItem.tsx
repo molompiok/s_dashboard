@@ -3,16 +3,16 @@ import 'swiper/css';
 import 'swiper/css/pagination';
 import 'swiper/css/grid';
 import { ClientCall } from '../Utils/functions';
-import { getImg } from '../Utils/StringFormater';
+import { getMedia } from '../Utils/StringFormater';
 import { IoDiamond } from 'react-icons/io5';
 
-export {ThemeItem}
+export { ThemeItem }
 
 
 function ThemeItem({ theme }: { theme: any }) {
 
   return <div className="theme-item">
-    <div className="image" style={{ background: getImg('/res/store_img_5.png') }}>
+    <div className="image" style={{ background: getMedia({isBackground:true,source:'/res/store_img_5.png'}) }}>
       {
         ClientCall(Math.random, 0) < 0.5 ? <div className="price">< IoDiamond />{'12 300F'}</div>
           : <div className="free">{'Gratuit'}</div>
