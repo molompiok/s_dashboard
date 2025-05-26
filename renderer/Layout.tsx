@@ -26,13 +26,16 @@ function Layout({ children, pageContext }: { children: React.ReactNode; pageCont
   const { t } = useTranslation()
   const { nextPage } = useMyLocation()
 
-  const { getToken } = useAuthStore();
+  const { getToken, getUser, setUser } = useAuthStore();
   useEffect(() => {
     const token = getToken()
+    const user = getUser()
+    console.log({user});
+    
     if (!token) {
-      console.log('------------->>>>>', token);
-
-      // nextPage('/auth/login') // ou replace pour ne pas garder la page dans l'historique
+      nextPage('/auth/login') // ou replace pour ne pas garder la page dans l'historique
+    }else{
+      setUser(user);
     }
   }, []);
 
@@ -185,6 +188,8 @@ function Sidebar({ children }: { children: React.ReactNode }) {
    const openBar = !(
     urlPathname=='/' ||
     urlPathname.startsWith('/auth') ||
+    urlPathname.startsWith('/profile') ||
+    urlPathname.startsWith('/setting') ||
     urlPathname.startsWith('/themes')
   )
   return openBar && (
@@ -210,6 +215,8 @@ function Bottombar({ children }: { children: React.ReactNode }) {
   const openBar = !(
     urlPathname=='/' ||
     urlPathname.startsWith('/auth') ||
+    urlPathname.startsWith('/profile') ||
+    urlPathname.startsWith('/setting') ||
     urlPathname.startsWith('/themes')
   )
   console.log({ openBar, urlPathname });

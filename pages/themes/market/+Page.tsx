@@ -175,7 +175,7 @@ function Page() {
 
                     <div className='px-4 flex flex-col gap-4'>
                         {!isLoading && !isError &&
-                            [...themes, ...themes, ...themes, ...themes, ...themes, ...themes, ...themes, ...themes, ...themes, ...themes, ...themes, ...themes, ...themes, ...themes, ...themes, ...themes, ...themes, ...themes, ...themes, ...themes, ...themes, ...themes, ...themes, ...themes, ...themes, ...themes, ...themes, ...themes, ...themes, ...themes, ...themes, ...themes, ...themes, ...themes, ...themes, ...themes, ...themes, ...themes, ...themes, ...themes].map((theme, i) => (
+                            themes.map((theme, i) => (
                                 <ThemeCard
                                     key={theme.id + i}
                                     theme={theme}

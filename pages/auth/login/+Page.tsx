@@ -8,6 +8,7 @@ import {
     useRegister, // ✅ NOUVEAU : Hook pour l'inscription
     useGetMe,
     queryClient,
+    useApi,
     // useApi, // Plus besoin si on utilise getAuthBackend directement dans les hooks
 } from '../../../api/ReactSublymusApi';
 import { useAuthStore } from '../AuthStore';
@@ -36,6 +37,10 @@ function Page() {
     const [successMessage, setSuccessMessage] = useState<string | null>(null);
     const [isProcessingToken, setIsProcessingToken] = useState(false);
 
+    const { nextPage } = useMyLocation()
+
+    const api = useApi();
+
     const { setUser: setGlobalUser, setToken: setGlobalToken } = useAuthStore();
 
     // Utiliser les hooks avec backend_target: 'server' pour le dashboard
@@ -43,12 +48,10 @@ function Page() {
     const registerMutation = useRegister({ backend_target: 'server' }); // ✅ NOUVEAU
     const getMeMutation = useGetMe({ backend_target: 'server', enabled: false }); // enabled: false initialement
 
-    const { nextPage } = useMyLocation()
     // Traitement du token social login (inchangé pour l'instant, mais redirectUrl devra être dynamique)
     useEffect(() => {
         if (typeof window !== 'undefined') {
-            const fragmentParams = new URLSearchParams(window.location.hash.substring(1)); // Lire depuis #
-            const token = fragmentParams.get('token');
+            const token = urlParsed.search['token'];
             // const expiresAt = fragmentParams.get('expires_at'); // Tu peux aussi récupérer ça
 
             if (token) {
@@ -122,7 +125,7 @@ function Page() {
             const registerPayload: RegisterParams = { full_name: fullName, email, password, password_confirmation: passwordConfirmation };
             registerMutation.mutate(registerPayload, {
                 onSuccess(data) {
-                    nextPage('/auth/auth-notice?type=verify_email_sent')
+                    nextPage(`/auth/auth-notice?type=verify_email_sent&email=${email}`)
                     setSuccessMessage(data.message || t('auth.registerSuccessCheckEmail')); // Message invitant à vérifier email
                     setMode('login'); // Rebasculer vers login ou afficher message
                     // Ne pas connecter automatiquement, l'utilisateur doit vérifier son email.
@@ -135,21 +138,13 @@ function Page() {
     };
 
     const handleSocialLogin = (provider: 'google') => {
-        // URL du s_server pour initier l'OAuth Google pour les Owners/Admins
-        // Le callback Google doit être configuré pour retourner vers cette même page /auth
-        // avec le token dans le fragment #token=...
-        const clientSuccessUrl = `${window.location.origin}${window.location.pathname}`; // Retour à cette page
-        const clientErrorUrl = `${window.location.origin}${window.location.pathname}?error=social`; // Retour ici avec erreur
+        const redirectSuccess = `${window.location.origin}${window.location.pathname}`; // Retour à cette page
+        const redirectError = `${window.location.origin}/auth/auth-notice`; 
 
-        // L'URL de redirection doit être celle de s_server qui gère l'auth owner/admin
-        // (pas celle qui prend store_id pour les clients de store)
-        const sServerGoogleRedirect = `${serverUrl}/auth/${provider}/redirect` +
-            `?client_success=${encodeURIComponent(clientSuccessUrl)}` +
-            `&client_error=${encodeURIComponent(clientErrorUrl)}`;
-        // Ajouter un param `context=s_server_auth` si ton s_server a besoin de distinguer ce flux.
+        const socialAuthUrl = api.authServer.socialAuthBackendSource({provider,redirectError,redirectSuccess});
+        alert(socialAuthUrl)
 
-        logger.debug(`Redirecting to s_server for ${provider} OAuth:`, sServerGoogleRedirect);
-        window.location.href = sServerGoogleRedirect;
+        window.location.href = socialAuthUrl;
     };
 
 

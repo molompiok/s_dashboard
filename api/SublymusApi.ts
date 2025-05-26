@@ -1,5 +1,6 @@
 ///api/SublymusApi.ts
 
+import { error } from 'console';
 import { OrderStatus } from '../Components/Utils/constants'; // Ajuster chemin si besoin
 import type {
     ListType, ProductInterface, CategoryInterface, UserInterface, StoreInterface,
@@ -341,7 +342,7 @@ export class SublymusApi {
     public readonly storeApiUrl: string|undefined;
     public readonly getAuthToken: () =>string | undefined| null;
     public readonly handleUnauthorized: ((action: 'api' | 'server', token?: string) => void) | undefined
-    private serverUrl: string;
+    public readonly serverUrl: string;
     public readonly t: (key: string, params?: any) => string; // Ajouter params optionnel
 
     // --- Namespaces (déclarations) ---
@@ -899,6 +900,17 @@ class AuthApiNamespace {
     setupAccount(params: SetupAccountParams): Promise<SetupAccountResponse> { // Utiliser type retour spécifique
         // La validation (longueur mdp, confirmation) est faite par le backend via Vine
         return this._api._request(`${this.isServer?'/{{main_server}}':'/api/v1'}/auth/setup-account`, { method: 'POST', body: params });
+    }
+
+    socialAuthBackendSource(params?: {provider:string,redirectSuccess?:string,redirectError?:string,storeId?:string}): string { // Utiliser type retour spécifique
+        const success =  params?.redirectSuccess &&`client_success=${encodeURIComponent(params?.redirectSuccess)}`;
+        const error = params?.redirectError && `client_error=${encodeURIComponent(params?.redirectError)}`;
+        return `${this._api.serverUrl}/auth/${this.isServer?'':'store/'}${params?.provider||'google'}/redirect?${[success,error].filter(Boolean).join('&') }`;
+    }
+    socialAuthFrontEndSource(params?: {provider:string,redirectSuccess?:string,redirectError?:string,storeId?:string}): string { // Utiliser type retour spécifique
+        const success =  params?.redirectSuccess &&`client_success=${encodeURIComponent(params?.redirectSuccess)}`;
+        const error = params?.redirectError && `client_error=${encodeURIComponent(params?.redirectError)}`;
+        return `${this._api.serverUrl}/auth/${this.isServer?'':'store/'}${params?.provider||'google'}/from-user?${[success,error].filter(Boolean).join('&') }`;
     }
 }
 

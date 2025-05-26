@@ -2,18 +2,21 @@
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useGetMe, useUpdateUser, useLogoutAllDevices, useDeleteAccount, queryClient } from '../../../api/ReactSublymusApi'; // Importer tous les hooks nécessaires
-import logger from '../../../api/Logger';
-import { ApiError } from '../../../api/SublymusApi';
+import { useGetMe, useUpdateUser, useLogoutAllDevices, useDeleteAccount, queryClient } from '../../api/ReactSublymusApi'; // Importer tous les hooks nécessaires
+import logger from '../../api/Logger';
+import { ApiError } from '../../api/SublymusApi';
 import { IoCameraOutline, IoMailOutline, IoLockClosedOutline, IoLogOutOutline, IoTrash } from 'react-icons/io5';
-import { Topbar } from '../../../Components/TopBar/TopBar';
-import { PageNotFound } from '../../../Components/PageNotFound/PageNotFound';
-import { ConfirmDelete } from '../../../Components/Confirm/ConfirmDelete';
-import { useChildViewer } from '../../../Components/ChildViewer/useChildViewer';
-import { ChildViewer } from '../../../Components/ChildViewer/ChildViewer';
-import { getImg } from '../../../Components/Utils/StringFormater';
-import { useGlobalStore } from '../../index/StoreStore';
-import { Button } from '../../../Components/Button/Button';
+import { Topbar } from '../../Components/TopBar/TopBar';
+import { PageNotFound } from '../../Components/PageNotFound/PageNotFound';
+import { ConfirmDelete } from '../../Components/Confirm/ConfirmDelete';
+import { useChildViewer } from '../../Components/ChildViewer/useChildViewer';
+import { ChildViewer } from '../../Components/ChildViewer/ChildViewer';
+import { getImg } from '../../Components/Utils/StringFormater';
+import { useGlobalStore } from '../index/StoreStore';
+import { Button } from '../../Components/Button/Button';
+import { showErrorToast, showToast } from '../../Components/Utils/toastNotifications';
+import { useAuthStore } from '../auth/AuthStore';
+import { usePageContext } from '../../renderer/usePageContext';
 
 export { Page };
 
@@ -32,7 +35,9 @@ type PasswordFormState = {
 function Page() {
   const { t, i18n } = useTranslation();
   const { openChild } = useChildViewer();
-  const { currentStore } = useGlobalStore()
+  const { currentStore } = useGlobalStore();
+  const {setUser} = useAuthStore()
+  const { serverUrl } = usePageContext()
 
   // --- Récupération Données Utilisateur ---
   const { data: meData, isLoading: isLoadingMe, isError: isMeError, error: meError } = useGetMe({
@@ -135,13 +140,15 @@ function Page() {
         // Reset : Vider le fichier et la preview locale
         setProfileForm(prev => ({ ...prev, avatarFile: null }));
         setAvatarPreview(null);
-        // Mettre à jour l'original implicitement via invalidation cache 'me' par le hook
+        setUser(data.user)
+        showToast("Profil mis à jour avec succès", "SUCCESS")
         queryClient.invalidateQueries({ queryKey: ['me'] }); // Forcer rafraîchissement
-        // Afficher toast succès?
+        
       },
       onError: (error: ApiError) => {
         logger.error({ error }, "Profile update failed");
         setApiError(error.message);
+         showErrorToast(error)
       }
     });
   };
@@ -174,15 +181,16 @@ function Page() {
     updateUserMutation.mutate({
       data: passwordForm
     }, {
-      onSuccess: () => {
+      onSuccess: (data) => {
         logger.info("Password changed successfully");
         setPasswordForm({}); // Vider le formulaire mdp
-        // Afficher toast succès?
+       setUser(data.user)
+        showToast("Profil mis à jour avec succès", "SUCCESS")
       },
       onError: (error: ApiError) => {
         logger.error({ error }, "Password change failed");
         setApiError(error.message);
-        // Afficher toast erreur?
+         showErrorToast(error)
       }
     });
   };
@@ -205,13 +213,13 @@ function Page() {
               onSuccess: () => {
                 logger.info("Logout from all devices successful.");
                 openChild(null); // Fermer après succès
-                // Afficher toast succès?
+                showToast("Déconnexion de tous les appareils réussie", "SUCCESS")
               },
               onError: (error: ApiError) => {
                 logger.error({ error }, "Logout all devices failed.");
                 setApiError(error.message); // Afficher erreur sur la page principale?
                 openChild(null); // Fermer même en cas d'erreur?
-                // Afficher toast erreur?
+                showErrorToast(error)
               }
             });
           }}
@@ -235,12 +243,14 @@ function Page() {
             deleteAccountMutation.mutate(undefined, { // Pas d'argument
               onSuccess: () => {
                 logger.info("Account deletion requested successfully.");
-                // La déconnexion et redirection est gérée par le hook useDeleteAccount
+                showToast("Compte supprimé définitivement", "SUCCESS")
+                window.location.href = `https://sublymus.com`
               },
               onError: (error: ApiError) => {
                 logger.error({ error }, "Account deletion failed.");
                 setApiError(error.message);
                 openChild(null);
+                showErrorToast(error)
               }
             });
           }}
@@ -265,13 +275,15 @@ function Page() {
         locale: newLocale
       }
     }, {
-      onSuccess: () => {
+      onSuccess: (data) => {
+        setUser(data.user)
+        showToast("Profil mis à jour avec succès", "SUCCESS")
         logger.info(`User locale preference updated to ${newLocale}`);
         queryClient.invalidateQueries({ queryKey: ['me'] }); // Recharger 'me' pour confirmer
       },
       onError: (error) => {
         logger.error({ error }, "Failed to save user locale preference.");
-        // Revertir le changement local? Ou juste afficher erreur?
+       showErrorToast(error)
         i18n.changeLanguage(currentUser?.locale ?? 'fr'); // Revenir à l'ancienne langue?
       }
     });
@@ -285,7 +297,7 @@ function Page() {
 
 
   // URL Avatar
-  const avatarUrl = avatarPreview ?? (currentUser.photo?.[0] ? getImg(currentUser.photo[0], undefined, currentStore?.url).match(/url\("?([^"]+)"?\)/)?.[1] : null);
+  const avatarUrl = avatarPreview ?? (currentUser.photo?.[0] ? getImg(currentUser.photo[0], undefined, `${process.env.NODE_ENV=='production'?'https':'http'}://server.`+serverUrl).match(/url\("?([^"]+)"?\)/)?.[1] : null);
 
   return (
     <div className="w-full pb-48 min-h-screen flex flex-col bg-gray-100">

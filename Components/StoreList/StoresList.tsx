@@ -26,7 +26,7 @@ export function StoresList({ stores, isLoading, selectedStoreId, onSelectStore, 
     const { t } = useTranslation();
     const size = useWindowSize()
 
-    const n = 10//((size.width - 260) / 1200) * 4 + 1.3
+    const n = size.width<1200?((size.width - 260) / 1200) * 5 + 1.3 :5.8
 
     return (
         <div className="relative w-full group"> {/* Group pour afficher boutons nav au survol */}
@@ -34,7 +34,7 @@ export function StoresList({ stores, isLoading, selectedStoreId, onSelectStore, 
             <Swiper
                 modules={[Navigation, SwiperPagination]}
                 spaceBetween={16} // gap-4
-                // slidesPerView={n}
+                slidesPerView={n}
                 navigation={{ // Activer navigation Swiper
                     nextEl: '.swiper-button-next-store', // Sélecteurs CSS personnalisés
                     prevEl: '.swiper-button-prev-store',

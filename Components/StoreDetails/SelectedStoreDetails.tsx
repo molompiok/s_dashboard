@@ -15,6 +15,7 @@ import { useChildViewer } from "../ChildViewer/useChildViewer";
 import { ChildViewer } from "../ChildViewer/ChildViewer";
 import { showErrorToast, showToast } from "../Utils/toastNotifications";
 import { ConfirmPopup } from "../Confirm/ConfirmPopup";
+import { Link } from "../../renderer/Link";
 
 // Enregistrer les modules Chart.js nécessaires
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
@@ -236,7 +237,7 @@ export function SelectedStoreDetails({ store, onEditRequired }: SelectedStoreDet
                         <IoPencil size={16} /> {t('common.edit')}
                     </span>
                     {/* Paramètres */}
-                    <a href={`/stores/${store.id}/settings`} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 w-full md:w-auto justify-center transition hover:shadow-md cursor-pointer hover:border-blue-200 hover:bg-blue-50/30">
+                    <a href={`/${store.id}/settings`} className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium border border-gray-300 bg-white text-gray-700 hover:bg-gray-50 w-full md:w-auto justify-center transition hover:shadow-md cursor-pointer hover:border-blue-200 hover:bg-blue-50/30">
                         <IoSettings size={16} /> {t('storesPage.actions.settings')}
                     </a>
                 </div>
@@ -244,9 +245,9 @@ export function SelectedStoreDetails({ store, onEditRequired }: SelectedStoreDet
 
             {/* Section 2: Statistiques */}
             <div className="pb-6 border-b border-gray-100">
-                <a href={`/stores/stats`} className="inline-flex  items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium border border-gray-300  text-gray-700 hover:bg-gray-50 w-full md:w-auto justify-center transition hover:shadow-md cursor-pointer hover:border-blue-200 hover:bg-blue-50/30  bg-blue-50">
+                <Link href={`/stats`} className="inline-flex  items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium border border-gray-300  text-gray-700 hover:bg-gray-50 w-full md:w-auto justify-center transition hover:shadow-md cursor-pointer hover:border-blue-200 hover:bg-blue-50/30  bg-blue-50">
                     <IoBarChart size={16} /> {t('storesPage.openStoreStats')}
-                </a>
+                </Link>
                 <div className="flex justify-between items-center mb-4">
                     <h3 className="text-lg font-semibold text-gray-800">{t('clientDetail.activityChartTitle')}</h3>
                     {/* Sélecteur Période */}

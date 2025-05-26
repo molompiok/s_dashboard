@@ -55,7 +55,11 @@ export function ThemeManager({ store }: ThemeManagerProps) {
         is_active: true // Supposons actif s'il est le current_theme_id
     };
     // TODO: Remplacer par un appel API pour les thèmes disponibles/récents
-    const { data: themes, isLoading: isLoadingThemes } = useGetThemes();
+    const { data: themes, isLoading: isLoadingThemes } = useGetThemes({
+
+    },{
+        enabled: true
+    });
 
     const availableThemes = themes?.list || [];
     // const isLoadingThemes = false;

@@ -118,7 +118,7 @@ function Page() {
                         {statusMessage} {/* Message dynamique */}
                     </p>
                     <p className="mt-6 text-sm">
-                        <Link href="/users/login" className="font-medium text-blue-600 hover:text-blue-500 hover:underline">
+                        <Link href="/auth/login" className="font-medium text-blue-600 hover:text-blue-500 hover:underline">
                             {t('resetPasswordPage.backToLogin')}
                         </Link>
                     </p>

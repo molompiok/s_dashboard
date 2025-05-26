@@ -31,9 +31,8 @@ export function StoreCreationEditionWizard({
     onCancel,       // Callback annulation
     canCancel = true
 }: {
-    initialStoreData?: Partial<StoreInterface>;
+    initialStoreData?: Partial<StoreInterface>
     onSaveSuccess: (store: Partial<StoreInterface>, mode: 'created' | 'updated') => void;
-    onFinish?: (store: Partial<StoreInterface>) => void;
     onCancel?: () => void;
     canCancel?: boolean;
 }) {
@@ -222,40 +221,52 @@ export function StoreCreationEditionWizard({
             return
         }
 
+        const endTime = Date.now() + 4 * 1000
         if (isEditing && initialStoreData?.id) {
 
             console.log('Update', collected);
-            onSaveSuccess(collected, 'updated')
-
+            setLoadingState('saving');
             // --- Mise à jour ---
             updateStoreMutation.mutate(
-                { store_id: initialStoreData.id, data: s.collected }, // Passer comme objet, l'API interne fera le FormData
-                // Ou si l'API attend vraiment FormData:
-                // { store_id: initialStoreData.id, formData: apiFormData },
+                { store_id: initialStoreData.id, data: s.collected },
                 {
                     onSuccess: (data) => {
-                        setLoadingState('success');
-                        setSavedStore(data.store); // Sauver pour écran succès
-                        onSaveSuccess(data.store, 'updated'); // Appeler callback parent
+                        const time = endTime - Date.now();
+                        setTimeout(() => {
+                            setLoadingState('success');
+                            setSavedStore(data.store);
+                        }, time < 0 ? 0 : time);
                     },
                     onError: (error: ApiError) => {
-                        setLoadingState('error');
-                        setApiError(error.message || t('api.unknownError'));
+                        const time = endTime - Date.now();
+                        setTimeout(() => {
+                            setLoadingState('error');
+                            setApiError(error.message || t('api.unknownError'));
+                        }, time < 0 ? 0 : time);
+
                     }
                 }
             );
         } else {
             // --- Création ---
             console.log('Create', collected);
+
+            setLoadingState('saving');
             createStoreMutation.mutate(collected as any, {
                 onSuccess: (data) => {
-                    setLoadingState('success');
-                    setSavedStore(data.store);
-                    onSaveSuccess(data.store, 'created');
+                    const time = endTime - Date.now();
+                    setTimeout(() => {
+                        setLoadingState('success');
+                        setSavedStore(data.store);
+                    }, time < 0 ? 0 : time);
+
                 },
                 onError: (error: ApiError) => {
-                    // setLoadingState('error');
-                    // setApiError(error.message || t('api.unknownError'));
+                    const time = endTime - Date.now();
+                    setTimeout(() => {
+                        setLoadingState('error');
+                        setApiError(error.message || t('api.unknownError'));
+                    }, time < 0 ? 0 : time);
                 }
             }
             );
@@ -272,18 +283,45 @@ export function StoreCreationEditionWizard({
         }
     };
 
-    if (loadingState === 'saving') return <div className="p-6 text-center text-gray-500">{t('common.saving')}...</div>; // Placeholder LoadingScreen
-    if (loadingState === 'success' && savedStore) return <div className="p-6 text-center text-green-500">Succès! Store: {savedStore.name}</div>; // Placeholder SuccessScreen
-    if (loadingState === 'error') return <div className="p-6 text-center text-red-500">Erreur: {apiError}</div>; // Placeholder ErrorScreen
-
     // --- Préparation des URLs pour preview ---
     const getPreviewUrl = (fileOrUrl: string | Blob | undefined): string | undefined => {
         if (typeof fileOrUrl === 'string') return getImg(fileOrUrl, undefined, Server_Host).match(/url\("?([^"]+)"?\)/)?.[1];
         if (fileOrUrl instanceof File) return URL.createObjectURL(fileOrUrl);
         return undefined;
     };
+
     const logoPreview = useMemo(() => getPreviewUrl(collected.logo[0]), [collected.logo]);
     const coverPreview = useMemo(() => getPreviewUrl(collected.cover_image[0]), [collected.cover_image]);
+
+
+
+    console.log({savedStore,loadingState});
+    
+
+
+
+    if (loadingState === 'saving') return <FeedbackOverlay
+        status="saving"
+        title="Sauvegarde en cours"
+        message="Veuillez patienter pendant que nous enregistrons vos données."
+    />
+    if (loadingState === 'success' && savedStore) return <FeedbackOverlay
+        status="success"
+        title="Succès !"
+        message="Votre formulaire a été enregistré avec succès."
+        onSuccessRedirect={() => {
+            swiper?.slideTo(0)
+            onSaveSuccess(savedStore, isEditing ? 'updated' : 'created')
+        }}
+    />
+    if (loadingState === 'error') return <FeedbackOverlay
+        status="error"
+        title="Une erreur est survenue"
+        message="Impossible d’enregistrer le formulaire."
+        onRetry={() => setLoadingState('idle')}
+        onCancel={() => onCancel?.()}
+    />
+
 
 
     // --- Rendu ---
@@ -414,11 +452,11 @@ export function StoreCreationEditionWizard({
                         <label htmlFor='store-cover_image-input' className={`relative  group w-full max-w-md aspect-video rounded-lg cursor-pointer overflow-hidden bg-gray-100 border-2 ${coverError ? 'border-red-400' : 'border-dashed border-gray-300'} hover:border-blue-400 hover:bg-gray-50`}>
                             <div
                                 style={{ background: getImg(coverPreview || '/res/empty/drag-and-drop.png') }}
-                                className={`w-auto h-[70%]  ${collected.cover_image.length > 0 ? 'object-cover' : 'object-contain opacity-50'}`}
+                                className={`relative mx-auto group w-full max-w-md aspect-video rounded-lg cursor-pointer overflow-hidden bg-gray-100 border-2 ${coverError ? 'border-red-400' : 'border-dashed border-gray-300'} hover:border-blue-400 hover:bg-gray-50  ${collected.cover_image.length > 0 ? 'object-cover' : 'object-contain opacity-50'} w-auto h-[70%]`}//className={` }`}
                                 onError={(e) => (e.currentTarget.style.background = getImg('/res/empty/drag-and-drop.png'))}
                             >
                             </div>
-                            <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="absolute m-auto inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                                 <IoPencil className="text-white w-10 h-10" />
                             </div>
                             <input id='store-cover_image-input' name="cover_image" style={{ display: 'none' }} type="file" accept='image/*' onChange={(e) => handleFileChange(e, 'cover_image')} />
@@ -516,4 +554,107 @@ export function StoreCreationEditionWizard({
 
         </div>
     );
+}
+
+
+import { Loader2, CheckCircle, XCircle } from "lucide-react"
+
+type FeedbackStatus = "saving" | "error" | "success"
+
+interface FeedbackOverlayProps {
+    status: FeedbackStatus
+    title: string
+    message: string
+    onRetry?: () => void
+    onCancel?: () => void
+    onSuccessRedirect?: () => void
+}
+
+export function FeedbackOverlay({
+    status,
+    title,
+    message,
+    onRetry,
+    onCancel,
+    onSuccessRedirect
+}: FeedbackOverlayProps) {
+
+    const text = 500
+    const bg = 100
+    const bgColor = {
+        saving: "blue",
+        success: "green",
+        error: "red"
+    }[status]
+
+    const renderIcon = () => {
+        const iconClass = `w-12 h-12 text-${bgColor}-${text} sx:w-8 sx:h-8`
+        switch (status) {
+            case "saving":
+                return <Loader2 className={`${iconClass} animate-spin`} />
+            case "success":
+                return <CheckCircle className={iconClass} />
+            case "error":
+                return <XCircle className={iconClass} />
+        }
+    }
+
+
+
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+            <div className="bg-white  rounded-2xl shadow-xl w-full max-w-md p-6 flex flex-col sx:flex-row items-center gap-6"
+            onClick={(e)=>{
+                if(e.target == e.currentTarget){
+                    // action
+                }
+            }}>
+                {/* Icône avec fond coloré */}
+                <div className={`p-4 rounded-full  bg-${bgColor}-${bg}`}>
+                    {renderIcon()}
+                </div>
+
+                {/* Trait vertical */}
+                <div className="w-px h-6 sx:h-16 bg-gray-200" />
+
+                {/* Contenu */}
+                <div className="flex-1">
+                    <h2 className="text-lg font-semibold mb-1">{title}</h2>
+                    <p className="text-sm text-gray-600 mb-4">{message}</p>
+
+                    {/* Actions */}
+                    {status === "error" && (
+                        <div className="flex gap-2">
+
+                            {onCancel && (
+                                <button
+                                    className="px-4 py-2 border border-gray-300 rounded-md hover:bg-gray-100"
+                                    onClick={onCancel}
+                                >
+                                    Annuler
+                                </button>
+                            )}
+                            {onRetry && (
+                                <button
+                                    className="px-4 py-2 text-white bg-red-500 rounded-md hover:bg-red-600"
+                                    onClick={onRetry}
+                                >
+                                    Réessayer
+                                </button>
+                            )}
+                        </div>
+                    )}
+
+                    {status === "success" && (
+                        <button
+                            className="px-4 py-2 text-white bg-green-600 rounded-md hover:bg-green-700"
+                            onClick={onSuccessRedirect}
+                        >
+                            Aller au dashboard
+                        </button>
+                    )}
+                </div>
+            </div>
+        </div>
+    )
 }

@@ -11,6 +11,8 @@ import { Host } from '../../renderer/+config';
 import { getImg } from '../Utils/StringFormater'; // ✅ Importer getImg
 import { useGetAllOrders, useGetMe } from '../../api/ReactSublymusApi';
 import { useGlobalStore } from '../../pages/index/StoreStore';
+import { useMyLocation } from '../../Hooks/useRepalceState';
+import { usePageContext } from '../../renderer/usePageContext';
 
 export { Topbar };
 
@@ -39,13 +41,15 @@ function Topbar({
     const { t } = useTranslation();
     const { currentStore } = useGlobalStore()
     const { openChild } = useChildViewer();
-    const { data } = useGetMe({ enabled: !!currentStore?.id })
-    const user = data?.user
+    const { nextPage} = useMyLocation()
+    const { serverUrl } = usePageContext()
+    const {user} = useAuthStore()
 
     // --- Préparer les infos utilisateur pour l'avatar ---
     const userPhotoUrl = user?.photo?.[0]; // Prend la première photo
     const userInitials = user?.full_name?.slice(0, 2).toUpperCase() || '?'; // Initiales ou '?'
-    const avatarImageUrl = userPhotoUrl ? getImg(userPhotoUrl, undefined, currentStore?.url).match(/url\("?([^"]+)"?\)/)?.[1] : undefined; // Obtenir l'URL avec getImg
+    const avatarImageUrl = userPhotoUrl ? 
+    getImg(userPhotoUrl, undefined, `${process.env.NODE_ENV=='production'?'https':'http'}://server.`+serverUrl).match(/url\("?([^"]+)"?\)/)?.[1] : undefined; // Obtenir l'URL avec getImg
     const displayName = user?.full_name;
 
     // --- (Logique existante inchangée) ---
@@ -156,7 +160,7 @@ function Topbar({
                         <button
                             className="flex items-center justify-center w-9 h-9 rounded-full bg-gray-200 text-gray-600 text-sm font-semibold overflow-hidden hover:ring-2 hover:ring-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-1"
                             onClick={() => {
-                                window.location.href = `${Host}/users/profile`;
+                                nextPage('/profile');
                             }}
                             title={displayName ? `${t('topbar.profileMenuTitle')} - ${displayName}` : t('topbar.profileMenuTitle')}
                         >

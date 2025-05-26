@@ -43,7 +43,7 @@ function Page() {
         requestResetMutation.mutate(
             {
                 email: email.trim(),
-                callback_url: `${Host}/auth/reset-password`
+                callback_url:`${window.location.origin}/auth/reset-password`
             }, // Passer l'email et l'URL callback frontend
             {
                 onSuccess: (data: any) => {

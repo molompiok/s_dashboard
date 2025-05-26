@@ -82,8 +82,6 @@ function Page() {
       openChild(null)
     }} onCancel={() => {
       openChild(null)
-    }} onFinish={(collected) => {
-      openChild(null)
     }} initialStoreData={store} />,
       {
         background: 'oklch(96.7% 0.003 264.542)'
@@ -94,7 +92,6 @@ function Page() {
   console.log('storesList', storesList);
 
   const handleSelectStore = (store: StoreInterface) => {
-    store.url = Api_host
     setCurrentStore(store);
   };
 

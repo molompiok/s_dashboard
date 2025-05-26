@@ -67,7 +67,7 @@ function Page() {
           extraHintKey: 'authNotice.verify.spamHint',
           primaryAction: { href: '/auth', textKey: 'authNotice.action.backToLogin' },
           // Optionnel: lien pour renvoyer l'email si la logique existe et que l'email est connu
-          // secondaryAction: email ? { href: `/auth/resend-verification?email=${encodeURIComponent(email)}`, textKey: 'authNotice.action.resendVerification' } : undefined,
+          secondaryAction: email ? { href: `/auth/resend-verification?email=${encodeURIComponent(email)}`, textKey: 'authNotice.action.resendVerification' } : undefined,
         };
       case 'email_verified':
         return {
@@ -126,7 +126,7 @@ function Page() {
   const gradientBackground = noticeContent.bgColorClass || "from-teal-50 via-sky-50 to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-gray-900";
 
   return (
-    <div className={`min-h-screen flex flex-col items-center justify-center bg-gradient-to-br ${gradientBackground} px-4 py-12 overflow-hidden`}>
+    <div className={`absolute w-full h-full top-0 left-0 min-h-screen flex flex-col items-center justify-center bg-gradient-to-br ${gradientBackground} px-4 py-12 overflow-hidden`}>
        <div className="absolute inset-0 opacity-50 dark:opacity-30">
         <div className={`absolute -top-1/4 -left-1/4 w-full h-full rounded-full ${noticeType === 'error_message' ? 'bg-red-300/30 dark:bg-red-700/20' : 'bg-teal-300/30 dark:bg-teal-700/20'} filter blur-3xl animate-pulse-slow`}></div>
         <div className={`absolute -bottom-1/4 -right-1/4 w-3/4 h-3/4 rounded-full ${noticeType === 'error_message' ? 'bg-rose-300/20 dark:bg-rose-700/10' : 'bg-sky-300/30 dark:bg-sky-700/20'} filter blur-3xl animate-pulse-slower animation-delay-2000`}></div>
