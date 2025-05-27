@@ -416,7 +416,7 @@ export class SublymusApi {
         let baseUrl: string='';
         if (endpoint.startsWith('/{{main_server}}')) {
             endpoint = endpoint.replace('/{{main_server}}', '');
-            baseUrl = this.serverUrl;
+            baseUrl = this.serverUrl||'https://server.sublymus.com';
             action = 'server'
         } else if (this.storeApiUrl) {
             baseUrl = this.storeApiUrl;

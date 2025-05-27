@@ -42,6 +42,8 @@ function Page() {
       return;
     };
 
+    
+
     // Essayer de trouver le store courant dans la nouvelle liste
     const currentStoreStillExists = currentStore && storesList.some(s => s.id === currentStore.id);
 
@@ -132,9 +134,7 @@ function Page() {
           isLoading={isLoadingList}
           selectedStoreId={currentStore?.id}
           onSelectStore={handleSelectStore}
-          newStoreRequire={() => {
-
-          }}
+          newStoreRequire={handleStoreCreateEdit}
         // Ajouter prop pour le lien "Voir tout"
         // viewAllUrl="/stores/manage" // Exemple d'URL
         />
@@ -158,6 +158,9 @@ function Page() {
             </div>
           )
         )}
+        {
+          !currentStore && <ThemeManager store={undefined} />
+        }
 
       </main>
     </div>

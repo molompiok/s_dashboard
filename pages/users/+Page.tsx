@@ -45,11 +45,11 @@ export default function Page() {
     // TODO: Mapper statsApiData aux valeurs attendues par les cartes (totalClients, activeUsers, etc.)
     // Pour l'instant, on utilise des placeholders ou les données brutes si possible
     return {
-      totalClients: userStatsData?.stats.totalClients || 0, // Exemple très simplifié
-      ratedUsersCount: userStatsData?.stats.ratedUsersCount || 0, // Placeholder
-      activeUsers: userStatsData?.stats.activeUsers || 0, // Placeholder
-      onlineClients: userStatsData?.stats.onlineClients || 0, // Placeholder
-      averageSatisfaction: userStatsData?.stats.averageSatisfaction || 0 // Placeholder
+      totalClients: userStatsData?.stats?.totalClients || 0, // Exemple très simplifié
+      ratedUsersCount: userStatsData?.stats?.ratedUsersCount || 0, // Placeholder
+      activeUsers: userStatsData?.stats?.activeUsers || 0, // Placeholder
+      onlineClients: userStatsData?.stats?.onlineClients || 0, // Placeholder
+      averageSatisfaction: userStatsData?.stats?.averageSatisfaction || 0 // Placeholder
     };
   }, [userStatsData]);
 

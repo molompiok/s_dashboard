@@ -7,7 +7,6 @@ import { useTranslation } from "react-i18next";
 import { NO_PICTURE } from "../../Components/Utils/constants";
 import { useState } from "react";
 import { Server_Host } from "../../renderer/+config";
-import './StoresList.css'
 interface StoreItemCardProps {
     store: StoreInterface;
     isSelected: boolean;

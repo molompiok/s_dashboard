@@ -361,6 +361,7 @@
         "notFound": "Boutique non trouvée.",
         "title": "Mes Boutiques",
         "addStoreButton": "Créer une boutique",
+        "addStore": "Ajouter une boutique",
         "searchPlaceholder": "Rechercher par nom...",
         "openStoreStats": "Voire toutes les statistiques",
         "usageTitle": "",

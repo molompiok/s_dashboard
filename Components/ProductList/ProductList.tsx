@@ -141,7 +141,7 @@ function AddProductCard({ addTo }: { addTo?: { category_id: string, text: string
     const { t } = useTranslation();
     return (
         <a href={`/products/new${addTo?.category_id ? '?catrgory_id=' + addTo.category_id : ''}`} className=" rounded-xl overflow-hidden border-2 border-dashed border-gray-300 hover:border-blue-400 hover:bg-blue-50/50 transition duration-200 cursor-pointer flex flex-col items-center justify-center text-center p-4 text-gray-500 hover:text-blue-600">
-            <div className="w-24 h-24 mb-4">
+            <div className="w-24 h-42 mb-4">
                 <img src={'/res/empty/Empty_bag.png'} alt={t('productList.addProduct')} className='w-full h-full object-contain opacity-70' />
             </div>
             <span className="text-sm font-medium">{addTo?.text || t('productList.addProduct')}</span>

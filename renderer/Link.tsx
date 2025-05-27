@@ -21,7 +21,7 @@ function Link({add, href, activeIcon, children, className = '', defaultIcon }: P
     isActive = !!add?.find((prefix)=> urlPathname.startsWith(prefix));
   }
   // Définir les classes de base et les classes actives/inactives Tailwind
-  const baseClasses = "flex items-center gap-3 px-2.5 py-1.5 rounded-lg transition-colors duration-150 ease-in-out"; // Augmenter gap et padding
+  const baseClasses = "vike-link flex items-center gap-3 px-2.5 py-1.5 rounded-lg transition-colors duration-150 ease-in-out"; // Augmenter gap et padding
   const inactiveClasses = "text-gray-600 hover:bg-gray-100 hover:text-gray-900";
   const activeClasses = "bg-blue-100/60 text-blue-700 font-medium"; // Utiliser bleu pour l'état actif
 
@@ -36,8 +36,8 @@ function Link({add, href, activeIcon, children, className = '', defaultIcon }: P
 
   return (
     <a href={href} className={combinedClassName}>
-      {icon && <span className="flex-shrink-0 w-5 h-5">{icon}</span>} {/* Icône avec taille définie */}
-      {children && <span className="truncate">{children}</span>} {/* Span pour le texte, truncate si long */}
+      {icon && <span className="inline w-5 h-5">{icon}</span>} {/* Icône avec taille définie */}
+      {children && <span className=" flex items-center gap-2">{children}</span>} {/* Span pour le texte, truncate si long */}
     </a>
   );
 }

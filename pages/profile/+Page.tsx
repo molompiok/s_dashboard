@@ -17,6 +17,7 @@ import { Button } from '../../Components/Button/Button';
 import { showErrorToast, showToast } from '../../Components/Utils/toastNotifications';
 import { useAuthStore } from '../../api/stores/AuthStore';
 import { usePageContext } from '../../renderer/usePageContext';
+import { navigate } from 'vike/client/router';
 
 export { Page };
 
@@ -35,14 +36,12 @@ type PasswordFormState = {
 function Page() {
   const { t, i18n } = useTranslation();
   const { openChild } = useChildViewer();
-  const { currentStore } = useGlobalStore();
-  const { setUser } = useAuthStore()
-  const { serverUrl } = usePageContext()
-
+  const { setUser,setToken } = useAuthStore()
+  const  { setCurrentStore } = useGlobalStore()
   // --- Récupération Données Utilisateur ---
   const { data: meData, isLoading: isLoadingMe, isError: isMeError, error: meError } = useGetMe({
     // Activer seulement si on pense être connecté (vérifier token?)
-    // enabled: !!useAuthStore.getState().token
+    enabled: !!useAuthStore.getState().token
   });
   const currentUser = meData?.user; // L'objet User complet avec adresses/téléphones
 
@@ -211,9 +210,15 @@ function Page() {
           onDelete={() => { // Utiliser onDelete comme callback de confirmation
             logoutAllMutation.mutate(undefined, {
               onSuccess: () => {
+                setUser(null)
+                setToken(null)
+                setCurrentStore(undefined)
                 logger.info("Logout from all devices successful.");
                 openChild(null); // Fermer après succès
                 showToast("Déconnexion de tous les appareils réussie", "SUCCESS")
+                setTimeout(() => {
+                  navigate('/auth/login')
+                }, 200);
               },
               onError: (error: ApiError) => {
                 logger.error({ error }, "Logout all devices failed.");
@@ -242,6 +247,7 @@ function Page() {
           onDelete={() => {
             deleteAccountMutation.mutate(undefined, { // Pas d'argument
               onSuccess: () => {
+                
                 logger.info("Account deletion requested successfully.");
                 showToast("Compte supprimé définitivement", "SUCCESS")
                 window.location.href = `https://sublymus.com`

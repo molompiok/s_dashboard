@@ -26,7 +26,7 @@ type AuthMode = 'login' | 'register';
 
 function Page() {
     const { t } = useTranslation();
-    const { urlParsed, config, serverUrl } = usePageContext(); // serverUrl pourrait venir du contexte Vike si configuré globalement
+    const { urlParsed } = usePageContext(); // serverUrl pourrait venir du contexte Vike si configuré globalement
 
     const [mode, setMode] = useState<AuthMode>('login'); // 'login' ou 'register'
     const [email, setEmail] = useState('');
@@ -50,6 +50,7 @@ function Page() {
 
     // Traitement du token social login (inchangé pour l'instant, mais redirectUrl devra être dynamique)
     useEffect(() => {
+        
         if (typeof window !== 'undefined') {
             const token = urlParsed.search['token'];
             // const expiresAt = fragmentParams.get('expires_at'); // Tu peux aussi récupérer ça
@@ -142,13 +143,12 @@ function Page() {
         const redirectError = `${window.location.origin}/auth/auth-notice`;
 
         const socialAuthUrl = api.authServer.socialAuthBackendSource({ provider, redirectError, redirectSuccess });
-        alert(socialAuthUrl)
-
+        
         window.location.href = socialAuthUrl;
     };
 
 
-    if (isProcessingToken) {
+    if (isProcessingToken || urlParsed.search['token']) {
         return (
             <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
                 <div className="text-center p-8">
@@ -166,15 +166,16 @@ function Page() {
     const isLoading = loginMutation.isPending || registerMutation.isPending;
 
     return (
-        <div className=" absolute top-0 left-0 w-full h-full min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-teal-50 via-sky-50 to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-gray-900 px-4 py-12 overflow-hidden">
+        <div className="login-page absolute overflow-y-auto top-0 left-0 w-full h-full min-h-screen flex flex-col items-center  bg-gradient-to-br from-teal-50 via-sky-50 to-purple-50 dark:from-slate-900 dark:via-slate-800 dark:to-gray-900 px-4 py-12 overflow-hidden">
             <div className="absolute inset-0 opacity-50 dark:opacity-30">
                 {/* Arrière-plan avec des cercles comme sur l'image d'inspiration */}
                 <div className="absolute -top-1/4 -left-1/4 w-full h-full rounded-full bg-teal-300/30 dark:bg-teal-700/20 filter blur-3xl animate-pulse-slow"></div>
                 <div className="absolute -bottom-1/4 -right-1/4 w-3/4 h-3/4 rounded-full bg-sky-300/30 dark:bg-sky-700/20 filter blur-3xl animate-pulse-slower animation-delay-2000"></div>
                 <div className="absolute top-1/3 right-0 w-1/2 h-1/2 rounded-full bg-purple-300/20 dark:bg-purple-700/10 filter blur-3xl animate-pulse-slowest animation-delay-4000"></div>
             </div>
-
-            <div className="relative w-full max-w-md md:max-w-lg lg:max-w-full xl:w-[1000px]  flex flex-col lg:flex-row lg:items-center lg:gap-16">
+            <div className="sroll-pane w-full h-[100vh] flex flex-col items-center justify-center">
+                
+            <div className="relative w-full h-[100vh] max-w-md md:max-w-lg lg:max-w-full xl:w-[1000px]  flex flex-col lg:flex-row lg:items-center lg:gap-16">
                 {/* Section Gauche (Illustration - visible sur desktop) */}
                 <div className="hidden lg:block lg:w-1/2 xl:w-2/5 flex-shrink-0">
                     {/* Tu peux mettre une illustration SVG ou une image ici */}
@@ -346,6 +347,8 @@ function Page() {
                     </div>
                 </div>
             </div>
-        </div>
+ 
+            </div>
+       </div>
     );
 }

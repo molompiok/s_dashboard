@@ -26,12 +26,12 @@ const onRenderHtml: OnRenderHtmlAsync = async (pageContext): ReturnType<OnRender
   const serverApiFromHeader = headersOriginal['x-server-api-url'] //|| 'server.'+serverUrlFromHeader;
 
 
-  console.log({
-    baseUrl: baseUrlFromHeader,
-    serverUrl: (process.env.NODE_ENV == 'production' ? 'https://' : 'http://') + serverApiFromHeader,
-    apiUrl: apiUrlFromHeader,
-    server: serverUrlFromHeader
-  });
+  // console.log({
+  //   baseUrl: baseUrlFromHeader,
+  //   serverUrl: (process.env.NODE_ENV == 'production' ? 'https://' : 'http://') + serverApiFromHeader,
+  //   apiUrl: apiUrlFromHeader,
+  //   server: serverUrlFromHeader
+  // });
   Data.serverUrl = serverApiFromHeader;
 
   // Alternatively, we can use an HTML stream, see https://vike.dev/streaming
@@ -54,7 +54,7 @@ const onRenderHtml: OnRenderHtmlAsync = async (pageContext): ReturnType<OnRender
   // const logo = (pageContext.data as any)?.logoUrl || logoUrl
   const documentHtml = escapeInject`<!DOCTYPE html>
     <html lang="fr">
-      <head>
+      <head style="z-index=-10">
         <meta charset="UTF-8" />
         <link rel="icon" href="${logoUrl}" />
         
@@ -62,7 +62,7 @@ const onRenderHtml: OnRenderHtmlAsync = async (pageContext): ReturnType<OnRender
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css"/>
         <title>${title}</title>
       </head>
-      <body>
+      <body style="z-index=-10">
         <div id="root">${dangerouslySkipEscape(pageHtml)}</div>
         
       </body>

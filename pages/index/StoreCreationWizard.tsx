@@ -318,7 +318,10 @@ export function StoreCreationEditionWizard({
         status="error"
         title="Une erreur est survenue"
         message="Impossible d’enregistrer le formulaire."
-        onRetry={() => setLoadingState('idle')}
+        onRetry={() => {
+            swiper?.slideTo(0);
+            setLoadingState('idle')
+        }}
         onCancel={() => onCancel?.()}
     />
 
@@ -327,7 +330,7 @@ export function StoreCreationEditionWizard({
     // --- Rendu ---
     return (
         // Conteneur principal avec padding
-        <div className="store-creation-wizard w-full h-full overflow-y-auto flex flex-col justify-center max-w-2xl m-auto p-4 sm:p-6">
+        <div className="store-creation-wizard w-full h-full overflow-y-auto flex flex-col  max-w-2xl m-auto p-4 sm:p-6">
 
             <div className="relative mb-6">
                 <h1 className="text-2xl font-semibold text-center text-gray-800">

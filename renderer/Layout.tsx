@@ -25,8 +25,14 @@ import { useAuthStore } from '../api/stores/AuthStore';
 function Layout({ children, pageContext }: { children: React.ReactNode; pageContext: PageContext }) {
   const { t } = useTranslation()
   const { nextPage } = useMyLocation()
+  const {token,user, getToken, getUser, setUser } = useAuthStore();
 
-  const { getToken, getUser, setUser } = useAuthStore();
+  const { getCurrentStore } = useGlobalStore();
+
+  useEffect(() => {
+    getCurrentStore()
+  }, [getCurrentStore]); 
+
   useEffect(() => {
     const token = getToken()
     const user = getUser()
@@ -37,29 +43,23 @@ function Layout({ children, pageContext }: { children: React.ReactNode; pageCont
     } else {
       setUser(user);
     }
-  }, []);
+  }, [token,user]);
 
   // Si token absent, retourne null (le router va rediriger)
-  const token = getToken()
-  if (!token) {
-    console.log('Error', token);
-
-    // nextPage('/auth/login')
-    // return <p>Loading ...</p>
-  }
+  
 
 
   return (
     <React.StrictMode>
       <PageContextProvider pageContext={pageContext}>
-        {/* Frame Principal: flex, centré, largeur max */}
+
         <Frame>
           {/* Sidebar: Cachée sur mobile (inférieur à sm), largeur variable sur desktop */}
           <Sidebar>
             <Logo />
             {/* Liens de Navigation Sidebar */}
             {/* Utiliser directement les icônes importées */}
-            <Link href="/" activeIcon={<IoHome className='w-5 h-5' />} defaultIcon={<IoHomeOutline className='w-5 h-5' />}>{t('navigation.home')}</Link>
+            <Link href="/store" activeIcon={<IoHome className='w-5 h-5' />} defaultIcon={<IoHomeOutline className='w-5 h-5' />}>{t('navigation.home')}</Link>
             <Link href="/products" activeIcon={<IoCube className='w-5 h-5' />} defaultIcon={<IoCubeOutline className='w-5 h-5' />}>{t('navigation.products')}</Link>
             {/* Lien Catégories ajouté */}
             <Link href="/categories" activeIcon={<IoLayers className='w-5 h-5' />} defaultIcon={<IoLayersOutline className='w-5 h-5' />}>{t('navigation.categories')}</Link>
@@ -67,7 +67,7 @@ function Layout({ children, pageContext }: { children: React.ReactNode; pageCont
             <Link href="/users" activeIcon={<IoPeople className='w-5 h-5' />} defaultIcon={<IoPeopleOutline className='w-5 h-5' />}>{t('navigation.teams')}</Link>
             {/* Lien Inventaire ajouté */}
             {/* <Link href="/inventory" activeIcon={<IoHome className='w-5 h-5' />} defaultIcon={<IoHomeOutline className='w-5 h-5' />}>{t('navigation.inventory')}</Link> */}
-            <Link href="/stores" add={['/themes']} activeIcon={<IoStorefront className='w-5 h-5' />} defaultIcon={<IoStorefrontOutline className='w-5 h-5' />}>{t('navigation.stores')}</Link>
+            <Link href="/" add={['/themes']} activeIcon={<IoStorefront className='w-5 h-5' />} defaultIcon={<IoStorefrontOutline className='w-5 h-5' />}>{t('navigation.stores')}</Link>
             {/* Ajouter lien Settings, Stats etc. */}
           </Sidebar>
 
@@ -100,11 +100,11 @@ function Layout({ children, pageContext }: { children: React.ReactNode; pageCont
 
         {/* Bottombar: Affichée seulement sur mobile (inférieur à sm) */}
         <Bottombar>
-          <Link href="/" activeIcon={<IoHome className='w-5 h-5' />} defaultIcon={<IoHomeOutline className='w-5 h-5' />} />
+          <Link href="/store" activeIcon={<IoHome className='w-5 h-5' />} defaultIcon={<IoHomeOutline className='w-5 h-5' />} />
           <Link href="/products" activeIcon={<IoCube className='w-5 h-5' />} defaultIcon={<IoCubeOutline className='w-5 h-5' />} />
           <Link href="/commands" activeIcon={<IoDocumentText className='w-5 h-5' />} defaultIcon={<IoDocumentTextOutline className='w-5 h-5' />} />
           <Link href="/users" activeIcon={<IoPeople className='w-5 h-5' />} defaultIcon={<IoPeopleOutline className='w-5 h-5' />} />
-          <Link href="/stores" activeIcon={<IoStorefront className='w-5 h-5' />} defaultIcon={<IoStorefrontOutline className='w-5 h-5' />} />
+          <Link href="/" activeIcon={<IoStorefront className='w-5 h-5' />} defaultIcon={<IoStorefrontOutline className='w-5 h-5' />} />
         </Bottombar>
 
         {/* <PageHelper /> */}
@@ -173,9 +173,35 @@ function Frame({ children }: { children: React.ReactNode }) {
   // Appliquer le filtre blur ici
   return (
     <div
-      className="flex  bg-gray-100 w-full max-w-7xl mx-auto transition-filter duration-300" // Ajuster max-w
+      className="flex bg-gray-100 w-full mx-auto transition-filter duration-300 relative" // ← Ajouter `relative`
       style={{ filter: blur ? `blur(${blur}px)` : 'none' }}
     >
+
+      <div className="fixed z-[-2] inset-0 opacity-50 dark:opacity-30">
+        {/* Arrière-plan avec des cercles animés personnalisés */}
+        <div
+          className="absolute -top-1/4 -left-1/4 w-full h-full rounded-full bg-teal-300/30 dark:bg-teal-700/20 filter blur-3xl"
+          style={{
+            animation: 'pulse 6s ease-in-out infinite',
+          }}
+        ></div>
+
+        <div
+          className="absolute -bottom-1/4 -right-1/4 w-3/4 h-3/4 rounded-full bg-sky-300/30 dark:bg-sky-700/20 filter blur-3xl"
+          style={{
+            animation: 'pulse 10s ease-in-out infinite',
+            animationDelay: '2s',
+          }}
+        ></div>
+
+        <div
+          className="absolute top-1/3 right-0 w-1/2 h-1/2 rounded-full bg-purple-300/20 dark:bg-purple-700/10 filter blur-3xl"
+          style={{
+            animation: 'pulse 14s ease-in-out infinite',
+            animationDelay: '4s',
+          }}
+        ></div>
+      </div>
       {children}
     </div>
   );
@@ -197,11 +223,11 @@ function Sidebar({ children }: { children: React.ReactNode }) {
       id="sidebar"
       // Caché par défaut, visible à partir de sm
       // Largeur fixe w-20 entre sm et md, puis w-60 sur md+
-      className="hidden sm:flex flex-col flex-shrink-0 w-20 md:w-48 h-screen top-0 // Rendre sticky
-                 px-4 py-5 // Padding
-                 border-r border-gray-200 // Bordure
-                 bg-white // Fond blanc
-                 transition-width duration-200 ease-in-out // Transition largeur"
+      className="hidden sm:flex flex-col flex-shrink-0 w-20 md:w-48 h-screen top-0 
+                 px-4 py-5 
+                 border-r
+                 bg-white/80 dark:bg-gray-900/80 border-b border-gray-200 dark:border-gray-700  backdrop-blur-md shadow-sm
+                 transition-width duration-200 ease-in-out "
     >
       {children}
     </div>
@@ -238,13 +264,7 @@ function Bottombar({ children }: { children: React.ReactNode }) {
 
 // --- Composant Content ---
 function Content({ children }: { children: React.ReactNode }) {
-  const { getCurrentStore } = useGlobalStore();
-
-  // Fetch initial store (logique inchangée)
-  useEffect(() => {
-    getCurrentStore()
-  }, [getCurrentStore]); // Ajouter dépendances
-
+  
   return (
     // Prend tout l'espace restant, overflow-y pour scroll vertical
     <div

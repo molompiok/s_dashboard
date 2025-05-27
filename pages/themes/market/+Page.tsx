@@ -17,6 +17,10 @@ import { FaEdit, FaTimes } from 'react-icons/fa';
 import { Menu } from 'lucide-react';
 import { ThemeCard, ThemeCardSkeleton } from '../../../Components/ThemeManager/ThemeManager';
 import { showErrorToast, showToast } from '../../../Components/Utils/toastNotifications';
+import { useChildViewer } from '../../../Components/ChildViewer/useChildViewer';
+import { ChildViewer } from '../../../Components/ChildViewer/ChildViewer';
+import { StoresList } from '../../../Components/StoreList/StoresList';
+import { StoreListPopup } from '../../../Components/StoreList/StoreListPopup';
 
 export { Page };
 
@@ -44,8 +48,9 @@ function Page() {
     const [selectedTheme, setSelectedTheme] = useState<ThemeInterface | null>(null);
     const [isPreviewMaximized, setIsPreviewMaximized] = useState(false); // Pour gérer l'état fullscreen de la preview
     const [isSidebarOverlayVisible, setIsSidebarOverlayVisible] = useState(true);
-
+    const { openChild } = useChildViewer()
     const scrollDirection = useScrollDirection()
+
 
     // --- Récupération des données ---
     // Fetcher tous les thèmes publics
@@ -80,29 +85,33 @@ function Page() {
 
     const handleInstallTheme = (themeToInstall: ThemeInterface) => {
         const storeIdForInstall = targetStoreId || currentStore?.id; // Utiliser storeId de l'URL ou le store courant
-        if (!storeIdForInstall) {
-            logger.error("Cannot install theme: no target store ID available.");
-            // Afficher un message/toast demandant de sélectionner un store?
-            alert(t('themeMarket.selectStoreFirst'));
-            return;
-        }
+       
         if (!themeToInstall.id) return;
 
         logger.info(`Requesting install for theme ${themeToInstall.id} on store ${storeIdForInstall}`);
-        activateThemeMutation.mutate(
-            { store_id: storeIdForInstall, themeId: themeToInstall.id },
-            {
-                onSuccess: () => {
-                    logger.info(`Theme ${themeToInstall.name} successfully activated for store ${storeIdForInstall}`);
-                    showToast(`Thème ${themeToInstall.name} activé avec succès`); // ✅ Toast succès
-                    // Optionnel: rediriger vers la page /stores ou les paramètres du store?
-                },
-                onError: (err) => {
-                    logger.error({ err }, `Failed to activate theme ${themeToInstall.id} for store ${storeIdForInstall}`);
-                    showErrorToast(err); // ❌ Toast erreur
-                },
-            }
-        );
+        openChild(<ChildViewer title='Choisissez la boutique qui utilisera ce thème'>
+            <StoreListPopup onSelectStore={(store) => {
+                openChild(null)
+                
+                store.id && activateThemeMutation.mutate(
+                    { store_id: store.id, themeId: themeToInstall.id },
+                    {
+                        onSuccess: () => {
+                            logger.info(`Theme ${themeToInstall.name} successfully activated for store ${storeIdForInstall}`);
+                            showToast(`Thème ${themeToInstall.name} activé avec succès`); // ✅ Toast succès
+                        },
+                        onError: (err) => {
+                            logger.error({ err }, `Failed to activate theme ${themeToInstall.id} for store ${storeIdForInstall}`);
+                            showErrorToast(err);
+                        }
+                    }
+                );
+            }} />
+        </ChildViewer>, {
+            background: '#3455'
+        })
+
+
     };
 
     const breadcrumbs: BreadcrumbItem[] = [

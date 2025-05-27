@@ -12,6 +12,8 @@ import 'swiper/css';
 import 'swiper/css/navigation';
 import 'swiper/css/pagination';
 import { useWindowSize } from '../../Hooks/useWindowSize';
+import { AddStoreCard } from './AddNewStore';
+import './StoresList.css'
 
 interface StoresListProps {
     stores: StoreInterface[];
@@ -19,14 +21,16 @@ interface StoresListProps {
     selectedStoreId?: string;
     onSelectStore: (store: StoreInterface) => void;
     viewAllUrl?: string; // URL optionnelle pour "Voir tout"
-    newStoreRequire: () => void
+    newStoreRequire?: () => void
+    maxSize?:number,
+    maxVisible?:number
 }
 
-export function StoresList({ stores, isLoading, selectedStoreId, onSelectStore, viewAllUrl, newStoreRequire }: StoresListProps) {
+export function StoresList({maxVisible=5.8, maxSize=1200,stores, isLoading, selectedStoreId, onSelectStore, viewAllUrl, newStoreRequire }: StoresListProps) {
     const { t } = useTranslation();
     const size = useWindowSize()
 
-    const n = size.width<1200?((size.width - 260) / 1200) * 5 + 1.3 :5.8
+    const n = size.width< maxSize ? ((size.width - 260) / maxSize) * (maxVisible-1.3) + 1.3 :maxVisible
 
     return (
         <div className="relative w-full group"> {/* Group pour afficher boutons nav au survol */}
@@ -43,6 +47,11 @@ export function StoresList({ stores, isLoading, selectedStoreId, onSelectStore, 
                 pagination={{ clickable: true }} // Activer pagination simple
                 className="stores-swiper pb-10 overflow-visible" // Ajouter pb pour pagination
             >
+                {
+                    (!isLoading && stores.length == 0 ) && <SwiperSlide  className="pb-1 h-full min-h-[220px]">
+                            <AddStoreCard onClick={()=>newStoreRequire?.()}/>
+                        </SwiperSlide>
+                }
                 {isLoading ? (
                     // Afficher les skeletons pendant le chargement
                     Array.from({ length: 5 }).map((_, i) => (
@@ -85,3 +94,5 @@ export function StoresList({ stores, isLoading, selectedStoreId, onSelectStore, 
         </div>
     );
 }
+
+

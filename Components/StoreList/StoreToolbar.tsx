@@ -5,6 +5,7 @@ import { IoAddSharp, IoSearch } from 'react-icons/io5';
 import { useTranslation } from 'react-i18next';
 import { debounce } from '../Utils/functions';
 import { StoreFilterType } from '../../api/Interfaces/Interfaces';
+import { buttonStyle } from '../Button/Style';
 
 interface StoreToolbarProps {
     filter: StoreFilterType;
@@ -69,9 +70,9 @@ export function StoreToolbar({ filter, onFilterChange, newStoreRequire }: StoreT
             <a onClick={() => {
                 newStoreRequire()
             }}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                className={buttonStyle}
             >
-                <IoAddSharp size={18} className="-ml-1" />
+                <IoAddSharp size={20} />
                 {t('storesPage.addStoreButton')}
             </a>
 

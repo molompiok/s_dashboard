@@ -19,10 +19,10 @@ export const getMedia = ({ size = 'cover', host, from, isBackground, source }: {
             MediaCache[(source as File).name + source.size + source.type] || (MediaCache[(source as File).name + source.size + source.type] = URL.createObjectURL(source)) : ''
 
     const _host = from == 'api' ?
-        useGlobalStore.getState().currentStore?.api_url :
+        Data.apiUrl :
         from == 'server' ? `${Data.serverUrl}` : ''
     const url = `${(
-        _source?.startsWith('/') && (host || _host || '')
+        _source?.startsWith('/') ? (host || _host || ''):''
     )
         }${_source}`
     if (isBackground) {

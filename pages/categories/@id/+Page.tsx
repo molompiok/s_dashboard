@@ -49,7 +49,6 @@ function Page() {
     const { t } = useTranslation(); // ✅ i18n
     const { openChild } = useChildViewer();
     const { currentStore } = useGlobalStore();
-    const { routeParams } = usePageContext();
     const { params, myLocation, replaceLocation, nextPage } = useMyLocation()
     const categoryIdFromRoute = params[1];
     const isNewCategory = categoryIdFromRoute === 'new';

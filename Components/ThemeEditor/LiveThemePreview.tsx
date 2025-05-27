@@ -8,6 +8,7 @@ import { IoExpandOutline, IoPhonePortraitOutline, IoTabletPortraitOutline, IoTvO
 import ClipLoader from 'react-spinners/ClipLoader';
 import { Check, Download, HardDrive, Save } from 'lucide-react';
 import { SpinnerIcon } from '../Confirm/Spinner';
+import { buttonStyle } from '../Button/Style';
 
 type PreviewDevice = 'mobile' | 'tablet' | 'desktop';
 
@@ -39,7 +40,7 @@ export function LiveThemePreview({ onSave, mode, isSaving, store, theme, setting
     const previewUrl = useMemo(() => {
         // Option 1: Page preview dédiée (plus simple pour démarrer)
         // Ajouter un timestamp ou une clé changeante si on recharge l'iframe à chaque update
-        return `/themes/preview?storeId=${store.id}&themeId=${theme.id}&previewKey=${iframeKey}`;
+        return `${'http://piou2.sublymus-server.com/'}?storeId=${store.id}&themeId=${theme.id}&previewKey=${iframeKey}`;
         // Option 2: URL réelle du store + paramètres
         // const baseUrl = store.domain_names?.[0] ? `http://${store.domain_names[0]}` : store.slug ? `http://${store.slug}.sublymus.app` : '';
         // return baseUrl ? `${baseUrl}?preview_mode=true&live_settings_id=${someId}` : '/error-no-url';
@@ -154,14 +155,21 @@ export function LiveThemePreview({ onSave, mode, isSaving, store, theme, setting
                             </button>
                         : <button
                             disabled={isInstalling || isLoadingIframe}
-                            onClick={onInstall} // fonction à définir
-                            className="flex items-center flex-row gap-4"
+                            onClick={onInstall}
+                            className={`
+        flex items-center gap-4 px-4 py-2 rounded-2xl transition
+        ${isInstalling || isLoadingIframe
+                                    ? 'bg-gray-300 text-gray-500 cursor-not-allowed opacity-60'
+                                    : buttonStyle
+                                }
+    `}
                         >
-                            {isInstalling ? <SpinnerIcon /> : <Download className="w-4 h-4" />}
-                            <span>{isInstalling ?
-                                t('themeMarket.installingButton')
-                                : t('themeMarket.installButton')
-                            }
+                            {isInstalling ? <SpinnerIcon /> : <Download className="w-4.5 h-4.5" />}
+                            <span className='hidden mob:inline'>
+                                {isInstalling
+                                    ? t('themeMarket.installingButton')
+                                    : t('themeMarket.installButton')
+                                }
                             </span>
                         </button>
                 }
@@ -188,7 +196,7 @@ export function LiveThemePreview({ onSave, mode, isSaving, store, theme, setting
                         border: 'none',
                     } : undefined}
                     title={t('themePreview.previewTitle', { name: 'Demo Theme' })}
-                    className={`bg-white transition-all duration-300 ease-in-out border-gray-400 ${iframeWidthClass} ${iframeHeightClass} ${isLoadingIframe ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}
+                    className={`bg-white overflow-hidden transition-all duration-300 ease-in-out border-gray-400 ${iframeWidthClass} ${iframeHeightClass} ${isLoadingIframe ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}
                     onLoad={handleIframeLoad}
                     onError={handleIframeError}
                     sandbox="allow-scripts allow-same-origin" // Permissions Sandbox

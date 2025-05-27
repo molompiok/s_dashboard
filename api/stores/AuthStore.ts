@@ -14,14 +14,14 @@ export const useAuthStore = create(
       user: undefined as Partial<UserInterface> | undefined
     },
     (set, get) => ({
-      setToken(token: string | undefined) {
+      setToken(token: string | undefined | null) {
         try {
-          set({ token });
+          set({ token: token || undefined });
           if (typeof window !== "undefined") {
             if (token) {
               localStorage.setItem(TOKEN_KEY, token);
-            } else {
-              // localStorage.removeItem(TOKEN_KEY);
+            } else if (token == null) {
+              localStorage.removeItem(TOKEN_KEY);
             }
           }
         } catch (e) {
@@ -41,14 +41,14 @@ export const useAuthStore = create(
         return undefined;
       },
 
-      setUser(user: Partial<UserInterface> | undefined) {
+      setUser(user: Partial<UserInterface> | undefined | null) {
         try {
-          set({ user });
+          set({ user: user || undefined });
           if (typeof window !== "undefined") {
             if (user) {
               localStorage.setItem(USER_KEY, JSON.stringify(user));
-            } else {
-              // localStorage.removeItem(USER_KEY);
+            } else if (user == null) {
+              localStorage.removeItem(USER_KEY);
             }
           }
         } catch (e) {

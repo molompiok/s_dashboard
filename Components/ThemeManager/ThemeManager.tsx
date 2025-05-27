@@ -39,15 +39,15 @@ const themeSectionIcons: Record<string, JSX.Element> = {
 };
 
 interface ThemeManagerProps {
-    store: StoreInterface; // Le store sélectionné
+    store?: StoreInterface | undefined; // Le store sélectionné
 }
 
 export function ThemeManager({ store }: ThemeManagerProps) {
     const { t } = useTranslation();
-    const { currentStore: globalCurrentStore } = useGlobalStore(); // Pour l'URL base image? Ou utiliser store.url?
+    const { currentStore: globalCurrentStore } = useGlobalStore(); // Pour l'URL base image? Ou utiliser store?.url?
     // TODO: Remplacer par la vraie logique de récupération du thème actuel
-    const currentTheme: Partial<ThemeInterface> | null = store.currentTheme || { // Données Placeholder
-        id: store.current_theme_id ?? 'theme-classy-v1',
+    const currentTheme: Partial<ThemeInterface> | null = store?.currentTheme || { // Données Placeholder
+        id: store?.current_theme_id ?? 'theme-classy-v1',
         name: 'Thème Élégant (Actuel)',
         description: 'Un thème versatile et moderne pour mettre en valeur vos produits avec classe.',
         preview_images: ['/res/theme-previews/elegant.jpg'],
@@ -81,9 +81,9 @@ export function ThemeManager({ store }: ThemeManagerProps) {
     // --- Handlers ---
     const handleOptionClick = (optionKey: string) => {
         logger.info(`Theme option clicked: ${optionKey}`);
-        const themeId = currentTheme?.id ?? store.current_theme_id; // Utiliser l'ID chargé ou celui du store
+        const themeId = currentTheme?.id ?? store?.current_theme_id; // Utiliser l'ID chargé ou celui du store
         if (themeId) {
-            window.location.href = `/themes/editor?store=${store.id}&theme=${themeId}&option=${optionKey}`; // Redirection vers éditeur
+            window.location.href = `/themes/editor?store=${store?.id}&theme=${themeId}&option=${optionKey}`; // Redirection vers éditeur
         } else {
             logger.warn("Cannot navigate to theme editor: current theme ID is missing.");
             // Afficher un message d'erreur?
@@ -91,9 +91,9 @@ export function ThemeManager({ store }: ThemeManagerProps) {
     };
 
     const handleChangeThemeClick = () => {
-        logger.info(`Change theme clicked for store ${store.id}`);
+        logger.info(`Change theme clicked for store ${store?.id}`);
         // TODO: Naviguer vers la page/modale de sélection de thème
-        window.location.href = `/themes/market?store=${store.id}`; // Simple redirection
+        window.location.href = `/themes/market?store=${store?.id}`; // Simple redirection
     };
 
 
@@ -108,79 +108,85 @@ export function ThemeManager({ store }: ThemeManagerProps) {
         // Conteneur principal
         <div className="theme-manager bg-white rounded-lg shadow-sm border border-gray-200 flex flex-col gap-6">
 
-            {/* Section Thème Actuel */}
-            <div className="p-4 sm:p-6 border-b border-gray-100">
-                <div className="flex justify-between items-center mb-4">
-                    <h2 className="text-lg font-semibold text-gray-800">{t('themeManager.currentThemeTitle')}</h2>
-                    <button
-                        onClick={handleChangeThemeClick}
-                        className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1"
-                    >
-                        {t('themeManager.changeThemeButton')} <IoBrushOutline className="w-4 h-4" />
-                    </button>
-                </div>
-                {isLoadingThemes ? (
-                    <div className="flex gap-4 md:gap-6 items-start animate-pulse">
-                        <div className="w-1/3 lg:w-1/4 flex-shrink-0 rounded-lg aspect-video bg-gray-300"></div>
-                        <div className="flex-grow flex flex-col gap-3 pt-1">
-                            <div className="h-6 w-3/5 bg-gray-300 rounded"></div>
-                            <div className="h-4 w-full bg-gray-200 rounded"></div>
-                            <div className="h-4 w-4/6 bg-gray-200 rounded"></div>
-                            <div className="h-5 w-20 bg-gray-300 rounded-full mt-1"></div>
+            {
+                store?.id && (
+                    <>
+                        {/* Section Thème Actuel */}
+                        <div className="p-4 sm:p-6 border-b border-gray-100">
+                            <div className="flex justify-between items-center mb-4">
+                                <h2 className="text-lg font-semibold text-gray-800">{t('themeManager.currentThemeTitle')}</h2>
+                                <button
+                                    onClick={handleChangeThemeClick}
+                                    className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline flex items-center gap-1"
+                                >
+                                    {t('themeManager.changeThemeButton')} <IoBrushOutline className="w-4 h-4" />
+                                </button>
+                            </div>
+                            {isLoadingThemes ? (
+                                <div className="flex gap-4 md:gap-6 items-start animate-pulse">
+                                    <div className="w-1/3 lg:w-1/4 flex-shrink-0 rounded-lg aspect-video bg-gray-300"></div>
+                                    <div className="flex-grow flex flex-col gap-3 pt-1">
+                                        <div className="h-6 w-3/5 bg-gray-300 rounded"></div>
+                                        <div className="h-4 w-full bg-gray-200 rounded"></div>
+                                        <div className="h-4 w-4/6 bg-gray-200 rounded"></div>
+                                        <div className="h-5 w-20 bg-gray-300 rounded-full mt-1"></div>
+                                    </div>
+                                </div>
+                            ) : currentTheme ? (
+                                <div className="flex flex-col md:flex-row gap-4 md:gap-6 items-start">
+                                    <div className="w-full md:w-1/3 lg:w-1/4 flex-shrink-0 rounded-lg overflow-hidden shadow border border-gray-100 aspect-video bg-gray-100">
+                                        <img src={currentThemeImageSrc || NO_PICTURE} alt={currentTheme.name} className="w-full h-full object-cover" />
+                                    </div>
+                                    <div className="flex-grow flex flex-col gap-2">
+                                        <h3 className="text-xl font-semibold text-gray-900">{currentTheme.name}</h3>
+                                        {currentTheme.description && <p className="text-sm text-gray-500 line-clamp-3">{currentTheme.description}</p>}
+                                        {/* Tags / Features */}
+                                        {currentTheme.features && currentTheme.features.length > 0 && (
+                                            <div className="flex flex-wrap gap-1.5 mt-1">
+                                                {currentTheme.features.map(feature => (
+                                                    <span key={feature} className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
+                                                        {t(`themeFeatures.${feature}`, feature)}
+                                                    </span>
+                                                ))}
+                                            </div>
+                                        )}
+                                        <div className="flex items-center gap-2 text-sm font-medium text-green-600 mt-1">
+                                            <IoCheckmarkCircle /> {t('themeManager.activeStatus')}
+                                        </div>
+                                    </div>
+                                </div>
+                            ) : (
+                                <p className="text-sm text-gray-500 italic">{t('themeManager.noThemeAssigned')}</p>
+                            )}
                         </div>
-                    </div>
-                ) : currentTheme ? (
-                    <div className="flex flex-col md:flex-row gap-4 md:gap-6 items-start">
-                        <div className="w-full md:w-1/3 lg:w-1/4 flex-shrink-0 rounded-lg overflow-hidden shadow border border-gray-100 aspect-video bg-gray-100">
-                            <img src={currentThemeImageSrc || NO_PICTURE} alt={currentTheme.name} className="w-full h-full object-cover" />
-                        </div>
-                        <div className="flex-grow flex flex-col gap-2">
-                            <h3 className="text-xl font-semibold text-gray-900">{currentTheme.name}</h3>
-                            {currentTheme.description && <p className="text-sm text-gray-500 line-clamp-3">{currentTheme.description}</p>}
-                            {/* Tags / Features */}
-                            {currentTheme.features && currentTheme.features.length > 0 && (
-                                <div className="flex flex-wrap gap-1.5 mt-1">
-                                    {currentTheme.features.map(feature => (
-                                        <span key={feature} className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">
-                                            {t(`themeFeatures.${feature}`, feature)}
-                                        </span>
+
+                        {/* Options de Personnalisation (seulement si thème actuel chargé) */}
+                        {currentTheme && (
+                            <div className="px-4 sm:px-6 pb-4">
+                                <h4 className="text-sm font-semibold text-gray-600 uppercase mb-3 tracking-wide">
+                                    {t('themeManager.customizeOptions')}
+                                </h4>
+                                {/* Utiliser grid */}
+                                <div className="grid grid-cols-2 min-[420px]:grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
+                                    {customizationSections.map(opt => (
+                                        <button
+                                            key={opt.key}
+                                            onClick={() => handleOptionClick(opt.key)}
+                                            className="flex flex-col items-center justify-center gap-1.5 p-3 rounded-lg text-sm text-center text-gray-700 bg-gray-50 hover:bg-blue-50 hover:text-blue-700 border border-gray-200 hover:border-blue-200 transition aspect-square"
+                                        >
+                                            <span className="text-2xl text-gray-500 group-hover:text-blue-600">{themeSectionIcons[opt.key]}</span>
+                                            <span className="font-medium text-xs text-center truncate w-full">
+                                                {t(opt.titleKey)}
+                                            </span>
+                                        </button>
                                     ))}
                                 </div>
-                            )}
-                            <div className="flex items-center gap-2 text-sm font-medium text-green-600 mt-1">
-                                <IoCheckmarkCircle /> {t('themeManager.activeStatus')}
                             </div>
-                        </div>
-                    </div>
-                ) : (
-                    <p className="text-sm text-gray-500 italic">{t('themeManager.noThemeAssigned')}</p>
-                )}
-            </div>
+                        )}
 
-            {/* Options de Personnalisation (seulement si thème actuel chargé) */}
-            {currentTheme && (
-                <div className="px-4 sm:px-6 pb-4">
-                    <h4 className="text-sm font-semibold text-gray-600 uppercase mb-3 tracking-wide">
-                        {t('themeManager.customizeOptions')}
-                    </h4>
-                    {/* Utiliser grid */}
-                    <div className="grid grid-cols-2 min-[420px]:grid-cols-3 sm:grid-cols-4 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-3">
-                        {customizationSections.map(opt => (
-                            <button
-                                key={opt.key}
-                                onClick={() => handleOptionClick(opt.key)}
-                                className="flex flex-col items-center justify-center gap-1.5 p-3 rounded-lg text-sm text-center text-gray-700 bg-gray-50 hover:bg-blue-50 hover:text-blue-700 border border-gray-200 hover:border-blue-200 transition aspect-square"
-                            >
-                                <span className="text-2xl text-gray-500 group-hover:text-blue-600">{themeSectionIcons[opt.key]}</span>
-                                <span className="font-medium text-xs text-center truncate w-full">
-                                    {t(opt.titleKey)}
-                                </span>
-                            </button>
-                        ))}
-                    </div>
-                </div>
-            )}
-
+                    </>
+                )
+            }
             {/* Section Thèmes Disponibles */}
             <div className="px-4 sm:px-6 pb-6 border-t border-gray-100 pt-6">
                 <div className="flex justify-between items-center mb-4">
@@ -207,8 +213,8 @@ export function ThemeManager({ store }: ThemeManagerProps) {
                             <div className="text-sm text-gray-500 italic px-1">{t('themeManager.noOtherThemes')}</div>
                         ) : (
                             availableThemes.map((theme) => (
-                                <SwiperSlide key={theme.id} className="!w-48 sm:!w-52 p-1"> {/* Largeur fixe */}
-                                    <ThemeCard theme={theme} isCurrent={theme.id === currentTheme?.id} /> {/* Passer isCurrent */}
+                                <SwiperSlide key={theme.id} className="!w-48 sm:!w-52 p-1">
+                                    <ThemeCard theme={theme} isCurrent={theme.id === currentTheme?.id} />
                                 </SwiperSlide>
                             ))
                         )}
@@ -247,7 +253,7 @@ export function ThemeCard({ theme, isCurrent = false, isSelected, onClick }: The
         } else {
             // Naviguer vers la preview ou le marché avec ce thème sélectionné?
             // Ou déclencher l'installation? Pour l'instant, navigue vers preview
-            window.location.href = `/themes/preview/${theme.id}?store=${globalCurrentStore?.id}`;
+            window.location.href = `/themes/market?theme=${theme.id}`;
         }
     };
 

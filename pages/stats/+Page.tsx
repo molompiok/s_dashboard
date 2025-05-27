@@ -1,26 +1,26 @@
 // pages/stores/stats/+Page.tsx
 import React, { useState, useMemo, useEffect, useCallback } from 'react';
 import { useTranslation } from 'react-i18next'; // i18n
-import { usePageContext } from '../../../renderer/usePageContext'; // Lire URL params
+import { usePageContext } from '../../renderer/usePageContext'; // Lire URL params
 
 // Hooks API et Types
 import {
     useGetKpis, useGetVisitDetails, useGetOrderDetailsStats,
     useGetUsers, useGetProduct, // Hooks pour les détails client/produit
-} from '../../../api/ReactSublymusApi'; // Ajustez le chemin
+} from '../../api/ReactSublymusApi'; // Ajustez le chemin
 
 import {
     BaseStatsParams, VisitStatsIncludeOptions, OrderStatsIncludeOptions,
     StatsPeriod
-} from "../../../api/Interfaces/Interfaces";
+} from "../../api/Interfaces/Interfaces";
 // Composants UI
-import StatsFilters from '../../../Components/Stats/StatsFilters'; // Filtres
-import KpiCards from '../../../Components/Stats/KpiCards'; // KPIs
-import ClientPreview from '../../../Components/Stats/ClientPreview'; // Preview Client
-import ProductPreview from '../../../Components/Stats/ProductPreview'; // Preview Produit
-import VisitStatsSection from '../../../Components/Stats/VisitStatsSection'; // Stats Visites
-import OrderStatsSection from '../../../Components/Stats/OrderStatsSection'; // Stats Commandes
-import { useMyLocation } from '../../../Hooks/useRepalceState';
+import StatsFilters from '../../Components/Stats/StatsFilters'; // Filtres
+import KpiCards from '../../Components/Stats/KpiCards'; // KPIs
+import ClientPreview from '../../Components/Stats/ClientPreview'; // Preview Client
+import ProductPreview from '../../Components/Stats/ProductPreview'; // Preview Produit
+import VisitStatsSection from '../../Components/Stats/VisitStatsSection'; // Stats Visites
+import OrderStatsSection from '../../Components/Stats/OrderStatsSection'; // Stats Commandes
+import { useMyLocation } from '../../Hooks/useRepalceState';
 import { SlidersHorizontal } from 'lucide-react';
 // Modal (useChildViewer est souvent dans un contexte global, pas besoin d'importer ici)
 // import { useChildViewer } from '../../components/ChildViewer/useChildViewer';

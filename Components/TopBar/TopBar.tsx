@@ -39,10 +39,8 @@ function Topbar({
     breadcrumbs = []
 }: TopbarProps) {
     const { t } = useTranslation();
-    const { currentStore } = useGlobalStore()
     const { openChild } = useChildViewer();
     const { nextPage } = useMyLocation()
-    const { serverUrl } = usePageContext()
     const { user } = useAuthStore()
 
     // --- Préparer les infos utilisateur pour l'avatar ---
@@ -84,7 +82,7 @@ function Topbar({
     };
 
     return (
-        <div className='top-bar sticky top-0 z-40 flex items-center h-16 px-4 sm:px-6 bg-white border-b border-gray-200 w-full'>
+        <div className="top-bar sticky top-0 z-40 flex items-center h-16 px-4 sm:px-6 bg-white/80 dark:bg-gray-900/80 border-b border-gray-200 dark:border-gray-700 w-full backdrop-blur-md shadow-sm">
             {back && (
                 <button
                     onClick={handleBackClick}
@@ -136,7 +134,7 @@ function Topbar({
             </div>
 
             {/* Section Droite: Recherche, Notifications (commenté) & Avatar */}
-            <div className='right bg-white flex items-center gap-3 flex-shrink-0'>
+            <div className='right flex items-center gap-3 flex-shrink-0'>
                 {search && (
                     <button
                         onClick={handleSearchClick}
