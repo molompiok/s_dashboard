@@ -3,6 +3,7 @@ import { create } from "zustand";
 import { UserInterface } from "../../api/Interfaces/Interfaces";
 import { combine } from "zustand/middleware";
 import { ClientCall } from "../../Components/Utils/functions";
+import { navigate } from "vike/client/router";
 
 // Clés de stockage local
 const TOKEN_KEY = "auth_mainSeverToken";
@@ -99,5 +100,5 @@ export function logoutMainServerUserGlobally() {
 export function handleUnauthorized() {
   console.log("Global 401 handler triggered. Logging out.");
   logoutMainServerUserGlobally();
-  window.location.href = '/login?sessionExpired=true';
+  navigate('/login?sessionExpired=true');
 }

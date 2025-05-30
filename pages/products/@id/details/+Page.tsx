@@ -519,7 +519,7 @@ function DetailInfo({ detail: initialDetail, onSave, onCancel }: {
 
             {/* Description */}
             <div>
-                <label className='block text-sm font-medium text-gray-700 mb-1 flex justify-between items-center' htmlFor='input-detail-description'>
+                <label className=' text-sm font-medium text-gray-700 mb-1 flex justify-between items-center' htmlFor='input-detail-description'>
                     <span>{t('detail.descriptionLabel')} <IoPencil className="inline-block ml-1 w-3 h-3 text-gray-400" /></span>
                     <span className={`text-xs ${(collected.description?.trim()?.length || 0) > 2000 ? 'text-red-600' : 'text-gray-400'}`}>
                         {(collected.description?.trim()?.length || 0)} / 2000

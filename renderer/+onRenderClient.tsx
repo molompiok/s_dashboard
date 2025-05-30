@@ -10,7 +10,7 @@ import i18next from '../Lib/i18n';
 import './tw.css'
 import { getToken, logoutUserGlobally } from "../api/stores/AuthStore";
 import { SublymusApiProvider } from '../api/ReactSublymusApi';
-import { Data } from './AppStore/Data';
+import { Data, host } from './AppStore/Data';
 import { useGlobalStore } from '../api/stores/StoreStore';
 import { ClientCall } from '../Components/Utils/functions';
 
@@ -26,14 +26,16 @@ const onRenderClient: OnRenderClientAsync = async (pageContext): ReturnType<OnRe
   const container = document.getElementById('root')
   if (!container) throw new Error('DOM element #root not found')
   const currentStore = useGlobalStore.getState().getCurrentStore();
-  const host = (process.env.NODE_ENV == 'production' ? 'https://' : 'http://') ;
+  
   const serverUrl = ClientCall(function(){return window.location.origin.replace('dash','server')},'') ;
   Data.serverUrl = pageContext.serverUrl ? (host + 'server.' + pageContext.serverUrl ) : serverUrl
+  Data.apiUrl = currentStore?.api_url && (host+ currentStore.api_url); 
   console.log({
     baseUrl: pageContext.baseUrl,
     serverUrl: pageContext.serverUrl = Data.serverUrl||'',
-    apiUrl:  Data.apiUrl = pageContext.apiUrl = host + currentStore?.api_url || '',
+    // apiUrl:  pageContext.apiUrl = Data.apiUrl 
   });
+
 
   
   const page = (

@@ -2,6 +2,7 @@
 import { create } from "zustand";
 import { UserInterface } from "../Interfaces/Interfaces";
 import { combine } from "zustand/middleware";
+import { navigate } from "vike/client/router";
 
 // Clés de stockage local
 const TOKEN_KEY = "auth_token";
@@ -33,7 +34,9 @@ export const useAuthStore = create(
         try {
           if (get().token) return get().token;
           if (typeof window !== "undefined") {
-            return localStorage.getItem(TOKEN_KEY) ?? undefined;
+            const t = localStorage.getItem(TOKEN_KEY) ?? undefined;
+            set({ token: t || undefined });
+            return t
           }
         } catch (e) {
           console.error("Erreur dans getToken:", e);
@@ -60,8 +63,10 @@ export const useAuthStore = create(
         try {
           if (get().user) return get().user;
           if (typeof window !== "undefined") {
-            const stored = localStorage.getItem(USER_KEY);
-            return stored ? JSON.parse(stored) : undefined;
+            let user = localStorage.getItem(USER_KEY);
+            const u  = user ? JSON.parse(user) : undefined;
+            localStorage.setItem(USER_KEY, JSON.stringify(user));
+            return u;
           }
         } catch (e) {
           console.error("Erreur dans getUser:", e);
@@ -99,5 +104,5 @@ export function logoutUserGlobally() {
 export function handleUnauthorized() {
   console.log("Global 401 handler triggered. Logging out.");
   logoutUserGlobally();
-  window.location.href = '/login?sessionExpired=true';
+  navigate('/login?sessionExpired=true');
 }

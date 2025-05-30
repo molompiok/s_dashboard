@@ -83,7 +83,7 @@ function ProductList({ baseFilter, title, addTo }: { title?: string, addTo?: { c
 
             {!isError && (
                 <div className={`mt-6 ${viewType === 'card'
-                    ? 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-4 xl:grid-cols-5 gap-4'
+                    ? 'grid grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5  gap-1 mob:gap-2 sm:gap-4'
                     : 'flex flex-col gap-3'
                     }`}>
                     {viewType === 'card' && <AddProductCard addTo={addTo} />}
@@ -97,15 +97,25 @@ function ProductList({ baseFilter, title, addTo }: { title?: string, addTo?: { c
                         {products.map((p) => (
                             viewType === 'card' ? (
                                 <ProductItemCard key={p.id} product={p} />
-                            ) : <ProductRowItem key={p.id}
-                                categoriesMap={
-                                    p.categories &&
-                                    new Map<string, CategoryInterface>(
-                                        p.categories.map((category) => [category.id, category])
-                                    )
-                                }
-                                product={p}
-                            />
+                            ) : <motion.div
+                            key={p.id}
+                                layout // Animation d'ordre
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: -20, transition: { duration: 0.2 } }}
+                                transition={{ duration: 0.3, ease: "easeOut" }}
+                                className="origin-top"
+                                >
+                                <ProductRowItem key={p.id}
+                                    categoriesMap={
+                                        p.categories &&
+                                        new Map<string, CategoryInterface>(
+                                            p.categories.map((category) => [category.id, category])
+                                        )
+                                    }
+                                    product={p}
+                                />
+                            </motion.div>
                         ))}
 
                         {products.length === 0 && !isLoading && (

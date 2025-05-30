@@ -15,9 +15,13 @@ export function CommandItem({ command }: { command: CommandInterface }) {
                 <div className='flex items-center gap-2 min-w-0'>
                     {/* Image Client */}
                     <div
-                        className="w-14 h-14 rounded-xl flex-shrink-0 bg-cover bg-center bg-no-repeat bg-gray-200"
-                        style={{ background: getMedia({ isBackground: true, source: command.user?.photo?.[0] ?? '/res/delivery_moto.png', from: 'api' }) }} // Utiliser photo user si dispo
-                    ></div>
+                      className="w-12 h-12 rounded-full bg-cover bg-center bg-gray-200 text-gray-500 font-semibold text-sm flex items-center justify-center shrink-0"
+                        style={{ background: command.user?.photo?.[0] ? getMedia({ isBackground: true, source: command.user?.photo?.[0]  , from: 'api' }): '#3533' }} 
+                    >
+                        {
+                            !command.user?.photo?.[0] && command.user?.full_name.substring(0,2).toLocaleUpperCase()
+                        }
+                    </div>
                     {/* Infos Textuelles */}
                     <div className="flex flex-col gap-0.5 flex-shrink overflow-hidden">
                         <h2 className='font-medium text-base text-gray-800 overflow-hidden text-ellipsis whitespace-nowrap'>

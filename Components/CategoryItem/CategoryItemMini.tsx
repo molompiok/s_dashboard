@@ -8,6 +8,7 @@ import { getMedia } from "../Utils/StringFormater"; // Import de getMedia
 import { useTranslation } from "react-i18next";
 import logger from "../../api/Logger";
 import { NO_PICTURE } from "../Utils/constants";
+import { navigate } from "vike/client/router";
 
 export { CategoryItemMini };
 
@@ -72,7 +73,9 @@ function CategoryItemMini({
 
     const ContainerElement = (openCategory && !onClick) ? 'a' : 'div';
     const containerProps = ContainerElement === 'a'
-        ? { href: `/categories/${category.id}` }
+        ? { onClick: ()=>{
+            navigate(`/categories/${category.id}`)
+        } }
         : { onClick: onClick ? handleClick : undefined, role: onClick ? 'button' : undefined, tabIndex: onClick ? 0 : undefined };
 
 

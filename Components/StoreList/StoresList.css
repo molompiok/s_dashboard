@@ -3,3 +3,8 @@
     color: aliceblue;
     bottom: -20px!important;
 }
+
+.store-list .swiper-wrapper{
+    display: flex;
+    align-items: center;
+}

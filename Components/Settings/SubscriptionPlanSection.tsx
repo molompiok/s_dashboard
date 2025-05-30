@@ -46,7 +46,6 @@ export function SubscriptionPlanSection({ store }: SubscriptionPlanSectionProps)
     const handleChangePlan = () => {
         logger.info(`Change plan clicked for store ${store.id}`);
         // TODO: Rediriger vers la page de gestion des abonnements/paiements
-        // window.location.href = '/billing'; // Ou une URL externe
         alert(t('subscriptionPlan.changePlanAction')); // Placeholder alert
     };
 

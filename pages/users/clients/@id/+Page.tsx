@@ -65,7 +65,7 @@ function Page() {
         { enabled: !!userId && !!currentStore }
     );
     const {
-        data: visitStatsData,
+        data: visitStatsData =[],
         isLoading: isLoadingVisitStats
     } = useGetVisitDetails(
         {
@@ -144,7 +144,7 @@ function Page() {
 
 
     return (
-        <div className="user-recap-container w-full flex flex-col bg-gray-100 min-h-screen">
+        <div className="user-recap-container w-full flex flex-col min-h-screen">
             <Topbar back={true} title={t('clientDetail.pageTitle', { name: user.full_name })} />
             <main className="w-full max-w-6xl mx-auto p-4 md:p-6 lg:p-8 flex flex-col gap-6">
 

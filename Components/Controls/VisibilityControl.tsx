@@ -1,10 +1,11 @@
 import { FaEye, FaEyeSlash, FaTrashAlt } from "react-icons/fa";
+import { SpinnerIcon } from "../Confirm/Spinner";
 type ProductVisibilityControlProps = {
     title: string;
     isVisible: boolean;
     onSetVisibility: (newVisibility: boolean) => Promise<any> | any | void; // Permissif sur le retour
     onDeleteRequired: () => void;
-    isLoading?: boolean; 
+    isLoading?: boolean;
     t: (key: string, options?: any) => string;
 };
 /**
@@ -25,7 +26,7 @@ export function VisibilityControl({
     onDeleteRequired,
     isLoading = false, // Valeur par défaut pour isLoading
     t
-}:ProductVisibilityControlProps) {
+}: ProductVisibilityControlProps) {
 
     const handleVisibilityToggle = async () => {
         // Inverse l'état de visibilité actuel
@@ -48,15 +49,17 @@ export function VisibilityControl({
                     type="button"
                     onClick={handleVisibilityToggle}
                     disabled={isLoading}
-                    className={`flex items-center gap-1.5 px-3 py-1.5 hover:shadow-sm rounded-md text-sm font-medium border cursor-pointer transition disabled:opacity-50 disabled:cursor-not-allowed ${
-                        isVisible
+                    className={`flex items-center gap-1.5 px-3 py-1.5 hover:shadow-sm rounded-md text-sm font-medium border cursor-pointer transition disabled:opacity-50 disabled:cursor-not-allowed ${isVisible
                             ? 'bg-yellow-50 text-yellow-700 border-yellow-300 hover:bg-yellow-100 focus:ring-2 focus:ring-yellow-400 focus:ring-opacity-50' // Style pour "Masquer" (état visible actuel)
                             : 'bg-green-50 text-green-700 border-green-300 hover:bg-green-100 focus:ring-2 focus:ring-green-400 focus:ring-opacity-50' // Style pour "Rendre Visible" (état masqué actuel)
-                    }`}
-                    aria-label={isVisible ?t('productList.hidden') : t('productList.visible')}
+                        }`}
+                    aria-label={isVisible ? t('productList.hidden') : t('productList.visible')}
                 >
-                    {isVisible ? <FaEyeSlash size={14} /> : <FaEye size={14} />}
-                    <span>{isVisible ?t('productList.hidden') : t('productList.visible')}</span>
+                    {
+                        isLoading ? <SpinnerIcon /> :
+                            (isVisible ? <FaEyeSlash size={14} /> : <FaEye size={14} />)
+                    }
+                    <span>{isVisible ? t('productList.hidden') : t('productList.visible')}</span>
                 </button>
 
                 {/* Bouton Supprimer */}
@@ -67,7 +70,7 @@ export function VisibilityControl({
                     className="flex items-center gap-1.5 px-3 py-1.5 hover:shadow-sm rounded-md text-sm font-medium border transition bg-red-50 text-red-700 border-red-300 hover:bg-red-100 focus:ring-2 cursor-pointer focus:ring-red-400 focus:ring-opacity-50 disabled:opacity-50 disabled:cursor-not-allowed"
                     aria-label={t('common.delete')}
                 >
-                    <FaTrashAlt size={13} /> {/* Légèrement plus petite pour l'équilibre */}
+                    <FaTrashAlt size={13} />
                     <span>{t('common.delete')}</span>
                 </button>
             </div>

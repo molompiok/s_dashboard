@@ -5,6 +5,7 @@ import { useGetMe } from "../../api/ReactSublymusApi"; // Hook pour récupérer 
 import { getMedia } from "../Utils/StringFormater";
 import { IoChevronForward, IoPersonCircleOutline } from "react-icons/io5";
 import { useGlobalStore } from "../../api/stores/StoreStore";
+import { navigate } from "vike/client/router";
 
 export function CurrentUserCard() {
     const { t } = useTranslation();
@@ -13,7 +14,7 @@ export function CurrentUserCard() {
     const user = meData?.user;
 
     // S'assurer que le chemin vers le placeholder est correct
-    const avatarSrc = user?.photo?.[0] ? getMedia({ isBackground: true, source: user.photo[0], from: 'api' }) : undefined;
+    const avatarSrc = user?.photo?.[0] ? getMedia({ isBackground: true, source: user.photo[0], from: 'server' }) : undefined;
 
     // --- Rendu Skeleton ---
     if (isLoading) {
@@ -44,7 +45,9 @@ export function CurrentUserCard() {
     // --- Rendu Normal ---
     return (
         // Utiliser un lien <a> qui englobe tout pour aller au profil
-        <a href="/users/profile" className="current-user-card w-full p-4 bg-gradient-to-r from-blue-50 via-white to-indigo-50 rounded-xl shadow-sm border border-blue-100 flex items-center justify-between gap-4 group hover:shadow-md hover:border-blue-200 transition duration-150 ease-in-out">
+        <span onClick={()=>{
+            navigate('/profile');
+        }} className="current-user-card w-full p-4 bg-gradient-to-r from-blue-50 via-white to-indigo-50 rounded-xl shadow-sm border border-blue-100 flex items-center justify-between gap-4 group hover:shadow-md hover:border-blue-200 transition duration-150 ease-in-out">
             {/* Partie Gauche: Avatar + Nom/Email */}
             <div className="flex items-center gap-3 min-w-0">
                 {/* Avatar */}
@@ -71,6 +74,6 @@ export function CurrentUserCard() {
             <div className="flex-shrink-0 text-gray-400 group-hover:text-blue-500 transition-colors">
                 <IoChevronForward className="w-6 h-6" />
             </div>
-        </a>
+        </span>
     );
 }

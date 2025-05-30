@@ -15,6 +15,7 @@ import { useChildViewer } from "../ChildViewer/useChildViewer"; // Pour confirma
 import { ConfirmDelete } from "../Confirm/ConfirmDelete"; // Pour confirmation delete
 import { ChildViewer } from "../ChildViewer/ChildViewer";
 import { showErrorToast, showToast } from "../Utils/toastNotifications";
+import { navigate } from "vike/client/router";
 
 export { CategoryItemRow };
 
@@ -106,7 +107,9 @@ function CategoryItemRow({ category /*, onDeleteSuccess, onVisibilityChangeSucce
 
             {/* Image/Icône */}
             {/* Utiliser un lien pour l'image et le nom */}
-            <a href={`/categories/${category.id}`} className="flex-shrink-0 block w-12 h-12 sm:w-16 sm:h-16 rounded-md overflow-hidden bg-gray-100 border border-gray-200">
+            <a onClick={()=>{
+                navigate(`/categories/${category.id}`);
+            }} className="flex-shrink-0 block w-12 h-12 sm:w-16 sm:h-16 rounded-md overflow-hidden bg-gray-100 border border-gray-200">
                 {/* Gestion Erreur Image */}
                 {!imgError ? (
                     <img

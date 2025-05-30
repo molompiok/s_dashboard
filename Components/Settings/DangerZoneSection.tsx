@@ -7,6 +7,7 @@ import { useDeleteStore } from "../../api/ReactSublymusApi"; // Importer la muta
 import logger from '../../api/Logger';
 import { ApiError } from '../../api/SublymusApi';
 import { IoTrash } from "react-icons/io5";
+import { navigate } from 'vike/client/router';
 
 interface DangerZoneSectionProps {
     store: StoreInterface;
@@ -37,7 +38,7 @@ export function DangerZoneSection({ store }: DangerZoneSectionProps) {
                     // Pour l'instant, on pourrait juste afficher un message.
                     alert(t('dangerZone.deleteSuccessMessage')); // Alert simple
                     // Ou idéalement, rediriger l'utilisateur vers la liste des stores
-                    window.location.href = '/stores';
+                    navigate('/stores');
                 },
                 onError: (error: ApiError) => {
                     logger.error({ error }, `Failed to delete store ${store.id}`);

@@ -16,7 +16,7 @@ import { useHashWatcher } from '../Hooks/useHashWatcher';
 import { useGlobalStore } from '../api/stores/StoreStore'; // Gardé pour fetch initial store
 import { useTranslation } from 'react-i18next'; // Pour traduction future
 import { useChildViewer } from '../Components/ChildViewer/useChildViewer'; // Hook pour popup
-import { IoHome, IoHomeOutline, IoStorefront, IoStorefrontOutline, IoPeople, IoPeopleOutline, IoDocumentText, IoDocumentTextOutline, IoCube, IoCubeOutline, IoLayers, IoLayersOutline } from 'react-icons/io5'; // Importer directement les icônes
+import { IoHome, IoHomeOutline, IoStorefront, IoStorefrontOutline, IoPeople, IoPeopleOutline, IoDocumentText, IoDocumentTextOutline, IoCube, IoCubeOutline, IoLayers, IoLayersOutline, IoBarChart } from 'react-icons/io5'; // Importer directement les icônes
 import { Toaster } from 'react-hot-toast';
 import { useMyLocation } from '../Hooks/useRepalceState';
 import { useAuthStore } from '../api/stores/AuthStore';
@@ -65,6 +65,7 @@ function Layout({ children, pageContext }: { children: React.ReactNode; pageCont
             <Link href="/categories" activeIcon={<IoLayers className='w-5 h-5' />} defaultIcon={<IoLayersOutline className='w-5 h-5' />}>{t('navigation.categories')}</Link>
             <Link href="/commands" activeIcon={<IoDocumentText className='w-5 h-5' />} defaultIcon={<IoDocumentTextOutline className='w-5 h-5' />}>{t('navigation.orders')}</Link>
             <Link href="/users" activeIcon={<IoPeople className='w-5 h-5' />} defaultIcon={<IoPeopleOutline className='w-5 h-5' />}>{t('navigation.teams')}</Link>
+            <Link href="/stats" activeIcon={<IoDocumentText className='w-5 h-5' />} defaultIcon={<IoBarChart className='w-5 h-5' />}>{t('navigation.stats')}</Link>
             {/* Lien Inventaire ajouté */}
             {/* <Link href="/inventory" activeIcon={<IoHome className='w-5 h-5' />} defaultIcon={<IoHomeOutline className='w-5 h-5' />}>{t('navigation.inventory')}</Link> */}
             <Link href="/" add={['/themes']} activeIcon={<IoStorefront className='w-5 h-5' />} defaultIcon={<IoStorefrontOutline className='w-5 h-5' />}>{t('navigation.stores')}</Link>
@@ -173,16 +174,17 @@ function Frame({ children }: { children: React.ReactNode }) {
   // Appliquer le filtre blur ici
   return (
     <div
-      className="flex bg-gray-100 w-full mx-auto transition-filter duration-300 relative" // ← Ajouter `relative`
+      className="flex w-full mx-auto transition-filter duration-300 relative" 
       style={{ filter: blur ? `blur(${blur}px)` : 'none' }}
     >
 
-      <div className="fixed z-[-2] inset-0 opacity-50 dark:opacity-30">
+      <div className="fixed -z-1 inset-0 opacity-50 dark:opacity-30">
         {/* Arrière-plan avec des cercles animés personnalisés */}
         <div
           className="absolute -top-1/4 -left-1/4 w-full h-full rounded-full bg-teal-300/30 dark:bg-teal-700/20 filter blur-3xl"
           style={{
             animation: 'pulse 6s ease-in-out infinite',
+            pointerEvents:'none'
           }}
         ></div>
 

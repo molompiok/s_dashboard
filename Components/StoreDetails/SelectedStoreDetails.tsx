@@ -42,7 +42,7 @@ export function SelectedStoreDetails({ store, onEditRequired }: SelectedStoreDet
         { enabled: !!store.id }
     );
     const {
-        data: visitStatsData,
+        data: visitStatsData =[],
         isLoading: isLoadingVisitStats
     } = useGetVisitDetails(
         {
@@ -244,10 +244,10 @@ export function SelectedStoreDetails({ store, onEditRequired }: SelectedStoreDet
 
             {/* Section 2: Statistiques */}
             <div className="pb-6 border-b border-gray-100">
-                <Link href={`/stats`} className="inline-flex  items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium border border-gray-300  text-gray-700 hover:bg-gray-50 w-full md:w-auto justify-center transition hover:shadow-md cursor-pointer hover:border-blue-200 hover:bg-blue-50/30  bg-blue-50">
+                <Link href={`/stats`} className="inline-flex mb-2  items-center gap-1.5 px-3 py-1.5 rounded-md text-sm font-medium border border-gray-300  text-gray-700 hover:bg-gray-50 w-full md:w-auto justify-center transition hover:shadow-md cursor-pointer hover:border-blue-200 hover:bg-blue-50/30  bg-blue-50">
                     <IoBarChart size={16} /> {t('storesPage.openStoreStats')}
                 </Link>
-                <div className="flex justify-between items-center mb-4">
+                <div className="flex flex-wrap justify-between items-center mb-4">
                     <h3 className="text-lg font-semibold text-gray-800">{t('clientDetail.activityChartTitle')}</h3>
                     {/* Sélecteur Période */}
                     <div className="periods flex items-center gap-1 border border-gray-300 rounded-lg p-0.5">

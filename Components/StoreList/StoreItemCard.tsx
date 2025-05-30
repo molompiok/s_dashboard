@@ -7,26 +7,29 @@ import { useTranslation } from "react-i18next";
 import { NO_PICTURE } from "../../Components/Utils/constants";
 import { useState } from "react";
 import { Server_Host } from "../../renderer/+config";
+import { Globe, Settings } from "lucide-react";
 interface StoreItemCardProps {
     store: StoreInterface;
     isSelected: boolean;
     onClick: () => void;
+    onManage?(store:StoreInterface): void,
+    onVisit?(store:StoreInterface): void
 }
 
-export function StoreItemCard({ store, isSelected, onClick }: StoreItemCardProps) {
+export function StoreItemCard({ onManage, onVisit, store, isSelected, onClick }: StoreItemCardProps) {
     const { t } = useTranslation();
     const [logoError, setLogoError] = useState(false);
     const [coverError, setCoverError] = useState(false);
 
-    const logoSrc = getMedia({source:store.logo?.[0],from:'server'});
-    const coverSrc = store.cover_image?.[0] && getMedia({isBackground:true,source:store.cover_image[0], from:'server'})
+    const logoSrc = getMedia({ source: store.logo?.[0], from: 'server' });
+    const coverSrc = store.cover_image?.[0] && getMedia({ isBackground: true, source: store.cover_image[0], from: 'server' })
 
     return (
         // Carte cliquable avec styles Tailwind
         <button // Utiliser bouton pour accessibilité
             type="button"
             onClick={onClick}
-            className={`store-item-card w-full h-full min-h-[220px] flex flex-col rounded-xl overflow-hidden shadow-md border-2 transition-all duration-200 ease-in-out transform hover:-translate-y-1 cursor-pointer focus:outline-none ${isSelected ? 'border-blue-500 shadow-blue-300/50 scale-100' : 'border-gray-200 hover:border-gray-300 hover:shadow-lg'
+            className={`store-item-card w-full  min-h-[220px] flex flex-col rounded-xl overflow-hidden shadow-md border-2 transition-all duration-200 ease-in-out transform hover:-translate-y-1 cursor-pointer focus:outline-none ${isSelected ? 'border-blue-500 shadow-blue-300/50 scale-100' : 'border-gray-200 hover:border-gray-300 hover:shadow-lg'
                 }`}
         >
             {/* Image de Couverture */}
@@ -50,8 +53,8 @@ export function StoreItemCard({ store, isSelected, onClick }: StoreItemCardProps
                 </div>
             </div>
             {/* Informations Texte */}
-            <div className="p-3 flex flex-col flex-grow justify-between bg-white">
-                <div>
+            <div className="p-3 flex  flex-col flex-grow justify-between bg-white">
+                <div className="h-[54px]">
                     <h3 className="font-semibold text-sm text-gray-800 truncate mb-0.5" title={store.name}>
                         {store.name}
                     </h3>
@@ -70,6 +73,35 @@ export function StoreItemCard({ store, isSelected, onClick }: StoreItemCardProps
                         <span>{store.is_running ? t('common.visible') : t('common.hidden')} </span>
                     </div>
                 </div>
+                <div
+                    style={{
+                        height: `${isSelected ? 32 : 0}px`,
+                        transition: '300ms',
+                        overflow: 'hidden',
+                    }}
+                    className="manage-buttons mt-3 overflow-hidden  w-full flex justify-between gap-2"
+                >
+                    <button
+                        className="flex shadow-md gap-2 items-center  w-full justify-center 
+               bg-gray-500/10 border border-gray-400/20 rounded-lg 
+               text-sm text-gray-800 hover:bg-gray-500/20 transition"
+                        onClick={()=>onManage?.(store)}
+                    >
+                        <Settings className="w-4 h-4" />
+                        Gérer
+                    </button>
+
+                    <button
+                        className="flex  shadow-md gap-2 items-center w-full justify-center 
+                        bg-gray-500/10 border border-gray-400/20 rounded-lg 
+                        text-sm text-gray-800 hover:bg-gray-500/20 transition"
+                        onClick={()=>onVisit?.(store)}
+                    >
+                        <Globe className="w-4 h-4" />
+                        Visiter
+                    </button>
+                </div>
+
             </div>
         </button>
     );

@@ -20,7 +20,7 @@ function CategoriesList({ title }: { title?: string }) {
 
     const { data: categoriesData, isLoading, isError } = useGetCategories(
         { limit: 20, with_product_count: true },
-        { enabled: !!currentStore }
+        // { enabled: !!currentStore }
     );
     const allCategories = categoriesData?.list ?? [];
     const totalCategories = categoriesData?.meta?.total ?? allCategories.length;

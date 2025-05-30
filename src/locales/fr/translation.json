@@ -1161,6 +1161,7 @@
         "thumbAlt": "Miniature commentaire"
     },
     "receipt": {
+        "name":"Reçu",
         "title": "Reçu de Commande",
         "downloadAction": "Télécharger",
         "printAction": "Imprimer",

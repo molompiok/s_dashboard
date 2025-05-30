@@ -14,6 +14,11 @@ import 'swiper/css/pagination';
 import { useWindowSize } from '../../Hooks/useWindowSize';
 import { AddStoreCard } from './AddNewStore';
 import './StoresList.css'
+import { useChildViewer } from '../ChildViewer/useChildViewer';
+import { BigSpinner } from '../Confirm/Spinner';
+import { navigate } from 'vike/client/router';
+import { useGlobalStore } from '../../api/stores/StoreStore';
+import { host } from '../../renderer/AppStore/Data';
 
 interface StoresListProps {
     stores: StoreInterface[];
@@ -29,9 +34,24 @@ interface StoresListProps {
 export function StoresList({maxVisible=5.8, maxSize=1200,stores, isLoading, selectedStoreId, onSelectStore, viewAllUrl, newStoreRequire }: StoresListProps) {
     const { t } = useTranslation();
     const size = useWindowSize()
+    const {setCurrentStore} = useGlobalStore()
+    const { openChild } = useChildViewer()
 
     const n = size.width< maxSize ? ((size.width - 260) / maxSize) * (maxVisible-1.3) + 1.3 :maxVisible
-
+    const onManage = (store:StoreInterface)=>{
+        openChild(<BigSpinner text='Chargement des informations..' />,{background:'#3455'})
+        setTimeout(() => {
+            setCurrentStore(store)
+            navigate('/store')
+            setTimeout(() => {
+                openChild(null)
+            }, 500);
+        }, 2500);
+    }
+    const onVisit = (store:StoreInterface)=>{
+        
+        window.open(host+store.default_domain, '_blank', 'noopener,noreferrer');
+    }
     return (
         <div className="relative w-full group"> {/* Group pour afficher boutons nav au survol */}
 
@@ -43,7 +63,7 @@ export function StoresList({maxVisible=5.8, maxSize=1200,stores, isLoading, sele
                     nextEl: '.swiper-button-next-store', // Sélecteurs CSS personnalisés
                     prevEl: '.swiper-button-prev-store',
                 }}
-                style={{ overflow: 'visible' }}
+                style={{ overflow: 'visible',height:'270px' }}
                 pagination={{ clickable: true }} // Activer pagination simple
                 className="stores-swiper pb-10 overflow-visible" // Ajouter pb pour pagination
             >
@@ -62,8 +82,10 @@ export function StoresList({maxVisible=5.8, maxSize=1200,stores, isLoading, sele
                 ) : (
                     // Afficher les stores réels
                     stores.map((store) => (
-                        <SwiperSlide key={store.id} className="pb-1 h-full min-h-[220px]">
+                        <SwiperSlide key={store.id} className="pb-1 h-full min-h-[270px] flex items-center justify-center">
                             <StoreItemCard
+                                onManage={onManage}
+                                onVisit={onVisit}
                                 store={store}
                                 isSelected={store.id === selectedStoreId}
                                 onClick={() => onSelectStore(store)}

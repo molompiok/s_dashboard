@@ -30,6 +30,7 @@ import "yet-another-react-lightbox/plugins/thumbnails.css";
 import Zoom from "yet-another-react-lightbox/plugins/zoom";
 
 import { UseMutationResult } from '@tanstack/react-query';
+import { Data } from '../../../../renderer/AppStore/Data';
 
 export default function Page() {
     const { t } = useTranslation(); // ✅ i18n
@@ -62,7 +63,7 @@ export default function Page() {
     useEffect(() => {
         if (!currentStore?.api_url || !productId) return;
         const transmit = getTransmit(currentStore.api_url);
-        const channel = `store/${'9b1192a3-0727-43a4-861b-05775bf2fd0d'/* TODO currentStore.id*/}/comment`; // Écouter tous les events commentaires du store
+        const channel = `store/${Data.apiUrl}/comment`; // Écouter tous les events commentaires du store
         logger.info(`Subscribing to SSE channel for comments: ${channel}`);
         const subscription = transmit?.subscription(channel);
         async function subscribe() {
@@ -208,9 +209,10 @@ export const CommentsDashboard = ({ comments, currentStore, onDelete }: Comments
         <>
             <div className="grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] gap-4 p-4 auto-rows-[minmax(100px,_auto)]">
                 <AnimatePresence>
-                    {comments.map((comment) => {
+                    {comments.filter(Boolean).map((comment) => {
                         const isExpanded = expandedComments.has(comment.id)
-                        const needsSeeMore = comment.description.length > 100
+                        comment.description = comment.description ||''
+                        const needsSeeMore = comment.description?.length > 100
 
                         return (
                             <motion.div
@@ -220,7 +222,7 @@ export const CommentsDashboard = ({ comments, currentStore, onDelete }: Comments
                                 animate={{ opacity: 1, scale: 1 }}
                                 exit={{ opacity: 0, scale: 0.95 }}
                                 transition={{ duration: 0.2 }}
-                                style={{ gridRow: `span ${Math.ceil(comment.description.length / 200) + 1}` }}
+                                style={{ gridRow: `span ${Math.ceil(comment.description?.length / 200) + 1}` }}
                                 className="relative bg-white rounded-md p-4 shadow flex flex-col gap-2"
                             >
                                 <div className="flex items-center gap-2 mb-2">

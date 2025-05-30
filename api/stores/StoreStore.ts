@@ -17,8 +17,8 @@ function getTransmit(url: string): Transmit | null {
     if (!url) return null
     console.log(url);
 
-     const host = (process.env.NODE_ENV == 'production' ? 'https://' : 'http://') ;
-     url = (!url.startsWith('http')? host :'') + url
+    const host = (process.env.NODE_ENV == 'production' ? 'https://' : 'http://');
+    url = (!url.startsWith('http') ? host : '') + url
     transmit = new Transmit({
         baseUrl: url,
         uidGenerator() {
@@ -46,8 +46,7 @@ const useGlobalStore = create(combine({
 
     },
     setCurrentStore(currentStore: StoreInterface | undefined) {
-        currentStore && (currentStore.url = '')
-        Data.apiUrl
+        Data.apiUrl =  currentStore?.api_url
         set(() => ({ currentStore: currentStore }));
         if (currentStore)
             localStorage.setItem('current_store', JSON.stringify(currentStore));
@@ -58,17 +57,15 @@ const useGlobalStore = create(combine({
     },
     getCurrentStore() {
         let c = get().currentStore;
-        if (!c) {
-            try {
-                const a = localStorage.getItem('current_store');
-                c = a && JSON.parse(a);
-                // const host = (process.env.NODE_ENV == 'production' ? 'https://' : 'http://') ;
-                //  c && (c.api_url = c.api_url && (!c.api_url.startsWith('http')?host+c.api_url:c.api_url))
-                console.log(c);
-                set(() => ({ currentStore: c }));
-            } catch (error) { }
-        }
-        return c
+        if (c) return c
+        try {
+            const a = localStorage.getItem('current_store');
+            c = a && JSON.parse(a);
+           console.log(c);
+            set(() => ({ currentStore: c }));
+            return c
+        } catch (error) { }
+        return 
     },
 })));
 

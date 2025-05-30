@@ -123,12 +123,12 @@ function Page({ command }: { command?: Partial<CommandInterface> }) {
             </div>
 
             {/* Infos Commande Haut (importé) */}
-            <CommandTop command={command} />
+            <CommandTop command={command} forRecipet />
 
             {/* Section Produits */}
             <h3 className='text-lg font-semibold text-gray-700 mt-6 mb-2'>{t('order.productListTitle')}</h3>
             <div className="products-list flex flex-col gap-3">
-                {command?.items?.map((item) => <CommandProduct key={item.id} item={item} />)} {/* Assumer CommandProduct refactorisé */}
+                {command?.items?.map((item) => <CommandProduct key={item.id} item={item} openProduct={false} />)} {/* Assumer CommandProduct refactorisé */}
                 {(!command?.items || command.items.length === 0) && (
                     <p className="text-sm text-gray-500 italic">{t('receipt.noItems')}</p>
                 )}

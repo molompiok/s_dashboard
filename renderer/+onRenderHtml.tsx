@@ -20,10 +20,9 @@ const onRenderHtml: OnRenderHtmlAsync = async (pageContext): ReturnType<OnRender
   if (!Page) throw new Error('My onRenderHtml() hook expects pageContext.Page to be defined')
 
   const headersOriginal = pageContext.headers as Record<string, string> || {};
-  const baseUrlFromHeader = headersOriginal['x-base-url'] || '/';
-  const apiUrlFromHeader = headersOriginal['x-target-api-service'] || '/';
-  const serverUrlFromHeader = headersOriginal['x-server-url'] || '/';
-  const serverApiFromHeader = headersOriginal['x-server-api-url'] //|| 'server.'+serverUrlFromHeader;
+  const apiUrlFromHeader = headersOriginal['x-target-api-service'];
+  const serverUrlFromHeader = headersOriginal['x-server-url'] ;
+  const serverApiFromHeader = headersOriginal['x-server-api-url']
 
 
   // console.log({
@@ -72,7 +71,7 @@ const onRenderHtml: OnRenderHtmlAsync = async (pageContext): ReturnType<OnRender
     documentHtml,
     pageContext: {
       lang,
-      baseUrl: baseUrlFromHeader,
+      // baseUrl: baseUrlFromHeader,
       serverUrl: serverUrlFromHeader,
       apiUrl: apiUrlFromHeader,
     }

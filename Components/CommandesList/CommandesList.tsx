@@ -22,6 +22,8 @@ import { DateTime } from 'luxon';
 import Logger from '../../api/Logger';
 import { CommandItemSkeleton } from '../CommandItem/CommandItem';
 import { Pagination } from '../Pagination/Pagination';
+import { Data } from '../../renderer/AppStore/Data';
+import { navigate } from 'vike/client/router';
 
 
 
@@ -49,7 +51,7 @@ function CommandeList({ product_id, user_id }: { user_id?: string; product_id?: 
         if (!currentStore?.api_url) return;
 
         const transmit = getTransmit(currentStore.api_url);
-        const channel = `store/${'9b1192a3-0727-43a4-861b-05775bf2fd0d'/* TODO currentStore.id*/}/new_command`; // Utiliser ID du store courant
+        const channel = `store/${Data.apiUrl}/new_command`; // Utiliser ID du store courant
         // const channelUpdate = `store/${currentStore.id}/update_command`; // Écouter aussi les MAJ
 
         Logger.info(`Subscribing to SSE channel: ${channel}`);
@@ -176,9 +178,11 @@ function CommandeList({ product_id, user_id }: { user_id?: string; product_id?: 
                         <div key={a.id}>
                             {dateHeader}
                             {/* Utiliser un lien ou un bouton selon l'action voulue */}
-                            <a href={`/commands/${a.id}`}>
+                            <span onClick={()=>{
+                                navigate(`/commands/${a.id}`)
+                            }}>
                                 <CommandItem command={a} /> {/* Passer commandItem à CommandItem */}
-                            </a>
+                            </span>
                         </div>
                     );
                 })}

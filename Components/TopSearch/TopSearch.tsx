@@ -85,9 +85,6 @@ function TopSearch({ onClientSelected, onProductSelected, onCategorySelected, on
             case 'client': onClientSelected?.(item as UserInterface); break;
             case 'command': onCommandSelected?.(item as CommandInterface); break;
         }
-        // Optionnel: Naviguer vers la page détail de l'item sélectionné
-        // if (type === 'product') window.location.href = `/products/${item.id}`;
-        // etc.
     };
 
     return (

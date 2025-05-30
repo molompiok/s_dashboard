@@ -758,9 +758,9 @@ export const useUpdateCategory = (): UseMutationResult<UpdateCategoryResponse, A
             logger.info("Category updated via mutation", data.category);
             const categoryId = variables.category_id;
             queryClient.invalidateQueries({ queryKey: CATEGORIES_QUERY_KEYS.lists() } as InvalidateQueryFilters);
+            queryClient.invalidateQueries({ queryKey: CATEGORIES_QUERY_KEYS.details({ slug: data.category.slug }) } as InvalidateQueryFilters);
             queryClient.setQueryData<GetCategoryResponse>(CATEGORIES_QUERY_KEYS.details({ category_id: categoryId }), data.category);
             // Invalider aussi par slug si le slug a pu changer
-            queryClient.invalidateQueries({ queryKey: CATEGORIES_QUERY_KEYS.details({ slug: data.category.slug }) } as InvalidateQueryFilters);
         },
         onError: (error) => { logger.error({ error }, "Failed to update category via mutation"); }
     });

@@ -41,7 +41,7 @@ function Page() {
   // --- Récupération Données Utilisateur ---
   const { data: meData, isLoading: isLoadingMe, isError: isMeError, error: meError } = useGetMe({
     // Activer seulement si on pense être connecté (vérifier token?)
-    enabled: !!useAuthStore.getState().token
+    enabled: !!useAuthStore.getState().getToken()
   });
   const currentUser = meData?.user; // L'objet User complet avec adresses/téléphones
 
@@ -250,7 +250,7 @@ function Page() {
                 
                 logger.info("Account deletion requested successfully.");
                 showToast("Compte supprimé définitivement", "SUCCESS")
-                window.location.href = `https://sublymus.com`
+                navigate('/auth/login')
               },
               onError: (error: ApiError) => {
                 logger.error({ error }, "Account deletion failed.");
@@ -306,7 +306,7 @@ function Page() {
   const avatarUrl = avatarPreview ?? (currentUser.photo?.[0] ? getMedia({ source: currentUser.photo[0], from: 'server' }) : null);
 
   return (
-    <div className="w-full pb-48 min-h-screen flex flex-col bg-gray-100">
+    <div className="w-full pb-48 min-h-screen flex flex-col">
       <Topbar back={true} title={t('profilePage.title')} />
       <main className="w-full max-w-3xl mx-auto p-4 md:p-6 lg:p-8 flex flex-col gap-8">
 

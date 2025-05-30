@@ -107,7 +107,10 @@ function Page() {
         features: undefined as Partial<FeatureInterface>[] | undefined,
         collected: {} as Partial<ProductInterface>,
         isUpdated: false,
+        featuresUpdated:false
     });
+
+    const [isVisibilityUpdating, changeVisibilityUpdating] = useState(false);
 
     // --- Récupération des données pour l'édition ---
     // Utiliser useGetProductList avec l'ID spécifique
@@ -153,15 +156,16 @@ function Page() {
 
     const isLoadingMutation = createProductMutation.isPending || updateProductMutation.isPending || multipleUpdateMutation.isPending || deleteProductMutation.isPending;
 
+
     const updateLocalProduct = (cb: (current: Partial<ProductInterface>) => Partial<ProductInterface>) => {
+        const d = cb({});
+        if (Object.keys(d).length == 0) return
 
         setProductFormState((current) => {
-            const d = cb({});
-            if (d.features) {
-                s.features = d.features;
-                delete d.features;
-                if (Object.keys(d).length == 0) return current
-            }
+            // if (d.features) {
+            //     s.features = d.features;
+            //     delete d.features;
+            // }
             s.collected = { ...s.collected, ...d }
             s.isUpdated = true;
             const c = { ...current, ...d };
@@ -170,11 +174,13 @@ function Page() {
     }
     const updateLocalFeatures = (cb: (current: {}) => { features?: Partial<FeatureInterface>[] }) => {
         const d = cb({});
+        if (Object.keys(d).length == 0) return
         if (!d.features) return;
         s.features = d.features;
         setFeaturesFromState(s.features);
     }
     const handleVisibility = (is_visible: boolean) => {
+        changeVisibilityUpdating(true)
         updateLocalProduct(prev => ({ ...prev, is_visible }));
     }
     const updateValues = async (vs: ValueInterface[], feature_id?: string) => {
@@ -190,9 +196,7 @@ function Page() {
         setValues(vs)
         const ft = featuresFromState.map(_f => (_f.id === (feature_id || originalProductData?.default_feature_id)) ? { ..._f, values: vs } : _f);
 
-        updateLocalFeatures(() => ({
-            features: ft
-        }));
+        setFeaturesFromState(ft);
     }
 
     const handleDelete = () => {
@@ -341,6 +345,7 @@ function Page() {
         }
         return Object.keys(a).length > 0
     }
+
     const saveRequired = async () => {
         if (isLoadingMutation) return console.log('onLoading');
         if (!isFilledProduct(!isNewProduct)) return console.log('informations incomplete');
@@ -384,6 +389,9 @@ function Page() {
                         }
                         showErrorToast(error); // ❌ Toast erreur
                     },
+                    onSettled() {
+                        changeVisibilityUpdating(false)
+                    }
                 }
             );
 
@@ -435,7 +443,7 @@ function Page() {
                         if (error.status === 422 && error.body?.errors) {
                             setFieldErrors(error.body.errors);
                         }
-                        // showErrorToast(error); // ❌ Toast erreur
+                        showErrorToast(error); // ❌ Toast erreur
                     },
                 }
             );
@@ -617,7 +625,7 @@ function Page() {
                     <div className="flex flex-col gap-4">
                         {/* Nom */}
                         <div>
-                            <label className='block text-sm font-medium text-gray-700 mb-1 flex justify-between items-center' htmlFor='input-product-name'>
+                            <label className=' text-sm font-medium text-gray-700 mb-1 flex justify-between items-center' htmlFor='input-product-name'>
                                 <span>{t('product.nameLabel')} <IoPencil className="inline-block ml-1 w-3 h-3 text-gray-400" /></span>
                                 <span className={`text-xs ${(productFormState.name?.trim()?.length || 0) > 56 ? 'text-red-600' : 'text-gray-400'}`}>
                                     {(productFormState.name?.trim()?.length || 0)} / 56
@@ -636,7 +644,7 @@ function Page() {
                         </div>
                         {/* Description */}
                         <div>
-                            <label className='block text-sm font-medium text-gray-700 mb-1 flex justify-between items-center' htmlFor='input-product-description'>
+                            <label className=' text-sm font-medium text-gray-700 mb-1 flex justify-between items-center' htmlFor='input-product-description'>
                                 <span>{t('product.descriptionLabel')} <IoPencil className="inline-block ml-1 w-3 h-3 text-gray-400" /></span>
                                 <span className={`text-xs ${(productFormState.description?.trim()?.length || 0) > 1024 ? 'text-red-600' : 'text-gray-400'}`}>
                                     {(productFormState.description?.trim()?.length || 0)} / 1024
@@ -673,7 +681,7 @@ function Page() {
                             </div>
                             {/* Prix Barré */}
                             <div>
-                                <label className='block flex items-center text-sm font-medium text-gray-700 mb-1' htmlFor='input-product-barred-price'>
+                                <label className=' flex items-center text-sm font-medium text-gray-700 mb-1' htmlFor='input-product-barred-price'>
                                     {t('product.barredPriceLabel')} <IoPencil className="inline-block ml-1 w-3 h-3 text-gray-400" />
                                     <Indicator title={t('product.barredPriceTooltipTitle')} description={t('product.barredPriceTooltipDesc')} style={{ marginLeft: 'auto' }} />
                                 </label>
@@ -804,7 +812,7 @@ function Page() {
                         title={t('product.visibilityTitle')}
                         onSetVisibility={handleVisibility}
                         onDeleteRequired={handleDelete} // Utilise la fonction simulée
-                        isLoading={false}
+                        isLoading={isVisibilityUpdating}
                         t={t}
                     />
                 )}
@@ -836,7 +844,7 @@ function Page() {
                                 logger.info("Action selected from ProductSettings:", action);
                                 // Gérer la navigation ou les actions ici
                                 if (action === 'show-stats') {
-                                    nextPage(`/stores/stats?product_id=${productFormState.id}`)
+                                    nextPage(`/stats?product_id=${productFormState.id}`)
                                 }
                                 else nextPage(`/products/${productFormState.id}/${action}`)
                             }} />

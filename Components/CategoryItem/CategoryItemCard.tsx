@@ -14,6 +14,7 @@ import { useChildViewer } from "../ChildViewer/useChildViewer"; // Pour confirma
 import { ConfirmDelete } from "../Confirm/ConfirmDelete"; // Pour confirmation delete
 import { ChildViewer } from "../ChildViewer/ChildViewer"; // Pour confirmation delete
 import { showErrorToast, showToast } from "../Utils/toastNotifications";
+import { navigate } from "vike/client/router";
 
 
 export { CategoryItemCard };
@@ -101,7 +102,9 @@ function CategoryItemCard({ category }: CategoryItemCardProps) {
         // Appliquer les styles Tailwind pour la carte
         <div className="category-item-card relative group bg-white rounded-lg shadow-sm border border-gray-200 flex flex-col transition duration-150 hover:shadow-md hover:border-blue-300">
             {/* Image Cliquable */}
-            <a href={`/categories/${category.id}`} className="block aspect-[4/3] w-full bg-gray-100 relative">
+            <span onClick={()=>{
+                navigate(`/categories/${category.id}`)
+            }} className="block aspect-[4/3] w-full bg-gray-100 relative">
                 {/* Gestion Erreur Image */}
                 {!imgError ? (
                     <img
@@ -124,7 +127,7 @@ function CategoryItemCard({ category }: CategoryItemCardProps) {
                         <IoEyeOffOutline className="text-white/70 w-8 h-8" />
                     </div>
                 )}
-            </a>
+            </span>
             {/* Contenu Texte */}
             <div className="p-3 flex flex-col flex-grow">
                 {/* Nom & Menu Actions */}

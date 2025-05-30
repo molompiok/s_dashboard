@@ -73,8 +73,12 @@ export function MarkdownEditor2({ value, setValue,error }: { value: string, setV
   const [editor, setEditor] = useState<JSX.Element>()
 
   const handleChange = () => {
+    
     const instance = editorRef.current?.getInstance();
-    setValue(instance?.getMarkdown() || " ");
+    const a = instance?.getMarkdown().substring(0,1000) || " ";
+    const v = a.trim();
+    v && setValue(v);
+
     adjustHeight();
   };
 
@@ -86,12 +90,15 @@ export function MarkdownEditor2({ value, setValue,error }: { value: string, setV
       setEditor(
         <Editor
           ref={editorRef}
+          onKeyup={()=>{
+            handleChange()
+          }}
           initialValue={value || " "}
           previewStyle="vertical"
           initialEditType="wysiwyg"
           useCommandShortcut={true}
           height="auto" // 🔥 Hauteur auto (sera gérée par CSS & JS)
-          onChange={handleChange}
+          // onChange={}
           toolbarItems={[
             ['bold', 'italic', 'strike'],
             // ['hr', 'quote'],

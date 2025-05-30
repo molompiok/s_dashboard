@@ -93,7 +93,7 @@ export function AddCollaboratorPopup({ onSuccess, onCancel }: AddCollaboratorPop
 
     return (
         // Conteneur Popup : padding, gap
-        <div className="add-collaborator-popup p-4 sm:p-6 flex flex-col gap-4 w-full max-w-md bg-white rounded-lg shadow-xl">
+        <div className="add-collaborator-popup p-4 w-full sm:p-6 flex flex-col gap-4 bg-white rounded-lg shadow-xl">
 
               {/* Name Input */}
               <div>

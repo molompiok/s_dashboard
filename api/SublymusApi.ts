@@ -377,7 +377,7 @@ export class SublymusApi {
             throw new Error("SublymusApi: serverUrl is required.");
         }
         this.serverUrl = serverUrl || 'https://server.sublymus.com';
-        this.storeApiUrl = storeApiUrl;
+        this.storeApiUrl = storeApiUrl || 'http://not-foud-api.sublymus.com';
         this.getAuthToken = getAuthToken;
         this.handleUnauthorized = handleUnauthorized
         logger.info(`SublymusApi initialized with URL: ${this.storeApiUrl}`);
@@ -419,7 +419,7 @@ export class SublymusApi {
             baseUrl = this.serverUrl||'https://server.sublymus.com';
             action = 'server'
         } else if (this.storeApiUrl) {
-            baseUrl = this.storeApiUrl;
+            baseUrl = this.storeApiUrl||'http://not-foud-api.sublymus.com';
         } else {
             logger.error({ endpoint }, "Attempted to call store-specific API endpoint without a configured storeApiUrl.");
             // throw new ApiError(this.t('api.contextError.noStoreUrl'), 500); // Ou une erreur 400?

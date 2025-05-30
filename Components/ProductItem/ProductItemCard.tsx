@@ -16,6 +16,7 @@ import { useChildViewer } from '../ChildViewer/useChildViewer'; // Pour confirma
 import { ConfirmDelete } from '../Confirm/ConfirmDelete'; // Pour confirmation delete
 import { ChildViewer } from '../ChildViewer/ChildViewer'; // Pour confirmation delete
 import { showErrorToast, showToast } from '../Utils/toastNotifications';
+import { navigate } from 'vike/client/router';
 
 export { ProductItemCard };
 
@@ -107,9 +108,11 @@ function ProductItemCard({ product, onClick }: ProductItemCardProps) {
 
     return (
         // Rendre comme un div cliquable globalement, mais les actions sont dans le menu
-        <div className="product-item-card relative group aspect-[65/100] rounded-xl overflow-hidden shadow-sm border border-gray-100 hover:border-blue-200 hover:shadow-md transition duration-200 flex flex-col bg-white">
+        <div className="product-item-card relative group aspect-[65/100] rounded-xl overflow-visible shadow-sm border border-gray-100 hover:border-blue-200 hover:shadow-md transition duration-200 flex flex-col bg-white">
             {/* Conteneur Image (lien vers détail produit) */}
-            <a href={onClick ? undefined : `/products/${product.id}`} className="block w-full aspect-square relative flex-shrink-0 bg-gray-100" onClick={onClick}>
+            <span onClick={()=>{
+                onClick? onClick() : navigate(`/products/${product.id}`);
+            }} className="block w-full overflow-hidden rounded-tr-xl  rounded-tl-xl  aspect-square relative flex-shrink-0 bg-gray-100">
                 {/* Gestion Erreur Image */}
                 {!imgError ? (
                     fileType === 'image' ? (
@@ -124,52 +127,58 @@ function ProductItemCard({ product, onClick }: ProductItemCardProps) {
                 )}
                 {/* Indicateurs */}
                 <div className="absolute top-2 right-2 flex flex-col gap-1 z-10"> {/* z-10 pour être au dessus de l'image */}
-                    {!isVisible && (<span title={t('productList.hidden')} className="p-1 bg-gray-500/80 text-white rounded-full shadow"><IoEyeOffOutline size={12} /></span>)}
                     {stockStatus === 'low_stock' && (<span title={t('productList.lowStock')} className="p-1 bg-orange-500/80 text-white rounded-full shadow"><IoWarningOutline size={12} /></span>)}
                     {stockStatus === 'out_of_stock' && (<span title={t('productList.outOfStock')} className="p-1 bg-red-500/80 text-white rounded-full shadow"><IoWarningOutline size={12} /></span>)}
                 </div>
-                {/* Menu Kebab (apparaît au survol de la carte) */}
-                <div className="absolute top-1 left-1 z-10 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <button
-                        onClick={(e) => { e.preventDefault(); e.stopPropagation(); setIsMenuOpen(!isMenuOpen); }} // Empêcher le clic sur le lien parent
-                        className="p-1.5 rounded-full text-gray-600 bg-white/70 hover:bg-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                        aria-haspopup="true" aria-expanded={isMenuOpen} title={t('common.actions')}
-                        disabled={deleteProductMutation.isPending || updateProductMutation.isPending}
-                    >
-                        <IoEllipsisVertical />
-                    </button>
-                    {/* Menu déroulant */}
-                    {isMenuOpen && (
-                        <div className="absolute left-0 mt-1 w-40 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-20 py-1" role="menu" onClick={(e) => e.stopPropagation()}>
-                            <a href={`/products/${product.id}/edit`} role="menuitem" className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 w-full text-left">
-                                <IoPencil className="w-4 h-4" /> {t('common.edit')}
-                            </a>
-                            <button onClick={(e) => {
-                                e.preventDefault()
-                                handleToggleVisibility()
-                            }} role="menuitem" className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 w-full text-left disabled:opacity-50" disabled={updateProductMutation.isPending}>
-                                {isVisible ? <IoEyeOffOutline className="w-4 h-4" /> : <IoEyeOutline className="w-4 h-4" />}
-                                {isVisible ? t('productList.setHidden') : t('productList.setVisible')}
-                            </button>
-                            <button onClick={(e) => {
-                                e.preventDefault()
-                                handleDelete()
-                            }} role="menuitem" className="flex items-center gap-2 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 w-full text-left disabled:opacity-50" disabled={deleteProductMutation.isPending}>
-                                <IoTrash className="w-4 h-4" /> {t('common.delete')}
-                            </button>
-                        </div>
-                    )}
-                </div>
-            </a>
+                {!isVisible && (
+                                    <div className="absolute inset-0 bg-black/40 flex items-center justify-center" title={t('productList.hidden')}>
+                                        <IoEyeOffOutline className="text-white/70 w-8 h-8" />
+                                    </div>
+                                )}
+            </span>
             {/* Infos Texte */}
-            <div className="px-3 pt-2 pb-3 flex flex-col flex-grow justify-between overflow-hidden">
+            <div className="px-3 pt-2 pb-3 flex flex-col flex-grow justify-between">
                 <div>
-                    <h2 className='text-base font-semibold text-gray-900 truncate'>
+                    <div className='relative'>
+                        <h2 className='text-base font-semibold text-gray-900 truncate'>
                         {Number(product.price || 0).toLocaleString()} {product.currency}
                         {product.barred_price && product.barred_price > product.price && (
                             <span className="ml-1.5 text-xs text-gray-400 line-through">{product.barred_price.toLocaleString()}</span>
                         )}
                     </h2>
+                    {/* Menu Kebab (apparaît au survol de la carte) */}
+                    <div className="absolute top-0 right-0 z-10 ">
+                        <button
+                            onClick={(e) => { e.preventDefault(); e.stopPropagation(); setIsMenuOpen(!isMenuOpen); }} // Empêcher le clic sur le lien parent
+                            className="p-1.5 rounded-full text-gray-600 bg-white/70 hover:bg-gray-100 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            aria-haspopup="true" aria-expanded={isMenuOpen} title={t('common.actions')}
+                            disabled={deleteProductMutation.isPending || updateProductMutation.isPending}
+                        >
+                            <IoEllipsisVertical />
+                        </button>
+                        {/* Menu déroulant */}
+                        {isMenuOpen && (
+                            <div className="absolute right-0 mt-1 w-40 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-20 py-1" role="menu" onClick={(e) => e.stopPropagation()}>
+                                <a href={`/products/${product.id}/edit`} role="menuitem" className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 w-full text-left">
+                                    <IoPencil className="w-4 h-4" /> {t('common.edit')}
+                                </a>
+                                <button onClick={(e) => {
+                                    e.preventDefault()
+                                    handleToggleVisibility()
+                                }} role="menuitem" className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 w-full text-left disabled:opacity-50" disabled={updateProductMutation.isPending}>
+                                    {isVisible ? <IoEyeOffOutline className="w-4 h-4" /> : <IoEyeOutline className="w-4 h-4" />}
+                                    {isVisible ? t('productList.setHidden') : t('productList.setVisible')}
+                                </button>
+                                <button onClick={(e) => {
+                                    e.preventDefault()
+                                    handleDelete()
+                                }} role="menuitem" className="flex items-center gap-2 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 w-full text-left disabled:opacity-50" disabled={deleteProductMutation.isPending}>
+                                    <IoTrash className="w-4 h-4" /> {t('common.delete')}
+                                </button>
+                            </div>
+                        )}
+                    </div>
+                    </div>
                     <h3 className='text-sm font-medium text-gray-700 mt-1 truncate' title={product.name}>{product.name}</h3>
                     <p className='text-xs text-gray-500 mt-0.5 h-[2.5em] line-clamp-2' title={markdownToPlainText(product.description || '')}>
                         {markdownToPlainText(product.description || '')}

@@ -34,24 +34,24 @@ const FeatureDefaults: Partial<Record<string, Partial<FeatureInterface>>> = {
   color: {
     type: 'color',
   },
-  date: {
-    type: 'date'
-  },
-  date_double: {
-    type: 'date_double'
-  },
-  slide: {
-    type: 'slide'
-  },
-  slide_double: {
-    type: 'slide_double'
-  },
-  input: {
-    type: 'input'
-  },
-  file: {
-    type: 'input'
-  },
+  // date: {
+  //   type: 'date'
+  // },
+  // date_double: {
+  //   type: 'date_double'
+  // },
+  // slide: {
+  //   type: 'slide'
+  // },
+  // slide_double: {
+  //   type: 'slide_double'
+  // },
+  // input: {
+  //   type: 'input'
+  // },
+  // file: {
+  //   type: 'input'
+  // },
 };
 
 
@@ -127,7 +127,7 @@ function FeatureInfo({ feature: initialFeature, onChange, onCancel }: FeatureInf
       </div>
 
       <div>
-        <label className='block text-sm font-medium text-gray-700 mb-1 flex justify-between items-center' htmlFor="feature-info-name-input">
+        <label className=' text-sm font-medium text-gray-700 mb-1 flex justify-between items-center' htmlFor="feature-info-name-input">
           <span>{t('feature.nameLabel')} <IoPencil className="inline-block ml-1 w-3 h-3 text-gray-400" /></span>
           <span className={`text-xs ${(f.name?.trim()?.length || 0) > 56 ? 'text-red-600' : 'text-gray-400'}`}>
             {(f.name?.trim()?.length || 0)} / 56

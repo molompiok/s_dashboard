@@ -1,5 +1,6 @@
 import { IoChevronBack, IoHomeOutline, IoWarning } from "react-icons/io5"
 import { JSX } from "react"
+import { Link } from "../../renderer/Link"
 
 export { PageNotFound }
 
@@ -47,14 +48,14 @@ function PageNotFound({
           </button>
         )}
 
-        <a
+        <Link
           href={url}
           className="flex items-center gap-2 text-blue-600 hover:text-blue-800 transition-colors duration-200"
         >
           {iconForwardBefore}
           <span className="text-lg">{forward}</span>
           {iconForwardAfter}
-        </a>
+        </Link>
       </div>
     </div>
   )

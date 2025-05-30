@@ -1,6 +1,6 @@
 // pages/commands/@id/+Page.tsx
 
-import { IoCheckmarkCircle, IoChevronForward, IoCopyOutline, IoQrCode } from 'react-icons/io5';
+import { IoCheckmarkCircle, IoChevronForward, IoCloudDownloadOutline, IoCopyOutline, IoQrCode } from 'react-icons/io5';
 import { QRCodeCanvas } from 'qrcode.react';
 import { OrderStatus, PaymentMethod } from '../../../Components/Utils/constants'; // Garder enums
 import { OrderStatusElement, statusColors } from '../../../Components/Status/Satus';
@@ -32,6 +32,9 @@ import { useChildViewer } from '../../../Components/ChildViewer/useChildViewer';
 import { showErrorToast, showToast } from '../../../Components/Utils/toastNotifications';
 import { OrderDetailSkeleton } from '../../../Components/Skeletons/allsKeletons';
 import { PageNotFound } from '../../../Components/PageNotFound/PageNotFound';
+import { Data } from '../../../renderer/AppStore/Data';
+import { buttonStyle } from '../../../Components/Button/Style';
+import { SpinnerIcon } from '../../../Components/Confirm/Spinner';
 
 const allowedTransitionsClient: Partial<Record<OrderStatus, OrderStatus[]>> = {
     [OrderStatus.PENDING]: [OrderStatus.CONFIRMED, OrderStatus.CANCELED, OrderStatus.FAILED],
@@ -72,7 +75,7 @@ function Page() {
     useEffect(() => {
         if (!currentStore?.api_url || !command_id) return;
         const transmit = getTransmit(currentStore.api_url);
-        const channel = `store/${'9b1192a3-0727-43a4-861b-05775bf2fd0d'/* TODO currentStore.id*/}/update_command`;
+        const channel = `store/${Data.apiUrl}/update_command`;
         logger.info(`Subscribing to SSE channel for order updates: ${channel}`);
         const subscription = transmit?.subscription(channel);
         async function subscribe() {
@@ -141,7 +144,7 @@ function Page() {
     if (!command) return <PageNotFound />
 
     return (
-        <div className="w-full pb-48 flex flex-col bg-gray-50 min-h-screen">
+        <div className="w-full pb-48 flex flex-col min-h-screen">
             <Topbar back breadcrumbs={breadcrumbs} />
             <div className="w-full max-w-4xl mx-auto p-4 md:p-6 lg:p-8 flex flex-col gap-6">
                 <CommandTop command={command} />
@@ -168,12 +171,12 @@ function Page() {
                     <h2 className="text-lg sm:text-xl font-semibold text-gray-800">
                         {t('order.statusEvolutionTitle')}
                     </h2>
-                    <button
+                     {  (allowedTransitionsClient[command.status as OrderStatus]?.length||0)>0 && <button
                         onClick={handleOpenStatusUpdate}
                         className="text-sm text-blue-600 hover:text-blue-800 cursor-pointer px-3 py-1 rounded border border-blue-300 hover:shadow-md hover:bg-blue-50 transition disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         {t('order.updateStatusButton')}
-                    </button>
+                    </button>}
                 </div>
                 <CommandStatusHistory events={command.events_status || []} low={low} />
             </div>
@@ -186,7 +189,7 @@ function Page() {
 // =========================================
 
 // --- Composant CommandTop ---
-export function CommandTop({ command }: { command?: Partial<CommandInterface> }) {
+export function CommandTop({ command, forRecipet }: { forRecipet?: boolean, command?: Partial<CommandInterface> }) {
     const { t } = useTranslation();
     const commandId = command?.id ?? '';
     const commandIdShort = getId(commandId);
@@ -205,14 +208,25 @@ export function CommandTop({ command }: { command?: Partial<CommandInterface> })
     return (
         <div className="w-full flex flex-wrap items-start gap-x-6 gap-y-4 p-4 bg-white rounded-lg shadow-sm border border-gray-200">
             {/* QR Code & ID */}
-            <div className="flex items-center gap-4 flex-shrink-0" onClick={() => {
-                openChild(<ChildViewer>
-                    <Receipt command={command} i18nIsDynamicList />
-                </ChildViewer>,
-                    { background: '#3455' }
-                )
-            }}>
-                <QRCodeCanvas value={qrCodeValue} size={80} bgColor="#ffffff" fgColor="#374151" level="Q" className="border border-gray-200 rounded p-1" />
+            <div className="flex items-center gap-4 flex-shrink-0">
+                <div className="flex flex-col">
+                    <QRCodeCanvas value={qrCodeValue} size={80} bgColor="#ffffff" fgColor="#374151" level="Q" className="border border-gray-200 rounded p-1" />
+
+                    {
+                        !forRecipet && <div className='flex items-center cursor-pointer gap-2 text-gray-600 border justify-center mt-2 py-1 border-gray-200 rounded-md bg-teal-100 hover:bg-teal-200'
+                            onClick={() => {
+                                openChild(<ChildViewer>
+                                    <Receipt command={command} i18nIsDynamicList />
+                                </ChildViewer>,
+                                    { background: '#3455' }
+                                )
+                            }}>
+                            <IoCloudDownloadOutline size={22} />
+                            <span className='text-sm'>{t('receipt.name')}</span>
+                        </div>
+                    }
+
+                </div>
                 <div className="flex flex-col">
                     <span className="text-xs text-gray-500 mb-1">{t('order.commandIdLabel')}</span>
                     <div className='flex items-center gap-1.5 group cursor-pointer' title={t('common.copy')} onClick={() => handleCopy(commandIdShort)}>
@@ -226,6 +240,7 @@ export function CommandTop({ command }: { command?: Partial<CommandInterface> })
                             <span className="block text-sm text-gray-600">{command.reference}</span>
                         </div>
                     )}
+
                 </div>
             </div>
             {/* Mode Livraison */}
@@ -329,7 +344,7 @@ export function CommandUser({ user, command }: { command: Partial<CommandInterfa
 }
 
 // --- Composant CommandProduct ---
-export function CommandProduct({ item }: { item: CommandItemInterface }) {
+export function CommandProduct({ item, openProduct = true }: { openProduct?: boolean, item: CommandItemInterface }) {
     const { t } = useTranslation();
     const isReturn = item.status === OrderStatus.RETURNED; // Utiliser l'enum
     const { currentStore } = useGlobalStore();
@@ -396,7 +411,7 @@ export function CommandProduct({ item }: { item: CommandItemInterface }) {
                                 <li key={key} className="flex items-center border border-gray-200 rounded text-xs leading-none max-w-full">
                                     <span className='bg-gray-100 text-gray-600 px-1.5 py-1 rounded-l'>{limit(featureName, 12)}</span>
                                     {valueIcon && <span className='w-5 h-5 rounded mx-1 bg-cover bg-center' style={{ background: getMedia({ isBackground: true, source: valueIcon }) }}></span>}
-                                    {valueKey && featureType === FeatureType.COLOR && !valueIcon && <span className='w-3 h-3 rounded-full mx-1.5 border border-gray-300' style={{ backgroundColor: valueKey }}></span>}
+                                    {valueKey && featureType === FeatureType.COLOR && <span className='w-3 h-3 rounded-full mx-1.5 border border-gray-300' style={{ backgroundColor: valueKey }}></span>}
                                     <span className='text-gray-800 px-1.5 py-1 truncate rounded-r' title={valueText || undefined}>{limit(valueText, 16)}</span>
                                 </li>
                             );
@@ -405,10 +420,12 @@ export function CommandProduct({ item }: { item: CommandItemInterface }) {
                 )}
             </div>
             {isReturn && <span className='absolute top-2 right-2'><OrderStatusElement status={item.status?.toUpperCase() as any} /></span>}
-            <a href={`/products/${item.product_id}`} className="absolute bottom-1 right-1 px-2 py-0.5 rounded-lg border border-gray-200 text-xs text-blue-600 bg-white/80 backdrop-blur-sm hover:bg-blue-50 hover:border-blue-300 cursor-pointer hover:shadow-md flex items-center gap-1">
-                {t('order.viewProduct')}
-                <IoChevronForward className="w-3 h-3" />
-            </a>
+            {
+                openProduct && <a href={`/products/${item.product_id}`} className="absolute bottom-1 right-1 px-2 py-0.5 rounded-lg border border-gray-200 text-xs text-blue-600 bg-white/80 backdrop-blur-sm hover:bg-blue-50 hover:border-blue-300 cursor-pointer hover:shadow-md flex items-center gap-1">
+                    {t('order.viewProduct')}
+                    <IoChevronForward className="w-3 h-3" />
+                </a>
+            }
         </div>
     );
 }
@@ -481,6 +498,7 @@ export function StatusUpdatePopup({ currentStatus, orderId, onClose, isDelivery 
 }) {
     const { t } = useTranslation();
     const mutation = useUpdateOrderStatus();
+    const [selected, setSelected] = useState<OrderStatus|undefined>() 
     const getValidNextStatuses = (current: OrderStatus, deliveryMode: boolean): OrderStatus[] => {
         const possibleNext = allowedTransitionsClient[current] || [];
 
@@ -531,12 +549,12 @@ export function StatusUpdatePopup({ currentStatus, orderId, onClose, isDelivery 
                         <button
                             key={nextStatus}
                             type="button"
-                            onClick={() => handleUpdate(nextStatus)}
+                            onClick={() =>setSelected(nextStatus)}
                             disabled={mutation.isPending} // Désactiver seulement pendant la mutation
-                            className={`disabled:opacity-50 disabled:cursor-wait transition hover:scale-105`}
+                            className={`disabled:opacity-50 cursor-pointer disabled:cursor-wait transition hover:scale-105`}
                         >
                             {/* Utiliser le composant StatusElement pour l'affichage */}
-                            <OrderStatusElement status={nextStatus} />
+                            <OrderStatusElement status={nextStatus} isSelected={selected==nextStatus} />
                         </button>
                     ))}
                 </div>
@@ -549,12 +567,24 @@ export function StatusUpdatePopup({ currentStatus, orderId, onClose, isDelivery 
                     {t('order.updateFailed')}: {mutation.error.message || t('error_occurred')}
                 </p>
             )}
+           {
+            selected &&  <button
+                onClick={()=> selected && handleUpdate(selected)}
+                disabled={mutation.isPending} // Désactiver aussi pendant chargement
+                className="mt-6 w-full gap-4 text-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-white hover:bg-bleu-600 bg-blue-500 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+            >
+                {
+                    mutation.isPending && <SpinnerIcon/>
+                }
+                {mutation.isPending ? t('common.saving') : t('common.save')}
+            </button>
+           }
             <button
                 onClick={onClose}
                 disabled={mutation.isPending} // Désactiver aussi pendant chargement
-                className="mt-6 w-full text-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
+                className="mt-2 w-full text-center py-2 px-4 border border-gray-300 rounded-md shadow-sm text-sm font-medium text-gray-700  hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 disabled:opacity-50"
             >
-                {mutation.isPending ? t('common.saving') : t('common.cancel')}
+                {t('common.cancel')}
             </button>
         </div>
     );

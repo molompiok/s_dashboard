@@ -16,12 +16,11 @@ const SettingsConfig = [
     { name: 'price-stock', showKey: 'productSettings.priceStock', icon: <IoPricetagsOutline />, colorClasses: 'text-green-600 border-green-200 hover:bg-green-50 hover:shadow-green-100' },
     { name: 'details', showKey: 'productSettings.details', icon: <IoDocumentTextOutline />, colorClasses: 'text-gray-600 border-gray-200 hover:bg-gray-50 hover:shadow-gray-100' },
     // { name: 'promo', showKey: 'productSettings.promo', icon: <IoMegaphoneOutline />, colorClasses: 'text-orange-600 border-orange-200 hover:bg-orange-50 hover:shadow-orange-100' },
-    { name: 'inventory', showKey: 'productSettings.inventory', icon: <IoStorefrontOutline />, colorClasses: 'text-indigo-600 border-indigo-200 hover:bg-indigo-50 hover:shadow-indigo-100' },
+    // { name: 'inventory', showKey: 'productSettings.inventory', icon: <IoStorefrontOutline />, colorClasses: 'text-indigo-600 border-indigo-200 hover:bg-indigo-50 hover:shadow-indigo-100' },
     // { name: 'affiliation', showKey: 'productSettings.affiliation', icon: <IoGitNetworkOutline />, colorClasses: 'text-purple-600 border-purple-200 hover:bg-purple-50 hover:shadow-purple-100' },
     { name: 'show-stats', showKey: 'productSettings.stats', icon: <IoStatsChartOutline />, colorClasses: 'text-sky-600 border-sky-200 hover:bg-sky-50 hover:shadow-sky-100' },
     { name: 'comments', showKey: 'productSettings.comments', icon: <IoChatbubbleEllipsesOutline />, colorClasses: 'text-amber-600 border-amber-200 hover:bg-amber-50 hover:shadow-amber-100' },
-    // { name: 'delete', showKey: 'productSettings.delete', icon: <IoTrashOutline/>, colorClasses: 'text-red-600 border-red-200 hover:bg-red-50 hover:shadow-red-100' }, // Suppression généralement à part
-];
+  ];
 
 
 export function ProductSettings({ onSelected }: { onSelected: (type: string) => void }) {

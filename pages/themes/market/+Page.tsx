@@ -84,11 +84,9 @@ function Page() {
     };
 
     const handleInstallTheme = (themeToInstall: ThemeInterface) => {
-        const storeIdForInstall = targetStoreId || currentStore?.id; // Utiliser storeId de l'URL ou le store courant
        
         if (!themeToInstall.id) return;
 
-        logger.info(`Requesting install for theme ${themeToInstall.id} on store ${storeIdForInstall}`);
         openChild(<ChildViewer title='Choisissez la boutique qui utilisera ce thème'>
             <StoreListPopup onSelectStore={(store) => {
                 openChild(null)
@@ -97,11 +95,11 @@ function Page() {
                     { store_id: store.id, themeId: themeToInstall.id },
                     {
                         onSuccess: () => {
-                            logger.info(`Theme ${themeToInstall.name} successfully activated for store ${storeIdForInstall}`);
+                            logger.info(`Theme ${themeToInstall.name} successfully activated for store ${store.id}`);
                             showToast(`Thème ${themeToInstall.name} activé avec succès`); // ✅ Toast succès
                         },
                         onError: (err) => {
-                            logger.error({ err }, `Failed to activate theme ${themeToInstall.id} for store ${storeIdForInstall}`);
+                            logger.error({ err }, `Failed to activate theme ${themeToInstall.id} for store ${store.id}`);
                             showErrorToast(err);
                         }
                     }
@@ -132,7 +130,7 @@ function Page() {
     }, [size.width, isSidebarOverlayVisible])
 
     return (
-        <div className="w-full min-h-screen flex flex-col bg-gray-100">
+        <div className="w-full min-h-screen flex flex-col ">
             <Topbar back={true} breadcrumbs={breadcrumbs} title={t('themesMarket.pageTitle')} />
 
             {/* Layout principal - Deux colonnes sur Desktop (md+) */}
@@ -188,7 +186,6 @@ function Page() {
                                 <ThemeCard
                                     key={theme.id + i}
                                     theme={theme}
-                                    isCurrent
                                     isSelected={selectedTheme?.id === theme.id}
                                     onClick={() => handleSelectTheme(theme)}
                                 />

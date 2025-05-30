@@ -20,6 +20,8 @@ import { NO_PICTURE } from "../Utils/constants";
 import { Layout } from "lucide-react";
 import { useGetThemes } from "../../api/ReactSublymusApi";
 import { Server_Host } from "../../renderer/+config";
+import { navigate } from "vike/client/router";
+import { ClientCall } from "../Utils/functions";
 
 
 
@@ -48,9 +50,9 @@ export function ThemeManager({ store }: ThemeManagerProps) {
     // TODO: Remplacer par la vraie logique de récupération du thème actuel
     const currentTheme: Partial<ThemeInterface> | null = store?.currentTheme || { // Données Placeholder
         id: store?.current_theme_id ?? 'theme-classy-v1',
-        name: 'Thème Élégant (Actuel)',
-        description: 'Un thème versatile et moderne pour mettre en valeur vos produits avec classe.',
-        preview_images: ['/res/theme-previews/elegant.jpg'],
+        name: 'Interface Developpeur',
+        description: 'Thème de substitution destiné à votre équique de développeur pour vous effectuer les quetes serveur depuis votre site',
+        preview_images: [ClientCall(function(){return window.location.origin},'')+'/res/empty/theme-preview-api.png'],
         features: ['multi_category', 'responsive', 'product_zoom'],
         is_active: true // Supposons actif s'il est le current_theme_id
     };
@@ -83,7 +85,7 @@ export function ThemeManager({ store }: ThemeManagerProps) {
         logger.info(`Theme option clicked: ${optionKey}`);
         const themeId = currentTheme?.id ?? store?.current_theme_id; // Utiliser l'ID chargé ou celui du store
         if (themeId) {
-            window.location.href = `/themes/editor?store=${store?.id}&theme=${themeId}&option=${optionKey}`; // Redirection vers éditeur
+            navigate( `/themes/editor?store=${store?.id}&theme=${themeId}&option=${optionKey}`); // Redirection vers éditeur
         } else {
             logger.warn("Cannot navigate to theme editor: current theme ID is missing.");
             // Afficher un message d'erreur?
@@ -93,7 +95,7 @@ export function ThemeManager({ store }: ThemeManagerProps) {
     const handleChangeThemeClick = () => {
         logger.info(`Change theme clicked for store ${store?.id}`);
         // TODO: Naviguer vers la page/modale de sélection de thème
-        window.location.href = `/themes/market?store=${store?.id}`; // Simple redirection
+        navigate(`/themes/market?store=${store?.id}`); // Simple redirection
     };
 
 
@@ -249,11 +251,11 @@ export function ThemeCard({ theme, isCurrent = false, isSelected, onClick }: The
     const handleClick = () => {
         if (isCurrent) {
             // Naviguer vers l'éditeur
-            window.location.href = `/themes/editor?store=${globalCurrentStore?.id}&theme=${theme.id}`;
+            navigate(`/themes/editor?store=${globalCurrentStore?.id}&theme=${theme.id}`)
         } else {
             // Naviguer vers la preview ou le marché avec ce thème sélectionné?
             // Ou déclencher l'installation? Pour l'instant, navigue vers preview
-            window.location.href = `/themes/market?theme=${theme.id}`;
+            navigate(`/themes/market?theme=${theme.id}`)
         }
     };
 
@@ -265,7 +267,7 @@ export function ThemeCard({ theme, isCurrent = false, isSelected, onClick }: The
         <button // Rendre la carte cliquable
             type="button"
             onClick={onClick || handleClick}
-            className={`theme-card w-full h-full flex flex-col bg-white rounded-lg shadow-sm border overflow-hidden transition duration-150 ${isCurrent ? 'border-blue-500 ring-1 ring-blue-400' : 'border-gray-200 hover:shadow-md hover:border-gray-300'
+            className={`theme-card w-full h-full flex flex-col bg-white rounded-lg shadow-sm border overflow-hidden transition duration-150 ${isSelected ? 'border-blue-500 ring-1 ring-blue-400 shadow-md' : 'border-gray-200 hover:shadow-md hover:border-gray-300'
                 }`}
         >
             <div className={`aspect-video w-full bg-gray-100 ${isCurrent ? 'relative' : ''}`}>

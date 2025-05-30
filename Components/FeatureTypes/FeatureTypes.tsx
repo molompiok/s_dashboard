@@ -18,12 +18,12 @@ const Types = [
   { name: FeatureType.ICON, url: '/res/feature-types/icon.svg', showKey: 'featureTypes.icon' },
   { name: FeatureType.ICON_TEXT, url: '/res/feature-types/icon_text.svg', showKey: 'featureTypes.icon_text' },
   { name: FeatureType.COLOR, url: '/res/feature-types/color.svg', showKey: 'featureTypes.color' },
-  { name: FeatureType.DATE, url: '/res/feature-types/date.svg', showKey: 'featureTypes.date' },
-  { name: FeatureType.DOUBLE_DATE, url: '/res/feature-types/date_double.svg', showKey: 'featureTypes.date_double' }, // Note: Renommé date_double?
-  { name: FeatureType.LEVEL, url: '/res/feature-types/level.svg', showKey: 'featureTypes.level' },
-  { name: FeatureType.RANGE, url: '/res/feature-types/range.svg', showKey: 'featureTypes.range' }, // Note: Renommé range?
-  { name: FeatureType.INPUT, url: '/res/feature-types/input.svg', showKey: 'featureTypes.input' },
-  { name: FeatureType.FILE, url: '/res/feature-types/file.svg', showKey: 'featureTypes.file' },
+  // { name: FeatureType.DATE, url: '/res/feature-types/date.svg', showKey: 'featureTypes.date' },
+  // { name: FeatureType.DOUBLE_DATE, url: '/res/feature-types/date_double.svg', showKey: 'featureTypes.date_double' }, // Note: Renommé date_double?
+  // { name: FeatureType.LEVEL, url: '/res/feature-types/level.svg', showKey: 'featureTypes.level' },
+  // { name: FeatureType.RANGE, url: '/res/feature-types/range.svg', showKey: 'featureTypes.range' }, // Note: Renommé range?
+  // { name: FeatureType.INPUT, url: '/res/feature-types/input.svg', showKey: 'featureTypes.input' },
+  // { name: FeatureType.FILE, url: '/res/feature-types/file.svg', showKey: 'featureTypes.file' },
 ];
 
 

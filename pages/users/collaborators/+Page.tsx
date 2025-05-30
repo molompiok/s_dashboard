@@ -14,6 +14,7 @@ import { IoAddSharp } from 'react-icons/io5';
 import { PageNotFound } from '../../../Components/PageNotFound/PageNotFound'; // Pour Not Found / Erreur
 import { ChildViewer } from '../../../Components/ChildViewer/ChildViewer';
 import { Pagination } from '../../../Components/Pagination/Pagination';
+import { buttonStyle } from '../../../Components/Button/Style';
 
 export { Page };
 
@@ -84,7 +85,7 @@ function Page() {
 
 
     return (
-        <div className="w-full min-h-screen flex flex-col bg-gray-100">
+        <div className="w-full min-h-screen flex flex-col">
             <Topbar back={true} title={t('collaborator.pageTitle')} breadcrumbs={breadcrumbs} />
             <main className="w-full max-w-5xl mx-auto p-4 md:p-6 lg:p-8 flex flex-col gap-6">
 
@@ -93,13 +94,12 @@ function Page() {
                     <h1 className="text-xl font-semibold text-gray-900">{t('collaborator.listTitle')}</h1>
                     <button
                         onClick={handleOpenAddPopup}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                        className={buttonStyle}
                     >
-                        <IoAddSharp size={18} className="-ml-1" />
+                        <IoAddSharp size={20} />
                         {t('collaborator.addButton')}
                     </button>
                 </div>
-
                 {/* Liste des Collaborateurs */}
                 <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
                     <div className="flex flex-col">

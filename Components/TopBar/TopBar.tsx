@@ -13,6 +13,7 @@ import { useGetAllOrders, useGetMe } from '../../api/ReactSublymusApi';
 import { useGlobalStore } from '../../api/stores/StoreStore';
 import { useMyLocation } from '../../Hooks/useRepalceState';
 import { usePageContext } from '../../renderer/usePageContext';
+import { navigate } from 'vike/client/router';
 
 export { Topbar };
 
@@ -61,7 +62,7 @@ function Topbar({
             if (typeof window !== 'undefined' && window.history.length > 1) {
                 window.history.back();
             } else {
-                window.location.href = '/';
+                navigate('/');
             }
         }
     };
@@ -71,10 +72,10 @@ function Topbar({
         openChild(
             <ChildViewer title={t('topbar.globalSearchTitle')}>
                 <TopSearch
-                    onCategorySelected={(c) => { window.location.href = `${Host}/categories/${c.id}`; }}
-                    onClientSelected={(c) => { window.location.href = `${Host}/users/clients/${c.id}`; }}
-                    onCommandSelected={(c) => { window.location.href = `${Host}/commands/${c.id}`; }}
-                    onProductSelected={(c) => { window.location.href = `${Host}/products/${c.id}`; }}
+                    onCategorySelected={(c) => { navigate(`${Host}/categories/${c.id}`); }}
+                    onClientSelected={(c) => { navigate(`${Host}/users/clients/${c.id}`); }}
+                    onCommandSelected={(c) => { navigate(`${Host}/commands/${c.id}`); }}
+                    onProductSelected={(c) => { navigate(`${Host}/products/${c.id}`); }}
                 />
             </ChildViewer>,
             { background: 'rgba(51, 51, 68, 0.8)', blur: 3 }

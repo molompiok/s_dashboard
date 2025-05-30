@@ -25,7 +25,7 @@ export function HomeStat() {
 
     // Stats temporelles (visites, commandes, etc.)
     const {
-        data: orderStatsData,
+        data: orderStatsData = [],
         isLoading: isLoadingOderStats,
         isError: isErrorVisit
     } = useGetOrderDetailsStats(
@@ -35,7 +35,7 @@ export function HomeStat() {
         { enabled: !!currentStore }
     );
     const {
-        data: visitStatsData,
+        data: visitStatsData = [],
         isLoading: isLoadingVisitStats,
         isError: isErrorOder
     } = useGetVisitDetails(
@@ -45,12 +45,24 @@ export function HomeStat() {
         { enabled: !!currentStore }
     );
     // Calculer les totaux à partir des données de React Query
-    const totalVisits = useMemo(() =>
-        visitStatsData?.reduce((sum: any, day: any) => sum + (day.visits || 0), 0) ?? 0,
+    const totalVisits = useMemo(() => {
+        try {
+            console.log(visitStatsData?.reduce);
+
+            return visitStatsData?.reduce((sum: any, day: any) => sum + (day.visits || 0), 0) ?? 0
+        } catch (error) {
+            return 0
+        }
+    },
         [visitStatsData]
     );
-    const totalOrders = useMemo(() =>
-        orderStatsData?.reduce((sum: any, day: any) => sum + (day.orders_count || 0), 0) ?? 0,
+    const totalOrders = useMemo(() => {
+        try {
+            return orderStatsData?.reduce((sum: any, day: any) => sum + (day.orders_count || 0), 0) ?? 0
+        } catch (error) {
+            return 0
+        }
+    },
         [orderStatsData]
     );
 
@@ -122,7 +134,10 @@ export function HomeStat() {
                     <h1 className='text-2xl flex items-center gap-2.5 text-slate-800'>
                         {!eye ?
                             // TODO: Remplacer 295000 par la vraie valeur du compte
-                            <span ref={compteRef}>{Number(295000).toLocaleString()} FCFA</span> :
+                            <span ref={compteRef}>{Number(orderStatsData[0] ? orderStatsData.reduce((collected, current) => (
+                                { ...collected, total_price: collected.total_price += Number(current.total_price) }
+                            ), {total_price:0})?.total_price : 0).toLocaleString()
+                            } FCFA</span> :
                             <Nuage color='#3455' density={1} height={20} width={nuageW} speed={1} />}
                         <span className="cursor-pointer text-slate-500 hover:text-slate-600" onClick={toggleEye}>
                             {eye ? <IoEyeSharp size={20} /> : <IoEyeOff size={20} />}
@@ -130,7 +145,7 @@ export function HomeStat() {
                     </h1>
                 </div>
                 {/* Lien Voir plus (optionnel pour cette carte) */}
-                {/* <a href="/billing" className="absolute bottom-2.5 right-5 text-sm text-blue-500 hover:text-blue-700 hover:underline no-underline">Détails</a> */}
+                <a href="/billing" className="absolute bottom-2.5 right-5 text-sm text-blue-500 hover:text-blue-700 hover:underline no-underline">Détails</a>
             </div>
 
             {/* Visits Card */}

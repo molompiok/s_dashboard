@@ -22,6 +22,7 @@ import { ApiError } from '../../../api/SublymusApi'; // Importer ApiError pour l
 // AJOUT: Marquer que la fonction est un hook React Query valide
 import { useQuery } from '@tanstack/react-query';
 import { useGlobalStore } from '../../../api/stores/StoreStore';
+import { navigate } from 'vike/client/router';
 
 const useGetMyThemes = (options: { enabled?: boolean } = {}) => {
     // Vrai hook (exemple simplifié)
@@ -63,7 +64,7 @@ function Page() {
                 <StoreSelectorPopup actionType="customize" themeToApply={theme}
                     onStoreSelected={(storeId) => {
                         openChild(null);
-                        window.location.href = `/theme/editor?store=${storeId}&theme=${theme.id}`;
+                        navigate(`/theme/editor?store=${storeId}&theme=${theme.id}`);
                     }}
                     onCancel={() => openChild(null)} />
             </ChildViewer>, { background: 'rgba(51, 65, 85, 0.7)', blur: 3 }
@@ -83,7 +84,7 @@ function Page() {
 
     return (
         // Utiliser les classes Tailwind pour le layout principal
-        <div className="w-full min-h-screen flex flex-col bg-gray-100">
+        <div className="w-full min-h-screen flex flex-col">
             <Topbar back={true} title={t('myThemes.pageTitle')} />
             <main className="w-full max-w-7xl mx-auto p-4 md:p-6 lg:p-8 flex-grow">
                 {/* Titre optionnel si Topbar ne l'a pas */}

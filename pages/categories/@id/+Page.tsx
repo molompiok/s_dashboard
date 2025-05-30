@@ -49,7 +49,7 @@ function Page() {
     const { t } = useTranslation(); // ✅ i18n
     const { openChild } = useChildViewer();
     const { currentStore } = useGlobalStore();
-    const { params, myLocation, replaceLocation, nextPage } = useMyLocation()
+    const { params, myLocation, replaceLocation } = useMyLocation()
     const categoryIdFromRoute = params[1];
     const isNewCategory = categoryIdFromRoute === 'new';
 
@@ -63,6 +63,7 @@ function Page() {
     const [localImagePreviews, setLocalImagePreviews] = useState<{ view?: string; icon?: string }>({});
     // État pour les erreurs de validation par champ
     const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({});
+    const [isVisibilityUpdating, changeVisibilityUpdating] = useState(false);
 
 
     const [s] = useState({
@@ -134,7 +135,7 @@ function Page() {
         const files = e.target.files;
         if (!files?.[0]) return;
         const file = files[0];
-        console.log({ file });
+        // console.log({ file });
 
         const previewUrl = URL.createObjectURL(file);
 
@@ -155,9 +156,10 @@ function Page() {
     };
 
     const handleRemoveParent = () => {
-        updateLocalCategory(prev => ({ ...prev, parent_category_id: null }));
+        updateLocalCategory(prev => ({ ...prev, parent_category_id: 'null' }));
     };
     const handleVisibility = (is_visible: boolean) => {
+        changeVisibilityUpdating(true)
         updateLocalCategory(prev => ({ ...prev, is_visible }));
     }
     const handleDelete = () => {
@@ -274,12 +276,7 @@ function Page() {
 
                     console.log("Category updated successfully", data);
 
-                    const updatedCategory = {
-                        ...originalCategoryData,
-                        ...data.category,
-                    };
-
-                    setOriginalCategoryData(updatedCategory);
+                    setOriginalCategoryData(data.category);
 
                     if (hasCollected()) {
                         debounce(() => {
@@ -288,7 +285,7 @@ function Page() {
                         return;
                     }
 
-                    setCategoryFormState(updatedCategory);
+                    setCategoryFormState(data.category);
                     setLocalImagePreviews({});
                     setFieldErrors({});
 
@@ -298,6 +295,9 @@ function Page() {
                     console.log({ error }, "Category update failed");
                     showErrorToast(error); // ❌ Toast erreur
                 },
+                onSettled(){
+                    changeVisibilityUpdating(false)
+                }
             }
         );
     };
@@ -318,7 +318,7 @@ function Page() {
             console.log('RELOAD DATA REQUIRED');
             return
         }
-    }, [currentStore, myLocation])
+    }, [currentStore])
 
 
 
@@ -359,11 +359,11 @@ function Page() {
 
     const hasError = Object.keys(fieldErrors).length > 0
 
-    console.log(categoryFormState, viewUrl);
+    // console.log(categoryFormState, viewUrl);
 
     return (
         // Layout principal
-        <div className="w-full flex flex-col bg-gray-50 min-h-screen">
+        <div className="w-full flex flex-col min-h-screen">
             <Topbar back={true} breadcrumbs={breadcrumbs} />
             {/* Utiliser max-w-2xl ou 3xl pour page formulaire, gap-4 ou 6 */}
             <main className="w-full max-w-3xl mx-auto p-4 md:p-6 lg:p-8 flex flex-col gap-6 pb-24"> {/* Ajouter pb-24 pour espace bouton flottant */}
@@ -468,8 +468,8 @@ function Page() {
                 <div>
                     <label className='text-sm font-medium text-gray-700 mb-1 flex justify-between items-center' htmlFor='input-category-description'>
                         <span>{t('category.descriptionLabel')} <IoPencil className="inline-block ml-1 w-3 h-3 text-gray-400" /></span>
-                        <span className={`text-xs ${(categoryFormState.description?.trim()?.length || 0) > 1000 ? 'text-red-600' : 'text-gray-400'}`}>
-                            {(categoryFormState.description?.trim()?.length || 0)} / 1000
+                        <span className={`text-xs ${(categoryFormState.description?.trim()?.length || 0) > 500 ? 'text-red-600' : 'text-gray-400'}`}>
+                            {(categoryFormState.description?.trim()?.length || 0)} / 500
                         </span>
                     </label>
                     {/* Utiliser l'éditeur Markdown */}
@@ -477,15 +477,14 @@ function Page() {
                         value={categoryFormState.description || ''}
                         setValue={(value) => {
                             console.log({ value });
-
-                            handleMarkdownChange(value)
+                            const v = value.trim().substring(0,500)
+                            v && handleMarkdownChange(v)
                         }}
                         error={!!fieldErrors.description} // Passer l'état d'erreur
                     />
                     {fieldErrors.description && <p className="mt-1 text-xs text-red-600">{fieldErrors.description}</p>}
                 </div>
 
-                {/* Sélection Catégorie Parent */}
                 <div>
                     <h3 className="block text-sm font-medium text-gray-700 mb-2">
                         {t('category.parentCategoryLabel')} <span className='text-gray-400 text-xs'>({t('common.optionalField')})</span>
@@ -501,7 +500,7 @@ function Page() {
                             t={t}
                         />
                         {/* Affichage du parent sélectionné */}
-                        {categoryFormState.parent_category_id && (
+                        {(categoryFormState.parent_category_id && categoryFormState.parent_category_id !== 'null') && (
                             <CategoryItemMini
                                 openCategory
                                 category_id={categoryFormState.parent_category_id}
@@ -520,7 +519,7 @@ function Page() {
                         title={t('product.visibilityTitle')}
                         onSetVisibility={handleVisibility}
                         onDeleteRequired={handleDelete} // Utilise la fonction simulée
-                        isLoading={false}
+                        isLoading={isVisibilityUpdating}
                         t={t}
                     />
                 )}
