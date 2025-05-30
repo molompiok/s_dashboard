@@ -138,7 +138,7 @@ function Page() {
     console.log(isSidebarOverlayVisible);
 
     return (
-        <div className="w-full h-screen flex flex-col">
+        <div className="page-theme w-full h-screen flex flex-col">
             <Topbar back={true} title={t('themeEditor.pageTitle', { name: themeOptions?.themeName ?? themeId })} />
 
             {/* Conteneur principal : Ajout de 'relative' pour positionner le bouton flottant par rapport à ce conteneur */}

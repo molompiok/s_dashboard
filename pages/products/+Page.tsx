@@ -17,7 +17,7 @@ function Page() {
 ];
   return (
     // Conteneur principal: pleine largeur, fond léger, organisation en colonne
-    <div className="w-full min-h-screen flex flex-col">
+    <div className="products  pb-[200px] w-full min-h-screen flex flex-col">
       <Topbar back={true} breadcrumbs={breadcrumbs} />
       {/* Conteneur pour le contenu principal avec padding et centrage */}
       <main className="w-full max-w-7xl mx-auto p-2 sx:4 md:p-6 lg:p-8 flex flex-col gap-6"> {/* Ajouter gap */}

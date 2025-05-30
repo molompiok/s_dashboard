@@ -144,7 +144,7 @@ function Page() {
     if (!command) return <PageNotFound />
 
     return (
-        <div className="w-full pb-48 flex flex-col min-h-screen">
+        <div className="command-detail  pb-[200px] w-full pb-48 flex flex-col min-h-screen">
             <Topbar back breadcrumbs={breadcrumbs} />
             <div className="w-full max-w-4xl mx-auto p-4 md:p-6 lg:p-8 flex flex-col gap-6">
                 <CommandTop command={command} />

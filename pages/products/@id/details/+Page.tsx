@@ -234,7 +234,7 @@ function Page() {
     const isDetailMaxReached = (sortedDetails?.length || 0) >= DETAIL_LIMIT;
 
     return (
-        <div className="page-detail w-full flex flex-col bg-gray-100 min-h-screen">
+        <div className="page-detail pb-[200px]  w-full flex flex-col bg-gray-100 min-h-screen">
             <Topbar back={true} title={t('detail.pageTitle', { name: product.name }).toString()} />
 
             <main className="w-full max-w-4xl mx-auto p-4 md:p-6 lg:p-8 flex flex-col gap-6">

@@ -88,7 +88,7 @@ function Page() {
     };
 
     return (
-        <div className="w-full min-h-screen flex flex-col relative">
+        <div className="settings  pb-[200px]  w-full min-h-screen flex flex-col relative">
             <Topbar
                 back={true}
                 breadcrumbs={breadcrumbs}

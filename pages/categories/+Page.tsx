@@ -45,7 +45,7 @@ function Page() {
     const meta = categoriesData?.meta;
 
     return (
-        <div className="w-full min-h-screen flex flex-col">
+        <div className="categories w-full  pb-[200px]  min-h-screen flex flex-col">
             <Topbar back={true} breadcrumbs={breadcrumbs} />
             <main className="w-full max-w-7xl mx-auto p-4 md:p-6 lg:p-8 flex flex-col gap-6">
 

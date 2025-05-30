@@ -211,7 +211,7 @@ export function Page() {
     />
     // --- Rendu ---
     return (
-        <div className="flex pb-48 flex-col lg:flex-row min-h-screen">
+        <div className="page-stats  pb-[200px]  flex pb-48 flex-col lg:flex-row min-h-screen">
 
             <aside className="hidden lg:block lg:w-60 min-w-60 lg:sticky lg:top-0 lg:h-screen lg:overflow-y-auto  shadow">
                 <div className="">

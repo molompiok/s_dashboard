@@ -363,7 +363,7 @@ function Page() {
 
     return (
         // Layout principal
-        <div className="w-full flex flex-col min-h-screen">
+        <div className="category-detail  pb-[200px] w-full flex flex-col min-h-screen">
             <Topbar back={true} breadcrumbs={breadcrumbs} />
             {/* Utiliser max-w-2xl ou 3xl pour page formulaire, gap-4 ou 6 */}
             <main className="w-full max-w-3xl mx-auto p-4 md:p-6 lg:p-8 flex flex-col gap-6 pb-24"> {/* Ajouter pb-24 pour espace bouton flottant */}

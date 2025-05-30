@@ -532,7 +532,7 @@ function Page() {
     const hasError = Object.keys(fieldErrors).length > 0
 
     return (
-        <div className="product-detail-page w-full flex flex-col bg-gray-50 min-h-screen">
+        <div className="product-detail-page pb-[200px]  w-full flex flex-col bg-gray-50 min-h-screen">
             <Topbar back={true} breadcrumbs={breadcrumbs} />
             {/* Utiliser max-w-4xl ou 5xl pour plus d'espace, gap-6 ou 8 */}
             <main className="w-full max-w-5xl mx-auto p-4 md:p-6 lg:p-8 flex flex-col gap-8 pb-24">

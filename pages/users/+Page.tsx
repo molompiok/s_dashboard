@@ -107,7 +107,7 @@ export default function Page() {
 
   return (
     // Utiliser flex flex-col
-    <div className="users-pages pb-48 w-full flex flex-col min-h-screen ">
+    <div className="users-pages pb-[200px]  pb-48 w-full flex flex-col min-h-screen ">
       <Topbar title={t('usersPage.title')} search={false} /> {/* Titre pour la page */}
       <main className="flex-grow p-4 md:p-6 lg:p-8"> {/* Ajouter padding */}
         <CurrentUserCard />
