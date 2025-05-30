@@ -1,4 +1,4 @@
-import './Page.css'
+// import './Page.css'
 
 export { Page }
 
