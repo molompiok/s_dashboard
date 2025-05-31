@@ -1161,7 +1161,7 @@
         "thumbAlt": "Miniature commentaire"
     },
     "receipt": {
-        "name":"Reçu",
+        "name": "Reçu",
         "title": "Reçu de Commande",
         "downloadAction": "Télécharger",
         "printAction": "Imprimer",
@@ -1296,6 +1296,7 @@
         "helpText": "PNG, JPG, WEBP, SVG, GIF jusqu'à 2MB."
     },
     "themeEditor": {
+        "listAnnoncePlaceholder":"barre d'annonce",
         "previewing": "Aperçu en direct",
         "reloadPreview": "Recharger l'aperçu",
         "pageTitle": "Éditeur de Thème - {{name}}",
@@ -1314,13 +1315,14 @@
             "footer": "Pied de page",
             "homepage": "Page d'accueil",
             "productPage": "Page Produit",
-            "buttons": "Boutons"
+            "buttons": "Boutons",
+            "announcementBar": "Barre d'Annonce",
+            "filterSide": "Barre Latérale de Filtres",
+            "productDisplay": "Affichage des Produits",
+            "cartPage": "Page Panier",
+            "checkoutPage": "Page Paiement"
         },
         "options": {
-            "storeNameVisible": "Afficher le nom de la boutique",
-            "storeNameVisibleDesc": "Montre le nom de votre boutique dans l'en-tête.",
-            "logoUrl": "Logo personnalisé",
-            "logoUrlDesc": "Remplace le texte du nom par votre logo (PNG, SVG, JPG).",
             "primaryColor": "Couleur Principale",
             "primaryColorDesc": "Utilisée pour les boutons, liens et accents.",
             "secondaryColor": "Couleur Secondaire",
@@ -1344,17 +1346,118 @@
             "showHeader": "Afficher l'En-tête",
             "showHeaderDesc": "Affiche ou masque la barre de navigation supérieure.",
             "headerAnnouncement": "Bandeau d'annonce",
-            "headerAnnouncementDesc": "Texte affiché en haut de page (laisser vide pour masquer)."
+            "headerAnnouncementDesc": "Texte affiché en haut de page (laisser vide pour masquer).",
+            "storeNameVisible": "Nom de la boutique visible",
+            "storeNameVisibleDesc": "Afficher ou masquer le nom de la boutique dans l'en-tête.",
+            "logoUrl": "Logo de la boutique",
+            "logoUrlDesc": "Téléchargez le logo de votre boutique (format SVG, PNG, JPG recommandé).",
+            "siteBackgroundColor": "Couleur de fond du site",
+            "siteBackgroundColorDesc": "Couleur de fond principale pour l'ensemble du site.",
+            "siteTextColor": "Couleur de texte du site",
+            "siteTextColorDesc": "Couleur de texte par défaut pour le contenu du site.",
+            "backgroundGradient": "Dégradé de fond du site",
+            "backgroundGradientDesc": "Appliquez un dégradé de couleurs au fond principal de votre site.",
+            "showAnnouncementBar": "Afficher la barre d'annonce",
+            "showAnnouncementBarDesc": "Active ou désactive la barre d'annonce en haut du site.",
+            "announcementText": "Texte de la barre d'annonce",
+            "announcementTextDesc": "Message affiché dans la barre d'annonce.",
+            "announcementMessages": "Messages défilants (barre d'annonce)",
+            "announcementMessagesDesc": "Liste des messages à faire défiler dans la barre d'annonce.",
+            "announcementTextColor": "Couleur du texte (barre d'annonce)",
+            "announcementTextColorDesc": "Couleur du texte pour la barre d'annonce.",
+            "announcementBackgroundColor": "Couleur de fond (barre d'annonce)",
+            "announcementBackgroundColorDesc": "Couleur de fond pour la barre d'annonce.",
+            "announcementBackgroundGradient": "Dégradé de fond (barre d'annonce)",
+            "announcementBackgroundGradientDesc": "Appliquez un dégradé de couleurs au fond de la barre d'annonce.",
+            "headerTextColor": "Couleur du texte (en-tête)",
+            "headerTextColorDesc": "Couleur du texte pour les éléments de l'en-tête (menus, liens).",
+            "headerBackgroundColor": "Couleur de fond (en-tête)",
+            "headerBackgroundColorDesc": "Couleur de fond pour la section de l'en-tête.",
+            "showFooter": "Afficher le pied de page",
+            "showFooterDesc": "Active ou désactive l'affichage du pied de page du site.",
+            "footerTextColor": "Couleur du texte (pied de page)",
+            "footerTextColorDesc": "Couleur du texte pour les éléments du pied de page.",
+            "footerBackgroundColor": "Couleur de fond (pied de page)",
+            "footerBackgroundColorDesc": "Couleur de fond pour la section du pied de page.",
+            "footerFont": "Police du pied de page",
+            "footerFontDesc": "Police de caractères utilisée pour le texte du pied de page.",
+            "showFilterSide": "Afficher la barre latérale de filtres",
+            "showFilterSideDesc": "Affiche ou masque la barre latérale pour filtrer les produits.",
+            "filterSideTextColor": "Couleur du texte (filtres)",
+            "filterSideTextColorDesc": "Couleur du texte pour la barre latérale de filtres.",
+            "filterSideBackgroundColor": "Couleur de fond (filtres)",
+            "filterSideBackgroundColorDesc": "Couleur de fond pour la barre latérale de filtres.",
+            "filterSideLayout": "Disposition des filtres",
+            "filterSideLayoutDesc": "Choisissez comment les options de filtre sont affichées.",
+            
+            "productCardTextColor": "Couleur du texte (carte produit)",
+            "productAddToCartBorderColor": "Couleur de la bordue (bouton ajout au panier)",
+            "productAddToCartBorderColorDesc": "La bordue du bouton ajout au panier",
+            "productAddToCartBackgroundColor": "Couleur de fond (bouton ajout au panier)",
+            "productAddToCartBackgroundColorDesc": "La couleur de fond du bouton ajout au panier",
+            "productAddToCartTextColor": "Couleur du texte (bouton ajout au panier)",
+            "productAddToCartTextColorDesc": "La couleur du texte du bouton ajout au panier",
+            "productCardTextColorDesc": "Couleur du texte principal sur les cartes de produit.",
+            "productCardBackgroundColor": "Couleur de fond (carte produit)",
+            "productCardBackgroundColorDesc": "Couleur de fond pour les cartes de produit.",
+            "productPriceColor": "Couleur du prix (produit)",
+            "productPriceColorDesc": "Couleur d'affichage pour le prix des produits.",
+            "priceBeforeName": "Prix avant le nom du produit",
+            "priceBeforeNameDesc": "Si activé, le prix sera affiché avant le nom du produit sur les cartes.",
+            "showRatingInList": "Afficher les évaluations (liste produit)",
+            "showRatingInListDesc": "Affiche ou masque les étoiles d'évaluation sur les cartes produit.",
+            "showRatingInProduct": "Afficher les évaluations (detaille produit)",
+            "showRatingInProductDesc": "Affiche ou masque les étoiles d'évaluation sur les pages des produits.",
+            "reductionDisplay": "Affichage de la réduction",
+            "reductionDisplayDesc": "Choisissez comment afficher les réductions de prix."
+
+        },
+        "gradient": {
+            "none": "Aucun",
+            "lightGray": "Gris Clair",
+            "lightIndigo": "Indigo Clair",
+            "lightRed": "Rouge Clair",
+            "blue": "Bleu",
+            "amber": "Ambre",
+            "emerald": "Émeraude",
+            "blueDark": "Bleu Foncé"
         },
         "fontSize": {
-            "small": "Petite",
-            "medium": "Moyenne",
-            "large": "Grande"
+            "small": "Petit",
+            "medium": "Moyen",
+            "large": "Grand"
         },
         "layoutOptions": {
             "grid": "Grille",
-            "list": "Liste"
-        }
+            "bento": "Bento",
+            "row": "Ligne",
+            "compact": "Compact",
+            "horizontalScroll": "Horizontal Scroll",
+            "card": "Carte",
+            "stackedList": "Liste empilée",
+            "all": "Tout"
+        },
+        "reductionOptions": {
+            "barredPrice": "Prix barré",
+            "percentReduction": "Pourcentage de réduction",
+            "amountReduction": "Montant de la réduction"
+        },
+        "openSidebar": "Ouvrir les options",
+        "closeSidebar": "Fermer les options"
+    },
+    "fontSize": {
+        "small": "Petite",
+        "medium": "Moyenne",
+        "large": "Grande"
+    },
+    "layoutOptions": {
+        "grid": "Grille",
+        "bento": "Bento",
+        "row": "Ligne",
+        "compact": "Compact",
+        "horizontal-scroll": "Horizontal Scroll",
+        "card": "Carte",
+        "stacked-list": "Liste empilée"
     },
     "themeFeatures": {
         "multi_category": "Multi-catégories",

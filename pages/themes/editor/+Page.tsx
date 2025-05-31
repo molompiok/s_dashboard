@@ -12,7 +12,11 @@ import { LiveThemePreview } from '../../../Components/ThemeEditor/LiveThemePrevi
 
 // --- Importer les icônes nécessaires ---
 import {
-    FaPalette, FaFont, FaPaintBrush, FaThLarge, FaWindowMaximize, FaQuestionCircle, FaEdit, FaTimes // Ajout FaEdit, FaTimes
+    FaPalette, FaFont, FaPaintBrush, FaThLarge, FaWindowMaximize, FaQuestionCircle, FaEdit, FaTimes, // Ajout FaEdit, FaTimes
+    FaBullhorn,
+    FaShoePrints,
+    FaFilter,
+    FaBoxOpen
 } from 'react-icons/fa';
 import { useWindowSize } from '../../../Hooks/useWindowSize';
 import { debounce } from '../../../Components/Utils/functions';
@@ -20,19 +24,20 @@ import { debounce } from '../../../Components/Utils/functions';
 export { Page };
 
 // Types Placeholder (INCHANGÉ - gardé pour la référence)
-export interface ThemeOptionDefinition { key: string; type: 'color' | 'font' | 'text' | 'select' | 'toggle' | 'image'; labelKey: string; defaultValue?: any; options?: { value: string; labelKey: string }[]; section: string; descriptionKey?: string }
+export interface ThemeOptionDefinition { key: string; type: 'array-string' | 'color' | 'font' | 'text' | 'select' | 'toggle' | 'image'; labelKey: string; defaultValue?: any; options?: { value: string; labelKey: string }[]; section: string; descriptionKey?: string }
 export interface ThemeOptionsStructure { themeId: string; themeName?: string; sections: { key: string; titleKey: string; order?: number }[]; options: ThemeOptionDefinition[]; }
 export type ThemeSettingsValues = Record<string, any>;
 
 // --- Mapping des icônes pour les sections ---
 const sectionIcons: Record<string, React.ElementType> = {
-    general: FaPaintBrush,       // Icône pour 'general'
-    colors: FaPalette,           // Icône pour 'colors'
-    typography: FaFont,          // Icône pour 'typography'
-    layout: FaThLarge,           // Icône pour 'layout'
-    header: FaWindowMaximize,    // Icône pour 'header'
-    // Ajoutez d'autres sections ici...
-    default: FaQuestionCircle    // Icône par défaut si aucune correspondance
+    general: FaPaintBrush,
+    announcementBar: FaBullhorn,
+    header: FaWindowMaximize,
+    footer: FaShoePrints,
+    filterSide: FaFilter,
+    productDisplay: FaBoxOpen,
+    typography: FaFont,
+    default: FaQuestionCircle
 };
 
 
@@ -54,30 +59,430 @@ function Page() {
     const [isSidebarOverlayVisible, setIsSidebarOverlayVisible] = useState(true);
 
     // --- Hooks API Placeholder (INCHANGÉ) ---
-    const getThemeOptions = useCallback(async (id: string): Promise<ThemeOptionsStructure> => { /* ... (votre logique inchangée) ... */ return { themeId: id, themeName: "Thème Exemple", sections: [{ key: 'general', titleKey: 'themeEditor.section.general', order: 1 }, { key: 'colors', titleKey: 'themeEditor.section.colors', order: 2 }, { key: 'typography', titleKey: 'themeEditor.section.typography', order: 3 }, { key: 'layout', titleKey: 'themeEditor.section.layout', order: 4 }, { key: 'header', titleKey: 'themeEditor.section.header', order: 5 },], options: [{ key: 'storeNameVisible', type: 'toggle', section: 'general', labelKey: 'themeEditor.options.storeNameVisible', defaultValue: true, descriptionKey: 'themeEditor.options.storeNameVisibleDesc' }, { key: 'logoUrl', type: 'image', section: 'general', labelKey: 'themeEditor.options.logoUrl', defaultValue: '/res/logo-placeholder.svg', descriptionKey: 'themeEditor.options.logoUrlDesc' }, { key: 'primaryColor', type: 'color', section: 'colors', labelKey: 'themeEditor.options.primaryColor', defaultValue: '#2563EB', descriptionKey: 'themeEditor.options.primaryColorDesc' }, { key: 'secondaryColor', type: 'color', section: 'colors', labelKey: 'themeEditor.options.secondaryColor', defaultValue: '#6B7280', descriptionKey: 'themeEditor.options.secondaryColorDesc' }, { key: 'accentColor', type: 'color', section: 'colors', labelKey: 'themeEditor.options.accentColor', defaultValue: '#F59E0B', descriptionKey: 'themeEditor.options.accentColorDesc' }, { key: 'textColor', type: 'color', section: 'colors', labelKey: 'themeEditor.options.textColor', defaultValue: '#1F2937', descriptionKey: 'themeEditor.options.textColorDesc' }, { key: 'backgroundColor', type: 'color', section: 'colors', labelKey: 'themeEditor.options.backgroundColor', defaultValue: '#FFFFFF', descriptionKey: 'themeEditor.options.backgroundColorDesc' }, { key: 'bodyFont', type: 'font', section: 'typography', labelKey: 'themeEditor.options.bodyFont', defaultValue: 'Inter, sans-serif', descriptionKey: 'themeEditor.options.bodyFontDesc' }, { key: 'headingFont', type: 'font', section: 'typography', labelKey: 'themeEditor.options.headingFont', defaultValue: 'Poppins, sans-serif', descriptionKey: 'themeEditor.options.headingFontDesc' }, { key: 'baseFontSize', type: 'select', section: 'typography', labelKey: 'themeEditor.options.baseFontSize', defaultValue: '16px', descriptionKey: 'themeEditor.options.baseFontSizeDesc', options: [{ value: '14px', labelKey: 'themeEditor.fontSize.small' }, { value: '16px', labelKey: 'themeEditor.fontSize.medium' }, { value: '18px', labelKey: 'themeEditor.fontSize.large' },] }, { key: 'productListView', type: 'select', section: 'layout', labelKey: 'themeEditor.options.productListView', defaultValue: 'grid', descriptionKey: 'themeEditor.options.productListViewDesc', options: [{ value: 'grid', labelKey: 'themeEditor.layoutOptions.grid' }, { value: 'list', labelKey: 'themeEditor.layoutOptions.list' },] }, { key: 'showHeader', type: 'toggle', section: 'header', labelKey: 'themeEditor.options.showHeader', defaultValue: true, descriptionKey: 'themeEditor.options.showHeaderDesc', }, { key: 'headerAnnouncement', type: 'text', section: 'header', labelKey: 'themeEditor.options.headerAnnouncement', defaultValue: '', descriptionKey: 'themeEditor.options.headerAnnouncementDesc', },] as ThemeOptionDefinition[] }; }, []);
+    const getThemeOptions = useCallback(async (id: string): Promise<ThemeOptionsStructure> => {
+        return {
+            themeId: id,
+            themeName: "Thème Exemple Dynamique", // Nom mis à jour pour refléter les changements
+            sections: [
+                {
+                    key: 'general',
+                    titleKey: 'themeEditor.section.general',
+                    order: 1
+                },
+                {
+                    key: 'announcementBar',
+                    titleKey: 'themeEditor.section.announcementBar',
+                    order: 2
+                },
+                {
+                    key: 'header',
+                    titleKey: 'themeEditor.section.header',
+                    order: 3
+                },
+                {
+                    key: 'footer',
+                    titleKey: 'themeEditor.section.footer',
+                    order: 4
+                },
+                {
+                    key: 'filterSide',
+                    titleKey: 'themeEditor.section.filterSide', // Barre latérale de filtres
+                    order: 5
+                },
+                {
+                    key: 'productDisplay', // Options d'affichage des produits (cartes, listes)
+                    titleKey: 'themeEditor.section.productDisplay',
+                    order: 6
+                },
+                {
+                    key: 'typography',
+                    titleKey: 'themeEditor.section.typography',
+                    order: 7
+                },
+                // Tu pourrais ajouter d'autres sections comme:
+                // { key: 'productPage', titleKey: 'themeEditor.section.productPage', order: 8 }, // Pour la page de détail produit
+                // { key: 'cartPage', titleKey: 'themeEditor.section.cartPage', order: 9 },
+                // { key: 'checkoutPage', titleKey: 'themeEditor.section.checkoutPage', order: 10 },
+            ],
+            options: [
+                // --- Section: General ---
+                {
+                    key: 'storeNameVisible',
+                    type: 'toggle',
+                    section: 'general',
+                    labelKey: 'themeEditor.options.storeNameVisible',
+                    defaultValue: true,
+                    descriptionKey: 'themeEditor.options.storeNameVisibleDesc'
+                },
+                {
+                    key: 'logoUrl',
+                    type: 'image',
+                    section: 'general',
+                    labelKey: 'themeEditor.options.logoUrl',
+                    defaultValue: '/res/logo-placeholder.svg',
+                    descriptionKey: 'themeEditor.options.logoUrlDesc'
+                },
+                {
+                    key: 'siteBackgroundColor', // Remplaçait l'ancien 'backgroundColor' global
+                    type: 'color',
+                    section: 'general',
+                    labelKey: 'themeEditor.options.siteBackgroundColor',
+                    defaultValue: '#FFFFFF',
+                    descriptionKey: 'themeEditor.options.siteBackgroundColorDesc'
+                },
+                {
+                    key: 'siteTextColor', // Remplaçait l'ancien 'textColor' global
+                    type: 'color',
+                    section: 'general',
+                    labelKey: 'themeEditor.options.siteTextColor',
+                    defaultValue: '#1F2937',
+                    descriptionKey: 'themeEditor.options.siteTextColorDesc'
+                },
+                {
+                    key: 'backgroundGradient', // Nouveau : pour le fond général du site
+                    type: 'list', // Utilise le type 'list' comme dans ton exemple
+                    section: 'general',
+                    labelKey: 'themeEditor.options.backgroundGradient',
+                    defaultValue: [], // Pas de gradient par défaut, ou ['#FFFFFF', '#F3F4F6'] si tu veux un défaut
+                    descriptionKey: 'themeEditor.options.backgroundGradientDesc',
+                    options: [ // Exemple d'options pour un sélecteur de gradient
+                        { value: [], labelKey: 'themeEditor.gradient.none' }, // Permet de désactiver le gradient
+                        { value: ['#FFFFFF', '#F3F4F6'], labelKey: 'themeEditor.gradient.lightGray' },
+                        { value: ['#E0E7FF', '#C7D2FE'], labelKey: 'themeEditor.gradient.lightIndigo' },
+                        { value: ['#FEE2E2', '#FECACA'], labelKey: 'themeEditor.gradient.lightRed' },
+                    ]
+                },
+
+                // --- Section: Announcement Bar ---
+                {
+                    key: 'showAnnouncementBar',
+                    type: 'toggle',
+                    section: 'announcementBar',
+                    labelKey: 'themeEditor.options.showAnnouncementBar',
+                    defaultValue: true,
+                    descriptionKey: 'themeEditor.options.showAnnouncementBarDesc'
+                },
+                {
+                    key: 'announcementText',
+                    type: 'text', // Un seul message texte pour commencer
+                    section: 'announcementBar',
+                    labelKey: 'themeEditor.options.announcementText',
+                    defaultValue: 'Livraison gratuite dès 50€ d\'achat !',
+                    descriptionKey: 'themeEditor.options.announcementTextDesc'
+                },
+                // Si tu veux une LISTE de textes défilants (plus complexe)
+                {
+                    key: 'announcementMessages',
+                    type: 'array-string', // Tu devras créer ce type de contrôle
+                    section: 'announcementBar',
+                    labelKey: 'themeEditor.options.announcementMessages',
+                    defaultValue: ['Bienvenue !', 'Promotions en cours...'],
+                    descriptionKey: 'themeEditor.options.announcementMessagesDesc',
+                    maxLength: 5
+                },
+                {
+                    key: 'announcementTextColor',
+                    type: 'color',
+                    section: 'announcementBar',
+                    labelKey: 'themeEditor.options.announcementTextColor',
+                    defaultValue: '#ea1111',
+                    descriptionKey: 'themeEditor.options.announcementTextColorDesc'
+                },
+                {
+                    key: 'announcementBackgroundColor',
+                    type: 'color',
+                    section: 'announcementBar',
+                    labelKey: 'themeEditor.options.announcementBackgroundColor',
+                    defaultValue: '#2563EB', // Bleu par défaut
+                    descriptionKey: 'themeEditor.options.announcementBackgroundColorDesc'
+                },
+
+                {
+                    key: 'announcementBackgroundGradient', // Fond en dégradé pour la barre d'annonce
+                    type: 'list',
+                    section: 'announcementBar',
+                    labelKey: 'themeEditor.options.announcementBackgroundGradient',
+                    defaultValue: [], // Pas de gradient par défaut
+                    descriptionKey: 'themeEditor.options.announcementBackgroundGradientDesc',
+                    options: [
+                        { value: [], labelKey: 'themeEditor.gradient.none' },
+                        { value: ['#2563EB', '#1D4ED8'], labelKey: 'themeEditor.gradient.blue' },
+                        { value: ['#F59E0B', '#D97706'], labelKey: 'themeEditor.gradient.amber' },
+                        { value: ['#10B981', '#059669'], labelKey: 'themeEditor.gradient.emerald' },
+                    ]
+                },
+
+                // --- Section: Header ---
+                {
+                    key: 'showHeader', // Conservé de l'original
+                    type: 'toggle',
+                    section: 'header',
+                    labelKey: 'themeEditor.options.showHeader',
+                    defaultValue: true,
+                    descriptionKey: 'themeEditor.options.showHeaderDesc',
+                },
+                {
+                    key: 'headerTextColor',
+                    type: 'color',
+                    section: 'header',
+                    labelKey: 'themeEditor.options.headerTextColor',
+                    defaultValue: '#1F2937', // Texte foncé par défaut
+                    descriptionKey: 'themeEditor.options.headerTextColorDesc'
+                },
+                {
+                    key: 'headerBackgroundColor', // Conservé de l'original, mais s'applique spécifiquement au header
+                    type: 'color',
+                    section: 'header',
+                    labelKey: 'themeEditor.options.headerBackgroundColor',
+                    defaultValue: '#FFFFFF', // Fond blanc par défaut
+                    descriptionKey: 'themeEditor.options.headerBackgroundColorDesc' // Clé de description corrigée
+                },
+                // L'option 'headerAnnouncement' de l'original est maintenant gérée par 'announcementBar'
+                // Tu pourrais ajouter des options pour le style des liens du header, la disposition, etc.
+
+                // --- Section: Footer ---
+                {
+                    key: 'showFooter',
+                    type: 'toggle',
+                    section: 'footer',
+                    labelKey: 'themeEditor.options.showFooter',
+                    defaultValue: true,
+                    descriptionKey: 'themeEditor.options.showFooterDesc'
+                },
+                {
+                    key: 'footerTextColor',
+                    type: 'color',
+                    section: 'footer',
+                    labelKey: 'themeEditor.options.footerTextColor',
+                    defaultValue: '#6B7280', // Gris moyen pour le texte du footer
+                    descriptionKey: 'themeEditor.options.footerTextColorDesc'
+                },
+                {
+                    key: 'footerBackgroundColor',
+                    type: 'color',
+                    section: 'footer',
+                    labelKey: 'themeEditor.options.footerBackgroundColor',
+                    defaultValue: '#1F2937', // Fond sombre pour le footer
+                    descriptionKey: 'themeEditor.options.footerBackgroundColorDesc'
+                },
+                {
+                    key: 'footerFont',
+                    type: 'font',
+                    section: 'footer',
+                    labelKey: 'themeEditor.options.footerFont',
+                    defaultValue: 'Inter, sans-serif', // Police par défaut pour le footer
+                    descriptionKey: 'themeEditor.options.footerFontDesc'
+                },
+
+                // --- Section: Filter Side (Barre latérale de filtres) ---
+                {
+                    key: 'showFilterSide',
+                    type: 'toggle',
+                    section: 'filterSide',
+                    labelKey: 'themeEditor.options.showFilterSide',
+                    defaultValue: true,
+                    descriptionKey: 'themeEditor.options.showFilterSideDesc'
+                },
+                {
+                    key: 'filterSideTextColor',
+                    type: 'color',
+                    section: 'filterSide',
+                    labelKey: 'themeEditor.options.filterSideTextColor',
+                    defaultValue: '#374151', // Texte un peu plus clair
+                    descriptionKey: 'themeEditor.options.filterSideTextColorDesc'
+                },
+                {
+                    key: 'filterSideBackgroundColor',
+                    type: 'color',
+                    section: 'filterSide',
+                    labelKey: 'themeEditor.options.filterSideBackgroundColor',
+                    defaultValue: '#F9FAFB', // Fond très clair
+                    descriptionKey: 'themeEditor.options.filterSideBackgroundColorDesc'
+                },
+                {
+                    key: 'filterSideLayout', // Disposition bento ou row
+                    type: 'select',
+                    section: 'filterSide',
+                    labelKey: 'themeEditor.options.filterSideLayout',
+                    defaultValue: 'row', // ou 'bento'
+                    descriptionKey: 'themeEditor.options.filterSideLayoutDesc',
+                    options: [
+                        { value: 'row', labelKey: 'themeEditor.layoutOptions.row' },
+                        { value: 'grid', labelKey: 'themeEditor.layoutOptions.grid' },
+                        { value: 'bento', labelKey: 'themeEditor.layoutOptions.bento' },
+                        { value: 'compact', labelKey: 'themeEditor.layoutOptions.compact' },
+                        { value: 'horizontal-scroll', labelKey: 'themeEditor.layoutOptions.horizontalScroll' },
+                        { value: 'card', labelKey: 'themeEditor.layoutOptions.card' },
+                        { value: 'stacked-list', labelKey: 'themeEditor.layoutOptions.stackedList' },
+                        { value: 'all', labelKey: 'themeEditor.layoutOptions.all' },
+                    ]
+                },
+
+                // --- Section: Product Display (Cartes produit, listes, etc.) ---
+                {
+                    key: 'productCardTextColor',
+                    type: 'color',
+                    section: 'productDisplay',
+                    labelKey: 'themeEditor.options.productCardTextColor',
+                    defaultValue: '#1F2937',
+                    descriptionKey: 'themeEditor.options.productCardTextColorDesc'
+                },
+                {
+                    key: 'productAddToCartBorderColor',
+                    type: 'color',
+                    section: 'productDisplay',
+                    labelKey: 'themeEditor.options.productAddToCartBorderColor',
+                    defaultValue: '#1F2937',
+                    descriptionKey: 'themeEditor.options.productAddToCartBorderColorDesc'
+                },
+                {
+                    key: 'productAddToCartBackgroundColor',
+                    type: 'color',
+                    section: 'productDisplay',
+                    labelKey: 'themeEditor.options.productAddToCartBackgroundColor',
+                    defaultValue: '#1F2937',
+                    descriptionKey: 'themeEditor.options.productAddToCartBackgroundColorDesc'
+                },
+                {
+                    key: 'productAddToCartTextColor',
+                    type: 'color',
+                    section: 'productDisplay',
+                    labelKey: 'themeEditor.options.productAddToCartTextColor',
+                    defaultValue: '#1F2937',
+                    descriptionKey: 'themeEditor.options.productAddToCartTextColorDesc'
+                },
+                {
+                    key: 'productCardBackgroundColor',
+                    type: 'color',
+                    section: 'productDisplay',
+                    labelKey: 'themeEditor.options.productCardBackgroundColor',
+                    defaultValue: '#FFFFFF',
+                    descriptionKey: 'themeEditor.options.productCardBackgroundColorDesc'
+                },
+                {
+                    key: 'productPriceColor', // Couleur spécifique pour le prix
+                    type: 'color',
+                    section: 'productDisplay',
+                    labelKey: 'themeEditor.options.productPriceColor',
+                    defaultValue: '#2563EB', // Souvent une couleur d'accent
+                    descriptionKey: 'themeEditor.options.productPriceColorDesc'
+                },
+                {
+                    key: 'priceBeforeName',
+                    type: 'toggle',
+                    section: 'productDisplay',
+                    labelKey: 'themeEditor.options.priceBeforeName',
+                    defaultValue: false,
+                    descriptionKey: 'themeEditor.options.priceBeforeNameDesc'
+                },
+                {
+                    key: 'showRatingInList',
+                    type: 'toggle',
+                    section: 'productDisplay',
+                    labelKey: 'themeEditor.options.showRatingInList',
+                    defaultValue: true,
+                    descriptionKey: 'themeEditor.options.showRatingInListDesc'
+                },
+                {
+                    key: 'showRatingInProduct',
+                    type: 'toggle',
+                    section: 'productDisplay',
+                    labelKey: 'themeEditor.options.showRatingInProduct',
+                    defaultValue: true,
+                    descriptionKey: 'themeEditor.options.showRatingInProductDesc'
+                },
+                {
+                    key: 'reductionDisplay', // Affichage de la réduction
+                    type: 'select',
+                    section: 'productDisplay',
+                    labelKey: 'themeEditor.options.reductionDisplay',
+                    defaultValue: 'percent-reduction',
+                    descriptionKey: 'themeEditor.options.reductionDisplayDesc',
+                    options: [
+                        { value: 'barred-price', labelKey: 'themeEditor.reductionOptions.barredPrice' },
+                        { value: 'percent-reduction', labelKey: 'themeEditor.reductionOptions.percentReduction' },
+                    ]
+                },
+                {
+                    key: 'productListView', // Déplacé de l'ancienne section 'layout'
+                    type: 'select',
+                    section: 'productDisplay', // Maintenant dans la section d'affichage des produits
+                    labelKey: 'themeEditor.options.productListView',
+                    defaultValue: 'grid',
+                    descriptionKey: 'themeEditor.options.productListViewDesc',
+                    // "row" | "grid" | "bento" | "compact" | "horizontal-scroll" | "card" | "stacked-list"
+                    options: [
+                        { value: 'grid', labelKey: 'themeEditor.layoutOptions.grid' },
+                        { value: 'bento', labelKey: 'themeEditor.layoutOptions.bento' },
+                        { value: 'row', labelKey: 'themeEditor.layoutOptions.row' },
+                        { value: 'compact', labelKey: 'themeEditor.layoutOptions.compact' },
+                        { value: 'horizontal-scroll', labelKey: 'themeEditor.layoutOptions.horizontalScroll' },
+                        { value: 'card', labelKey: 'themeEditor.layoutOptions.card' },
+                        { value: 'stacked-list', labelKey: 'themeEditor.layoutOptions.stackedList' },
+                    ]
+                },
+
+
+                // --- Section: Typography (Conservée) ---
+                {
+                    key: 'bodyFont',
+                    type: 'font',
+                    section: 'typography',
+                    labelKey: 'themeEditor.options.bodyFont',
+                    defaultValue: 'Inter, sans-serif',
+                    descriptionKey: 'themeEditor.options.bodyFontDesc'
+                },
+                {
+                    key: 'headingFont',
+                    type: 'font',
+                    section: 'typography',
+                    labelKey: 'themeEditor.options.headingFont',
+                    defaultValue: 'Poppins, sans-serif',
+                    descriptionKey: 'themeEditor.options.headingFontDesc'
+                },
+                {
+                    key: 'baseFontSize',
+                    type: 'select',
+                    section: 'typography',
+                    labelKey: 'themeEditor.options.baseFontSize',
+                    defaultValue: '16px',
+                    descriptionKey: 'themeEditor.options.baseFontSizeDesc',
+                    options: [
+                        { value: '14px', labelKey: 'themeEditor.fontSize.small' },
+                        { value: '16px', labelKey: 'themeEditor.fontSize.medium' },
+                        { value: '18px', labelKey: 'themeEditor.fontSize.large' },
+                    ]
+                },
+            ] as ThemeOptionDefinition[] // Important: caster en ThemeOptionDefinition[]
+        };
+    }, []);
+
     const getThemeSettings = useCallback(async (sId: string, tId: string): Promise<ThemeSettingsValues> => { /* ... (votre logique inchangée) ... */ return { primaryColor: '#FF5733' }; }, []);
-    const [saveThemeSettingsMutation, setS] = useState({ 
-        isPending: false, 
-        mutate: (data: any, options: any) => { 
-            console.log("Saving settings:", data); 
-            setS({...saveThemeSettingsMutation,isPending:true});
-            setTimeout(() => { 
-                if (Math.random() > 0.1){ 
-                    options.onSuccess?.(data.settings); 
-                    setS({...saveThemeSettingsMutation,isPending:false});
-                }else {
+    const [saveThemeSettingsMutation, setS] = useState({
+        isPending: false,
+        mutate: (data: any, options: any) => {
+            console.log("Saving settings:", data);
+            setS({ ...saveThemeSettingsMutation, isPending: true });
+            setTimeout(() => {
+                if (Math.random() > 0.1) {
+                    options.onSuccess?.(data.settings);
+                    setS({ ...saveThemeSettingsMutation, isPending: false });
+                } else {
                     options.onError?.(new ApiError("Save failed simulation", 500));
                 }
-            }, 1000); 
-        } 
+            }, 1000);
+        }
     })
 
     const size = useWindowSize()
 
-
     // --- Chargement Initial (INCHANGÉ) ---
     useEffect(() => {
-        if (!storeId || !themeId) { /* ... (votre logique inchangée) ... */ setFetchError(t('themeEditor.error.missingParams')); setIsLoadingInitialData(false); return; }
+        if (!storeId || !themeId) {
+            setFetchError(t('themeEditor.error.missingParams'));
+            setIsLoadingInitialData(false);
+            return;
+        }
         setIsLoadingInitialData(true); setFetchError(null);
         Promise.all([getThemeOptions(themeId), getThemeSettings(storeId, themeId)])
             .then(([optionsData, settingsData]) => {
@@ -101,21 +506,25 @@ function Page() {
     // --- Handler pour les changements de la Sidebar (INCHANGÉ) ---
     const handleSettingChange = useCallback((key: string, value: any) => {
         setDraftSettings(prev => ({ ...prev, [key]: value }));
-        debounce(()=>{
-            saveThemeSettingsMutation.mutate({ 
-                store_id: storeId, 
-                theme_id: themeId, 
-                settings: draftSettings 
-            }, { 
-                onSuccess: () => { 
-                    logger.info("Theme settings saved successfully"); 
+        console.log({ key, value }, '⛔⛔⛔⛔⛔⛔');
+
+        debounce(() => {
+            saveThemeSettingsMutation.mutate({
+                store_id: storeId,
+                theme_id: themeId,
+                settings: draftSettings
+
+            }, {
+
+                onSuccess: () => {
+                    logger.info("Theme settings saved successfully");
                     setSavedSettings(draftSettings); setHasChanges(false);
-                }, 
+                },
                 onError: (error: ApiError) => {
-                    logger.error({ error }, "Failed to save theme settings"); 
-                } 
+                    logger.error({ error }, "Failed to save theme settings");
+                }
             });
-        },'theme-editor-save',3000)
+        }, 'theme-editor-save', 3000)
     }, []);
 
     // --- Handler pour ouvrir/fermer la sidebar overlay ---
@@ -128,7 +537,7 @@ function Page() {
         const content = document.querySelector('#page-content')
         const rect = content?.getBoundingClientRect()
         setContentWidth(rect?.width || contentWidth);
-    }, [size.width, isSidebarOverlayVisible,draftSettings,themeId,storeId,option,themeOptions])
+    }, [size.width, isSidebarOverlayVisible, draftSettings, themeId, storeId, option, themeOptions])
 
     // --- Rendu ---
     if (isLoadingInitialData) return <div className="p-6 text-center text-gray-500">{t('common.loading')}</div>;

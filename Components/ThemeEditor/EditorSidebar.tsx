@@ -12,6 +12,7 @@ import { TextControl } from './Controls/TextControl';
 import { SelectControl } from './Controls/SelectControl';
 import { ToggleControl } from './Controls/ToggleControl';
 import { ImageControl } from './Controls/ImageControl';
+import { ArrayStringControl } from './Controls/ArrayStringControl';
 
 interface EditorSidebarProps {
     optionsStructure: ThemeOptionsStructure;
@@ -45,6 +46,11 @@ export function EditorSidebar({
             case 'select': return <SelectControl option={option} value={value} onChange={onSettingChange} />;
             case 'toggle': return <ToggleControl option={option} value={value} onChange={onSettingChange} />;
             case 'image': return <ImageControl option={option} value={value} onChange={onSettingChange} />;
+            case 'array-string': return <ArrayStringControl
+                            option={option}
+                            value={value}
+                            onChange={onSettingChange}
+                        />;
             default: return <TextControl option={option} value={value} onChange={onSettingChange} />;
         }
     };
@@ -88,7 +94,7 @@ export function EditorSidebar({
                         <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-h-[1500px] opacity-100 pb-4 pl-1' : 'max-h-0 opacity-0'}`}>
                              <div className="space-y-5 pt-2">
                                 {sectionOptions.map((option) => (
-                                     <div key={option.key} className="option-control">
+                                     <div id={option.key} key={option.key} className="option-control">
                                          {renderControl(option)}
                                      </div>
                                 ))}
