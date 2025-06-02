@@ -1389,7 +1389,6 @@
             "filterSideBackgroundColorDesc": "Couleur de fond pour la barre latérale de filtres.",
             "filterSideLayout": "Disposition des filtres",
             "filterSideLayoutDesc": "Choisissez comment les options de filtre sont affichées.",
-            
             "productCardTextColor": "Couleur du texte (carte produit)",
             "productAddToCartBorderColor": "Couleur de la bordue (bouton ajout au panier)",
             "productAddToCartBorderColorDesc": "La bordue du bouton ajout au panier",
@@ -1409,7 +1408,19 @@
             "showRatingInProduct": "Afficher les évaluations (detaille produit)",
             "showRatingInProductDesc": "Affiche ou masque les étoiles d'évaluation sur les pages des produits.",
             "reductionDisplay": "Affichage de la réduction",
-            "reductionDisplayDesc": "Choisissez comment afficher les réductions de prix."
+            "reductionDisplayDesc": "Choisissez comment afficher les réductions de prix.",
+            "favoriteIconPosition": "Position de l'icône de favori",
+            "favoriteIconPositionDesc": "Choisissez la position de l'icône de favori.",
+            "showInfoPromotion": "Afficher les informations de promotion",
+            "showInfoPromotionDesc": "Affiche ou masque les informations de promotion sur les cartes produit.",
+            "promotionText": "Texte de la promotion",
+            "promotionTextDesc": "Texte affiché sur les cartes produit.",
+            "promotionTextColor": "Couleur du texte de la promotion",
+            "promotionTextColorDesc": "Couleur du texte de la promotion.",
+            "promotionTextBackgroundColor": "Couleur de fond de la promotion",
+            "promotionTextBackgroundColorDesc": "Couleur de fond de la promotion.",
+            "promotionTextPosition": "Position de la promotion",
+            "promotionTextPositionDesc": "Choisissez la position de la promotion."
 
         },
         "gradient": {
@@ -1441,6 +1452,18 @@
             "barredPrice": "Prix barré",
             "percentReduction": "Pourcentage de réduction",
             "amountReduction": "Montant de la réduction"
+        },
+        "favoriteIconPositionOptions": {
+            "bottomRight": "Bas Droite",
+            "bottomLeft": "Bas Gauche",
+            "topRight": "Haut Droite",
+            "topLeft": "Haut Gauche"
+        },
+        "promotionTextPositionOptions": {
+            "bottomRight": "Bas Droite",
+            "bottomLeft": "Bas Gauche",
+            "topRight": "Haut Droite",
+            "topLeft": "Haut Gauche"
         },
         "openSidebar": "Ouvrir les options",
         "closeSidebar": "Fermer les options"

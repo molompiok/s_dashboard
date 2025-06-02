@@ -403,6 +403,73 @@ function Page() {
                         { value: 'percent-reduction', labelKey: 'themeEditor.reductionOptions.percentReduction' },
                     ]
                 },
+
+                //where is favorite icon place in product display bottom-right , bottom-left , top-right , top-left
+                {
+                    key: 'favoriteIconPosition',
+                    type: 'select',
+                    section: 'productDisplay',
+                    labelKey: 'themeEditor.options.favoriteIconPosition',
+                    defaultValue: 'bottom-right',
+                    descriptionKey: 'themeEditor.options.favoriteIconPositionDesc',
+                    options: [
+                        { value: 'bottom-right', labelKey: 'themeEditor.favoriteIconPositionOptions.bottomRight' },
+                        { value: 'bottom-left', labelKey: 'themeEditor.favoriteIconPositionOptions.bottomLeft' },
+                        { value: 'top-right', labelKey: 'themeEditor.favoriteIconPositionOptions.topRight' },
+                        { value: 'top-left', labelKey: 'themeEditor.favoriteIconPositionOptions.topLeft' },
+                    ]
+                },
+                //show info promotion
+                {
+                    key: 'showInfoPromotion',
+                    type: 'toggle',
+                    section: 'productDisplay',
+                    labelKey: 'themeEditor.options.showInfoPromotion',
+                    defaultValue: true,
+                    descriptionKey: 'themeEditor.options.showInfoPromotionDesc',
+                },
+                //promotion Text eg: 20% de réduction
+                {
+                    key: 'promotionText',
+                    type: 'text',
+                    section: 'productDisplay',
+                    labelKey: 'themeEditor.options.promotionText',
+                    defaultValue: 'Promo',
+                    descriptionKey: 'themeEditor.options.promotionTextDesc',
+                },
+                //promotion Text Color
+                {
+                    key: 'promotionTextColor',
+                    type: 'color',
+                    section: 'productDisplay',
+                    labelKey: 'themeEditor.options.promotionTextColor',
+                    defaultValue: '#1F2937',
+                    descriptionKey: 'themeEditor.options.promotionTextColorDesc',
+                },
+                //promotion Text Background Color
+                {
+                    key: 'promotionTextBackgroundColor',
+                    type: 'color',
+                    section: 'productDisplay',
+                    labelKey: 'themeEditor.options.promotionTextBackgroundColor',
+                    defaultValue: '#1F2937',
+                    descriptionKey: 'themeEditor.options.promotionTextBackgroundColorDesc',
+                },
+                //display position of promotion text
+                {
+                    key: 'promotionTextPosition',
+                    type: 'select',
+                    section: 'productDisplay',
+                    labelKey: 'themeEditor.options.promotionTextPosition',
+                    defaultValue: 'top-left',
+                    descriptionKey: 'themeEditor.options.promotionTextPositionDesc',
+                    options: [
+                        { value: 'top-left', labelKey: 'themeEditor.promotionTextPositionOptions.topLeft' },
+                        { value: 'top-right', labelKey: 'themeEditor.promotionTextPositionOptions.topRight' },
+                        { value: 'bottom-left', labelKey: 'themeEditor.promotionTextPositionOptions.bottomLeft' },
+                        { value: 'bottom-right', labelKey: 'themeEditor.promotionTextPositionOptions.bottomRight' },
+                    ]
+                },
                 {
                     key: 'productListView', // Déplacé de l'ancienne section 'layout'
                     type: 'select',
