@@ -458,7 +458,7 @@ function Page() {
                 //display position of promotion text
                 {
                     key: 'promotionTextPosition',
-                    type: 'select',
+                    type: 'select', 
                     section: 'productDisplay',
                     labelKey: 'themeEditor.options.promotionTextPosition',
                     defaultValue: 'top-left',

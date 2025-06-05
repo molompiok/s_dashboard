@@ -39,6 +39,7 @@ function Layout({ children, pageContext }: { children: React.ReactNode; pageCont
     console.log({ user });
 
     if (!token) {
+      if(window.location.pathname.startsWith('/auth')) return
       nextPage('/auth/login') // ou replace pour ne pas garder la page dans l'historique
     } else {
       setUser(user);

@@ -310,6 +310,7 @@ export function StoreCreationEditionWizard({
         title="Succès !"
         message="Votre formulaire a été enregistré avec succès."
         onSuccessRedirect={() => {
+            setActiveIndex(0)
             swiper?.slideTo(0)
             onSaveSuccess(savedStore, isEditing ? 'updated' : 'created')
         }}
@@ -319,8 +320,9 @@ export function StoreCreationEditionWizard({
         title="Une erreur est survenue"
         message="Impossible d’enregistrer le formulaire."
         onRetry={() => {
+            setLoadingState('idle');
+            setActiveIndex(0);
             swiper?.slideTo(0);
-            setLoadingState('idle')
         }}
         onCancel={() => onCancel?.()}
     />

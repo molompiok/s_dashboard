@@ -42,9 +42,9 @@ export function StoresList({maxVisible=5.8, maxSize=1200,stores, isLoading, sele
         openChild(<BigSpinner text='Chargement des informations..' />,{background:'#3455'})
         setTimeout(() => {
             setCurrentStore(store)
-            navigate('/store')
+            window.location.href='/store'
             setTimeout(() => {
-                openChild(null)
+                // openChild(null)
             }, 500);
         }, 2500);
     }

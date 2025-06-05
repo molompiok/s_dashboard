@@ -8,6 +8,8 @@ import logger from '../../api/Logger';
 import { ApiError } from '../../api/SublymusApi';
 import { IoTrash } from "react-icons/io5";
 import { navigate } from 'vike/client/router';
+import { useChildViewer } from '../ChildViewer/useChildViewer';
+import { BigSpinner } from '../Confirm/Spinner';
 
 interface DangerZoneSectionProps {
     store: StoreInterface;
@@ -18,7 +20,7 @@ export function DangerZoneSection({ store }: DangerZoneSectionProps) {
     const deleteStoreMutation = useDeleteStore();
     const [confirmName, setConfirmName] = useState('');
     const [apiError, setApiError] = useState<string | null>(null);
-
+    const { openChild } = useChildViewer()
     const isLoading = deleteStoreMutation.isPending;
     // Le nom de la boutique doit être tapé correctement pour confirmer
     const canDelete = confirmName === store.name;
@@ -26,19 +28,17 @@ export function DangerZoneSection({ store }: DangerZoneSectionProps) {
     const handleDelete = () => {
         if (!canDelete || isLoading) return;
         setApiError(null); // Reset error
-
+        
         store.id && deleteStoreMutation.mutate(
             { store_id: store.id },
             {
                 onSuccess: () => {
                     logger.info(`Store ${store.id} deletion requested.`);
-                    // La redirection ou la mise à jour de la liste sera gérée
-                    // par le callback onSuccess du hook useDeleteStore si nécessaire,
-                    // ou par le composant parent qui observe le changement.
-                    // Pour l'instant, on pourrait juste afficher un message.
-                    alert(t('dangerZone.deleteSuccessMessage')); // Alert simple
-                    // Ou idéalement, rediriger l'utilisateur vers la liste des stores
-                    navigate('/stores');
+                    openChild(<BigSpinner text='Suppression de la boutique en cours..'/>)
+                    setTimeout(() => {
+                        openChild(null)
+                        window.location.href = '/';
+                    }, 2000);
                 },
                 onError: (error: ApiError) => {
                     logger.error({ error }, `Failed to delete store ${store.id}`);
