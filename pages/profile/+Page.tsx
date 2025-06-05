@@ -215,10 +215,7 @@ function Page() {
                 setCurrentStore(undefined)
                 logger.info("Logout from all devices successful.");
                 openChild(null); // Fermer après succès
-                showToast("Déconnexion de tous les appareils réussie", "SUCCESS")
-                setTimeout(() => {
-                  navigate('/auth/login')
-                }, 200);
+                window.location.href = '/auth/login'
               },
               onError: (error: ApiError) => {
                 logger.error({ error }, "Logout all devices failed.");
