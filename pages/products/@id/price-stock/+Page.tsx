@@ -97,7 +97,7 @@ function Page() {
                 const { [featureId]: _, ...rest } = current; // Retirer la clé featureId
                 return rest;
             } else {
-                return { ...current, [featureId]: newFeatureFilter };
+                return { ...current, [featureId]: newFeatureFilter };     
             }
         });
     };
