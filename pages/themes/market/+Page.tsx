@@ -205,7 +205,7 @@ function Page() {
                             onInstall={() => handleInstallTheme(selectedTheme)}
                             isInstalling={activateThemeMutation.isPending}
                             avalaibleWidth={contentWidth - (size.width >= 1024 ? 330 : 0)}
-                            store={{ id: currentStore?.id || '' } as any}
+                            store={currentStore||{ } as any}
                             theme={selectedTheme}
                             mode='market'
                             settings={{}} // Passer les settings en cours d'édition

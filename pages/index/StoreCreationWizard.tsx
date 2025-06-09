@@ -5,7 +5,7 @@ import React, { useEffect, useState, useRef, useCallback, useMemo } from 'react'
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Swiper as SwiperType } from 'swiper/types';
 import { Navigation } from 'swiper/modules'; // Utiliser Navigation standard
-import { IoCheckmarkCircle, IoChevronBack, IoChevronForward, IoCloseCircle, IoPencil, IoWarning } from 'react-icons/io5';
+import { IoCheckmarkCircle, IoChevronBack, IoChevronForward, IoCloseCircle, IoCloud, IoImage, IoImages, IoInformationCircle, IoPencil, IoSearch, IoStorefront, IoWarning } from 'react-icons/io5';
 import { useCheckStoreNameAvailability, useCreateStore, useUpdateStore } from '../../api/ReactSublymusApi'; // ✅ Hooks API
 import { ApiError } from '../../api/SublymusApi'; // Pour typer erreur
 import { StoreInterface } from '../../api/Interfaces/Interfaces'; // Types locaux
@@ -17,7 +17,6 @@ import logger from '../../api/Logger';
 // Importer Swiper CSS (une fois dans l'app)
 import 'swiper/css';
 import 'swiper/css/navigation'; // Ajouter CSS Navigation
-import { Server_Host } from '../../renderer/+config';
 
 // --- Types locaux ---
 type StepStatus = 'pending' | 'valid' | 'invalid' | 'checking';
@@ -45,6 +44,7 @@ export function StoreCreationEditionWizard({
 
 
     const [loadingState, setLoadingState] = useState<LoadingStateType>('idle');
+    const [tryInvalid, setTryInvalid] = useState(false);
     const [apiError, setApiError] = useState<string | null>(null);
     const [savedStore, setSavedStore] = useState<StoreInterface | null>(null);
 
@@ -84,7 +84,7 @@ export function StoreCreationEditionWizard({
     // --- Refs pour focus ---
     const nameInputRef = useRef<HTMLInputElement>(null);
     const titleInputRef = useRef<HTMLInputElement>(null);
-    const descriptionInputRef = useRef<HTMLInputElement>(null);
+    const descriptionInputRef = useRef<HTMLTextAreaElement>(null);
 
     // --- Debounce pour la vérification du nom ---
     useEffect(() => {
@@ -158,17 +158,17 @@ export function StoreCreationEditionWizard({
             case 0: return isNameValid;
             case 1:
                 const logoOk = collected.logo.length > 0;
-                !logoOk && !logoError && setLogoError(logoOk ? '' : t('storeCreate.validation.logoRequired'));
+                tryInvalid && !logoOk && !logoError && setLogoError(logoOk ? '' : t('storeCreate.validation.logoRequired'));
                 return logoOk;
             case 2:
                 const coverOk = collected.cover_image.length > 0;
-                !coverOk && !coverError && setCoverError(coverOk ? '' : t('storeCreate.validation.coverRequired'));
+                tryInvalid &&  !coverOk && !coverError && setCoverError(coverOk ? '' : t('storeCreate.validation.coverRequired'));
                 return coverOk;
             case 3:
                 const titleOk = collected.title.trim().length > 0;
                 const descOk = collected.description.trim().length > 0;
-                !titleOk && !titleError && setTitleError(titleOk ? '' : t('storeCreate.validation.titleRequired'));
-                !descOk && !descriptionError && setDescriptionError(descOk ? '' : t('storeCreate.validation.descriptionRequired'));
+                tryInvalid && !titleOk && !titleError && setTitleError(titleOk ? '' : t('storeCreate.validation.titleRequired'));
+                tryInvalid && !descOk && !descriptionError && setDescriptionError(descOk ? '' : t('storeCreate.validation.descriptionRequired'));
                 return titleOk && descOk;
             default: return false;
         }
@@ -182,9 +182,9 @@ export function StoreCreationEditionWizard({
         if (name === 'name') {
             processedValue = toNameString(value).substring(0, 32);
         } else if (name === 'title') {
-            processedValue = value.substring(0, 52); // Limiter titre
+            processedValue = value.substring(0, 100); // Limiter titre
         } else if (name === 'description') {
-            processedValue = value.substring(0, 128); // Limiter description
+            processedValue = value.substring(0, 500); // Limiter description
         }
 
         s.collected = { ...s.collected, [name]: processedValue }
@@ -285,7 +285,7 @@ export function StoreCreationEditionWizard({
 
     // --- Préparation des URLs pour preview ---
     const getPreviewUrl = (fileOrUrl: string | Blob | undefined): string | undefined => {
-        if (typeof fileOrUrl === 'string') return getMedia({source:fileOrUrl,from:'server'});
+        if (typeof fileOrUrl === 'string') return getMedia({ source: fileOrUrl, from: 'server' });
         if (fileOrUrl instanceof File) return URL.createObjectURL(fileOrUrl);
         return undefined;
     };
@@ -327,236 +327,441 @@ export function StoreCreationEditionWizard({
         onCancel={() => onCancel?.()}
     />
 
-
+    const icons = [
+        <div className="min-w-12 min-h-12 sl2:min-w-14 sl2:min-h-14 bg-green-500/20 dark:bg-green-400/20                                 rounded-full flex items-center justify-center mb-2">
+            <IoStorefront className="w-6 h-6 sl2:w-7 sl2:h-7 sm:w-8 sm:h-8 text-green-600 dark:text-green-400" />
+        </div>,
+        <div className="min-w-12 min-h-12 sl2:min-w-14 sl2:min-h-14 bg-blue-500/20 dark:bg-blue-400/20 
+                                          rounded-full flex items-center justify-center mb-2">
+            <IoImage className="w-6 h-6 sl2:w-7 sl2:h-7 sm:w-8 sm:h-8 text-blue-600 dark:text-blue-400" />
+        </div>,
+        <div className="min-w-12 min-h-12 sl2:min-w-14 sl2:min-h-14 bg-purple-500/20 dark:bg-purple-400/20 
+                                          rounded-full flex items-center justify-center mb-2">
+            <IoImages className="w-6 h-6 sl2:w-7 sl2:h-7 sm:w-8 sm:h-8 text-purple-600 dark:text-purple-400" />
+        </div>,
+        <div className="min-w-12 min-h-12 sl2:min-w-14 sl2:min-h-14 bg-green-500/20 dark:bg-green-400/20 
+                                          rounded-full flex items-center justify-center mb-2">
+            <IoInformationCircle className="w-6 h-6 sl2:w-7 sl2:h-7 sm:w-8 sm:h-8 text-green-600 dark:text-green-400" />
+        </div>
+    ]
 
     // --- Rendu ---
     return (
-        // Conteneur principal avec padding
-        <div className="store-creation-wizard w-full h-full overflow-y-auto flex flex-col  max-w-2xl m-auto p-4 sm:p-6">
+        // Conteneur principal avec backdrop transparent et responsive padding
+        <div className="store-creation-wizard w-screen h-full overflow-x-hidden overflow-y-auto py-12 
+                bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-300">
 
-            <div className="relative mb-6">
-                <h1 className="text-2xl font-semibold text-center text-gray-800">
-                    {isEditing ? t('storeCreateEdit.editTitle') : t('storeCreateEdit.createTitle')}
-                </h1>
-                <button
-                    type="button"
-                    onClick={onCancel}
-                    className="absolute right-0 top-1/2 -translate-y-1/2 p-1 px-3 bg-gray-50 rounded-full hover:bg-gray-200 text-gray-600 transition-colors"
-                >
-                    ✕
-                </button>
-            </div>
-
-            {/* Barre de Progression */}
-            {/* Utiliser flex, items-center, w-full, max-w-md mx-auto */}
-            <div className="progress-store flex w-full max-w-md mx-auto items-center mb-8">
-                {[t('storeCreate.stepName'), t('storeCreate.stepLogo'), t('storeCreate.stepCover'), t('storeCreate.stepInfo')].map((label, i) => (
-                    <React.Fragment key={label}>
-                        {/* Étape (Numéro + Label) */}
-                        {/* Utiliser flex flex-col items-center ou juste div */}
-                        <div
-                            onClick={() => maxReachedIndex >= i && swiper?.slideTo(i)}
-                            // Appliquer styles Tailwind conditionnels
-                            className={`progress-step flex items-center justify-center w-10 h-10 rounded-full border-2 text-sm font-medium relative ${activeIndex === i ? 'border-blue-600 bg-blue-600 text-white' :
-                                maxReachedIndex >= i ? 'border-blue-300 bg-blue-50 text-blue-600 cursor-pointer hover:border-blue-500' :
-                                    'border-gray-300 bg-gray-100 text-gray-400 cursor-not-allowed'
-                                }`}
-                        >
-                            {maxReachedIndex >= i && isNameValid ? <IoCheckmarkCircle /> : (i + 1)} {/* Check si valide et atteint */}
-                            {/* Label en dessous */}
-                            <span className={`absolute top-full mt-1.5 text-xs text-center ${activeIndex === i ? 'text-blue-600 font-medium' : 'text-gray-500'} ${maxReachedIndex >= i ? '' : 'opacity-50'}`}>{label}</span>
-                        </div>
-                        {/* Ligne de connexion */}
-                        {i < 3 && (
-                            <span className={`progress-line flex-grow h-0.5 ${maxReachedIndex > i ? 'bg-blue-400' : 'bg-gray-300'}`}></span>
-                        )}
-                    </React.Fragment>
-                ))}
-            </div>
+            <div className="store-creation-wizard w-screen  py-12 px-3 max-w-2xl mx-auto 
+                bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-300">
 
 
-            {/* Swiper pour les étapes */}
-            {/* Donner une hauteur fixe ou min-height pour éviter les sauts */}
-            <div className="swiper-container h-[500px] relative "> {/* Hauteur ajustée */}
-                <Swiper
-                    onSwiper={setSwiper}
-                    onActiveIndexChange={(s) => {
-                        setActiveIndex(s.activeIndex);
-                        // Valider l'étape précédente pour mettre à jour maxReachedIndex si on recule
-                        if (s.previousIndex !== undefined && validateStep(s.previousIndex)) {
-                            setMaxReachedIndex(prev => Math.max(prev, s.previousIndex + 1));
-                        }
-                    }}
-                    className={`h-[500px] ${createStoreMutation.isPending ? 'opacity-50 pointer-events-none' : ''}`} // Désactiver pendant la création
-                    allowTouchMove={false} // Empêcher swipe manuel
-                    modules={[Navigation]} // Seulement Navigation (contrôlée par boutons)
-                // navigation // Cacher la navigation par défaut de Swiper
-                >
-                    {/* Slide 1: Nom */}
-                    <SwiperSlide style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }} className='flex  w-full h-full items-center justify-center gap-6 px-4 text-center'>
-                        <h2 className="text-lg font-medium text-gray-700">{t('storeCreate.stepNameTitle')}</h2>
-                        <div className='w-full mx-auto max-w-sm flex flex-col items-center justify-center'>
-                            <label htmlFor='input-store-name' className="sr-only">{t('storeCreate.nameLabel')}</label>
-                            <input
-                                ref={nameInputRef}
-                                id='input-store-name'
-                                name="name" // Pour le handler générique
-                                type="text"
-                                autoFocus
-                                // Appliquer styles Tailwind pour input, y compris états validation
-                                className={`w-full px-4 py-2 border rounded-md shadow-sm sm:text-sm focus:outline-none focus:ring-2 focus:ring-offset-1 ${nameCheck.type === 'invalid' ? 'border-red-500 ring-red-300 focus:ring-red-500 focus:border-red-500' :
-                                    nameCheck.type === 'valid' ? 'border-green-500 ring-green-300 focus:ring-green-500 focus:border-green-500' :
-                                        'border-gray-300 focus:border-blue-500 focus:ring-blue-500'
-                                    }`}
-                                placeholder={t('storeCreate.namePlaceholder')}
-                                value={collected.name || ''}
-                                onChange={handleInputChange}
-                                onKeyUp={(e) => e.key === 'Enter' && isNameValid && swiper?.slideNext()}
-                            />
-                            <div className="w-full flex justify-between mt-1 px-1">
-                                {/* Message de validation/disponibilité */}
-                                <span className={`text-xs h-4 ${nameCheck.type === 'invalid' ? 'text-red-600' :
-                                    nameCheck.type === 'valid' ? 'text-green-600' :
-                                        'text-gray-500' // Pour 'pending' ou 'checking'
-                                    }`}>
-                                    {/* Afficher spinner si checking? */}
-                                    {isCheckingName ? <span className='italic'>{t('storeCreate.validation.nameChecking')}...</span> : nameCheck.message}
-                                </span>
-                                {/* Compteur */}
-                                <span className={`text-xs ${collected.name.length > 32 ? 'text-red-600' : 'text-gray-400'}`}>
-                                    {collected.name.length} / 32
-                                </span>
-                            </div>
-                        </div>
-                    </SwiperSlide>
+                {/* Header avec titre et bouton fermer */}
+                <div className="relative flex items-center  mb-4 sl2:mb-6">
+                    {icons[activeIndex]}
+                    <h1 className="text-lg ml-2 sl2:text-xl sm:text-2xl font-semibold text-center text-gray-800 dark:text-gray-100">
+                        {isEditing ? t('storeCreate.editTitle') : t('storeCreate.mainTitle')}
+                    </h1>
+                    <button
+                        type="button"
+                        onClick={onCancel}
+                        className=" ml-auto right-0 top-1/2 -translate-y-1/2  px-2 py-1  
+                         bg-gray-200 dark:bg-gray-800/30 backdrop-blur-sm 
+                         rounded-full hover:bg-gray-300 dark:hover:bg-gray-700/40 
+                         text-gray-600 dark:text-gray-300 hover:text-gray-800 dark:hover:text-gray-100
+                         transition-all duration-200 border border-white/10 dark:border-gray-600/20"
+                    >
+                        ✕
+                    </button>
+                </div>
 
-                    {/* Slide 2: Logo */}
-                    <SwiperSlide style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }} className='flex flex-col items-center justify-center gap-6 px-4 text-center'>
-                        <h2 className="text-lg font-medium text-gray-700">{t('storeCreate.stepLogoTitle')}</h2>
-                        {/* Composant AddLogo refactorisé */}
-                        <label htmlFor='store-logo-input' className={`relative group w-40 h-40 sm:w-48 sm:h-48 rounded-full cursor-pointer flex flex-col items-center justify-center overflow-hidden bg-gray-100 border-2 ${logoError ? 'border-red-400' : 'border-dashed border-gray-300'} hover:border-blue-400 hover:bg-gray-50`}>
-                            <img
-                                src={logoPreview || '/res/empty/drag-and-drop.png'} // Preview ou Placeholder
-                                alt={t('storeCreate.logoLabel')}
-                                className={`w-full h-full ${collected.logo.length > 0 ? 'object-contain p-2' : 'object-contain opacity-50'}`} // Contain et padding si logo
-                                onError={(e) => (e.currentTarget.src = '/res/empty/drag-and-drop.png')} // Fallback si preview échoue
-                            />
-                            {/* Overlay au survol */}
-                            <div className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                <IoPencil className="text-white w-8 h-8" />
-                            </div>
-                            <input id='store-logo-input' name="logo" style={{ display: 'none' }} type="file" accept='image/*' onChange={(e) => handleFileChange(e, 'logo')} />
-                        </label>
-                        {logoError && <p className="mt-1 text-xs text-red-600">{logoError}</p>}
-                        <p className="text-xs text-gray-500 px-4">{t('storeCreate.logoHelpText')}</p>
-                    </SwiperSlide>
-
-                    {/* Slide 3: Cover Image */}
-                    <SwiperSlide className='flex h-full overflow-visible flex-col items-center justify-center gap-6 px-4 text-center'>
-                        <h2 className="text-lg font-medium text-gray-700">{t('storeCreate.stepCoverTitle')}</h2>
-                        <label htmlFor='store-cover_image-input' className={`relative  group w-full max-w-md aspect-video rounded-lg cursor-pointer overflow-hidden bg-gray-100 border-2 ${coverError ? 'border-red-400' : 'border-dashed border-gray-300'} hover:border-blue-400 hover:bg-gray-50`}>
+                {/* Barre de Progression avec design amélioré */}
+                <div className="progress-store flex w-full max-w-xs sl2:max-w-sm sm:max-w-md mx-auto items-center mb-6 sl2:mb-8">
+                    {[t('storeCreate.stepName'), t('storeCreate.stepLogo'), t('storeCreate.stepCover'), t('storeCreate.stepInfo')].map((label, i) => (
+                        <React.Fragment key={label}>
+                            {/* Étape avec design glassmorphism */}
                             <div
-                                style={{ background: getMedia({isBackground:true,source:coverPreview || '/res/empty/drag-and-drop.png'}) }}
-                                className={`relative mx-auto group w-full max-w-md aspect-video rounded-lg cursor-pointer overflow-hidden bg-gray-100 border-2 ${coverError ? 'border-red-400' : 'border-dashed border-gray-300'} hover:border-blue-400 hover:bg-gray-50  ${collected.cover_image.length > 0 ? 'object-cover' : 'object-contain opacity-50'} w-auto h-[70%]`}//className={` }`}
-                                onError={(e) => (e.currentTarget.style.background = getMedia({isBackground:true,source:'/res/empty/drag-and-drop.png'}))}
+                                onClick={() => maxReachedIndex >= i && swiper?.slideTo(i)}
+                                className={`progress-step flex items-center justify-center 
+                                  w-8 h-8 sl2:w-9 sl2:h-9 sm:w-10 sm:h-10 
+                                  rounded-full border-2 text-xs sl2:text-sm font-medium relative 
+                                  backdrop-blur-sm transition-all duration-300
+                                  ${activeIndex === i
+                                        ? 'border-green-500 bg-green-500/90 text-white shadow-lg shadow-green-500/25'
+                                        : maxReachedIndex >= i
+                                            ? 'border-green-300 dark:border-green-400 bg-white/20 dark:bg-gray-800/30 text-green-600 dark:text-green-400 cursor-pointer hover:border-green-500 dark:hover:border-green-300 hover:bg-white/30 dark:hover:bg-gray-700/40'
+                                            : 'border-gray-300 dark:border-gray-600 bg-white/10 dark:bg-gray-800/20 text-gray-400 dark:text-gray-500 cursor-not-allowed'
+                                    }`}
                             >
-                            </div>
-                            <div className="absolute m-auto inset-0 bg-black/50 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                <IoPencil className="text-white w-10 h-10" />
-                            </div>
-                            <input id='store-cover_image-input' name="cover_image" style={{ display: 'none' }} type="file" accept='image/*' onChange={(e) => handleFileChange(e, 'cover_image')} />
-                        </label>
-                        {coverError && <p className="mt-1 text-xs text-red-600">{coverError}</p>}
-                        <p className="text-xs text-gray-500 px-4">{t('storeCreate.coverHelpText')}</p>
-                    </SwiperSlide>
+                                {maxReachedIndex >= i && isNameValid ? (
+                                    <IoCheckmarkCircle className="w-4 h-4 sl2:w-5 sl2:h-5" />
+                                ) : (
+                                    <span className="text-xs sl2:text-sm">{i + 1}</span>
+                                )}
 
-                    {/* Slide 4: Infos (Titre, Description) */}
-                    <SwiperSlide style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center' }} className='flex flex-col w-full h-full items-center justify-center gap-6 px-4 text-center'>
-                        <h2 className="text-lg font-medium text-gray-700">{t('storeCreate.stepInfoTitle')}</h2>
-                        <div className="w-full max-w-sm flex flex-col gap-4">
-                            {/* Titre */}
-                            <div>
-                                <label htmlFor='input-store-title' className=' text-sm font-medium text-gray-700 mb-1 text-left flex justify-between items-center'>
-                                    <span>{t('storeCreate.titleLabel')}</span>
-                                    <span className={`text-xs ${collected.title.length > 52 ? 'text-red-600' : 'text-gray-400'}`}>{collected.title.length} / 52</span>
-                                </label>
-                                <input
-                                    ref={titleInputRef}
-                                    id='input-store-title'
-                                    name="title"
-                                    type="text"
-                                    className={`block bg-gray-50 w-full px-4 rounded-md shadow-sm sm:text-sm h-10 ${titleError ? 'border-red-500 ring-red-500 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'}`}
-                                    placeholder={t('storeCreate.titlePlaceholder')}
-                                    value={collected.title || ''}
-                                    onChange={handleInputChange}
-                                    onKeyUp={(e) => e.key === 'Enter' && descriptionInputRef.current?.focus()}
-                                />
-                                {titleError && <p className="mt-1 text-xs text-red-600">{titleError}</p>}
+                                {/* Label responsive */}
+                                <span className={`absolute top-full mt-1 sl2:mt-1.5 text-[10px] sl2:text-xs text-center whitespace-nowrap
+                                       ${activeIndex === i
+                                        ? 'text-green-600 dark:text-green-400 font-medium'
+                                        : 'text-gray-500 dark:text-gray-400'} 
+                                       ${maxReachedIndex >= i ? '' : 'opacity-50'}
+                                       hidden sx:block`}>
+                                    {label}
+                                </span>
                             </div>
-                            {/* Description */}
-                            <div>
-                                <label htmlFor='input-store-description' className=' text-sm font-medium text-gray-700 mb-1 text-left flex justify-between items-center'>
-                                    <span>{t('storeCreate.descriptionLabel')}</span>
-                                    <span className={`text-xs ${collected.description.length > 128 ? 'text-red-600' : 'text-gray-400'}`}>{collected.description.length} / 128</span>
-                                </label>
-                                <textarea // Utiliser textarea pour description plus longue
-                                    ref={descriptionInputRef as any} // Type cast si ref est pour input
-                                    id='input-store-description'
-                                    name="description"
-                                    className={`block bg-gray-50 p-4 w-full rounded-md shadow-sm sm:text-sm min-h-[80px] ${descriptionError ? 'border-red-500 ring-red-500 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'}`}
-                                    placeholder={t('storeCreate.descriptionPlaceholder')}
-                                    value={collected.description || ''}
-                                    onChange={handleInputChange}
-                                />
-                                {descriptionError && <p className="mt-1 text-xs text-red-600">{descriptionError}</p>}
-                            </div>
-                        </div>
-                        {/* Google Preview (simplifié) */}
-                        <div className="mt-4 w-full max-w-sm border border-gray-200 rounded-lg p-3 bg-gray-50 text-left">
-                            <p className="text-xs text-gray-500 mb-2">{t('storeCreate.googlePreviewLabel')}</p>
-                            <div className="flex items-center gap-2">
-                                <div className="w-12 h-12 rounded-full bg-cover bg-center bg-gray-300 flex-shrink-0" style={{ backgroundImage: logoPreview ? `url(${logoPreview})` : 'none' }}>
-                                    {!logoPreview && <span className='text-gray-500 text-[10px] font-bold'>?</span>}
+
+                            {/* Ligne de connexion */}
+                            {i < 3 && (
+                                <span className={`progress-line flex-grow h-0.5 mx-1 sl2:mx-2 rounded-full
+                                        ${maxReachedIndex > i
+                                        ? 'bg-green-400/60 dark:bg-green-500/50'
+                                        : 'bg-gray-300/50 dark:bg-gray-600/30'}`}>
+                                </span>
+                            )}
+                        </React.Fragment>
+                    ))}
+                </div>
+
+                {/* Swiper Container avec card glassmorphism */}
+                <div className="swiper-container min-h-[400px] sl2:min-h-[450px] sm:h-[500px] relative mb-6">
+                    <div className="bg-white/10 dark:bg-gray-800/20 backdrop-blur-md rounded-xl sl2:rounded-2xl 
+                          border border-white/20 dark:border-gray-700/30 p-2 sl2:p-4 h-full
+                          shadow-xl shadow-black/5 dark:shadow-black/20">
+                        <Swiper
+                            onSwiper={setSwiper}
+                            onActiveIndexChange={(s) => {
+                                setActiveIndex(s.activeIndex);
+                                if (s.previousIndex !== undefined && validateStep(s.previousIndex)) {
+                                    setMaxReachedIndex(prev => Math.max(prev, s.previousIndex + 1));
+                                }
+                            }}
+                            className={`h-full ${createStoreMutation.isPending ? 'opacity-50 pointer-events-none overflow-visible' : ''}`}
+                            allowTouchMove={false}
+                            modules={[Navigation]}
+                        >
+                            {/* Slide 1: Nom avec design amélioré */}
+                            <SwiperSlide className="flex flex-col justify-center items-center h-full gap-4  sl2:gap-6 px-2 sl2:px-4 text-center">
+                                <div className="flex flex-col items-center gap-2 sl2:gap-3">
+
+                                    <h2 className="text-base sl2:text-lg sm:text-xl font-semibold text-gray-800 dark:text-gray-100">
+                                        {t('storeCreate.stepNameTitle')}
+                                    </h2>
+                                    <p className="text-xs mt-4 sl2:text-sm text-gray-600 dark:text-gray-400 max-w-sm">
+                                        Choisissez un nom unique pour votre boutique
+                                    </p>
                                 </div>
-                                <div>
-                                    <h3 className='text-sm font-medium text-blue-800 leading-tight'>{collected.title || t('storeCreate.previewDefaultTitle')}</h3>
-                                    <p className='text-xs text-green-700 line-clamp-1'>{`https://${collected.name || 'votrenom'}.sublymus.com`}</p>
+
+                                <div className="w-full mt-4 mx-auto max-w-xs sl2:max-w-sm flex flex-col items-center">
+                                    <label htmlFor="input-store-name" className="sr-only">{t('storeCreate.nameLabel')}</label>
+                                    <input
+                                        ref={nameInputRef}
+                                        id="input-store-name"
+                                        name="name"
+                                        type="text"
+                                        autoFocus
+                                        className={`w-full px-3 sl2:px-4 py-2 sl2:py-3 
+                                          bg-white/20 dark:bg-gray-800/30 backdrop-blur-sm
+                                          border rounded-lg sl2:rounded-xl shadow-sm 
+                                          text-sm sl2:text-base placeholder-gray-500 dark:placeholder-gray-400
+                                          focus:outline-none focus:ring-2 focus:ring-offset-0 transition-all duration-200
+                                          ${nameCheck.type === 'invalid'
+                                                ? 'border-red-400 dark:border-red-500 ring-red-300 dark:ring-red-400 focus:ring-red-400 focus:border-red-500'
+                                                : nameCheck.type === 'valid'
+                                                    ? 'border-green-400 dark:border-green-500 ring-green-300 dark:ring-green-400 focus:ring-green-400 focus:border-green-500'
+                                                    : 'border-white/30 dark:border-gray-600/40 focus:border-green-400 dark:focus:border-green-500 focus:ring-green-400'
+                                            }`}
+                                        placeholder={t('storeCreate.namePlaceholder')}
+                                        value={collected.name || ''}
+                                        onChange={handleInputChange}
+                                        onKeyUp={(e) => e.key === 'Enter' && isNameValid && swiper?.slideNext()}
+                                    />
+
+                                    <div className="w-full flex justify-between mt-2 px-1">
+                                        <span className={`text-xs flex-1 ${nameCheck.type === 'invalid'
+                                            ? 'text-red-500 dark:text-red-400'
+                                            : nameCheck.type === 'valid'
+                                                ? 'text-green-600 dark:text-green-400'
+                                                : 'text-gray-500 dark:text-gray-400'}`}>
+                                            {isCheckingName ? (
+                                                <span className="italic flex items-center gap-1">
+                                                    <div className="w-3 h-3 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
+                                                    {t('storeCreate.validation.nameChecking')}...
+                                                </span>
+                                            ) : nameCheck.message}
+                                        </span>
+                                        <span className={`text-xs font-medium ${collected.name.length > 32
+                                            ? 'text-red-500 dark:text-red-400'
+                                            : 'text-gray-400 dark:text-gray-500'}`}>
+                                            {collected.name.length}/32
+                                        </span>
+                                    </div>
                                 </div>
-                            </div>
-                            <p className="text-xs text-gray-600 mt-1 line-clamp-2">{collected.description || t('storeCreate.previewDefaultDesc')}</p>
-                        </div>
-                    </SwiperSlide>
-                </Swiper>
+                            </SwiperSlide>
+
+                            {/* Slide 2: Logo avec design moderne */}
+                            <SwiperSlide className="flex flex-col justify-center items-center h-full gap-4 sl2:gap-6 px-2 sl2:px-4 text-center">
+                                <div className="flex flex-col items-center gap-2 sl2:gap-3">
+
+                                    <h2 className="text-base sl2:text-lg sm:text-xl font-semibold text-gray-800 dark:text-gray-100">
+                                        {t('storeCreate.stepLogoTitle')}
+                                    </h2>
+                                    <p className="text-xs sl2:text-sm text-gray-600 dark:text-gray-400 max-w-sm">
+                                        Ajoutez un logo pour représenter votre marque
+                                    </p>
+                                </div>
+
+                                <label htmlFor="store-logo-input"
+                                    style={{ background: getMedia({ isBackground: true, source: logoPreview, from: 'server' }) }}
+                                    className={`relative my-4 group cursor-pointer mx-auto flex flex-col items-center justify-center 
+                                         w-32 h-32 sl2:w-36 sl2:h-36 sm:w-40 sm:h-40 
+                                         rounded-full overflow-hidden transition-all duration-300
+                                         bg-white/10 dark:bg-gray-800/20 backdrop-blur-sm
+                                         border-2 border-dashed hover:border-solid
+                                         ${logoError
+                                            ? 'border-red-400 dark:border-red-500'
+                                            : 'border-white/30 dark:border-gray-600/40 hover:border-blue-400 dark:hover:border-blue-500'} 
+                                         hover:bg-white/20 dark:hover:bg-gray-700/30`}>
+
+
+                                    {
+                                        (isEditing || logoPreview) ? <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent 
+                                          flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
+                                            <div className="flex flex-col items-center gap-1 text-white">
+                                                <IoPencil className="w-5 h-5 sl2:w-6 sl2:h-6" />
+                                                <span className="text-xs font-medium">Modifier</span>
+                                            </div>
+                                        </div> : <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent 
+                                          flex items-center justify-center ">
+                                            <div className="flex flex-col items-center gap-1 text-white">
+                                                <IoImage className="w-5 h-5 sl2:w-6 sl2:h-6" />
+                                                <span className="text-xs font-medium">Ajouter</span>
+                                            </div>
+                                        </div>
+                                    }
+                                    <input id="store-logo-input" name="logo" type="file" accept="image/*" className="hidden"
+                                        onChange={(e) => handleFileChange(e, 'logo')} />
+                                </label>
+
+                                {logoError && (
+                                    <p className="text-xs text-red-500 dark:text-red-400  
+                                         px-3 py-1">
+                                        {logoError}
+                                    </p>
+                                )}
+
+                                <p className="text-xs mx-auto text-gray-500 dark:text-gray-400 px-4 max-w-sm text-center leading-relaxed">
+                                    {t('storeCreate.logoHelpText')}
+                                </p>
+                            </SwiperSlide>
+
+                            {/* Slide 3: Cover Image avec design amélioré */}
+                            <SwiperSlide className="flex flex-col justify-center items-center h-full gap-4 sl2:gap-6 px-2  text-center">
+                                <div className="flex flex-col items-center gap-2 sl2:gap-3">
+
+                                    <h2 className="text-base sl2:text-lg sm:text-xl font-semibold text-gray-800 dark:text-gray-100">
+                                        {t('storeCreate.stepCoverTitle')}
+                                    </h2>
+                                    <p className="text-xs sl2:text-sm text-gray-600 dark:text-gray-400 max-w-sm">
+                                        Image de couverture de votre boutique
+                                    </p>
+                                </div>
+                                <div className='mx-auto w-[1px] h-[20px] border-2 border-dashed hover:border-solid border-gray-600/40'></div>
+                                <label htmlFor="store-cover_image-input"
+                                    style={{ background: getMedia({ isBackground: true, size:'cover', source: coverPreview, from: 'server' }) }}
+                                    className={`relative group cursor-pointer mx-auto flex flex-col items-center justify-center 
+                                         w-full aspect-video
+                                          overflow-hidden transition-all duration-300
+                                         bg-white/10 dark:bg-gray-800/20 backdrop-blur-sm
+                                         border-2 border-dashed hover:border-solid
+                                         ${logoError
+                                            ? 'border-red-400 dark:border-red-500'
+                                            : 'border-gray-600/40  hover:border-blue-400 dark:hover:border-blue-500'} 
+                                         hover:bg-white/20 dark:hover:bg-gray-700/30`}>
+
+
+
+                                    {
+                                        (isEditing || coverPreview) ? <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent 
+                                          flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all duration-300">
+                                            <div className="flex flex-col items-center gap-1 text-white">
+                                                <IoPencil className="w-5 h-5 sl2:w-6 sl2:h-6" />
+                                                <span className="text-xs font-medium">Modifier</span>
+                                            </div>
+                                        </div> : <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent 
+                                          flex items-center justify-center ">
+                                            <div className="flex flex-col items-center gap-1 text-white">
+                                                <IoImage className="w-5 h-5 sl2:w-6 sl2:h-6" />
+                                                <span className="text-xs font-medium">Ajouter</span>
+                                            </div>
+                                        </div>
+                                    }
+                                    <input id="store-cover_image-input" name="cover_image" type="file" accept="image/*" className="hidden"
+                                        onChange={(e) => handleFileChange(e, 'cover_image')} />
+                                </label>
+                                <div className='mx-auto w-[1px] h-[20px] border-2 border-dashed hover:border-solid border-gray-600/40'></div>
+                                {coverError && (
+                                    <p className="text-xs text-red-500 dark:text-red-400 
+                                         px-3 py-1">
+                                        {coverError}
+                                    </p>
+                                )}
+
+                                <p className="mx-auto text-xs text-gray-500 dark:text-gray-400 px-4 max-w-sm text-center leading-relaxed">
+                                    {t('storeCreate.coverHelpText')}
+                                </p>
+                            </SwiperSlide>
+
+                            {/* Slide 4: Infos avec design moderne */}
+                            <SwiperSlide className="flex flex-col justify-center items-center h-full gap-4 sl2:gap-6 px-2 sl2:px-4 text-center overflow-y-auto">
+                                <div className="flex flex-col items-center gap-2 sl2:gap-3">
+
+                                    <h2 className="text-base sl2:text-lg sm:text-xl font-semibold text-gray-800 dark:text-gray-100">
+                                        {t('storeCreate.stepInfoTitle')}
+                                    </h2>
+                                </div>
+
+                                <div className="w-full max-w-xs sl2:max-w-sm flex flex-col gap-3 sl2:gap-4">
+                                    {/* Titre */}
+                                    <div>
+                                        <label htmlFor="input-store-title"
+                                            className="flex justify-between items-center text-xs sl2:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                                            <span>{t('storeCreate.titleLabel')}</span>
+                                            <span className={`text-xs ${collected.title.length > 100
+                                                ? 'text-red-500 dark:text-red-400'
+                                                : 'text-gray-400 dark:text-gray-500'}`}>
+                                                {collected.title.length}/100
+                                            </span>
+                                        </label>
+                                        <input
+                                            ref={titleInputRef}
+                                            id="input-store-title"
+                                            name="title"
+                                            type="text"
+                                            className={`block w-full px-3 sl2:px-4 py-2 sl2:py-3 
+                                              bg-white/20 dark:bg-gray-800/30 backdrop-blur-sm
+                                              rounded-lg sl2:rounded-xl border text-sm sl2:text-base
+                                              placeholder-gray-500 dark:placeholder-gray-400
+                                              focus:outline-none focus:ring-2 focus:ring-offset-0 transition-all duration-200
+                                              ${titleError
+                                                    ? 'border-red-400 dark:border-red-500 focus:ring-red-400 focus:border-red-500'
+                                                    : 'border-white/30 dark:border-gray-600/40 focus:border-green-400 dark:focus:border-green-500 focus:ring-green-400'}`}
+                                            placeholder={t('storeCreate.titlePlaceholder')}
+                                            value={collected.title || ''}
+                                            onChange={handleInputChange}
+                                            onKeyUp={(e) => e.key === 'Enter' && descriptionInputRef.current?.focus()}
+                                        />
+                                        {titleError && (
+                                            <p className="mt-1 text-xs text-red-500 dark:text-red-400">{titleError}</p>
+                                        )}
+                                    </div>
+
+                                    {/* Description */}
+                                    <div>
+                                        <label htmlFor="input-store-description"
+                                            className="flex justify-between items-center text-xs sl2:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5">
+                                            <span>{t('storeCreate.descriptionLabel')}</span>
+                                            <span className={`text-xs ${collected.description.length > 500
+                                                ? 'text-red-500 dark:text-red-400'
+                                                : 'text-gray-400 dark:text-gray-500'}`}>
+                                                {collected.description.length}/500
+                                            </span>
+                                        </label>
+                                        <textarea
+                                            ref={descriptionInputRef}
+                                            id="input-store-description"
+                                            name="description"
+                                            rows={3}
+                                            className={`block w-full px-3 sl2:px-4 py-2 sl2:py-3 
+                                              bg-white/20 dark:bg-gray-800/30 backdrop-blur-sm
+                                              rounded-lg sl2:rounded-xl border text-sm sl2:text-base
+                                              placeholder-gray-500 dark:placeholder-gray-400 resize-none
+                                              focus:outline-none focus:ring-2 focus:ring-offset-0 transition-all duration-200
+                                              ${descriptionError
+                                                    ? 'border-red-400 dark:border-red-500 focus:ring-red-400 focus:border-red-500'
+                                                    : 'border-white/30 dark:border-gray-600/40 focus:border-green-400 dark:focus:border-green-500 focus:ring-green-400'}`}
+                                            placeholder={t('storeCreate.descriptionPlaceholder')}
+                                            value={collected.description || ''}
+                                            onChange={handleInputChange}
+                                        />
+                                        {descriptionError && (
+                                            <p className="mt-1 text-xs text-red-500 dark:text-red-400">{descriptionError}</p>
+                                        )}
+                                    </div>
+                                </div>
+
+                                {/* Google Preview avec design amélioré */}
+                                <div className="mt-4 w-full max-w-xs sl2:max-w-sm 
+                                      bg-white/20 dark:bg-gray-800/30 backdrop-blur-sm
+                                      border border-white/30 dark:border-gray-600/40 
+                                      rounded-lg sl2:rounded-xl p-3 sl2:p-4 text-left">
+                                    <p className="text-xs text-gray-500 dark:text-gray-400 mb-2 flex items-center gap-1">
+                                        <IoSearch className="w-3 h-3" />
+                                        {t('storeCreate.googlePreviewLabel')}
+                                    </p>
+                                    <div className="flex items-start gap-2 sl2:gap-3">
+                                        <div className="w-10 h-10 sl2:w-12 sl2:h-12 rounded-full bg-cover bg-center 
+                                              bg-white/20 dark:bg-gray-700/30 flex-shrink-0 flex items-center justify-center
+                                              border border-white/20 dark:border-gray-600/30"
+                                            style={{ backgroundImage: logoPreview ? `url(${logoPreview})` : 'none' }}>
+                                            {!logoPreview && (
+                                                <IoStorefront className="w-4 h-4 sl2:w-5 sl2:h-5 text-gray-400 dark:text-gray-500" />
+                                            )}
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <h3 className="text-xs sl2:text-sm font-medium text-blue-700 dark:text-blue-400 leading-tight truncate">
+                                                {collected.title || t('storeCreate.previewDefaultTitle')}
+                                            </h3>
+                                            <p className="text-xs text-green-700 dark:text-green-400 truncate">
+                                                https://{collected.name || 'votrenom'}.sublymus.com
+                                            </p>
+                                        </div>
+                                    </div>
+                                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-2 line-clamp-2 leading-relaxed">
+                                        {collected.description || t('storeCreate.previewDefaultDesc')}
+                                    </p>
+                                </div>
+                            </SwiperSlide>
+                        </Swiper>
+                    </div>
+                </div>
+
+                {/* Boutons de navigation avec design moderne */}
+                <div className="flex justify-between items-center w-full max-w-xs sl2:max-w-sm sm:max-w-md mx-auto">
+                    {/* Bouton Retour/Annuler */}
+                    <button
+                        type="button"
+                        onClick={handleBack}
+                        className={`inline-flex items-center gap-1 sl2:gap-1.5 px-3 sl2:px-4 py-2 sl2:py-2.5 
+                          rounded-lg sl2:rounded-xl text-xs sl2:text-sm font-medium 
+                          transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-0
+                          ${(activeIndex === 0 && !canCancel)
+                                ? 'invisible'
+                                : 'bg-white/20 dark:bg-gray-800/30 backdrop-blur-sm text-gray-700 dark:text-gray-300 border border-white/30 dark:border-gray-600/40 hover:bg-white/30 dark:hover:bg-gray-700/40 focus:ring-gray-400'
+                            }`}
+                    >
+                        <IoChevronBack className="w-3 h-3 sl2:w-4 sl2:h-4" />
+                        {activeIndex === 0 && canCancel ? t('common.cancel') : t('common.back')}
+                    </button>
+
+                    {/* Bouton Suivant/Créer */}
+                    <button
+                        type="button"
+                        onClick={handleNext}
+                        disabled={!validateStep(activeIndex) || createStoreMutation.isPending}
+                        className={`inline-flex items-center gap-1 sl2:gap-1.5 px-2 sl2:px-3 py-2 sl2:py-2.5 
+                          rounded-lg sl2:rounded-xl text-xs sl2:text-sm font-medium 
+                          transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-0
+                          ${(!validateStep(activeIndex) || createStoreMutation.isPending)
+                                ? 'bg-gray-300/50 dark:bg-gray-700/30 text-gray-500 dark:text-gray-400 cursor-not-allowed border border-gray-300/30 dark:border-gray-600/20'
+                                : 'bg-green-500/90 dark:bg-green-600/90 text-white hover:bg-green-600 dark:hover:bg-green-500 focus:ring-green-400 shadow-lg shadow-green-500/25 dark:shadow-green-600/20'
+                            }`}
+                    >
+                        {/* Afficher texte conditionnel */}
+                        {createStoreMutation.isPending ? t('common.creating') : (activeIndex === 3 ? (isEditing ? t('common.saveChanges') : t('common.create')) : t('common.next'))}
+                        <IoChevronForward className='min-w-3 min-h-3' />
+                    </button>
+                </div>
+
             </div>
-
-
-            <div className="direction flex justify-between items-center mt-8 w-full max-w-md mx-auto min-h-28">
-                {/* Bouton Retour/Annuler */}
-                <button
-                    type="button"
-                    onClick={handleBack}
-                    // Cacher si première étape ET on ne peut pas annuler
-                    className={`inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 ${(activeIndex === 0 && !canCancel) ? 'invisible' : 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50'
-                        }`}
-                >
-                    <IoChevronBack />
-                    {activeIndex === 0 && canCancel ? t('common.cancel') : t('common.back')}
-                </button>
-                {/* Bouton Suivant/Créer */}
-                <button
-                    type="button"
-                    onClick={handleNext}
-                    // Désactiver si étape invalide OU chargement
-                    disabled={!validateStep(activeIndex) || createStoreMutation.isPending}
-                    className={`inline-flex items-center gap-1.5 px-5 py-2 rounded-full text-sm font-medium transition duration-150 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${(!validateStep(activeIndex) || createStoreMutation.isPending) ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'
-                        }`}
-                >
-                    {/* Afficher texte conditionnel */}
-                    {createStoreMutation.isPending ? t('common.creating') : (activeIndex === 3 ? (isEditing ? t('common.saveChanges') : t('common.create')) : t('common.next'))}
-                    <IoChevronForward />
-                </button>
-            </div>
-
         </div>
     );
 }

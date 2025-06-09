@@ -1,34 +1,368 @@
+/* Layout.css - Styles améliorés pour Sublymus */
 
-/* styles/global.css ou équivalent */
-@media print {
-  body * {
-    visibility: hidden;
-    -webkit-print-color-adjust: exact !important; /* Chrome, Safari */
-    color-adjust: exact !important; /* Firefox, autres */
-  }
-  .receipt-view, .receipt-view * {
-    visibility: visible;
-  }
-  .receipt-view {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    margin: 0 !important;
-    padding: 0 !important;
-    box-shadow: none !important;
-    border: none !important;
-  }
-  .print\:hidden { /* Classe Tailwind pour masquer des éléments spécifiques */
-    display: none !important;
-  }
-  /* Ajustements spécifiques pour le contenu du reçu si nécessaire */
-  .print\:text-black { color: black !important; }
-  .print\:text-gray-700 { color: #4A5568 !important; } /* Exemple */
-  .print\:border-gray-400 { border-color: #A0AEC0 !important; } /* Exemple */
+/* Configuration de base pour le mode sombre */
+:root {
+  --primary-green: #10B981;
+  --primary-green-dark: #059669;
+  --secondary-blue: #3B82F6;
+  --secondary-purple: #8B5CF6;
+  --accent-cyan: #06B6D4;
+}
 
-  /* Assurez-vous que les couleurs de fond sont imprimées (facultatif) */
-  .receipt-view {
-    background-color: white !important; /* Fond blanc pour le reçu */
+/* Assurer que le body prend toute la hauteur */
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+/* Animations personnalisées */
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px) rotate(0deg);
   }
+  33% {
+    transform: translateY(-20px) rotate(1deg);
+  }
+  66% {
+    transform: translateY(-10px) rotate(-1deg);
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    opacity: 0.5;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.8;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes gradient-shift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+/* Styles pour les éléments de navigation */
+.nav-link {
+  display: flex;
+  align-items: center;
+  padding: 0.625rem 0.75rem;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 0.75rem;
+  transition: all 0.2s;
+  color: rgb(55 65 81);
+  &:hover {
+    background: linear-gradient(to right, rgb(236 253 245), rgb(239 246 255));
+  }
+}
+
+.dark .nav-link {
+  color: rgb(209 213 219);
+  &:hover {
+    background: linear-gradient(to right, rgb(6 78 59 / 0.2), rgb(30 58 138 / 0.2));
+  }
+}
+
+.nav-link.active {
+  background: linear-gradient(to right, rgb(209 250 229), rgb(219 234 254));
+  color: rgb(5 150 105);
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  position: relative;
+}
+
+.dark .nav-link.active {
+  background: linear-gradient(to right, rgb(6 78 59 / 0.4), rgb(30 58 138 / 0.4));
+  color: rgb(52 211 153);
+}
+
+.nav-link.active::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 60%;
+  background: linear-gradient(to bottom, var(--primary-green), var(--secondary-blue));
+  border-radius: 0 2px 2px 0;
+}
+
+/* Styles pour les cartes et conteneurs */
+.card {
+  background: rgb(255 255 255 / 0.7);
+  border: 1px solid rgb(229 231 235 / 0.5);
+  border-radius: 1rem;
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  backdrop-filter: blur(8px);
+  transition: all 0.3s;
+}
+
+.dark .card {
+  background: rgb(31 41 55 / 0.7);
+  border-color: rgb(55 65 81 / 0.5);
+}
+
+.card:hover {
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+  transform: translateY(-2px);
+}
+
+/* Boutons personnalisés */
+.btn-primary {
+  background: linear-gradient(to right, rgb(16 185 129), rgb(5 150 105));
+  color: white;
+  font-weight: 500;
+  padding: 0.625rem 1.5rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  transition: all 0.3s;
+  outline: none;
+}
+
+.btn-primary:hover {
+  background: linear-gradient(to right, rgb(5 150 105), rgb(4 120 87));
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+}
+
+.btn-primary:focus {
+  box-shadow: 0 0 0 2px rgb(16 185 129 / 0.5);
+}
+
+.btn-secondary {
+  background: linear-gradient(to right, rgb(59 130 246), rgb(139 92 246));
+  color: white;
+  font-weight: 500;
+  padding: 0.625rem 1.5rem;
+  border-radius: 0.75rem;
+  box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+  transition: all 0.3s;
+  outline: none;
+}
+
+.btn-secondary:hover {
+  background: linear-gradient(to right, rgb(37 99 235), rgb(124 58 237));
+  box-shadow: 0 10px 15px -3px rgb(0 0 0 / 0.1);
+}
+
+.btn-secondary:focus {
+  box-shadow: 0 0 0 2px rgb(59 130 246 / 0.5);
+}
+
+.btn-ghost {
+  background: transparent;
+  color: rgb(55 65 81);
+  border: 1px solid rgb(209 213 219);
+  font-weight: 500;
+  padding: 0.625rem 1.5rem;
+  border-radius: 0.75rem;
+  transition: all 0.3s;
+  outline: none;
+}
+
+.btn-ghost:hover {
+  background: rgb(243 244 246);
+}
+
+.dark .btn-ghost {
+  color: rgb(209 213 219);
+  border-color: rgb(75 85 99);
+}
+
+.dark .btn-ghost:hover {
+  background: rgb(31 41 55);
+}
+
+.btn-ghost:focus {
+  box-shadow: 0 0 0 2px rgb(107 114 128 / 0.5);
+}
+
+/* Inputs personnalisés */
+.input-field {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: 0.75rem;
+  border: 1px solid rgb(209 213 219);
+  background: rgb(255 255 255 / 0.7);
+  backdrop-filter: blur(8px);
+  color: rgb(17 24 39);
+  transition: all 0.3s;
+  outline: none;
+}
+
+.input-field::placeholder {
+  color: rgb(107 114 128);
+}
+
+.input-field:focus {
+  border-color: rgb(16 185 129);
+  box-shadow: 0 0 0 2px rgb(16 185 129 / 0.5);
+}
+
+.dark .input-field {
+  border-color: rgb(75 85 99);
+  background: rgb(31 41 55 / 0.7);
+  color: rgb(243 244 246);
+}
+
+.dark .input-field::placeholder {
+  color: rgb(156 163 175);
+}
+
+/* Scrollbar personnalisée */
+.custom-scrollbar {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(16, 185, 129, 0.3) transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(16, 185, 129, 0.3);
+  border-radius: 3px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(16, 185, 129, 0.5);
+}
+
+/* Effets de verre */
+.glass-effect {
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  background: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.dark .glass-effect {
+  background: rgba(17, 24, 39, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Animations de chargement */
+.loading-spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Styles pour les notifications toast */
+.toast-success {
+  border-left: 4px solid rgb(16 185 129);
+  background: linear-gradient(90deg, rgb(16 185 129 / 0.1) 0%, transparent 100%);
+}
+
+.toast-error {
+  border-left: 4px solid rgb(239 68 68);
+  background: linear-gradient(90deg, rgb(239 68 68 / 0.1) 0%, transparent 100%);
+}
+
+.toast-warning {
+  border-left: 4px solid rgb(245 158 11);
+  background: linear-gradient(90deg, rgb(245 158 11 / 0.1) 0%, transparent 100%);
+}
+
+/* Effets de survol pour les icônes */
+.icon-hover {
+  transition: all 0.3s;
+}
+
+.icon-hover:hover {
+  transform: scale(1.1);
+  filter: drop-shadow(0 4px 8px rgb(16 185 129 / 0.3));
+}
+
+/* Styles pour les badges */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.125rem 0.625rem;
+  border-radius: 9999px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.badge-success {
+  background: rgb(209 250 229);
+  color: rgb(6 95 70);
+}
+
+.dark .badge-success {
+  background: rgb(6 78 59 / 0.2);
+  color: rgb(52 211 153);
+}
+
+.badge-warning {
+  background: rgb(254 249 195);
+  color: rgb(146 64 14);
+}
+
+.dark .badge-warning {
+  background: rgb(120 53 15 / 0.2);
+  color: rgb(251 191 36);
+}
+
+.badge-error {
+  background: rgb(254 226 226);
+  color: rgb(153 27 27);
+}
+
+.dark .badge-error {
+  background: rgb(127 29 29 / 0.2);
+  color: rgb(248 113 113);
+}
+
+.badge-info {
+  background: rgb(219 234 254);
+  color: rgb(30 64 175);
+}
+
+.dark .badge-info {
+  background: rgb(30 58 138 / 0.2);
+  color: rgb(96 165 250);
+}
+
+/* Styles pour les tables */
+.table-container {
+  background: rgb(255 255 255 / 0.7);
+  backdrop-filter: blur(8px);
+  border-radius: 1rem;
+  border: 1px solid rgb(229 231 235 / 0.5);
+  overflow: hidden;
+  box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+}
+
+.dark .table-container {
+  background: rgb(31 41 55 / 0.7);
+  border-color: rgb(55 65 81 / 0.5);
+}
+
+.table-header {
+  background: rgb(249 250 251 / 0.8);
+  border-bottom: 1px solid rgb(229 231 235 / 0.5);
+}
+
+.dark .table-header {
+  background: rgb(55 65 81 / 0.8);
+  border-bottom-color: rgb(75 85 99 / 0.5);
 }

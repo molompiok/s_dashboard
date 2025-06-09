@@ -9,6 +9,7 @@ import ClipLoader from 'react-spinners/ClipLoader';
 import { Check, Download, HardDrive, Save } from 'lucide-react';
 import { SpinnerIcon } from '../Confirm/Spinner';
 import { buttonStyle } from '../Button/Style';
+import { http, isProd } from '../Utils/functions';
 
 type PreviewDevice = 'mobile' | 'tablet' | 'desktop';
 
@@ -40,10 +41,10 @@ export function LiveThemePreview({ onSave, mode, isSaving, store, theme, setting
     const previewUrl = useMemo(() => {
         // Option 1: Page preview dédiée (plus simple pour démarrer)
         // Ajouter un timestamp ou une clé changeante si on recharge l'iframe à chaque update
-        return `${'http://piou2.sublymus-server.com/'}?storeId=${store.id}&themeId=${theme.id}&previewKey=${iframeKey}`;
+        // return `${'http://piou2.sublymus-server.com/'}?storeId=${store.id}&themeId=${theme.id}&previewKey=${iframeKey}`;
         // Option 2: URL réelle du store + paramètres
-        // const baseUrl = store.domain_names?.[0] ? `http://${store.domain_names[0]}` : store.slug ? `http://${store.slug}.sublymus.app` : '';
-        // return baseUrl ? `${baseUrl}?preview_mode=true&live_settings_id=${someId}` : '/error-no-url';
+        const baseUrl =`${http}${isProd?store.slug:'piou1'}.${isProd?'sublymus':'sublymus-server'}.com`;
+        return baseUrl;
     }, [store.id, theme.id, iframeKey]); // iframeKey pour forcer le rechargement si postMessage échoue
 
     // --- Communication PostMessage ---
@@ -89,6 +90,8 @@ export function LiveThemePreview({ onSave, mode, isSaving, store, theme, setting
         setIsIframeReady(false);
     }, [previewUrl]);
 
+    console.log('previewUrl--->>>',previewUrl);
+    
 
     // --- Classes Tailwind pour l'iframe ---
     const iframeWidthClass = useMemo((): string => {

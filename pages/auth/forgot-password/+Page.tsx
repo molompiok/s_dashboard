@@ -9,7 +9,7 @@ import { ApiError } from '../../../api/SublymusApi';
 import { IoMailOutline, IoArrowBack } from 'react-icons/io5';
 import logoUrl from '../../../renderer/logo.png';
 import { Link } from '../../../renderer/Link'; // Pour lien retour login
-import { Host } from '../../../renderer/+config';
+
 
 // S'assurer que le hook useRequestPasswordReset est créé dans ReactSublymusApi.tsx
 // et qu'il appelle api.auth.forgotPassword(email)

@@ -22,7 +22,7 @@ import { ConfirmDelete } from '../Confirm/ConfirmDelete';
 import { useGlobalStore } from '../../api/stores/StoreStore';
 import { getMedia } from '../Utils/StringFormater';
 import { useChildViewer } from '../ChildViewer/useChildViewer';
-import { globalActionZust } from '../../renderer/AppStore/globalActionZust';
+import { globalActionZust } from '../../renderer/AppStore/appZust';
 import { useTranslation } from 'react-i18next';
 
 export { HoriszontalSwiper }

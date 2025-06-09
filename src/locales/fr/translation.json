@@ -58,7 +58,7 @@
         "passwordLabel": "Mot de passe",
         "passwordPlaceholder": "Votre mot de passe",
         "rememberMe": "Se souvenir de moi",
-        "forgotPasswordLink": "Mot de passe oublié ?",
+        "forgotPasswordLink": "Changez de mot de passe ?",
         "loginButton": "Se connecter",
         "socialLoginSeparator": "Ou continuer avec",
         "googleButton": "Google",
@@ -568,7 +568,7 @@
         "passwordPlaceholder": "Mot de passe",
         "fullNamePlaceholder": "Nom complet",
         "passwordConfirmPlaceholder": "Confirmez le mot de passe",
-        "forgotPasswordLink": "Mot de passe oublié ?",
+       "forgotPasswordLink": "Changez de mot de passe ?",
         "loginButton": "Se connecter",
         "registerButton": "Créer un compte",
         "orContinueWith": "Ou continuer avec",
@@ -1503,6 +1503,7 @@
         "pageInfoShort": "Page {{currentPage}} sur {{lastPage}}"
     },
     "storeCreate": {
+        "editTitle":"Modification des informations ",
         "mainTitle": "Créez votre boutique en ligne",
         "stepName": "Nom",
         "stepLogo": "Logo",

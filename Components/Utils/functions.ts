@@ -14,6 +14,9 @@ export {
   limit
 }
 
+export const isProd = process.env.NODE_ENV === 'production';
+export const http = isProd ? 'https://' : 'http://' 
+
 function getId(id: string | undefined = '') {
   return '#' + id.substring(0, id.indexOf('-'))
 }

@@ -7,7 +7,6 @@ import logger from '../../api/Logger';
 import { ApiError } from '../../api/SublymusApi'; // Importer ApiError
 import { Confirm } from '../Confirm/Confirm'; // Utiliser Comfirm pour les boutons
 import { IoMailOutline } from 'react-icons/io5';
-import { Host } from '../../renderer/+config';
 import { showErrorToast, showToast } from '../Utils/toastNotifications';
 
 interface AddCollaboratorPopupProps {
@@ -64,9 +63,9 @@ export function AddCollaboratorPopup({ onSuccess, onCancel }: AddCollaboratorPop
         createCollaboratorMutation.mutate(
             {
               email,
-              dashboard_url: `${Host}`,
+              dashboard_url: window.location.origin,
               full_name: name,
-              setup_account_url: `${Host}/setup-account`,
+              setup_account_url: `${window.location.origin}/setup-account`,
             }, // Envoyer l'email directement
             {
               onSuccess: (data) => {

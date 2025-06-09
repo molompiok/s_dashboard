@@ -26,7 +26,7 @@ export const getMedia = ({ size = 'cover', host, from, isBackground, source }: {
     )
         }${_source}`
     if (isBackground) {
-        return `no-repeat center/${size} url(${url})`
+        return `no-repeat center / ${size} url(${url})`
     }
 
     return url;

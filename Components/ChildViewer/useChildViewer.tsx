@@ -11,6 +11,7 @@ export const useChildViewer= create(combine({
     background: '' as string,
     blur: 0,
     back: true,
+    className:''
 }, (set, get) => ({
     openChild(child: JSX.Element | null | undefined, option?: Partial<ReturnType<typeof get>> & { back?: boolean }) {
         set(() => ({
@@ -19,7 +20,8 @@ export const useChildViewer= create(combine({
             justifyContent: option?.justifyContent || 'center',
             background: option?.background || '',
             blur: option?.blur || 0,
-            back: option?.back || true
+            back: option?.back || true,
+            className: option?.className||''
         }))
         if (!child && option?.back !== false) ClientCall(history.back, 0);
         if (child) location.hash = 'openChild'

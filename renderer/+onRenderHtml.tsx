@@ -22,15 +22,15 @@ const onRenderHtml: OnRenderHtmlAsync = async (pageContext): ReturnType<OnRender
   const headersOriginal = pageContext.headers as Record<string, string> || {};
   const apiUrlFromHeader = headersOriginal['x-target-api-service'];
   const serverUrlFromHeader = headersOriginal['x-server-url'] ;
-  const serverApiFromHeader = headersOriginal['x-server-api-url']
+  const serverApiFromHeader = headersOriginal['x-server-api-url'] || 'server.sublymus-server.com'
 
 
-  // console.log({
-  //   baseUrl: baseUrlFromHeader,
-  //   serverUrl: (process.env.NODE_ENV == 'production' ? 'https://' : 'http://') + serverApiFromHeader,
-  //   apiUrl: apiUrlFromHeader,
-  //   server: serverUrlFromHeader
-  // });
+  console.log({
+    serverUrl: (process.env.NODE_ENV == 'production' ? 'https://' : 'http://') + serverApiFromHeader,
+    apiUrl: apiUrlFromHeader,
+    server: serverUrlFromHeader,
+    serverApiFromHeader
+  });
   Data.serverUrl = serverApiFromHeader;
 
   // Alternatively, we can use an HTML stream, see https://vike.dev/streaming
@@ -56,14 +56,13 @@ const onRenderHtml: OnRenderHtmlAsync = async (pageContext): ReturnType<OnRender
       <head style="z-index=-10">
         <meta charset="UTF-8" />
         <link rel="icon" href="${logoUrl}" />
-        
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <meta name="description" content="${desc}" />
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/easymde/dist/easymde.min.css"/>
         <title>${title}</title>
       </head>
       <body style="z-index=-10">
         <div id="root">${dangerouslySkipEscape(pageHtml)}</div>
-        
       </body>
     </html>`
 

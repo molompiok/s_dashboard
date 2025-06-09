@@ -50,7 +50,7 @@ import { HoriszontalSwiper } from '../../../Components/HorizontalSwiper/Horizont
 import { VisibilityControl } from '../../../Components/Controls/VisibilityControl';
 import { CreateControl } from '../../../Components/Controls/CreateControl';
 import { preview } from 'vite';
-import { globalActionZust } from '../../../renderer/AppStore/globalActionZust';
+import { globalActionZust } from '../../../renderer/AppStore/appZust';
 import { ProductSettings } from './ProductSettings';
 import { OrderDetailSkeleton, ProductFormSkeleton } from '../../../Components/Skeletons/allsKeletons';
 import { showErrorToast, showToast } from '../../../Components/Utils/toastNotifications';
@@ -107,7 +107,7 @@ function Page() {
         features: undefined as Partial<FeatureInterface>[] | undefined,
         collected: {} as Partial<ProductInterface>,
         isUpdated: false,
-        featuresUpdated:false
+        featuresUpdated: false
     });
 
     const [isVisibilityUpdating, changeVisibilityUpdating] = useState(false);

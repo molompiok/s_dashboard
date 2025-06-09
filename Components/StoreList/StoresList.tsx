@@ -37,7 +37,7 @@ export function StoresList({maxVisible=5.8, maxSize=1200,stores, isLoading, sele
     const {setCurrentStore} = useGlobalStore()
     const { openChild } = useChildViewer()
 
-    const n = size.width< maxSize ? ((size.width - 260) / maxSize) * (maxVisible-1.3) + 1.3 :maxVisible
+    const n = size.width< maxSize ? ((size.width - 260) / maxSize) * (maxVisible-1.1) + 1.1  :maxVisible
     const onManage = (store:StoreInterface)=>{
         openChild(<BigSpinner text='Chargement des informations..' />,{background:'#3455'})
         setTimeout(() => {
@@ -65,7 +65,7 @@ export function StoresList({maxVisible=5.8, maxSize=1200,stores, isLoading, sele
                 }}
                 style={{ overflow: 'visible',height:'270px' }}
                 pagination={{ clickable: true }} // Activer pagination simple
-                className="stores-swiper pb-10 overflow-visible" // Ajouter pb pour pagination
+                className="stores-swiper pb-10 overflow-hidden" // Ajouter pb pour pagination
             >
                 {
                     (!isLoading && stores.length == 0 ) && <SwiperSlide  className="pb-1 h-full min-h-[220px]">

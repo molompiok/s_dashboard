@@ -6,14 +6,13 @@ import { IoCheckmarkCircle, IoEyeOff, IoEyeSharp, IoPauseCircle } from "react-ic
 import { useTranslation } from "react-i18next";
 import { NO_PICTURE } from "../../Components/Utils/constants";
 import { useState } from "react";
-import { Server_Host } from "../../renderer/+config";
 import { Globe, Settings } from "lucide-react";
 interface StoreItemCardProps {
     store: StoreInterface;
     isSelected: boolean;
     onClick: () => void;
-    onManage?(store:StoreInterface): void,
-    onVisit?(store:StoreInterface): void
+    onManage?(store: StoreInterface): void,
+    onVisit?(store: StoreInterface): void
 }
 
 export function StoreItemCard({ onManage, onVisit, store, isSelected, onClick }: StoreItemCardProps) {
@@ -26,82 +25,86 @@ export function StoreItemCard({ onManage, onVisit, store, isSelected, onClick }:
 
     return (
         // Carte cliquable avec styles Tailwind
-        <button // Utiliser bouton pour accessibilité
+        <button
             type="button"
             onClick={onClick}
-            className={`store-item-card w-full  min-h-[220px] flex flex-col rounded-xl overflow-hidden shadow-md border-2 transition-all duration-200 ease-in-out transform hover:-translate-y-1 cursor-pointer focus:outline-none ${isSelected ? 'border-blue-500 shadow-blue-300/50 scale-100' : 'border-gray-200 hover:border-gray-300 hover:shadow-lg'
+            className={`store-item-card w-full min-h-[220px] flex flex-col rounded-xl overflow-hidden shadow-md border-2 transition-all duration-200 ease-in-out transform hover:-translate-y-1 cursor-pointer focus:outline-none 
+        ${isSelected
+                    ? 'border-sky-300 shadow-blue-300/50 dark:shadow-blue-900/50 scale-100 dark:border-gray-800'
+                    : 'border-gray-200 hover:border-gray-300 hover:shadow-lg dark:border-gray-800 dark:hover:border-gray-500 dark:hover:shadow-xl'
                 }`}
         >
             {/* Image de Couverture */}
             <div
-                className="w-full h-24 sm:h-28 flex-shrink-0 bg-cover bg-center bg-gray-200 relative"
-                style={{ background: coverSrc && !coverError ? coverSrc : NO_PICTURE }} // Style inline pour bg
-                onError={() => !coverError && setCoverError(true)} // Gérer erreur image cover
+                className="w-full h-24 sm:h-28 flex-shrink-0 bg-cover bg-center bg-gray-200 dark:bg-gray-800 relative"
+                style={{ background: coverSrc && !coverError ? coverSrc : NO_PICTURE }}
+                onError={() => !coverError && setCoverError(true)}
             >
-                {/* Fallback si cover ne charge pas */}
-                {coverError && <div className="absolute inset-0 bg-gray-300"></div>}
-                {/* Logo en superposition */}
-                <div className="absolute bottom-2 left-2 w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-white bg-white shadow flex items-center justify-center overflow-hidden">
+                {coverError && <div className="absolute inset-0 bg-gray-300 dark:bg-gray-700"></div>}
+                <div className="absolute bottom-2 left-2 w-10 h-10 sm:w-12 sm:h-12 rounded-full border-2 border-white dark:border-gray-800 bg-white dark:bg-gray-900 shadow flex items-center justify-center overflow-hidden">
                     {!logoError && logoSrc ? (
-                        <img src={logoSrc} alt={`${store.name} logo`} className="w-full h-full object-contain" onError={() => setLogoError(true)} />
+                        <img
+                            src={logoSrc}
+                            alt={`${store.name} logo`}
+                            className="w-full h-full object-contain"
+                            onError={() => setLogoError(true)}
+                        />
                     ) : (
-                        // Initiales ou icône placeholder si logo absent/erreur
-                        <span className="text-sm font-semibold text-gray-500">
+                        <span className="text-sm font-semibold text-gray-500 dark:text-gray-300">
                             {store.name?.substring(0, 2).toUpperCase()}
                         </span>
                     )}
                 </div>
             </div>
+
             {/* Informations Texte */}
-            <div className="p-3 flex  flex-col flex-grow justify-between bg-white">
+            <div className="p-3 flex flex-col flex-grow justify-between  bg-white/10 dark:bg-white/5 backdrop-blur-md  border border-white/20 dark:border-white/10">
                 <div className="h-[54px]">
-                    <h3 className="font-semibold text-sm text-gray-800 truncate mb-0.5" title={store.name}>
+                    <h3 className="font-semibold text-sm text-gray-800 dark:text-gray-100 truncate mb-0.5" title={store.name}>
                         {store.name}
                     </h3>
-                    <p className="text-xs text-gray-500 line-clamp-2" title={store.description}>
+                    <p className="text-xs text-gray-500 dark:text-gray-400 line-clamp-2" title={store.description}>
                         {store.description || t('storesPage.noDescription')}
                     </p>
                 </div>
+
                 {/* Statut */}
-                <div className={`mt-2 flex items-center gap-1 text-xs font-medium `}>
-                    <div className={`mt-2 flex items-center gap-1 text-xs font-medium ${store.is_active ? 'text-green-600' : 'text-gray-500'}`}>
+                <div className="mt-2 flex items-center gap-1 text-xs font-medium">
+                    <div className={`${store.is_active ? 'text-green-600 dark:text-green-400' : 'text-gray-500 dark:text-gray-400'} flex items-center gap-1`}>
                         {store.is_active ? <IoCheckmarkCircle className="w-4 h-4" /> : <IoPauseCircle className="w-4 h-4" />}
-                        <span>{store.is_active ? t('storesPage.status.active') : t('storesPage.status.inactive')} </span>
+                        <span>{store.is_active ? t('storesPage.status.active') : t('storesPage.status.inactive')}</span>
                     </div>
-                    <div className={`mt-2 ml-auto flex items-center gap-1 text-xs font-medium ${store.is_running ? 'text-green-600' : 'text-gray-500'}`}>
-                        <span>{store.is_running ? <IoEyeSharp className="w-4 h-4" /> : <IoEyeOff className="w-4 h-4" />}</span>
-                        <span>{store.is_running ? t('common.visible') : t('common.hidden')} </span>
+                    <div className={`${store.is_running ? 'text-green-600 dark:text-green-400' : 'text-gray-500 dark:text-gray-400'} ml-auto flex items-center gap-1`}>
+                        {store.is_running ? <IoEyeSharp className="w-4 h-4" /> : <IoEyeOff className="w-4 h-4" />}
+                        <span>{store.is_running ? t('common.visible') : t('common.hidden')}</span>
                     </div>
                 </div>
+
+                {/* Boutons */}
                 <div
-                    style={{
-                        height: `${isSelected ? 32 : 0}px`,
-                        transition: '300ms',
-                        overflow: 'hidden',
-                    }}
-                    className="manage-buttons mt-3 overflow-hidden  w-full flex justify-between gap-2"
+                    style={{ height: `${isSelected ? 32 : 0}px`, transition: '300ms', overflow: 'hidden' }}
+                    className="manage-buttons mt-3 overflow-hidden w-full flex justify-between gap-2"
                 >
                     <button
-                        className="flex shadow-md gap-2 items-center  w-full justify-center 
-               bg-gray-500/10 border border-gray-400/20 rounded-lg 
-               text-sm text-gray-800 hover:bg-gray-500/20 transition"
-                        onClick={()=>onManage?.(store)}
+                        className="flex shadow-md gap-2 items-center w-full justify-center
+                bg-gray-500/10 dark:bg-gray-700/20 border border-gray-400/20 dark:border-gray-700 rounded-lg
+                text-sm text-gray-800 dark:text-gray-100 hover:bg-gray-500/20 dark:hover:bg-gray-700 transition"
+                        onClick={() => onManage?.(store)}
                     >
                         <Settings className="w-4 h-4" />
                         Gérer
                     </button>
 
                     <button
-                        className="flex  shadow-md gap-2 items-center w-full justify-center 
-                        bg-gray-500/10 border border-gray-400/20 rounded-lg 
-                        text-sm text-gray-800 hover:bg-gray-500/20 transition"
-                        onClick={()=>onVisit?.(store)}
+                        className="flex shadow-md gap-2 items-center w-full justify-center
+                bg-gray-500/10 dark:bg-gray-700/20 border border-gray-400/20 dark:border-gray-700 rounded-lg
+                text-sm text-gray-800 dark:text-gray-100 hover:bg-gray-500/20 dark:hover:bg-gray-700 transition"
+                        onClick={() => onVisit?.(store)}
                     >
                         <Globe className="w-4 h-4" />
                         Visiter
                     </button>
                 </div>
-
             </div>
         </button>
     );

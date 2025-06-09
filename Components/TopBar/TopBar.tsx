@@ -1,18 +1,13 @@
 // Components/TopBar/TopBar.tsx
 
-import { useEffect, useState } from 'react';
 import { ChildViewer } from '../ChildViewer/ChildViewer';
 import { TopSearch } from '../TopSearch/TopSearch';
 import { IoSearch, IoNotifications, IoChevronBack, IoChevronForward } from "react-icons/io5";
 import { useChildViewer } from '../ChildViewer/useChildViewer';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../../api/stores/AuthStore';
-import { Host } from '../../renderer/+config';
 import { getMedia } from '../Utils/StringFormater'; // ✅ Importer getMedia
-import { useGetAllOrders, useGetMe } from '../../api/ReactSublymusApi';
-import { useGlobalStore } from '../../api/stores/StoreStore';
 import { useMyLocation } from '../../Hooks/useRepalceState';
-import { usePageContext } from '../../renderer/usePageContext';
 import { navigate } from 'vike/client/router';
 
 export { Topbar };
@@ -28,6 +23,7 @@ interface TopbarProps {
     notif?: boolean;
     onBack?: () => void;
     title?: string;
+    onOption?:()=>void,
     breadcrumbs?: BreadcrumbItem[];
 }
 
@@ -37,6 +33,7 @@ function Topbar({
     notif = true, // On garde la prop, même si l'affichage est commenté
     onBack,
     title,
+    onOption,
     breadcrumbs = []
 }: TopbarProps) {
     const { t } = useTranslation();
@@ -72,10 +69,10 @@ function Topbar({
         openChild(
             <ChildViewer title={t('topbar.globalSearchTitle')}>
                 <TopSearch
-                    onCategorySelected={(c) => { navigate(`${Host}/categories/${c.id}`); }}
-                    onClientSelected={(c) => { navigate(`${Host}/users/clients/${c.id}`); }}
-                    onCommandSelected={(c) => { navigate(`${Host}/commands/${c.id}`); }}
-                    onProductSelected={(c) => { navigate(`${Host}/products/${c.id}`); }}
+                    onCategorySelected={(c) => { navigate(`/categories/${c.id}`); }}
+                    onClientSelected={(c) => { navigate(`/users/clients/${c.id}`); }}
+                    onCommandSelected={(c) => { navigate(`/commands/${c.id}`); }}
+                    onProductSelected={(c) => { navigate(`/products/${c.id}`); }}
                 />
             </ChildViewer>,
             { background: 'rgba(51, 51, 68, 0.8)', blur: 3 }

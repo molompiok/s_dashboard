@@ -35,7 +35,9 @@ export const useAuthStore = create(
           if (get().token) return get().token;
           if (typeof window !== "undefined") {
             const t = localStorage.getItem(TOKEN_KEY) ?? undefined;
-            set({ token: t || undefined });
+            console.log('22222222',t);
+            
+            t && set({ token: t || undefined });
             return t
           }
         } catch (e) {
@@ -66,6 +68,7 @@ export const useAuthStore = create(
             let user = localStorage.getItem(USER_KEY);
             const u  = user ? JSON.parse(user) : undefined;
             localStorage.setItem(USER_KEY, JSON.stringify(user));
+            u && set({user:u})
             return u;
           }
         } catch (e) {

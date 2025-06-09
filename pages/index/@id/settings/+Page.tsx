@@ -15,6 +15,7 @@ import { LegalContactSettingsSection } from '../../../../Components/Settings/Leg
 import { RegionalSettingsSection } from '../../../../Components/Settings/RegionalSettingsSection';
 import { DangerZoneSection } from '../../../../Components/Settings/DangerZoneSection';
 import { limit } from '../../../../Components/Utils/functions';
+import { useAppZust } from '../../../../renderer/AppStore/appZust';
 
 export { Page };
 
@@ -25,11 +26,11 @@ function Page() {
     const { routeParams } = usePageContext();
     const storeId = routeParams?.['id'];
     const [activeSection, setActiveSection] = useState<SettingsSection>('general');
-    const [sidebarOpen, setSidebarOpen] = useState(false);
-
     const { data: storeData, isLoading, isError, error } = useGetStore(storeId, {
         enabled: !!storeId,
     });
+
+    const {sideLeft,setSideLeft} = useAppZust()
 
     const storeName = storeData?.name;
 
@@ -92,10 +93,11 @@ function Page() {
             <Topbar
                 back={true}
                 breadcrumbs={breadcrumbs}
+                onOption={() => setSideLeft(true)}
                 // title={t('settingsPage.title', { name: storeData?.name ?? '...' })}
             />
             <button
-                onClick={() => setSidebarOpen(true)}
+                onClick={() => setSideLeft(true)}
                 className="md:hidden p-2 text-gray-600 hover:text-gray-900"
                 aria-label="Open sidebar"
             >
@@ -105,12 +107,12 @@ function Page() {
             </button>
             {/* Mobile Sidebar overlay */}
             <AnimatePresence>
-                {sidebarOpen && (
+                {sideLeft && (
                     <>
                         {/* Fond semi-transparent */}
                         <motion.div
                             className="fixed inset-0 bg-black/50 backdrop-blur-sm z-40"
-                            onClick={() => setSidebarOpen(false)}
+                            onClick={() => setSideLeft(false)}
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
@@ -125,7 +127,7 @@ function Page() {
                         >
                             <div className="flex justify-end mb-4">
                                 <button
-                                    onClick={() => setSidebarOpen(false)}
+                                    onClick={() => setSideLeft(false)}
                                     className="text-gray-500 hover:text-gray-800"
                                     aria-label="Close sidebar"
                                 >
@@ -136,7 +138,7 @@ function Page() {
                                 activeSection={activeSection}
                                 onSectionChange={(s) => {
                                     setActiveSection(s);
-                                    setSidebarOpen(false);
+                                    setSideLeft(false);
                                 }}
                             />
                         </motion.aside>

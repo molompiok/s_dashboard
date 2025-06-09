@@ -16,7 +16,7 @@ import { getFileType } from '../Utils/functions';
 import { NEW_VIEW } from '../Utils/constants';
 import { ConfirmDelete } from '../Confirm/ConfirmDelete';
 import { useGlobalStore } from '../../api/stores/StoreStore';
-import { globalActionZust } from '../../renderer/AppStore/globalActionZust';
+import { globalActionZust } from '../../renderer/AppStore/appZust';
 import { useTranslation } from 'react-i18next';
 
 export { SwiperProducts }

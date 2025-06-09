@@ -10,7 +10,6 @@ import { getMedia } from '../Utils/StringFormater'; // Pour preview
 import { useGlobalStore } from '../../api/stores/StoreStore'; // Pour URL base image
 import { NO_PICTURE } from '../Utils/constants'; // Placeholder
 import { ApiError } from '../../api/SublymusApi';
-import { Server_Host } from '../../renderer/+config';
 
 interface AppearanceSettingsSectionProps {
     store: StoreInterface;
