@@ -1,596 +1,317 @@
-// pages/products/@id/details/+Page.tsx (Adapter chemin si nécessaire)
+// pages/products/@id/details/+Page.tsx
 
 // --- Imports ---
-import { useEffect, useState, useMemo, useCallback } from 'react';
+import React, { useEffect, useState, useMemo } from 'react';
+import { useTranslation } from 'react-i18next';
+import { motion, AnimatePresence } from 'framer-motion';
 import { usePageContext } from '../../../../renderer/usePageContext';
 import { useGlobalStore } from '../../../../api/stores/StoreStore';
-// ✅ Importer les hooks API nécessaires
-import {
-    useGetProductList, // Pour charger le produit
-    useGetDetailList, // Pour charger les détails
-    useCreateDetail,
-    useUpdateDetail,
-    useDeleteDetail,
-} from '../../../../api/ReactSublymusApi';
-import { DetailInterface, ListType, ProductInterface } from '../../../../api/Interfaces/Interfaces';
+import { useGetProduct, useGetDetailList, useCreateDetail, useUpdateDetail, useDeleteDetail } from '../../../../api/ReactSublymusApi';
+import { DetailInterface, ProductInterface } from '../../../../api/Interfaces/Interfaces';
 import { Topbar } from '../../../../Components/TopBar/TopBar';
-import { PageNotFound } from '../../../../Components/PageNotFound/PageNotFound';
+import { StateDisplay } from '../../../../Components/StateDisplay/StateDisplay';
 import { Indicator } from '../../../../Components/Indicator/Indicator';
 import { ConfirmDelete } from '../../../../Components/Confirm/ConfirmDelete';
 import { MarkdownEditor2 } from '../../../../Components/MackdownEditor/MarkdownEditor';
-import { MarkdownViewer } from '../../../../Components/MarkdownViewer/MarkdownViewer'; // Pour affichage
+import { MarkdownViewer } from '../../../../Components/MarkdownViewer/MarkdownViewer';
 import { ProductPreview } from '../../../../Components/ProductPreview/ProductPreview';
 import { ChildViewer } from '../../../../Components/ChildViewer/ChildViewer';
-import { Confirm } from '../../../../Components/Confirm/Confirm'; // Pour popup DetailInfo
+import { Confirm } from '../../../../Components/Confirm/Confirm';
 import { getMedia } from '../../../../Components/Utils/StringFormater';
-import { debounce, getFileType, limit } from '../../../../Components/Utils/functions'; // Garder limit
+import { getFileType } from '../../../../Components/Utils/functions';
 import { DETAIL_LIMIT } from '../../../../Components/Utils/constants';
-import { IoAdd, IoChevronDown, IoChevronUp, IoCloudUploadOutline, IoEllipsisHorizontal, IoPencil, IoTrash } from 'react-icons/io5';
+import { IoAdd, IoChevronDown, IoChevronUp, IoCloudUploadOutline, IoEllipsisHorizontal, IoPencil, IoTrash, IoWarningOutline, IoAlbumsOutline } from 'react-icons/io5';
 import { RiImageEditFill } from 'react-icons/ri';
-import { motion, AnimatePresence } from 'framer-motion'; // Garder pour animation
-import { useTranslation } from 'react-i18next'; // ✅ i18n
 import logger from '../../../../api/Logger';
-import { v4 } from 'uuid'; // Pour ID temporaire
+import { v4 } from 'uuid';
 import { useChildViewer } from '../../../../Components/ChildViewer/useChildViewer';
-import { useMyLocation } from '../../../../Hooks/useRepalceState';
 import { showErrorToast, showToast } from '../../../../Components/Utils/toastNotifications';
-
 
 export { Page };
 
-// --- Composant Principal ---
-function Page() {
-    const { t } = useTranslation(); // ✅ i18n
-    const { openChild } = useChildViewer();
-    const { routeParams } = usePageContext();
-    const { currentStore } = useGlobalStore();
-
-    const [createRequired, setCreateRequired] = useState<Partial<DetailInterface>>()
-    const { params, myLocation, replaceLocation, nextPage } = useMyLocation()
-    const productId = params[1]
-
-    // --- Récupération Données ---
-    // Produit
-    const { data: productData, isLoading: isLoadingProduct, isError } = useGetProductList(
-        { product_id: productId, with_feature: true }, // Pas besoin des features ici a priori
-        { enabled: !!productId && productId !== 'new' }
-    );
-    const product = productData?.list?.[0];
-
-    // Détails
-    const { data: detailsData, isLoading: isLoadingDetails, refetch: refetchDetails,
-        isError: isFetchError,
-        error: fetchError,
-    } = useGetDetailList(
-        { product_id: productId, limit: DETAIL_LIMIT + 5 }, // Fetcher un peu plus pour être sûr
-        { enabled: !!productId && productId !== 'new' }
-    );
-    // Trier les détails par index côté client pour l'affichage et la logique up/down
-    const sortedDetails = useMemo(() =>
-        [...(detailsData?.list ?? [])].sort((a, b) => b.index - a.index),
-        [detailsData?.list]
-    );
-
-    // --- Mutations ---
-    const createDetailMutation = useCreateDetail();
-    const updateDetailMutation = useUpdateDetail();
-    const deleteDetailMutation = useDeleteDetail();
-    // updateDetail est géré dans le popup DetailInfo
-
-    // --- État & Handlers ---
-    const isLoading = isLoadingProduct || isLoadingDetails;
-
-    const handleOpenDetailPopup = (detail?: DetailInterface) => {
-        const isCreating = !detail;
-        openChild(
-            <ChildViewer title={isCreating ? t('detail.addPopupTitle') : t('detail.editPopupTitle')}>
-                <DetailInfo
-                    // Donner un ID temporaire et product_id pour la création
-                    detail={detail ?? { id: `new-${v4()}`, product_id: productId }}
-                    onSave={(savedDetail) => {
-                        if (isCreating) {
-                            setCreateRequired(savedDetail)
-                        } else {
-                            console.log();
-
-                            if (savedDetail.id) {
-                                updateDetail(savedDetail.id, savedDetail)
-                            }
-                        }
-                        openChild(null);
-                        // Afficher toast succès?
-                    }}
-                    onCancel={() => openChild(null)}
-                />
-            </ChildViewer>,
-            { background: '#3455' }
-        );
-    };
-
-    const handleDelete = (detailId: string, detailTitle?: string) => {
-        openChild(
-            <ChildViewer>
-                <ConfirmDelete
-                    title={t('detail.confirmDelete', { title: detailTitle || t('detail.thisDetail') })}
-                    onCancel={() => openChild(null)}
-                    onDelete={() => {
-                        deleteDetailMutation.mutate(
-                            { detail_id: detailId },
-                            {
-                                onSuccess: () => {
-                                    logger.info(`Detail ${detailId} deleted`);
-                                    openChild(null);
-                                    showToast('Détail supprimé avec succès', 'WARNING'); // ✅ Toast succès avec warning
-                                },
-                                onError: (error) => {
-                                    logger.error({ error }, `Failed to delete detail ${detailId}`);
-                                    openChild(null);
-                                    showErrorToast(error); // ❌ Toast erreur
-                                }
-                            }
-                        );
-                    }}
-                />
-            </ChildViewer>,
-            { background: '#3455' }
-        );
-    };
-
-    // Handlers pour Up/Down (simplifié, appelle l'API directement)
-    const handleMove = async (detailToMove: DetailInterface, direction: 'up' | 'down') => {
-        const currentIndex = detailToMove.index;
-        const newIndex = direction === 'up' ? currentIndex + 1 : currentIndex - 1;
-
-        // Trouver le détail voisin avec lequel échanger l'index
-        const neighborDetail = sortedDetails.find(d => d.index === newIndex);
-
-        if (newIndex < 0 || newIndex >= sortedDetails.length || !neighborDetail) {
-            logger.warn("Cannot move detail, invalid index or neighbor not found", { detailId: detailToMove.id, direction, newIndex });
-            return;
-        }
-
-        // Appeler la mutation d'update pour les deux détails pour échanger leur index
-        // C'est un peu lourd, idéalement l'API gérerait ça atomiquement.
-        // On utilise une promesse pour attendre les deux MAJ.
-        try {
-            // Mettre à jour le détail voisin avec l'index du détail actuel
-            await updateDetail(neighborDetail.id, { index: currentIndex });
-            // Mettre à jour le détail actuel avec le nouvel index
-            await updateDetail(detailToMove.id, { index: newIndex });
-            // Recharger la liste après succès
-        } catch (error) {
-            logger.error("Failed to swap detail indexes", error);
-            // Afficher une erreur à l'utilisateur
-        }
-    };
-
-    // Fonction helper pour appeler updateDetail (sera dans DetailInfo mais utilisée ici aussi)
-    const updateDetail = (detailId: string, data: Partial<DetailInterface>) => {
-        const formData = new FormData();
-        Object.entries(data).forEach(([key, value]) => {
-            if (value !== undefined && value !== null) {
-                formData.append(key, String(value));
-            }
-        });
-        // **Important**: Il faut aussi envoyer l'ID dans le corps pour le schéma de validation updateDetailSchema
-        formData.append('id', detailId);
-        // Pas besoin de passer l'ID dans l'URL pour l'API updateDetail telle que définie
-        return updateDetailMutation.mutateAsync(
-            {
-                detail_id: detailId,
-                data,
-            },
-            {
-                onSuccess: () => {
-                    logger.info(`Detail ${detailId} updated successfully`);
-                    refetchDetails();
-                    debounce(() => showToast("Détail mis à jour avec succès"), 'details-update', 3000) // ✅ Toast succès
-                },
-                onError: (error) => {
-                    logger.error({ error, detailId }, `Failed to update detail ${detailId}`);
-                    showErrorToast(error); // ❌ Toast erreur
-                },
-            }
-        ); // Utiliser la mutation
-    };
-
-    const createDetail = (data: Partial<DetailInterface>) => {
-        return createDetailMutation.mutateAsync(
-            {
-                data,
-            },
-            {
-                onSuccess: () => {
-                    logger.info("Detail created successfully");
-                    showToast("Détail créé avec succès"); // ✅ Toast succès
-                },
-                onError: (error) => {
-                    logger.error({ error }, "Failed to create detail");
-                    showErrorToast(error); // ❌ Toast erreur
-                },
-            }
-        ); // Utiliser la mutation
-    };
-
-    useEffect(() => {
-        if (createRequired) {
-            createDetail(createRequired)
-            setCreateRequired(undefined)
-        }
-    }, [createRequired])
-
-    const [isPageLoading, setIsPageLoading] = useState(true);
-    useEffect(() => {
-        setIsPageLoading(false)
-    }, []);
-
-    // --- Rendu ---
-    if (isPageLoading) return <PageSkeleton />
-    if (isLoading && !product) return <PageSkeleton />
-    if (isFetchError) return <PageNotFound title={t('product.notFound')} description={fetchError?.message} />;
-    if (!product) return <PageSkeleton />
-
-
-    const isDetailMaxReached = (sortedDetails?.length || 0) >= DETAIL_LIMIT;
-
-    return (
-        <div className="page-detail pb-[200px]  w-full flex flex-col bg-gray-100 min-h-screen">
-            <Topbar back={true} title={t('detail.pageTitle', { name: product.name }).toString()} />
-
-            <main className="w-full max-w-4xl mx-auto p-4 md:p-6 lg:p-8 flex flex-col gap-6">
-
-                {/* Aperçu Produit */}
-                {/* Utiliser mb-6 */}
-                <div className="mb-6">
-                    <ProductPreview product={product} />
-                </div>
-
-
-                {/* Section Ajout Détail */}
-                {/* Utiliser p-4 bg-white rounded-lg shadow-sm border */}
-                <div className="add flex items-center justify-between p-4 bg-white rounded-lg shadow-sm border border-gray-200">
-                    <h2 className="text-base sm:text-lg font-semibold text-gray-800 flex items-center gap-2 flex-wrap">
-                        {t('detail.sectionTitle')}
-                        <span className='text-sm font-normal text-gray-500'>({sortedDetails.length} / {DETAIL_LIMIT})</span>
-                        <Indicator title={t('detail.addTooltipTitle')} description={t('detail.addTooltipDesc', { limit: DETAIL_LIMIT })} />
-                    </h2>
-                    <button
-                        type="button"
-                        onClick={() => handleOpenDetailPopup()}
-                        disabled={isDetailMaxReached}
-                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        <IoAdd size={18} className="-ml-1" />
-                        {t('detail.addButton')}
-                    </button>
-                </div>
-
-                {/* Liste des Détails */}
-                {/* Utiliser flex flex-col gap-4 */}
-                <div className="details flex flex-col gap-4">
-                    <AnimatePresence initial={false}> {/* initial=false pour éviter anim au chargement */}
-                        {sortedDetails.map((d, i) => (
-                            <motion.div
-                                key={d.id}
-                                layout // Animation d'ordre
-                                initial={{ opacity: 0, y: 20 }}
-                                animate={{ opacity: 1, y: 0 }}
-                                exit={{ opacity: 0, y: -20, transition: { duration: 0.2 } }}
-                                transition={{ duration: 0.3, ease: "easeOut" }}
-                                className="origin-top" // Pour l'animation d'exit
-                            >
-                                <DetailItem // Renommer Detail en DetailItem pour éviter conflit
-                                    detail={d}
-                                    canUp={i > 0} // Peut monter si pas le dernier
-                                    canDown={i < sortedDetails.length - 1} // Peut descendre si pas le premier
-                                    onDelete={() => handleDelete(d.id, d.title)}
-                                    onOption={() => handleOpenDetailPopup(d)}
-                                    onDown={() => handleMove(d, 'down')}
-                                    onUp={() => handleMove(d, 'up')}
-                                />
-                            </motion.div>
-                        ))}
-                    </AnimatePresence>
-
-                    {/* Message si aucun détail */}
-                    {!isLoadingDetails && sortedDetails.length === 0 && (
-                        <PageNotFound
-                            description={t('detail.emptyDesc')}
-                            title={t('detail.emptyTitle')}
-                        />
-                    )}
-                </div>
-            </main>
-        </div>
-    );
-}
-
-
-// --- Composant DetailItem (Ancien Detail) ---
-function DetailItem({ detail, onDelete, onOption, onUp, onDown, canDown, canUp }: {
-    canDown?: boolean;
-    canUp?: boolean;
-    onDown: () => void;
-    onUp: () => void;
-    onOption: () => void;
-    onDelete: () => void;
-    detail: Partial<DetailInterface>;
-}) {
+// 🎨 SKELETON LOADER POUR LA PAGE
+const PageSkeleton = () => {
     const { t } = useTranslation();
-    const view = detail?.view?.[0];
-    const { currentStore } = useGlobalStore()
-
     return (
-        // Utiliser bg-white, rounded-lg, shadow-sm, border, p-4, flex flex-col md:flex-row gap-4
-        <div className="detail-item bg-white rounded-lg shadow-sm border border-gray-200 p-4 flex flex-col md:flex-row gap-4 items-start">
-            {/* Image/Video */}
-            {/* Utiliser w-full md:w-40 lg:w-48, aspect-square, rounded-md, flex-shrink-0 */}
-            {view && ( // Afficher seulement si une vue existe
-                <div className="w-full md:w-40 lg:w-48 aspect-square rounded-md flex-shrink-0 bg-gray-100 overflow-hidden">
-                    {getFileType(view) === 'image' ? (
-                        <img src={getMedia({ source: view, from: 'api' })} alt={detail.title || 'Detail view'} className="w-full h-full object-cover" />
-                    ) : (
-                        <video loop autoPlay muted playsInline className="w-full h-full object-cover" src={getMedia({ source: view, from: 'api' })} />
-                    )}
-                </div>
-            )}
-
-            {/* Contenu Texte + Actions */}
-            {/* Utiliser flex-grow min-w-0 */}
-            <div className="flex-grow min-w-0 w-full">
-                {/* Titre et Options */}
-                <div className="flex justify-between items-start gap-2 mb-2">
-                    <h2 className={`text-base font-semibold text-gray-800 ${!detail.title ? 'italic text-gray-400' : ''}`}>
-                        {detail.title || t('detail.untitled')}
-                    </h2>
-                    {/* Options (Up/Down/Delete/Edit) */}
-                    <div className="options flex items-center gap-1 text-gray-400 flex-shrink-0">
-                        <button onClick={onUp} disabled={!canUp} title={t('common.moveUp')} className="p-1 rounded-full hover:bg-gray-100 hover:text-gray-600 disabled:opacity-30 disabled:cursor-not-allowed">
-                            <IoChevronUp />
-                        </button>
-                        <button onClick={onDown} disabled={!canDown} title={t('common.moveDown')} className="p-1 rounded-full hover:bg-gray-100 hover:text-gray-600 disabled:opacity-30 disabled:cursor-not-allowed">
-                            <IoChevronDown />
-                        </button>
-                        <button onClick={onOption} title={t('common.edit')} className="p-1 rounded-full hover:bg-gray-100 hover:text-gray-600">
-                            <IoEllipsisHorizontal />
-                        </button>
-                        <button onClick={onDelete} title={t('common.delete')} className="p-1 rounded-full hover:bg-red-50 hover:text-red-600">
-                            <IoTrash />
-                        </button>
-                    </div>
-                </div>
-                {/* Description (Markdown Viewer) */}
-                {/* Ajouter une classe prose pour le style markdown si nécessaire */}
-                <div className="text-sm text-gray-600 prose prose-sm max-w-none">
-                    <MarkdownViewer key={(detail.updated_at || '') + detail.id} markdown={detail.description || t('detail.noDescription')} />
-                </div>
-            </div>
-        </div>
-    );
-}
-
-
-// --- Composant DetailInfo (Popup d'édition/création) ---
-function DetailInfo({ detail: initialDetail, onSave, onCancel }: {
-    onCancel: () => void;
-    detail: Partial<DetailInterface>; // Inclut id, product_id potentiellement
-    onSave: (detailData: Partial<DetailInterface>) => void; // Retourne seulement les données modifiées/nouvelles
-}) {
-    const { t } = useTranslation();
-    const { currentStore } = useGlobalStore();
-    // État local du formulaire
-    const [collected, setCollected] = useState<Partial<DetailInterface & { prevView?: string }>>({
-        ...initialDetail,
-        // Séparer le fichier de la preview
-        prevView: typeof initialDetail?.view?.[0] === 'string' ? initialDetail.view[0] : undefined,
-    });
-    const [localPreview, setLocalPreview] = useState<string | undefined>(
-        typeof initialDetail?.view?.[0] === 'object' ? URL.createObjectURL(initialDetail.view[0]) : undefined
-    );
-    // Erreurs potentielles (validation plus simple ici)
-    const [titleError, setTitleError] = useState(false);
-
-    // Nettoyer la preview locale
-    useEffect(() => {
-        return () => {
-            if (localPreview) URL.revokeObjectURL(localPreview);
-        };
-    }, [localPreview]);
-
-    // Handlers
-    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        const files = e.target.files;
-        if (!files?.[0]) {
-            // Si l'utilisateur annule, remettre l'image originale si elle existait
-            setCollected(prev => ({ ...prev, view: initialDetail.view ?? [] }));
-            setLocalPreview(undefined); // Supprimer la preview locale
-            return;
-        }
-        const file = files[0];
-        const previewUrl = URL.createObjectURL(file);
-
-        // Révoquer l'ancienne preview locale si elle existait
-        if (localPreview) URL.revokeObjectURL(localPreview);
-
-        setCollected(prev => ({ ...prev, view: [file] })); // Remplacer par le nouveau fichier
-        setLocalPreview(previewUrl);
-        // Reset erreur si nécessaire
-    };
-
-    const handleTextChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        const { name, value } = e.target;
-        setCollected(prev => ({ ...prev, [name]: value }));
-        if (name === 'title') setTitleError(value.trim().length === 0); // Erreur si titre vide
-    };
-
-    const handleMarkdownChange = (value: string) => {
-        setCollected(prev => ({ ...prev, description: value }));
-    };
-
-    const handleConfirm = () => {
-        // Validation simple
-        const isTitleValid = collected.title && collected.title.trim().length > 0;
-        setTitleError(!isTitleValid);
-        if (!isTitleValid) return;
-
-        // Construire l'objet de données à sauvegarder
-        const dataToSave: Partial<DetailInterface> = {
-            id: collected.id, // Peut être undefined si nouveau
-            product_id: collected.product_id,
-            title: collected.title,
-            description: collected.description,
-            type: collected.type // Garder le type si défini
-        };
-
-        // Ne pas inclure 'view' si c'est la même string qu'initialement
-        const currentViewFile = collected.view?.[0];
-        const initialViewUrl = typeof initialDetail?.view?.[0] === 'string' ? initialDetail.view[0] : null;
-
-        if (currentViewFile instanceof File) {
-            // Si un nouveau fichier a été sélectionné, on le met dans les données à sauvegarder
-            // L'API s'attend à recevoir le fichier dans FormData, pas ici directement.
-            // On signale juste qu'il y a un fichier à traiter.
-            dataToSave.view = collected.view; // Contient le File object
-        } else if (collected.view === undefined || collected.view?.length === 0) {
-            // Si l'utilisateur a supprimé l'image (et qu'il y en avait une avant)
-            if (initialViewUrl) {
-                dataToSave.view = []; // Envoyer tableau vide pour indiquer suppression
-            }
-        }
-        // Si collected.view contient une string et est différent de l'initial, on le garde (ne devrait pas arriver avec ce code)
-        else if (typeof currentViewFile === 'string' && currentViewFile !== initialViewUrl) {
-            dataToSave.view = collected.view;
-        }
-
-        onSave(dataToSave); // Envoyer les données modifiées/nouvelles
-    };
-
-    // Affichage de l'image (preview locale ou URL serveur)
-    const viewUrlForDisplay = localPreview ? getMedia({ isBackground: true, source: localPreview }) : (typeof collected?.view?.[0] === 'string' ? getMedia({ isBackground: true, source: collected.view[0], from: 'api' }) : undefined);
-    const showPlaceholder = !localPreview && (!collected?.view || collected.view.length === 0 || typeof collected.view[0] !== 'string');
-
-
-    return (
-        // Utiliser flex flex-col gap-4 ou 5, padding
-        <div className="detail-info p-4 sm:p-6 flex flex-col gap-5">
-            <div>
-                <label className='block text-sm font-medium text-gray-700 mb-1' htmlFor='detail-view-input'>
-                    {t('detail.imageLabel')}
-                </label>
-                <label htmlFor='detail-view-input' className={`relative block w-full aspect-video rounded-lg cursor-pointer overflow-hidden group bg-gray-100 border  hover:bg-gray-200`}>
-                    <div
-                        className="absolute inset-0 bg-cover bg-center transition-opacity duration-150"
-                        style={{ background: viewUrlForDisplay }}
-                    ></div>
-                    {showPlaceholder && (
-                        <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-400 group-hover:text-blue-500">
-                            <IoCloudUploadOutline size={40} />
-                            <span className="mt-1 text-xs">{t('detail.selectImagePrompt')}</span>
-                        </div>
-                    )}
-                    {!showPlaceholder && (
-                        <div className="absolute bottom-2 right-2 p-1.5 bg-white/70 backdrop-blur-sm rounded-full shadow text-gray-600 group-hover:text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <RiImageEditFill size={18} />
-                        </div>
-                    )}
-                    <input id='detail-view-input' name="view" type="file" accept='image/*,video/*' className="sr-only " onChange={handleFileChange} />
-                </label>
-            </div>
-
-            {/* Titre */}
-            <div>
-                <label className='block text-sm font-medium text-gray-700 mb-1 flex justify-between items-center' htmlFor='input-detail-title'>
-                    <span>{t('detail.titleLabel')} <IoPencil className="inline-block ml-1 w-3 h-3 text-gray-400" /></span>
-                    <span className={`text-xs ${(collected.title?.trim()?.length || 0) > 124 ? 'text-red-600' : 'text-gray-400'}`}>
-                        {(collected.title?.trim()?.length || 0)} / 124
-                    </span>
-                </label>
-                <input
-                    id='input-detail-title'
-                    name="title"
-                    className={`block px-4 w-full rounded-md shadow-sm sm:text-sm h-10 ${titleError ? 'border-red-500 ring-red-500 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'}`}
-                    type="text"
-                    value={collected.title || ''}
-                    placeholder={t('detail.titlePlaceholder')}
-                    onChange={handleTextChange}
-                />
-                {titleError && <p className="mt-1 text-xs text-red-600">{t('detail.validation.titleRequired')}</p>}
-            </div>
-
-            {/* Description */}
-            <div>
-                <label className=' text-sm font-medium text-gray-700 mb-1 flex justify-between items-center' htmlFor='input-detail-description'>
-                    <span>{t('detail.descriptionLabel')} <IoPencil className="inline-block ml-1 w-3 h-3 text-gray-400" /></span>
-                    <span className={`text-xs ${(collected.description?.trim()?.length || 0) > 2000 ? 'text-red-600' : 'text-gray-400'}`}>
-                        {(collected.description?.trim()?.length || 0)} / 2000
-                    </span>
-                </label>
-                <MarkdownEditor2
-                    value={collected.description || ''}
-                    setValue={handleMarkdownChange}
-                />
-                {/* {fieldErrors.description && <p className="mt-1 text-xs text-red-600">{fieldErrors.description}</p>} */}
-            </div>
-
-            {/* Confirmation */}
-            <Confirm
-                // Actif seulement si titre valide (et image si nouveau?)
-                canConfirm={!!collected.title?.trim()}
-                onCancel={onCancel}
-                confirm={t('common.ok')}
-                onConfirm={handleConfirm}
-            // iconConfirmLeft={mutation.isPending ? <Spinner /> : undefined} // Gérer état chargement si mutation passée en prop
-            />
-        </div>
-    );
-}
-
-
-
-
-function PageSkeleton() {
-    return (
-        <div className="page-detail w-full flex flex-col bg-gray-100 min-h-screen animate-pulse">
-            {/* Topbar */}
-            <div className="w-full h-16 bg-gray-200 flex items-center px-4">
-                <div className="h-8 w-8 bg-gray-300 rounded-full" />
-                <div className="ml-4 h-6 w-1/3 bg-gray-300 rounded" />
-            </div>
-
+        <div className="w-full min-h-screen flex flex-col animate-pulse">
+            <div className="sticky top-0 z-20"><Topbar back title={t('common.loading')} /></div>
             <main className="w-full max-w-4xl mx-auto p-4 md:p-6 lg:p-8 flex flex-col gap-6">
-                {/* Aperçu Produit */}
-                <div className="mb-6">
-                    <div className="w-full h-64 bg-gray-200 rounded-lg" />
+                <div className="h-44 bg-gray-200 dark:bg-white/5 rounded-lg"></div>
+                <div className="h-16 bg-gray-200 dark:bg-white/5 rounded-lg flex items-center justify-between p-4">
+                    <div className="h-6 w-1/3 bg-gray-300 dark:bg-gray-700 rounded-md"></div>
+                    <div className="h-10 w-28 bg-gray-300 dark:bg-gray-700 rounded-md"></div>
                 </div>
-
-                {/* Section Ajout Détail */}
-                <div className="flex items-center justify-between p-4 bg-white rounded-lg shadow-sm border border-gray-200">
-                    <div className="flex items-center gap-2">
-                        <div className="h-6 w-40 bg-gray-300 rounded" />
-                        <div className="h-5 w-16 bg-gray-300 rounded" />
-                    </div>
-                    <div className="h-10 w-32 bg-gray-300 rounded-md" />
-                </div>
-
-                {/* Liste des Détails */}
                 <div className="details flex flex-col gap-4">
-                    {[...Array(3)].map((_, i) => (
-                        <div
-                            key={i}
-                            className="p-4 bg-white rounded-lg shadow-sm border border-gray-200 flex flex-col gap-4"
-                        >
-                            <div className="h-6 w-3/4 bg-gray-300 rounded" />
-                            <div className="h-4 w-full bg-gray-300 rounded" />
-                            <div className="h-4 w-5/6 bg-gray-300 rounded" />
-                            <div className="flex gap-2">
-                                <div className="h-8 w-8 bg-gray-300 rounded-full" />
-                                <div className="h-8 w-8 bg-gray-300 rounded-full" />
-                                <div className="h-8 w-8 bg-gray-300 rounded-full" />
-                            </div>
-                        </div>
+                    {[...Array(2)].map((_, i) => (
+                        <div key={i} className="h-48 bg-gray-200 dark:bg-white/5 rounded-lg"></div>
                     ))}
                 </div>
             </main>
         </div>
     );
+};
+
+// --- Composant Principal ---
+function Page() {
+    const { t } = useTranslation();
+    const { openChild } = useChildViewer();
+    const { routeParams } = usePageContext();
+    const productId = routeParams?.['id'];
+
+    const { data: product, isLoading: isLoadingProduct, isError: isProductError, error: productError } = useGetProduct({ product_id: productId, with_feature: true }, { enabled: !!productId });
+    const { data: detailsData, isLoading: isLoadingDetails, refetch: refetchDetails } = useGetDetailList({ product_id: productId, limit: DETAIL_LIMIT + 5 }, { enabled: !!productId });
+
+    const sortedDetails = useMemo(() => [...(detailsData?.list ?? [])].sort((a, b) => b.index - a.index), [detailsData?.list]);
+
+    const createDetailMutation = useCreateDetail();
+    const updateDetailMutation = useUpdateDetail();
+    const deleteDetailMutation = useDeleteDetail();
+
+    const handleOpenDetailPopup = (detail?: DetailInterface) => {
+        const isCreating = !detail;
+        openChild(<ChildViewer title={t(isCreating ? 'detail.addPopupTitle' : 'detail.editPopupTitle')}>
+            <DetailInfo
+                detail={detail ?? { id: `new-${v4()}`, product_id: productId }}
+                onSave={(savedDetail) => {
+                    (isCreating ? createDetailMutation : updateDetailMutation).mutate(
+                        isCreating ? { detail_id: '', data: savedDetail } : { detail_id: savedDetail.id!, data: savedDetail },
+                        {
+                            onSuccess: () => {
+                                showToast(t(isCreating ? 'detail.createSuccess' : 'detail.updateSuccess'));
+                                openChild(null);
+                            },
+                            onError: (err) => showErrorToast(err),
+                        }
+                    );
+                }}
+                onCancel={() => openChild(null)}
+            />
+        </ChildViewer>, { background: 'rgba(30, 41, 59, 0.7)', blur: 4 });
+    };
+
+    const handleDelete = (detailId: string, detailTitle?: string) => openChild(<ChildViewer><ConfirmDelete
+        title={t('detail.confirmDelete', { title: detailTitle || t('detail.thisDetail') })}
+        onCancel={() => openChild(null)}
+        onDelete={() => deleteDetailMutation.mutate({ detail_id: detailId }, {
+            onSuccess: () => { showToast(t('detail.deleteSuccess'), 'WARNING'); openChild(null); },
+            onError: (err) => { showErrorToast(err); openChild(null); }
+        })}
+    /></ChildViewer>, { background: 'rgba(30, 41, 59, 0.7)', blur: 4 });
+
+    const handleMove = async (detail: DetailInterface, direction: 'up' | 'down') => {
+        const newIndex = direction === 'up' ? detail.index + 1 : detail.index - 1;
+        const neighbor = sortedDetails.find(d => d.index === newIndex);
+        if (!neighbor) return;
+
+        await Promise.all([
+            updateDetailMutation.mutateAsync({ detail_id: neighbor.id, data: { index: detail.index } }),
+            updateDetailMutation.mutateAsync({ detail_id: detail.id, data: { index: newIndex } })
+        ]).catch(err => showErrorToast(err));
+    };
+
+    // 🎨 GESTION DES ÉTATS
+    if (isLoadingProduct || isLoadingDetails) return <PageSkeleton />;
+
+    if (isProductError) {
+        return <div className="w-full min-h-screen flex flex-col"><Topbar back title={t('common.error.title')} />
+            <main className="flex-grow flex items-center justify-center p-4"><StateDisplay
+                variant="danger" icon={IoWarningOutline}
+                title={productError.status === 404 ? t('product.notFound') : t('common.error.title')}
+                description={productError.message || t('common.error.genericDesc')}>
+                <a href="/products" className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-teal-500 to-emerald-500 text-white font-semibold rounded-xl">{t('product.backToList')}</a>
+            </StateDisplay></main>
+        </div>;
+    }
+
+    if (!product) return <PageSkeleton />; // Fallback
+
+    const isDetailMaxReached = (sortedDetails?.length || 0) >= DETAIL_LIMIT;
+    const sectionStyle = "bg-white/80 dark:bg-white/5 backdrop-blur-lg rounded-lg shadow-sm border border-gray-200/80 dark:border-white/10";
+
+    return (
+        <div className="pb-[200px] w-full flex flex-col min-h-screen">
+            <Topbar back={true} title={t('detail.pageTitle', { name: product.name })} />
+            <main className="w-full max-w-4xl mx-auto p-4 md:p-6 lg:p-8 flex flex-col gap-6">
+                <ProductPreview product={product} />
+
+                <div className={`${sectionStyle} flex items-center justify-between p-4`}>
+                    <div className="flex items-center gap-3">
+                        <h2 className="text-base sm:text-lg font-bold text-gray-800 dark:text-gray-100">{t('detail.sectionTitle')}</h2>
+                        <span className="text-sm font-medium text-gray-500 dark:text-gray-400">({sortedDetails.length} / {DETAIL_LIMIT})</span>
+                        <Indicator title={t('detail.addTooltipTitle')} description={t('detail.addTooltipDesc', { limit: DETAIL_LIMIT })} />
+                    </div>
+                    <button type="button" onClick={() => handleOpenDetailPopup()} disabled={isDetailMaxReached} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-teal-600 text-white rounded-lg text-sm font-medium hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-900 focus:ring-teal-500 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                        <IoAdd size={18} />{t('detail.addButton')}
+                    </button>
+                </div>
+
+                <div className="details flex flex-col gap-4">
+                    <AnimatePresence initial={false}>
+                        {sortedDetails.map((d, i) => <motion.div key={d.id} layout initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, transition: { duration: 0.2 } }} transition={{ duration: 0.3, ease: "easeOut" }}><DetailItem
+                            detail={d} canUp={i > 0} canDown={i < sortedDetails.length - 1}
+                            onDelete={() => handleDelete(d.id, d.title)} onOption={() => handleOpenDetailPopup(d)}
+                            onDown={() => handleMove(d, 'down')} onUp={() => handleMove(d, 'up')}
+                        /></motion.div>)}
+                    </AnimatePresence>
+                    {!isLoadingDetails && sortedDetails.length === 0 && <StateDisplay variant="info" icon={IoAlbumsOutline} title={t('detail.emptyTitle')} description={t('detail.emptyDesc')}><button onClick={() => handleOpenDetailPopup()} className="inline-flex items-center gap-2 px-6 py-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-semibold rounded-xl"><IoAdd />{t('detail.addFirstButton')}</button></StateDisplay>}
+                </div>
+            </main>
+        </div>
+    );
+}
+
+// --- Composant DetailItem ---
+const DetailItem = ({ detail, onDelete, onOption, onUp, onDown, canUp, canDown }: { detail: DetailInterface, onDelete: () => void, onOption: () => void, onUp: () => void, onDown: () => void, canUp: boolean, canDown: boolean }) => {
+    const { t } = useTranslation();
+    const view = detail?.view?.[0];
+    return <div className="bg-white/60 dark:bg-white/5 backdrop-blur-lg rounded-lg shadow-sm border border-gray-200/80 dark:border-white/10 p-4 flex flex-col md:flex-row gap-4 items-start">
+        {view && <div className="w-full md:w-40 lg:w-48 aspect-square rounded-md flex-shrink-0 bg-gray-100 dark:bg-black/20 overflow-hidden">
+            {getFileType(view) === 'image' ? <img src={getMedia({ source: view, from: 'api' })} alt={detail.title || ''} className="w-full h-full object-cover" /> : <video loop autoPlay muted playsInline className="w-full h-full object-cover" src={getMedia({ source: view, from: 'api' })} />}
+        </div>}
+        <div className="flex-grow min-w-0 w-full">
+            <div className="flex justify-between items-start gap-2 mb-2">
+                <h3 className={`text-base font-semibold text-gray-800 dark:text-gray-100 ${!detail.title ? 'italic text-gray-400' : ''}`}>{detail.title || t('detail.untitled')}</h3>
+                <div className="options flex items-center gap-1 text-gray-400 dark:text-gray-500 flex-shrink-0">
+                    <button onClick={onUp} disabled={!canUp} title={t('common.moveUp')} className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-700 dark:hover:text-gray-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"><IoChevronUp /></button>
+                    <button onClick={onDown} disabled={!canDown} title={t('common.moveDown')} className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-700 dark:hover:text-gray-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"><IoChevronDown /></button>
+                    <button onClick={onOption} title={t('common.edit')} className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-700 dark:hover:text-gray-200 transition-colors"><IoEllipsisHorizontal /></button>
+                    <button onClick={onDelete} title={t('common.delete')} className="p-1.5 rounded-full hover:bg-red-100/50 dark:hover:bg-red-900/40 hover:text-red-600 dark:hover:text-red-500 transition-colors"><IoTrash /></button>
+                </div>
+            </div>
+            <div className="text-sm text-gray-600 dark:white/60 prose prose-sm max-w-none dark:prose-invert prose prose-gray dark:prose-invert"><MarkdownViewer key={detail.updated_at || detail.id} markdown={detail.description || `*${t('detail.noDescription')}*`} /></div>
+        </div>
+    </div>;
+}
+const DetailInfo = ({ detail, onSave, onCancel }: { detail: Partial<DetailInterface>, onSave: (d: Partial<DetailInterface>) => void, onCancel: () => void }) => {
+  const { t } = useTranslation()
+  const [formState, setFormState] = useState(detail)
+  const [localPreview, setLocalPreview] = useState<string | null>(null)
+
+  useEffect(() => () => {
+    if (localPreview) URL.revokeObjectURL(localPreview)
+  }, [localPreview])
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    setLocalPreview(prev => {
+      if (prev) URL.revokeObjectURL(prev)
+      return file ? URL.createObjectURL(file) : null
+    })
+    setFormState(prev => ({ ...prev, view: file ? [file] : detail.view }))
+    e.target.value = ''
+  }
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) =>
+    setFormState(prev => ({ ...prev, [e.target.name]: e.target.value }))
+
+  const handleMarkdownChange = (value: string) =>
+    setFormState(prev => ({ ...prev, description: value }))
+
+  const handleConfirm = () => {
+    if (!formState.title?.trim()) return
+    onSave(formState)
+  }
+
+  const viewUrl = localPreview || (typeof formState.view?.[0] === 'string'
+    ? getMedia({ source: formState.view[0], from: 'api' })
+    : undefined)
+
+  const showPlaceholder = !viewUrl
+  const hasTitle = !!formState.title?.trim()
+  const inputStyle = `
+    px-4 w-full h-10 rounded-lg shadow-sm sm:text-sm
+    bg-white dark:bg-gray-700
+    border ${hasTitle ? 'border-gray-300 dark:border-gray-700' : 'border-red-500'}
+    focus:border-teal-500 focus:ring-teal-500
+    text-neutral-800 dark:text-neutral-100
+    placeholder:text-gray-400 dark:placeholder:text-gray-500
+  `
+  const labelStyle = "block text-sm font-medium text-neutral-700 dark:text-neutral-200 mb-1"
+
+  return (
+    <div className="p-4 sm:p-6 flex flex-col tab:flex-row gap-5 text-neutral-800 dark:text-neutral-100">
+      <div className="w-full">
+        <label className={labelStyle}>{t('detail.imageLabel')}</label>
+        <label
+          htmlFor="detail-view-input"
+          className="
+            relative block w-full aspect-video rounded-lg overflow-hidden cursor-pointer
+            group border-2 border-dashed
+            bg-gray-100 dark:bg-neutral-800/40
+            border-gray-300 dark:border-gray-600
+            hover:border-teal-500 dark:hover:border-teal-400
+            transition
+          "
+        >
+          {viewUrl && (
+            <div
+              className="absolute inset-0 bg-cover bg-center"
+              style={{ backgroundImage: `url(${viewUrl})` }}
+            />
+          )}
+
+          {showPlaceholder && (
+            <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-400 dark:text-gray-500 group-hover:text-teal-500 dark:group-hover:text-teal-400 transition-colors">
+              <IoCloudUploadOutline size={40} />
+              <span className="mt-1 text-xs">{t('detail.selectImagePrompt')}</span>
+            </div>
+          )}
+
+          {!showPlaceholder && (
+            <div
+              className="
+                absolute bottom-2 right-2 p-1.5 rounded-full shadow
+                bg-white/80 dark:bg-neutral-800/70 backdrop-blur-md
+                text-gray-800 dark:text-gray-200
+                opacity-0 group-hover:opacity-100 transition-opacity
+              "
+            >
+              <RiImageEditFill size={18} />
+            </div>
+          )}
+
+          <input
+            id="detail-view-input"
+            type="file"
+            accept="image/*,video/*"
+            className="sr-only"
+            onChange={handleFileChange}
+          />
+        </label>
+      </div>
+
+      <div className="w-full space-y-4">
+        <div>
+          <label className={`${labelStyle} flex justify-between`} htmlFor="input-detail-title">
+            <span>{t('detail.titleLabel')}</span>
+            <span
+              className={`text-xs ${formState.title?.length && formState.title.length > 124
+                ? 'text-red-500'
+                : 'text-gray-400 dark:text-gray-500'
+                }`}
+            >
+              {(formState.title?.length || 0)}/124
+            </span>
+          </label>
+          <input
+            id="input-detail-title"
+            name="title"
+            type="text"
+            value={formState.title || ''}
+            placeholder={t('detail.titlePlaceholder')}
+            onChange={handleChange}
+            className={inputStyle}
+            maxLength={124}
+          />
+        </div>
+
+        <div>
+          <label className={labelStyle}>{t('detail.descriptionLabel')}</label>
+          <MarkdownEditor2 value={formState.description || ''} setValue={handleMarkdownChange} />
+        </div>
+
+        <Confirm canConfirm={hasTitle} onCancel={onCancel} onConfirm={handleConfirm} />
+      </div>
+    </div>
+  )
 }

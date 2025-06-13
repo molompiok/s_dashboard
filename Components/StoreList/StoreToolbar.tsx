@@ -43,7 +43,7 @@ export function StoreToolbar({ filter, onFilterChange, newStoreRequire }: StoreT
                 {/* Filtres de Statut - Design Moderne */}
                 <div className="flex items-center">
                     <IoFunnelOutline className="hidden sl2:block w-4 h-4 text-gray-500 dark:text-gray-400 mr-2 flex-shrink-0" />
-                    <div className="inline-flex items-center bg-gray-100 dark:bg-gray-800 rounded-xl p-1 shadow-sm border border-gray-200 dark:border-gray-700 gap-1">
+                    <div className="inline-flex items-center  dark:bg-gray-800  p-1 gap-1">
                         {(['all', 'active', 'inactive'] as const).map((status, index) => (
                             <button
                                 key={status}

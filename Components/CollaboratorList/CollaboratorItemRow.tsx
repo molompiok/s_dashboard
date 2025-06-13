@@ -1,20 +1,19 @@
 // Components/CollaboratorList/CollaboratorItemRow.tsx
 
-import { Role as RoleInterface, TypeJsonRole, UserInterface } from "../../api/Interfaces/Interfaces";
+import { Role as RoleInterface, UserInterface } from "../../api/Interfaces/Interfaces";
 import { useTranslation } from "react-i18next";
 import { getMedia } from "../Utils/StringFormater";
-import { IoMailOutline, IoPencil, IoShieldCheckmarkOutline, IoTrash } from "react-icons/io5"; // Icônes
-import { useRemoveCollaborator } from "../../api/ReactSublymusApi"; // Hook suppression
-import { useChildViewer } from "../ChildViewer/useChildViewer"; // Pour confirmation
+import { IoMailOutline, IoPencil, IoShieldCheckmarkOutline, IoTrash } from "react-icons/io5";
+import { useRemoveCollaborator } from "../../api/ReactSublymusApi";
+import { useChildViewer } from "../ChildViewer/useChildViewer";
 import { ConfirmDelete } from "../Confirm/ConfirmDelete";
 import { ChildViewer } from "../ChildViewer/ChildViewer";
 import logger from "../../api/Logger";
 import { showErrorToast, showToast } from "../Utils/toastNotifications";
 
 interface CollaboratorItemRowProps {
-    collaboratorRole: RoleInterface & { user: UserInterface }; // Type combiné attendu de l'API
-    onEditPermissions: () => void; // Callback pour ouvrir le popup des permissions
-    // onDeleteSuccess?: (userId: string) => void; // Callback optionnel
+    collaboratorRole: RoleInterface & { user: UserInterface };
+    onEditPermissions: () => void;
 }
 
 export function CollaboratorItemRow({ collaboratorRole, onEditPermissions }: CollaboratorItemRowProps) {
@@ -22,13 +21,10 @@ export function CollaboratorItemRow({ collaboratorRole, onEditPermissions }: Col
     const { openChild } = useChildViewer();
     const deleteCollaboratorMutation = useRemoveCollaborator();
 
-    const user = collaboratorRole.user; // Accès direct à l'objet user
-    const role = collaboratorRole; // Accès à l'objet role (permissions)
+    const user = collaboratorRole.user;
+    const role = collaboratorRole;
+    const activePermissionsCount = Object.values(role).filter(v => v === true).length;
 
-    // Compter les permissions actives (exemple simple)
-    const activePermissionsCount = Object.keys(role).filter(key => key !== 'id' && key !== 'user_id' && key !== 'created_at' && key !== 'updated_at' && (role as any)[key] === true).length;
-
-    // Handler pour la suppression
     const handleDelete = () => {
         openChild(
             <ChildViewer>
@@ -36,71 +32,58 @@ export function CollaboratorItemRow({ collaboratorRole, onEditPermissions }: Col
                     title={t('collaborator.confirmDelete', { name: user.full_name || user.email })}
                     onCancel={() => openChild(null)}
                     onDelete={() => {
-                        deleteCollaboratorMutation.mutate(
-                            {
-                                user_id: user.id,
+                        deleteCollaboratorMutation.mutate({ user_id: user.id }, {
+                            onSuccess: () => {
+                                showToast(t('collaborator.deleteSuccess'), 'WARNING');
+                                openChild(null);
                             },
-                            {
-                                onSuccess: () => {
-                                    logger.info(`Collaborator ${user.id} removed`);
-                                    openChild(null);
-                                    showToast("Collaborateur supprimé avec succès", 'WARNING'); // ✅ Toast succès
-                                },
-                                onError: (error) => {
-                                    logger.error({ error }, `Failed to remove collaborator ${user.id}`);
-                                    openChild(null);
-                                    showErrorToast(error); // ❌ Toast erreur
-                                },
-                            }
-                        );
+                            onError: (error) => {
+                                showErrorToast(error);
+                                openChild(null);
+                            },
+                        });
                     }}
                 />
             </ChildViewer>,
-            { background: '#3455' }
+            { background: 'rgba(30, 41, 59, 0.7)', blur: 4 }
         );
     };
 
     return (
-        // Utiliser flex, items-center, gap, padding, border-b, hover
-        <div className="collaborator-item-row flex items-center gap-3 sm:gap-4 px-4 py-3 border-b border-gray-100 hover:bg-gray-50">
+        // 🎨 Style de la ligne avec adaptation au mode nuit
+        <div className="collaborator-item-row flex items-center gap-3 sm:gap-4 px-4 py-3 border-b border-gray-100 dark:border-white/10 last:border-b-0 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors duration-150">
 
             {/* Avatar/Initiales */}
-            <div className="flex-shrink-0 w-10 h-10 rounded-full bg-cover bg-center bg-gray-200 text-gray-500 font-medium text-sm flex items-center justify-center"
-                style={{ background: user.photo?.[0] ? getMedia({isBackground:true,source:user.photo[0]}) : 'none' }}
+            <div className="flex-shrink-0 w-10 h-10 rounded-full bg-cover bg-center bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 font-medium text-sm flex items-center justify-center"
+                style={{ background: user.photo?.[0] ? getMedia({ isBackground: true, source: user.photo[0] }) : undefined }}
             >
                 {!user.photo?.[0] && (user.full_name?.substring(0, 2).toUpperCase() || '?')}
             </div>
 
             {/* Nom & Email */}
-            {/* Utiliser flex-grow min-w-0 */}
             <div className="flex-grow min-w-0 flex flex-col">
-                <p className='font-medium text-sm text-gray-800 truncate' title={user.full_name}>
+                <p className='font-medium text-sm text-gray-800 dark:text-gray-100 truncate' title={user.full_name}>
                     {user.full_name || t('common.anonymous')}
                 </p>
-                <a href={`mailto:${user.email}`} className='text-xs text-gray-500 mt-0.5 flex items-center gap-1 hover:text-blue-600 w-fit' title={user.email}>
-                    <IoMailOutline className="w-3 h-3" />
+                {/* 🎨 Lien mailto avec couleur `teal` au survol */}
+                <a href={`mailto:${user.email}`} className='text-xs text-gray-500 dark:text-gray-400 mt-0.5 flex items-center gap-1.5 hover:text-teal-600 dark:hover:text-teal-400 w-fit transition-colors' title={user.email}>
+                    <IoMailOutline className="w-3.5 h-3.5" />
                     <span className="truncate">{user.email}</span>
                 </a>
             </div>
 
-            {/* Nombre de Permissions (visible sur sm+) */}
-            <div className="hidden sm:flex items-center gap-1 text-xs text-gray-500 flex-shrink-0 w-28" title={t('collaborator.activePermissionsTooltip')}>
-                <IoShieldCheckmarkOutline className="w-4 h-4 text-gray-400" />
+            {/* Nombre de Permissions */}
+            <div className="hidden sm:flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 flex-shrink-0 w-28" title={t('collaborator.activePermissionsTooltip')}>
+                <IoShieldCheckmarkOutline className="w-4 h-4 text-gray-400 dark:text-gray-500" />
                 <span>{t('collaborator.permissionsCount', { count: activePermissionsCount })}</span>
             </div>
 
-            {/* Date d'ajout (visible sur md+) */}
-            {/* <div className="hidden md:flex items-center gap-1 text-xs text-gray-500 flex-shrink-0 w-24" title={t('common.createdAt')}>
-                 <span>{DateTime.fromISO(role.created_at).setLocale(t('common.locale')).toLocaleString(DateTime.DATE_SHORT)}</span>
-             </div> */}
-
             {/* Actions */}
-            {/* Utiliser flex-shrink-0 ml-auto sm:ml-0 gap-2 */}
-            <div className="flex items-center gap-2 flex-shrink-0 ml-auto sm:ml-0">
-                {/* Bouton Modifier Permissions */}
+            <div className="flex items-center gap-1 flex-shrink-0 ml-auto sm:ml-0">
+                {/* 🎨 Bouton Modifier avec couleur `teal` au survol */}
                 <button
                     onClick={onEditPermissions}
-                    className="p-1.5 rounded text-gray-400 hover:bg-gray-100 hover:text-blue-600 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    className="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-teal-600 dark:hover:text-teal-400 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all"
                     title={t('collaborator.editPermissionsButton')}
                 >
                     <IoPencil className="w-4 h-4" />
@@ -109,7 +92,7 @@ export function CollaboratorItemRow({ collaboratorRole, onEditPermissions }: Col
                 <button
                     onClick={handleDelete}
                     disabled={deleteCollaboratorMutation.isPending}
-                    className="p-1.5 rounded text-gray-400 hover:bg-red-50 hover:text-red-600 focus:outline-none focus:ring-1 focus:ring-red-500 disabled:opacity-50"
+                    className="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-red-100/50 dark:hover:bg-red-900/40 hover:text-red-600 dark:hover:text-red-500 focus:outline-none focus:ring-2 focus:ring-red-500 disabled:opacity-50 transition-all"
                     title={t('common.delete')}
                 >
                     <IoTrash className="w-4 h-4" />
@@ -120,22 +103,19 @@ export function CollaboratorItemRow({ collaboratorRole, onEditPermissions }: Col
 }
 
 // --- Skeleton pour CollaboratorItemRow ---
+// 🎨 Skeleton adapté au mode nuit
 export function CollaboratorListSkeleton() {
     return (
-        <div className="collaborator-item-row flex items-center gap-3 sm:gap-4 px-4 py-3 border-b border-gray-100 animate-pulse">
-            {/* Avatar Placeholder */}
-            <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gray-300"></div>
-            {/* Nom & Email Placeholder */}
-            <div className="flex-grow min-w-0 flex flex-col gap-1">
-                <div className="h-5 w-2/5 bg-gray-300 rounded"></div> {/* Nom */}
-                <div className="h-3 w-3/5 bg-gray-200 rounded"></div> {/* Email */}
+        <div className="collaborator-item-row flex items-center gap-3 sm:gap-4 px-4 py-3 border-b border-gray-100 dark:border-white/10 animate-pulse">
+            <div className="flex-shrink-0 w-10 h-10 rounded-full bg-gray-300 dark:bg-gray-700"></div>
+            <div className="flex-grow min-w-0 flex flex-col gap-2">
+                <div className="h-4 w-2/5 bg-gray-300 dark:bg-gray-700 rounded"></div>
+                <div className="h-3 w-3/5 bg-gray-200 dark:bg-gray-800 rounded"></div>
             </div>
-            {/* Permissions Placeholder */}
-            <div className="hidden sm:flex h-4 w-20 bg-gray-200 rounded flex-shrink-0"></div>
-            {/* Actions Placeholder */}
+            <div className="hidden sm:flex h-4 w-20 bg-gray-200 dark:bg-gray-800 rounded flex-shrink-0"></div>
             <div className="flex items-center gap-2 flex-shrink-0 ml-auto sm:ml-0">
-                <div className="w-7 h-7 bg-gray-200 rounded"></div>
-                <div className="w-7 h-7 bg-gray-200 rounded"></div>
+                <div className="w-8 h-8 bg-gray-200 dark:bg-gray-800 rounded-full"></div>
+                <div className="w-8 h-8 bg-gray-200 dark:bg-gray-800 rounded-full"></div>
             </div>
         </div>
     );

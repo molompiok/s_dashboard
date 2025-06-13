@@ -93,6 +93,7 @@ export function MarkdownEditor2({ value, setValue,error }: { value: string, setV
           onKeyup={()=>{
             handleChange()
           }}
+          
           initialValue={value || " "}
           previewStyle="vertical"
           initialEditType="wysiwyg"

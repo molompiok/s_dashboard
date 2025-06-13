@@ -167,7 +167,7 @@ function Page() {
                     type: 'text', // Un seul message texte pour commencer
                     section: 'announcementBar',
                     labelKey: 'themeEditor.options.announcementText',
-                    defaultValue: 'Livraison gratuite dès 50€ d\'achat !',
+                    defaultValue: 'Livraison gratuite dès 50cfa d\'achat !',
                     descriptionKey: 'themeEditor.options.announcementTextDesc'
                 },
                 // Si tu veux une LISTE de textes défilants (plus complexe)
@@ -458,7 +458,7 @@ function Page() {
                 //display position of promotion text
                 {
                     key: 'promotionTextPosition',
-                    type: 'select', 
+                    type: 'select',
                     section: 'productDisplay',
                     labelKey: 'themeEditor.options.promotionTextPosition',
                     defaultValue: 'top-left',

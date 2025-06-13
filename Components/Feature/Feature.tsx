@@ -10,6 +10,15 @@ import { FeatureInfo } from '../FeatureInfo/FeatureInfo';
 import { ConfirmDelete } from '../Confirm/ConfirmDelete';
 import { useTranslation } from 'react-i18next'; // ✅ i18n
 
+import { FV_IconText_Info } from '../FV_IconText_Info/FV_IconText_Info';
+import { ColorInfo } from '../FV_Color_Info/FV_Color_Info';
+import logger from '../../api/Logger';
+import { JSX, useMemo } from 'react';
+import { ChildViewer } from '../ChildViewer/ChildViewer';
+import { useChildViewer } from '../ChildViewer/useChildViewer';
+// Importer d'autres formulaires Info ici (DateInfo, InputInfo, etc.)
+
+
 export { Feature };
 
 // Props du composant Feature
@@ -202,16 +211,6 @@ export function Value({ value, feature, onRemove, onClick }: { onClick?: () => v
         </div>
     );
 }
-
-// --- Fonction Utilitaire getInfoPopup --- (à mettre dans FeatureUtils.ts?)
-import { FV_IconText_Info } from '../FV_IconText_Info/FV_IconText_Info';
-import { ColorInfo } from '../FV_Color_Info/FV_Color_Info';
-import logger from '../../api/Logger';
-import { JSX, useMemo } from 'react';
-import { useApp } from '../../renderer/AppStore/UseApp';
-import { ChildViewer } from '../ChildViewer/ChildViewer';
-import { useChildViewer } from '../ChildViewer/useChildViewer';
-// Importer d'autres formulaires Info ici (DateInfo, InputInfo, etc.)
 
 export function getInfoPopup({ value, feature, onChange, onCancel }: {
     feature: Partial<FeatureInterface>,

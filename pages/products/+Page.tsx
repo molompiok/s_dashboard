@@ -20,7 +20,7 @@ function Page() {
     <div className="products  pb-[200px] w-full min-h-screen flex flex-col">
       <Topbar back={true} breadcrumbs={breadcrumbs} />
       {/* Conteneur pour le contenu principal avec padding et centrage */}
-      <main className="w-full max-w-7xl mx-auto p-2 sx:4 md:p-6 lg:p-8 flex flex-col gap-6"> {/* Ajouter gap */}
+      <main className="w-full max-w-7xl mx-auto p-2 sx:p-6 md:p-8  flex flex-col gap-6"> {/* Ajouter gap */}
         {/* Les composants enfants utiliseront leur propre logique et styles Tailwind */}
         <CategoriesList />
         <ProductList />

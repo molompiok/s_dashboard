@@ -6,35 +6,37 @@ import { useGetVisitDetails, useGetOrderDetailsStats } from "../../../api/ReactS
 import { PeriodType, StatsData } from "../../../api/Interfaces/Interfaces";
 import { useGlobalStore } from "../../../api/stores/StoreStore";
 import { useTranslation } from "react-i18next";
+import { ClientCall } from "../../../Components/Utils/functions";
 
 // Types pour une meilleure type safety
 interface StatCard {
-  title: string;
-  value: number | string;
-  icon: React.ComponentType<{ className?: string }>;
-  color: string;
-  isLoading: boolean;
-  isError: boolean;
-  chartData?: number[];
-  chartColor?: string;
-  href: string;
+    title: string;
+    value: number | string;
+    icon: React.ComponentType<{ className?: string }>;
+    color: string;
+    isLoading: boolean;
+    isError: boolean;
+    chartData?: number[];
+    chartColor?: string;
+    href: string;
 }
 
 // Constantes pour éviter la duplication
 const PERIODS = ['day', 'week', 'month'] as const;
-const ACCOUNT_BLUR_CHARS = '●●●●●●';
+
+const DEFAULT_VISIBILITY = 'account_visiblity';
 
 export function HomeStat() {
     const { t } = useTranslation();
-    const [isAccountVisible, setIsAccountVisible] = useState(false);
+    const [isAccountVisible, setIsAccountVisible] = useState<Boolean>(ClientCall(function(){return localStorage.getItem(DEFAULT_VISIBILITY)=='true'},false));
     const [isPeriodMenuOpen, setIsPeriodMenuOpen] = useState(false);
     const [period, setPeriod] = useState<PeriodType>('month');
     const [cloudWidth, setCloudWidth] = useState(100);
-    
+
     // Refs
     const accountRef = useRef<HTMLSpanElement | null>(null);
     const periodMenuRef = useRef<HTMLDivElement | null>(null);
-    
+
     // Global state
     const { currentStore } = useGlobalStore();
 
@@ -46,7 +48,7 @@ export function HomeStat() {
         error: orderStatsError
     } = useGetOrderDetailsStats(
         { period },
-        { 
+        {
             enabled: !!currentStore,
             // retry: 2,
             // staleTime: 5 * 60 * 1000, // 5 minutes
@@ -60,7 +62,7 @@ export function HomeStat() {
         error: visitStatsError
     } = useGetVisitDetails(
         { period },
-        { 
+        {
             enabled: !!currentStore,
             // retry: 2,
             // staleTime: 5 * 60 * 1000, // 5 minutes
@@ -104,7 +106,12 @@ export function HomeStat() {
             const width = accountRef.current.getBoundingClientRect().width;
             setCloudWidth(width);
         }
-        setIsAccountVisible(prev => !prev);
+        
+        setIsAccountVisible(prev => {
+            const v = !prev
+            localStorage.setItem(DEFAULT_VISIBILITY,v+'');
+            return v
+        });
     }, []);
 
     const handlePeriodChange = useCallback((newPeriod: PeriodType) => {
@@ -185,42 +192,38 @@ export function HomeStat() {
     }, []);
 
     return (
-        <div className="w-full grid grid-cols-1 min-[420px]:grid-cols-2 gap-5 p-2 bg-gradient-to-br from-gray-50 to-slate-200/25 rounded-2xl">
+        <div className="w-full grid grid-cols-1 dark:text-gray-200 min-[420px]:grid-cols-2 gap-5 p-2 bg-gradient-to-br from-gray-50 to-slate-200/25 dark:from-slate-900/20 dark:to-slate-800/20 rounded-2xl">
             {/* Account Total Card */}
-            <div className="relative bg-white/95 shadow-md rounded-xl p-5 transition-all duration-200 ease-in-out hover:shadow-lg min-[420px]:col-span-2">
+            <div className="relative bg-white/95 dark:bg-white/5 shadow-md rounded-xl p-5 transition-all duration-200 ease-in-out hover:shadow-lg min-[420px]:col-span-2 border border-transparent dark:border-white/10">
                 <div className="flex justify-between items-center mb-4">
-                    <h3 className="text-slate-600 text-sm font-semibold flex items-center gap-2">
+                    <h3 className="text-slate-600 dark:text-slate-300 text-sm font-semibold flex items-center gap-2">
                         <span className="w-2 h-2 bg-indigo-500 rounded-full"></span>
                         {t('dashboard.accountTotal')}
                     </h3>
-                    
+
                     {/* Period Selector */}
                     <div className="relative" ref={periodMenuRef}>
                         <button
-                            className="flex items-center gap-2 px-3 py-1.5 text-sm bg-gray-50 hover:bg-gray-100 rounded-lg transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
+                            className="flex items-center gap-2 px-3 py-1.5 text-sm bg-gray-50 dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10 rounded-lg transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1"
                             onClick={togglePeriodMenu}
                             onKeyDown={handleKeyDown}
                             aria-expanded={isPeriodMenuOpen}
                             aria-haspopup="listbox"
                             aria-label={t('dashboard.selectPeriod')}
                         >
-                            <span className="capitalize font-medium text-slate-700">
+                            <span className="capitalize font-medium text-slate-700 dark:text-gray-100">
                                 {t(`dashboard.periods.${period}`, period)}
                             </span>
-                            <IoChevronDown 
-                                className={`text-slate-500 transition-transform duration-200 ${
-                                    isPeriodMenuOpen ? 'rotate-180' : ''
-                                }`} 
+                            <IoChevronDown
+                                className={`text-slate-500 dark:text-gray-300 transition-transform duration-200 ${isPeriodMenuOpen ? 'rotate-180' : ''
+                                    }`}
                             />
                         </button>
-                        
+
                         {/* Dropdown Menu */}
                         <div
-                            className={`absolute right-0 mt-2 w-32 bg-white shadow-lg rounded-xl border border-gray-100 py-2 z-50 transition-all duration-200 ease-in-out transform origin-top-right ${
-                                isPeriodMenuOpen 
-                                    ? 'opacity-100 visible scale-100' 
-                                    : 'opacity-0 invisible scale-95'
-                            }`}
+                            className={`absolute right-0 mt-2 w-32 bg-white dark:bg-slate-800 shadow-lg rounded-xl border border-gray-100 dark:border-white/10 py-2 z-50 transition-all duration-200 ease-in-out transform origin-top-right ${isPeriodMenuOpen ? 'opacity-100 visible scale-100' : 'opacity-0 invisible scale-95'
+                                }`}
                             role="listbox"
                             aria-label={t('dashboard.periodOptions')}
                         >
@@ -228,11 +231,10 @@ export function HomeStat() {
                                 <button
                                     key={periodOption}
                                     onClick={() => handlePeriodChange(periodOption)}
-                                    className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 transition-colors duration-150 ${
-                                        period === periodOption 
-                                            ? 'text-blue-600 font-medium bg-blue-50' 
-                                            : 'text-gray-700'
-                                    }`}
+                                    className={`w-full text-left px-4 py-2 text-sm hover:bg-gray-50 dark:hover:bg-white/10 transition-colors duration-150 ${period === periodOption
+                                            ? 'text-blue-600 font-medium bg-blue-50 dark:bg-blue-900/30 dark:text-blue-400'
+                                            : 'text-gray-700 dark:text-gray-200'
+                                        }`}
                                     role="option"
                                     aria-selected={period === periodOption}
                                 >
@@ -246,22 +248,22 @@ export function HomeStat() {
                 {/* Revenue Display */}
                 <div className="flex flex-col gap-3">
                     <div className="flex items-center gap-3">
-                        <h1 className="text-3xl font-bold text-slate-800 flex items-center gap-3">
+                        <h1 className="text-3xl font-bold text-slate-800 dark:text-white flex items-center gap-3">
                             {!isAccountVisible ? (
                                 <span ref={accountRef} className="tabular-nums">
                                     {formatCurrency(totalRevenue)}
                                 </span>
                             ) : (
-                                <Nuage 
-                                    color="#64748b" 
-                                    density={1} 
-                                    height={36} 
-                                    width={cloudWidth} 
-                                    speed={1} 
+                                <Nuage
+                                    color="#678"
+                                    density={1}
+                                    height={36}
+                                    width={cloudWidth}
+                                    speed={1}
                                 />
                             )}
                             <button
-                                className="p-2 text-slate-500 hover:text-slate-700 hover:bg-gray-100 rounded-lg transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="p-2 text-slate-500 dark:text-gray-300 hover:text-slate-700 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-white/10 rounded-lg transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500"
                                 onClick={toggleAccountVisibility}
                                 aria-label={isAccountVisible ? t('common.showAmount') : t('common.hideAmount')}
                                 title={isAccountVisible ? t('common.showAmount') : t('common.hideAmount')}
@@ -270,16 +272,15 @@ export function HomeStat() {
                             </button>
                         </h1>
                     </div>
-                    
-                    {/* Growth indicator could be added here */}
-                    <div className="text-sm text-slate-500">
+
+                    <div className="text-sm text-slate-500 dark:text-gray-400">
                         {t('dashboard.periodRevenue', { period: t(`dashboard.periods.${period}`) })}
                     </div>
                 </div>
-                
-                <a 
-                    href="/billing" 
-                    className="absolute bottom-3 right-4 text-sm text-blue-600 hover:text-blue-800 hover:underline transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 rounded px-1"
+
+                <a
+                    href={undefined}
+                    className="absolute bottom-3 right-4 text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline transition-colors duration-150 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 rounded px-1"
                 >
                     {t('common.details')}
                 </a>
@@ -291,71 +292,71 @@ export function HomeStat() {
             ))}
         </div>
     );
+
 }
 
 // Composant StatCard séparé pour une meilleure réutilisabilité
-function StatCard({ 
-    title, 
-    value, 
-    icon: Icon, 
-    color, 
-    isLoading, 
-    isError, 
-    chartData, 
-    chartColor = 'blue', 
-    href 
+function StatCard({
+    title,
+    value,
+    icon: Icon,
+    color,
+    isLoading,
+    isError,
+    chartData,
+    chartColor = 'blue',
+    href
 }: StatCard) {
     const { t } = useTranslation();
 
     return (
-        <div className="relative bg-white/95 shadow-md rounded-xl p-5 transition-all duration-200 ease-in-out hover:shadow-lg group">
+        <div className="relative bg-white/95 dark:bg-white/5 shadow-md dark:shadow-none rounded-xl p-5 transition-all duration-200 ease-in-out hover:shadow-lg dark:hover:shadow-xl group border border-transparent dark:border-white/10">
             <div className="flex justify-between items-center mb-4">
-                <h3 className="text-slate-600 text-sm font-semibold flex items-center gap-2">
-                    <Icon className="w-5 h-5 text-slate-500" />
+                <h3 className="text-slate-600 dark:text-gray-200 text-sm font-semibold flex items-center gap-2">
+                    <Icon className="w-5 h-5 text-slate-500 dark:text-gray-400" />
                     {title}
                 </h3>
             </div>
-            
+
             <div className="flex flex-col gap-3">
                 <div className="flex items-start justify-between gap-4">
                     <div className="flex-1">
                         {isLoading && (
                             <div className="flex items-center gap-2">
-                                <div className="w-6 h-6 border-2 border-blue-200 border-t-blue-600 rounded-full animate-spin"></div>
-                                <span className="text-sm text-gray-500">{t('common.loading')}</span>
+                                <div className="w-6 h-6 border-2 border-blue-200 dark:border-blue-400 border-t-blue-600 dark:border-t-blue-500 rounded-full animate-spin"></div>
+                                <span className="text-sm text-gray-500 dark:text-gray-300">{t('common.loading')}</span>
                             </div>
                         )}
-                        
+
                         {isError && (
-                            <div className="flex items-center gap-2 text-red-500">
+                            <div className="flex items-center gap-2 text-red-500 dark:text-red-400">
                                 <span className="text-sm">⚠️</span>
                                 <span className="text-sm">{t('common.error')}</span>
                             </div>
                         )}
-                        
+
                         {!isLoading && !isError && (
                             <h2 className={`text-2xl font-bold ${color} tabular-nums`}>
                                 {typeof value === 'number' ? value.toLocaleString() : value}
                             </h2>
                         )}
                     </div>
-                    
+
                     {/* Chart */}
                     {chartData && chartData.length > 0 && !isLoading && !isError && (
                         <div className="flex-shrink-0">
-                            <MyChart 
-                                datasets={chartData} 
+                            <MyChart
+                                datasets={chartData}
                                 color={chartColor as any}
-                                // className="w-20 h-12"
                             />
                         </div>
                     )}
                 </div>
             </div>
-            
-            <a 
+
+            <a
                 href={href}
-                className="absolute bottom-3 left-4 text-sm text-blue-600 hover:text-blue-800 hover:underline transition-colors duration-150 opacity-0 group-hover:opacity-100 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-1 rounded px-1"
+                className="absolute bottom-1 left-4 text-sm text-blue-600 dark:text-emerald-400 hover:text-blue-800 dark:hover:text-emerald-300 hover:underline transition-colors duration-150 opacity-0 group-hover:opacity-100 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-emerald-500 focus:ring-offset-1 rounded px-1"
             >
                 {t('common.seeMore')}
             </a>

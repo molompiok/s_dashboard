@@ -36,9 +36,9 @@ export function CreateControl({
   }
 
   return (
-    <div className="flex flex-wrap items-center justify-between gap-4 p-4 bg-white rounded-lg border border-gray-200 shadow-sm">
+    <div className="flex flex-wrap items-center justify-between gap-4 p-4 bg-white rounded-lg border border-gray-200 shadow-sm dark:bg-white/5  border-gray/10 dark:border-white/10">
       {/* Titre */}
-      <span className="text-base font-medium text-gray-800">{title}</span>
+      <span className="text-base font-medium text-gray-800 dark:text-white">{canCreate?title:t('common.infoMissing')}</span>
 
       {/* Groupe de boutons */}
       <div className="flex items-center gap-3">

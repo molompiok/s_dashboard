@@ -211,7 +211,7 @@ export function Page() {
     />
     // --- Rendu ---
     return (
-        <div className="page-stats  pb-[200px]  flex pb-48 flex-col lg:flex-row min-h-screen">
+        <div className="page-stats  pb-[200px]  flex  flex-col lg:flex-row min-h-screen">
 
             <aside className="hidden lg:block lg:w-60 min-w-60 lg:sticky lg:top-0 lg:h-screen lg:overflow-y-auto  shadow">
                 <div className="">
@@ -252,43 +252,34 @@ export function Page() {
                     </div>
                 </div>
             </div>
-
-            <div className="relative p-2  bg-gray-50 min-h-screen">
-                <h1 className="text-2xl md:text-3xl font-bold text-gray-800 mb-6">{t('stats.pageTitle')}</h1>
+            <div className="relative p-2   min-h-screen">
+                <h1 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white/80 mb-6">{t('stats.pageTitle')}</h1>
                 {/* Sidebar desktop */}
 
 
                 {/* Affichage principal (KPIs ou Preview) */}
-                <div className="mt-6"> {/* Espacement après les filtres */}
-                    {isLoading ? (
-                        <div className="text-center text-gray-500 py-10">{t('common.loading')}</div>
-                    ) : isError ? (
-                        <div className="text-center text-red-600 py-10">{error?.message || t('common.error_occurred')}</div>
+                <div className="mt-6 w-full"> {/* Espacement après les filtres */}
+
+                    {/* Condition pour afficher Client Preview OU Product Preview OU KPIs */}
+                    {userId ? (
+                        // Afficher Client Preview si un client est sélectionné
+                        <ClientPreview isLoading={isLoading} client={selectedClient} />
+                    ) : productId ? (
+                        // Afficher Product Preview si un produit est sélectionné (et pas de client)
+                        selectedProduct && <ProductPreview isLoading={isLoading} product={selectedProduct} />
                     ) : (
-                        <>
-                            {/* Condition pour afficher Client Preview OU Product Preview OU KPIs */}
-                            {userId ? (
-                                // Afficher Client Preview si un client est sélectionné
-                                <ClientPreview client={selectedClient} />
-                            ) : productId ? (
-                                // Afficher Product Preview si un produit est sélectionné (et pas de client)
-                                selectedProduct && <ProductPreview product={selectedProduct} />
-                            ) : (
-                                // Afficher KPIs si aucun client/produit n'est sélectionné
-                                <KpiCards kpis={kpiData} />
-                            )}
-                        </>
+                        // Afficher KPIs si aucun client/produit n'est sélectionné
+                        <KpiCards isLoading={isLoading} kpis={kpiData} />
                     )}
                 </div>
 
-                {/* Affichage des sections de stats détaillées */}
-                {/* TODO: Ajouter la logique pour rendre en onglets sur mobile */}
                 <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6"> {/* Grille pour les sections Visites/Commandes */}
 
                     {/* Section Visites (conditionnelle) */}
                     {/* Ne pas afficher si on filtre par produit OU si loading/erreur */}
-                    {!productId && !isLoading && !isError && (
+                    {!productId && !isError && (
                         <VisitStatsSection
+                        isLoading={isLoading}
                             data={visitDetailsData}
                             period={period}
                             includes={visitIncludes}
@@ -302,8 +293,9 @@ export function Page() {
                     )}
 
                     {/* Section Commandes (toujours affichée sauf si erreur/loading) */}
-                    {!isLoading && !isError && (
+                    { !isError && (
                         <OrderStatsSection
+                            isLoading={isLoading}
                             data={orderDetailsData}
                             period={period}
                             includes={orderIncludes}

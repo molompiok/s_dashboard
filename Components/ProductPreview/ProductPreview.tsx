@@ -1,59 +1,93 @@
-import { getDefaultValues } from "../Utils/parseData";
-import { ProductInterface } from "../../api/Interfaces/Interfaces";
-import { useGlobalStore } from "../../api/stores/StoreStore";
-import { getMedia } from "../Utils/StringFormater";
-import { getFileType, limit, shortNumber } from "../Utils/functions";
-import { markdownToPlainText } from "../MarkdownViewer/MarkdownViewer";
-import { IoPeopleSharp, IoPricetag, IoStarHalf } from "react-icons/io5";
+import { getDefaultValues } from "../Utils/parseData"
+import { ProductInterface } from "../../api/Interfaces/Interfaces"
+import { useGlobalStore } from "../../api/stores/StoreStore"
+import { getMedia } from "../Utils/StringFormater"
+import { getFileType, limit, shortNumber } from "../Utils/functions"
+import { markdownToPlainText } from "../MarkdownViewer/MarkdownViewer"
+import { IoPeopleSharp, IoPricetag, IoStarHalf } from "react-icons/io5"
+import { useState } from "react"
+import { NO_PICTURE } from "../Utils/constants"
+import { useTranslation } from "react-i18next"
 
-import './ProductPreview.css';
-import { useState } from "react";
-import { NO_PICTURE } from "../Utils/constants";
-import { useTranslation } from "react-i18next";
-
-
-export { ProductPreview }
-
-function ProductPreview({ product }: { product: Partial<ProductInterface> }) {
-  const { currentStore } = useGlobalStore()
-  const values = getDefaultValues(product);
-  const view = values[0]?.views?.[0];
-  const [imgError, setImgError] = useState(false);
-
-  const defaultValues = getDefaultValues(product);
-  const defaultView = defaultValues[0]?.views?.[0] || NO_PICTURE;
-  const src = getMedia({ source: defaultView, from: 'api' });
-  const fileType = getFileType(defaultView);
+export function ProductPreview({ product }: { product: Partial<ProductInterface> }) {
   const { t } = useTranslation()
+  const [imgError, setImgError] = useState(false)
+  const values = getDefaultValues(product)
+  const view = values[0]?.views?.[0]
+  const src = getMedia({ source: view || '', from: 'api' })
+  const fileType = getFileType(view || '')
+  const isVideo = fileType === 'video'
+  const displaySrc = imgError || !view ? NO_PICTURE : src
 
-  console.log({ product, defaultValues, imgError, defaultView, src, fileType });
-
-
-  return <a href={`/products/${product.id}`} className="product-preview">
-    <div className="icon-80 view">
-      {!imgError ? (
-        fileType === 'image' ? (<img src={src || NO_PICTURE} alt={product.name} loading="lazy" className="w-full h-full object-cover block" onError={() => setImgError(true)} />)
-          : fileType === 'video' ? (<video muted autoPlay loop playsInline className="w-full h-full object-cover block" src={src || ''} onError={() => setImgError(true)} />)
-            : (<img src={NO_PICTURE} alt="Placeholder" className="w-full h-full object-contain block p-2 opacity-50" />)
-      ) : (
-        <img src={NO_PICTURE} alt={t('common.imageError')} className="w-full h-full object-contain block p-2 opacity-50" />
-      )}
-    </div>
-    <div className="product-info">
-      <h2 className='ellipsis'>{limit(product?.name, 56)}</h2>
-      <span>{limit(markdownToPlainText(product?.description || ''), 56)}</span>
-    </div>
-    <div className="right">
-      <h3 className="price"><IoPricetag />{product.price?.toLocaleString('fr')} {product.currency}</h3>
-      <div className="rating">
-        <span>
-          <IoStarHalf />
-          {product.rating || 0}
-        </span>
-        <span style={{ whiteSpace: 'nowrap' }}><IoPeopleSharp />
-          {shortNumber(product.comment_count || 0)}</span>
+  return (
+    <a
+      href={`/products/${product.id}`}
+      className="
+      sx2:flex
+        group relative block rounded-xl overflow-hidden
+        bg-white/70 dark:bg-neutral-700/20 backdrop-blur-md
+        shadow-md hover:shadow-xl transition gap-2
+        p-3
+        sm:p-4
+      "
+    >
+      <div className="w-full min-w-[220px] max-w-[420px]  h-auto aspect-video rounded-lg overflow-hidden">
+        {!imgError ? (
+          isVideo ? (
+            <video
+              src={displaySrc}
+              muted
+              autoPlay
+              loop
+              playsInline
+              className="w-full h-full object-cover"
+              onError={() => setImgError(true)}
+            />
+          ) : (
+            <img
+              src={displaySrc}
+              alt={product.name || ''}
+              loading="lazy"
+              onError={() => setImgError(true)}
+              className="w-full min-w-[220px] max-w-[420px]  h-auto aspect-video object-cover transition group-hover:scale-105"
+            />
+          )
+        ) : (
+          <img
+            src={NO_PICTURE}
+            alt={t("common.imageError")}
+            className="w-full max-w-[420px] h-full object-contain opacity-40 p-4"
+          />
+        )}
       </div>
-    </div>
-  </a>
-}
 
+      <div className="flex flex-wrap">
+        <div className="mt-3 space-y-1">
+          <h2 className="text-base sm:text-lg font-semibold text-neutral-800 dark:text-neutral-100 truncate">
+            {limit(product?.name, 56)}
+          </h2>
+          <p className="text-sm sm:text-base text-neutral-500 dark:text-neutral-400 truncate">
+            {limit(markdownToPlainText(product?.description || ''), 56)}
+          </p>
+        </div>
+
+        <div className="mt-2 flex flex-wrap items-center justify-between text-sm text-neutral-700 dark:text-neutral-300">
+          <h3 className="flex items-center gap-1 font-medium">
+            <IoPricetag className="opacity-80" />
+            {product.price?.toLocaleString('fr')} {product.currency}
+          </h3>
+          <div className="flex items-center gap-3 text-xs sm:text-sm opacity-90">
+            <span className="flex items-center gap-1">
+              <IoStarHalf className="text-yellow-400" />
+              {product.rating || 0}
+            </span>
+            <span className="flex items-center gap-1">
+              <IoPeopleSharp />
+              {shortNumber(product.comment_count || 0)}
+            </span>
+          </div>
+        </div>
+      </div>
+    </a>
+  )
+}

@@ -55,6 +55,7 @@ function Nuage({ color, density, height, speed, width }: { width: number, height
                         background: color, 
                         width: `${s}px`, 
                         height: `${s}px`,
+                        opacity:ClientCall(Math.random,0)*0.5+0.5,
                         position: 'absolute',
                     }} ref={ref=>{ positions.ref = ref}}></div>
                 })

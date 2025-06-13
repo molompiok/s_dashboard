@@ -1,163 +1,134 @@
 // components/Stats/KpiCards.tsx
 import React from 'react';
-// Importez les icônes nécessaires de Lucide React
-import { DollarSign, ShoppingCart, Eye, Users, Percent, PackageOpen /*, autres si besoin */ } from 'lucide-react';
-import { KpiStatsResponse } from '../../api/Interfaces/Interfaces'; // Ajustez le chemin si nécessaire
-import { useTranslation } from 'react-i18next'; // i18n
+import { DollarSign, ShoppingCart, Eye, Users, Percent, PackageOpen } from 'lucide-react';
+import { KpiStatsResponse } from '../../api/Interfaces/Interfaces';
+import { useTranslation } from 'react-i18next';
 
 interface KpiCardsProps {
     kpis: KpiStatsResponse | undefined; // KPI data from the API
+    isLoading?: boolean; // 🎨 Added to handle loading state
 }
 
-// Define the structure for each KPI card's configuration
+// 🎨 Simplified config: color is now an object for light/dark modes
 interface KpiConfig {
-    key: keyof KpiStatsResponse; // Key in the kpis data object
-    labelKey: string; // i18n key for the display label
-    icon: React.ElementType; // The Lucide icon component
-    iconColorClass: string; // Tailwind class for icon color (e.g., 'text-blue-500')
-    bgColorClass: string; // Tailwind class for subtle background/border color (e.g., 'bg-blue-50')
-    format: 'number' | 'currency' | 'percentage'; // Formatting type
-    decimals?: number; // Number of decimals for number/percentage format
+    key: keyof KpiStatsResponse;
+    labelKey: string;
+    icon: React.ElementType;
+    color: {
+        light: string; // e.g., 'text-teal-600'
+        dark: string;  // e.g., 'text-teal-400'
+    };
+    format: 'number' | 'currency' | 'percentage';
+    decimals?: number;
 }
 
-// Array defining each KPI and its configuration
 const kpisConfig: KpiConfig[] = [
     {
-        key: 'totalRevenue',
-        labelKey: 'stats.kpi.totalRevenue',
-        icon: DollarSign,
-        iconColorClass: 'text-emerald-600',
-        bgColorClass: 'bg-emerald-50 border-emerald-200',
+        key: 'totalRevenue', labelKey: 'stats.kpi.totalRevenue', icon: DollarSign,
+        color: { light: 'text-emerald-600', dark: 'text-emerald-400' },
         format: 'currency'
     },
     {
-        key: 'totalOrders',
-        labelKey: 'stats.kpi.totalOrders',
-        icon: ShoppingCart,
-        iconColorClass: 'text-indigo-600',
-        bgColorClass: 'bg-indigo-50 border-indigo-200',
-        format: 'number'
-    },
-    //  {
-    //      key: 'itemsCount', // NOTE: 'itemsCount' is not in KpiStatsResponse yet.
-    //                      // If backend provides this KPI, add it to KpiStatsResponse type.
-    //                      // Otherwise, remove or use a placeholder if it's computed from order details data (complex).
-    //                      // Let's remove this one for now as it's not in KpiStatsResponse provided.
-    //                      // If you add an API endpoint for total items count in KPIs, put it back.
-    //                      // Let's add a placeholder for now just for the example structure:
-    //     // key: 'itemsCount', // Assuming you might add this
-    //     // labelKey: 'stats.kpi.itemsCount',
-    //     // icon: PackageOpen,
-    //     // iconColorClass: 'text-amber-600',
-    //     // bgColorClass: 'bg-amber-50 border-amber-200',
-    //     // format: 'number'
-    // },
-    {
-        key: 'totalVisits',
-        labelKey: 'stats.kpi.totalVisits',
-        icon: Eye, // Icon for visits
-        iconColorClass: 'text-blue-600',
-        bgColorClass: 'bg-blue-50 border-blue-200',
+        key: 'totalOrders', labelKey: 'stats.kpi.totalOrders', icon: ShoppingCart,
+        color: { light: 'text-indigo-600', dark: 'text-indigo-400' },
         format: 'number'
     },
     {
-        key: 'uniqueVisitors',
-        labelKey: 'stats.kpi.uniqueVisitors',
-        icon: Users, // Icon for unique users
-        iconColorClass: 'text-cyan-600',
-        bgColorClass: 'bg-cyan-50 border-cyan-200',
+        key: 'totalVisits', labelKey: 'stats.kpi.totalVisits', icon: Eye,
+        color: { light: 'text-sky-600', dark: 'text-sky-400' },
         format: 'number'
     },
     {
-        key: 'conversionRate',
-        labelKey: 'stats.kpi.conversionRate',
-        icon: Percent, // Icon for percentage/conversion
-        iconColorClass: 'text-fuchsia-600', // Example color
-        bgColorClass: 'bg-fuchsia-50 border-fuchsia-200',
-        format: 'percentage',
-        decimals: 2 // Percentage needs decimals
+        key: 'uniqueVisitors', labelKey: 'stats.kpi.uniqueVisitors', icon: Users,
+        color: { light: 'text-cyan-600', dark: 'text-cyan-400' },
+        format: 'number'
     },
     {
-        key: 'averageOrderValue',
-        labelKey: 'stats.kpi.averageOrderValue',
-        icon: DollarSign, // Same as Revenue, or another icon
-        iconColorClass: 'text-teal-600',
-        bgColorClass: 'bg-teal-50 border-teal-200',
+        key: 'conversionRate', labelKey: 'stats.kpi.conversionRate', icon: Percent,
+        color: { light: 'text-fuchsia-600', dark: 'text-fuchsia-400' },
+        format: 'percentage', decimals: 2
+    },
+    {
+        key: 'averageOrderValue', labelKey: 'stats.kpi.averageOrderValue', icon: DollarSign,
+        color: { light: 'text-teal-600', dark: 'text-teal-400' },
         format: 'currency'
     },
-    // Add more KPIs as needed here following the same structure
 ];
 
-
-const KpiCards: React.FC<KpiCardsProps> = ({ kpis }) => {
-    const { t } = useTranslation(); // i18n
-
-    // Helper function to format the value based on config type
-    const formatValue = (value: number | undefined | null, format: 'number' | 'currency' | 'percentage', decimals: number = 0): string => {
-        if (value === undefined || value === null) return '-'; // Show dash for missing data
-
-        try {
-            if (format === 'currency') {
-                // Use locale for currency formatting
-                return value.toLocaleString(t('common.locale'), { // Using i18n locale
-                    style: 'currency',
-                    currency: 'EUR', // TODO: Get actual currency from store/user config
-                    minimumFractionDigits: 0, // Avoid decimals for whole Euros/FCFA by default
-                    maximumFractionDigits: 2, // Allow decimals up to 2 if they exist
-                });
-            } else if (format === 'percentage') {
-                // Format number and append %
-                return value.toLocaleString(t('common.locale'), {
-                    minimumFractionDigits: decimals,
-                    maximumFractionDigits: decimals,
-                }) + '%';
-            } else { // 'number'
-                // Format number with separators
-                return value.toLocaleString(t('common.locale'), {
-                    minimumFractionDigits: decimals,
-                    maximumFractionDigits: decimals,
-                });
-            }
-        } catch (e) {
-            console.error("Error formatting KPI value", value, format, e);
-            return String(value); // Fallback to raw value
+const formatValue = (value: number | undefined | null, format: 'number' | 'currency' | 'percentage', locale: string, decimals: number = 0): string => {
+    if (value === undefined || value === null) return '-';
+    try {
+        if (format === 'currency') {
+            return value.toLocaleString(locale, { style: 'currency', currency: 'EUR', minimumFractionDigits: 0, maximumFractionDigits: 2 });
+        } else if (format === 'percentage') {
+            return value.toLocaleString(locale, { minimumFractionDigits: decimals, maximumFractionDigits: decimals }) + '%';
+        } else {
+            return value.toLocaleString(locale, { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
         }
-    };
+    } catch (e) {
+        console.error("Error formatting KPI value", value, format, e);
+        return String(value);
+    }
+};
 
+// 🎨 Skeleton Card Component
+const KpiCardSkeleton: React.FC = () => {
+    return (
+        <div className="flex min-w-[200px] flex-col p-4 rounded-lg bg-gray-100 dark:bg-white/5 border border-gray-200 dark:border-white/10 animate-pulse">
+            <div className="flex justify-between items-start">
+                <div className="h-5 w-2/3 bg-gray-300 dark:bg-gray-700 rounded-md"></div>
+                <div className="w-8 h-8 bg-gray-300 dark:bg-gray-700 rounded-full"></div>
+            </div>
+            <div className="mt-4 h-8 w-1/3 bg-gray-300 dark:bg-gray-700 rounded-md"></div>
+        </div>
+    );
+};
+
+
+const KpiCards: React.FC<KpiCardsProps> = ({ kpis, isLoading }) => {
+    const { t } = useTranslation();
 
     return (
-        // Grid layout for KPI cards
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 md:gap-6 mb-6">
-            {kpisConfig.map(kpi => {
-                // Get the value from the data, default to undefined/null if data is loading or key doesn't exist
-                const value = kpis?.[kpi.key as keyof KpiStatsResponse];
+        // Grid layout
+        <div className="grid grid-cols-1 w-full sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-6 gap-4 md:gap-5 mb-6">
+            {isLoading
+                ? // 🎨 Show skeletons while loading
+                  Array.from({ length: 6 }).map((_, index) => <KpiCardSkeleton key={index} />)
+                : // Show actual KPI cards when data is available
+                  kpisConfig.map(kpi => {
+                    const value = kpis?.[kpi.key];
+                    const Icon = kpi.icon;
 
-                return (
-                    // Card Container - applies soft background/border and shadow
-                    <div
-                        key={kpi.key} // Unique key for list item
-                        className={`kpi-card flex flex-col p-4 rounded-lg border ${kpi.bgColorClass} shadow-sm transition hover:shadow-md`} // Added border & shadow transition
-                    >
-
-                        {/* Label and Value */}
-                        <div className="flex items-center">
-                            {/* Icon Container */}
-                            <div className={`flex-shrink-0 p-2 mr-4 rounded-full ${kpi.iconColorClass} bg-white bg-opacity-75`}> {/* Icon with contrasting background */}
-                                {/* Render Lucide Icon component */}
-                                <kpi.icon className="w-6 h-6" strokeWidth={1.8} /> {/* Adjusted stroke width for lighter look */}
+                    return (
+                        // 🎨 Card with glassmorphism for dark mode and hover effect
+                        <div
+                            key={kpi.key}
+                            className={`kpi-card group flex flex-col p-4 rounded-lg 
+                                       bg-white/80 dark:bg-white/5
+                                       backdrop-blur-md 
+                                       border border-gray-200/80 dark:border-white/10
+                                       hover:border-gray-300 dark:hover:border-white/20
+                                       shadow-sm hover:shadow-lg dark:hover:shadow-2xl dark:hover:shadow-black/20
+                                       transition-all duration-300 ease-in-out`}
+                        >
+                            {/* Header: Label + Icon */}
+                            <div className="flex justify-between items-start">
+                                <div className="text-sm font-medium text-gray-600 dark:text-gray-400">
+                                    {t(kpi.labelKey)}
+                                </div>
+                                <Icon 
+                                    className={`w-6 h-6 flex-shrink-0 ${kpi.color.light} dark:${kpi.color.dark} transition-transform duration-300 group-hover:scale-110`} 
+                                    strokeWidth={1.8} 
+                                />
                             </div>
 
-                            {/* Label */}
-                            <div className="text-sm font-medium text-gray-700">{t(kpi.labelKey)}</div>
-                            {/* Value */}
-
+                            {/* Main Value */}
+                            <div className={`mt-2 text-3xl font-bold ${kpi.color.light} dark:${kpi.color.dark}`}>
+                                {formatValue(value as number, kpi.format, t('common.locale'), kpi.decimals)}
+                            </div>
                         </div>
-                        <div className="text-xl font-bold text-gray-800 mt-0.5">
-                            {formatValue(value as number, kpi.format, kpi.decimals)}
-                        </div>
-                    </div>
-                );
-            })}
+                    );
+                })}
         </div>
     );
 };

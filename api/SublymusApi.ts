@@ -58,6 +58,7 @@ export type BuildFormDataForFeaturesValuesParam = { product_id: string, currentF
 // Catégories
 export type GetCategoriesParams = {
     categories_id?: string[];
+    is_visible?:boolean,
     search?: string;
     slug?: string;
     order_by?: string; // Utiliser CategorySortOptions si défini

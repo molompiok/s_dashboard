@@ -1,186 +1,114 @@
 // components/Stats/StatsFilters.tsx
-import React, { useState, useMemo, useRef } from 'react';
-import { DateTime } from 'luxon'; // Pour manipuler les dates
-import { StatsPeriod, VisitStatsIncludeOptions, OrderStatsIncludeOptions } from '../../api/Interfaces/Interfaces'; // Ajustez le chemin
-// Types pour les modales, potentiellement importés d'un fichier centralisé ou ici si local
-import { useChildViewer } from '../ChildViewer/useChildViewer'; // Importez si ChildViewer est ici
-import { ChildViewer } from '../ChildViewer/ChildViewer'; // Importez si ChildViewer est ici
-// Importez les composants qui seront affichés dans les modals
-import UserSearchAndSelect from './StatsPopup/UserSearchAndSelect'; // Créer ce composant
-import ProductSearchAndSelect from './StatsPopup/ProductSearchAndSelect'; // Créer ce composant
-import { IoCloseSharp, IoChevronUp, IoChevronDown } from 'react-icons/io5'; // Icônes
-import { useTranslation } from 'react-i18next'; // Pour i18n
+import React, { useState, useRef, useEffect } from 'react';
+import { DateTime } from 'luxon';
+import { StatsPeriod, VisitStatsIncludeOptions, OrderStatsIncludeOptions } from '../../api/Interfaces/Interfaces';
+import { useChildViewer } from '../ChildViewer/useChildViewer';
+import { ChildViewer } from '../ChildViewer/ChildViewer';
+import UserSearchAndSelect from './StatsPopup/UserSearchAndSelect';
+import ProductSearchAndSelect from './StatsPopup/ProductSearchAndSelect';
+import { IoCloseSharp, IoChevronUp, IoChevronDown } from 'react-icons/io5';
+import { useTranslation } from 'react-i18next';
 
-// Valeurs par défaut pour count (répliquer de StatsUtils ou utiliser une source partagée si possible)
-const defaultCounts: Record<StatsPeriod, number> = {
-    day: 7,
-    week: 4,
-    month: 3,
-};
-
+// Constants
+const defaultCounts: Record<StatsPeriod, number> = { day: 7, week: 4, month: 3 };
 const VALID_STATS_PERIODS: StatsPeriod[] = ['day', 'week', 'month'];
-
-// Labels d'affichage pour les options d'inclusion (Visites)
-const visitIncludeLabels: Record<keyof VisitStatsIncludeOptions, string> = {
-    browser: 'Navigateur',
-    os: 'OS',
-    device: 'Appareil',
-    landing_page: 'Page URL', // UI label, will map to 'landing_page' data key in Sections
-    referrer: 'Referrer',
-};
-
-// Labels d'affichage pour les options d'inclusion (Commandes)
-const orderIncludeLabels: Record<keyof OrderStatsIncludeOptions, string> = {
-    status: 'Statut',
-    payment_status: 'Statut paiement',
-    payment_method: 'Méthode paiement',
-    with_delivery: 'Livraison',
-};
-
+const visitIncludeLabels: Record<keyof VisitStatsIncludeOptions, string> = { browser: 'Navigateur', os: 'OS', device: 'Appareil', landing_page: 'Page URL', referrer: 'Referrer' };
+const orderIncludeLabels: Record<keyof OrderStatsIncludeOptions, string> = { status: 'Statut', payment_status: 'Statut paiement', payment_method: 'Méthode paiement', with_delivery: 'Livraison' };
 
 interface StatsFiltersProps {
     period: StatsPeriod;
     setPeriod: (period: StatsPeriod) => void;
     count: number;
     setCount: (count: number) => void;
-    customEndDate: string | undefined; // ISO string or undefined
+    customEndDate: string | undefined;
     setCustomEndDate: (date: string | undefined) => void;
-    userId: string | undefined; // The ID
+    userId: string | undefined;
     setUserId: (userId: string | undefined) => void;
-    selectedUserName?: string; // The Name (for display in filter UI)
-    productId: string | undefined; // The ID
+    selectedUserName?: string;
+    productId: string | undefined;
     setProductId: (productId: string | undefined) => void;
-    selectedProductName?: string; // The Name (for display)
+    selectedProductName?: string;
     visitIncludes: VisitStatsIncludeOptions;
     setVisitIncludes: (includes: VisitStatsIncludeOptions) => void;
     orderIncludes: OrderStatsIncludeOptions;
     setOrderIncludes: (includes: OrderStatsIncludeOptions) => void;
-    // Props pour le hook useGetUsers si needed for UserSearchAndSelect logic (pass via parent?)
-    // usersList: UserForFilter[] | undefined; // Liste des utilisateurs pour le sélecteur
-
-    // Ajoutez une prop callback pour fermer le modal si nécessaire après sélection
-    // closeModalTrigger?: () => void; // Géré par useChildViewer().openChild(null)
 }
 
-
 const StatsFilters: React.FC<StatsFiltersProps> = ({
-    period, setPeriod,
-    count, setCount,
+    period, setPeriod, count, setCount,
     customEndDate, setCustomEndDate,
     userId, setUserId, selectedUserName,
     productId, setProductId, selectedProductName,
     visitIncludes, setVisitIncludes,
     orderIncludes, setOrderIncludes,
-    // usersList, // Géré par le composant Modal lui-même
 }) => {
     const { t } = useTranslation();
     const { openChild } = useChildViewer();
 
-    // État pour la valeur animée du count
-    // Initialisé avec la prop count. Lorsque prop count change, met à jour cet état interne
-    const [animatedCount, setAnimatedCount] = useState(count);
-    const prevCount = useRef(count);
-    // Détection du changement de count prop et déclenchement de l'animation
-    React.useEffect(() => {
-        if (count !== prevCount.current) {
-            // Ici, vous mettriez la logique d'animation plus complexe (framer-motion)
-            // Pour une animation CSS simple, le changement d'état suffit si CSS est lié
-            setAnimatedCount(count);
-            prevCount.current = count;
-        }
-    }, [count]);
+    // L'état pour le nombre n'a pas besoin de logique d'animation complexe ici.
+    // La simplicité est souvent préférable.
 
-
-    // Handler pour ouvrir le modal de sélection client
     const handleOpenUserSelect = () => {
         openChild(
             <ChildViewer title={t('stats.selectClientTitle')}>
                 <UserSearchAndSelect
-                    // Callbacks to update parent state and close modal
-                    onClientSelected={(client) => {
-                        setUserId(client?.id);
-                        // Pass the selected client object back to update display name in parent?
-                        // Or parent re-fetches/looks up name based on ID?
-                        // Simpler: close modal, parent hook re-runs and update its own user object and passes name back down
-                        openChild(null); // Close modal
-                    }}
-                    // Pass userId={userId} if UserSearchAndSelect needs to show current selection
+                    onClientSelected={(client) => { setUserId(client?.id); openChild(null); }}
                     currentSelectedUserId={userId}
-                    onClose={() => openChild(null)} // Allow modal to close itself
+                    onClose={() => openChild(null)}
                 />
             </ChildViewer>,
-            { background: 'rgba(51, 51, 68, 0.8)', blur: 3 } // Modal background style
+            { background: 'rgba(30, 41, 59, 0.7)', blur: 4 }
         );
     };
 
-    // Handler pour ouvrir le modal de sélection produit
     const handleOpenProductSelect = () => {
         openChild(
             <ChildViewer title={t('stats.selectProductTitle')}>
                 <ProductSearchAndSelect
-                    onProductSelected={(product) => {
-                        setProductId(product?.id);
-                        openChild(null); // Close modal
-                    }}
+                    onProductSelected={(product) => { setProductId(product?.id); openChild(null); }}
                     currentSelectedProductId={productId}
-                    onClose={() => openChild(null)} // Allow modal to close itself
+                    onClose={() => openChild(null)}
                 />
             </ChildViewer>,
-            { background: 'rgba(51, 51, 68, 0.8)', blur: 3 }
+            { background: 'rgba(30, 41, 59, 0.7)', blur: 4 }
         );
     };
 
-    // Handlers pour l'incrémentation/décrémentation du count
-    const incrementCount = () => setCount(count + 1);
-    const decrementCount = () => setCount(Math.max(1, count - 1)); // Count min = 1
-
-    // Handler pour le changement de période (réinitialise le count par défaut pour cette période)
     const handlePeriodChange = (newPeriod: StatsPeriod) => {
         setPeriod(newPeriod);
-        // Reset count to default for the new period
-        setCount(defaultCounts[newPeriod]); // Call setCount from parent
+        setCount(defaultCounts[newPeriod]);
     };
 
-
-    // Gestion du changement des options include
-    const handleVisitIncludeChange = (key: keyof VisitStatsIncludeOptions, checked: boolean) => {
+    // 🎨 Utilisation de Partial<T> pour une mise à jour plus propre et type-safe
+    const handleVisitIncludeChange = (key: keyof VisitStatsIncludeOptions) => {
         //@ts-ignore
-        setVisitIncludes(prev => ({ ...prev, [key]: checked }));
+        setVisitIncludes(prev => ({ ...prev, [key]: !prev[key] }));
     };
-    const handleOrderIncludeChange = (key: keyof OrderStatsIncludeOptions, checked: boolean) => {
+    const handleOrderIncludeChange = (key: keyof OrderStatsIncludeOptions) => {
         //@ts-ignore
-        setOrderIncludes(prev => ({ ...prev, [key]: checked }));
+        setOrderIncludes(prev => ({ ...prev, [key]: !prev[key] }));
     };
-
-    // Handler pour réinitialiser le client sélectionné
-    const clearClient = () => {
-        setUserId(undefined);
-    };
-
-    // Handler pour réinitialiser le produit sélectionné
-    const clearProduct = () => {
-        setProductId(undefined);
-    };
-
 
     return (
-        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 mb-6">
-            <h2 className="text-xl font-semibold text-gray-700 mb-4">{t('stats.filtersTitle')}</h2>
-            <div className="flex flex-col gap-6"> {/* Utiliser flex-col gap pour les groupes de filtres */}
+        // 🎨 Conteneur principal avec effet verre dépoli pour le mode nuit
+        <div className="bg-white/80 dark:bg-white/5 backdrop-blur-lg p-4 rounded-lg shadow-sm border border-gray-200/80 dark:border-white/10 mb-6">
+            <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4">{t('stats.filtersTitle')}</h2>
+            <div className="flex flex-col gap-6">
 
-                {/* Groupe Période et Nombre */}
-                <div className="flex flex-wrap gap-4 items-center">
-                    {/* Filtre Période (Bento buttons) */}
+                {/* --- Groupe Période et Nombre --- */}
+                <div className="flex flex-wrap gap-x-6 gap-y-4 items-end">
+                    {/* Filtre Période */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">{t('stats.periodLabel')}</label>
-                        <div className="flex flex-wrap gap-2 rounded-lg p-1">
+                        <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">{t('stats.periodLabel')}</label>
+                        <div className="flex flex-wrap gap-2 rounded-lg p-1 bg-gray-100/60 dark:bg-gray-900/20">
                             {VALID_STATS_PERIODS.map(p => (
                                 <button
-                                    type="button" // Important dans un formulaire
-                                    key={p}
-                                    onClick={() => handlePeriodChange(p)} // Use custom handler
-                                    className={`px-3 py-1  border border-gray-300 shadow-sm cursor-pointer rounded-md text-sm font-medium transition
-                                         ${p === period ? 'bg-blue-600 text-white shadow-sm' : 'text-gray-600 hover:bg-gray-200'}`}
+                                    key={p} onClick={() => handlePeriodChange(p)}
+                                    // 🎨 Styles des boutons avec `teal` comme couleur d'accentuation
+                                    className={`px-3 py-1 border rounded-md text-sm font-medium transition-all duration-200
+                                         ${p === period 
+                                            ? 'bg-teal-600 text-white border-transparent shadow-md' 
+                                            : 'text-gray-600 dark:text-gray-300 border-transparent hover:bg-white/80 dark:hover:bg-white/10'}`}
                                 >
                                     {t(`stats.periods.${p}`)}
                                 </button>
@@ -188,169 +116,115 @@ const StatsFilters: React.FC<StatsFiltersProps> = ({
                         </div>
                     </div>
 
-                    {/* Filtre Nombre de Périodes (Custom control) */}
+                    {/* Filtre Nombre de Périodes */}
                     <div>
-                        <label htmlFor="count" className="block text-sm font-medium text-gray-700 mb-2">{t('stats.countLabel')}</label>
-                        <div className="flex items-center border border-gray-300 rounded-lg overflow-hidden w-fit"> {/* Border pour le groupe */}
-                            {/* Bouton Décrémenter */}
-                            <button
-                                type="button"
-                                onClick={decrementCount}
-                                disabled={count <= 1} // Disable at 1
-                                className="px-3 py-1 text-gray-600 disabled:opacity-50 disabled:cursor-not-allowed hover:bg-gray-200 transition"
-                            >
+                        <label htmlFor="count" className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">{t('stats.countLabel')}</label>
+                        <div className="flex items-center border border-gray-300 dark:border-gray-600 rounded-lg overflow-hidden w-fit bg-white dark:bg-gray-800/50">
+                            <button onClick={() => setCount(Math.max(1, count - 1))} disabled={count <= 1} className="px-3 py-2 text-gray-600 dark:text-gray-400 disabled:opacity-40 disabled:cursor-not-allowed hover:bg-gray-100 dark:hover:bg-gray-700/60 transition">
                                 <IoChevronDown className="w-4 h-4" />
                             </button>
-                            {/* Label/Display Count */}
-                            {/* Simple animation attempt: animate opacity and transform Y */}
-                            <div className="px-4 py-1 text-sm font-semibold text-gray-800 transition-all duration-300 ease-in-out"> {/* Container for animation */}
-                                <span
-                                    // Add key to force re-render and potentially trigger CSS animation? Still limited
-                                    key={animatedCount}
-                                // Simple CSS classes that change on state update, relies on transition class
-                                // Could add classes based on prevCount > count or < count for slide direction
-                                // ex: `${animatedCount > prevCount.current ? 'animate-slide-up' : 'animate-slide-down'}` needs key + animation defined in CSS/Tailwind config
-                                // Keeping it very simple for now
-                                >
-                                    {animatedCount}
-                                </span>
+                            <div className="px-4 py-1.5 text-sm font-semibold text-gray-800 dark:text-gray-100 border-x border-gray-300 dark:border-gray-600">
+                                {count}
                             </div>
-                            {/* Bouton Incrémenter */}
-                            <button
-                                type="button"
-                                onClick={incrementCount}
-                                className="px-3 py-1 text-gray-600 hover:bg-gray-200 transition"
-                            >
+                            <button onClick={() => setCount(count + 1)} className="px-3 py-2 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700/60 transition">
                                 <IoChevronUp className="w-4 h-4" />
                             </button>
                         </div>
                     </div>
-
                 </div>
 
-                {/* Groupe Sélection Client et Produit */}
-                <div className="flex flex-wrap gap-4 items-center">
-                    {/* Filtre Sélection Client (Trigger modal) */}
-                    <div className="relative">
-                        <label htmlFor="select-client-filter" className="block text-sm font-medium text-gray-700 mb-2">{t('stats.clientLabel')}</label>
-                        <div
-                            id="select-client-filter"
-                            className="flex items-center justify-between w-full  px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm cursor-pointer hover:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm text-gray-800"
-                            onClick={handleOpenUserSelect}
-                        >
-                            <span className="truncate">
+                {/* --- Groupe Sélection Client et Produit --- */}
+                <div className="flex flex-wrap gap-x-6 gap-y-4 items-center">
+                    {/* Filtre Sélection Client */}
+                    <div className="relative w-full sm:w-52">
+                        <label htmlFor="select-client-filter" className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">{t('stats.clientLabel')}</label>
+                        {/* 🎨 Bouton de sélection avec style d'input */}
+                        <div id="select-client-filter" onClick={handleOpenUserSelect}
+                             className="flex items-center justify-between w-full px-3 py-2 bg-white dark:bg-gray-800/50 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm cursor-pointer hover:border-teal-400 dark:hover:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm transition-colors">
+                            <span className="truncate text-gray-800 dark:text-gray-200">
                                 {userId && selectedUserName ? selectedUserName : t('stats.selectClientPlaceholder')}
                             </span>
-                            {userId && ( // Show clear button if client is selected
-                                <button
-                                    type="button"
-                                    onClick={(e) => { e.stopPropagation(); clearClient(); }} // Stop propagation to prevent modal opening
-                                    className="flex items-center justify-center w-5 h-5 ml-2 rounded-full bg-gray-200 hover:bg-gray-300 transition-colors"
-                                >
-                                    <IoCloseSharp className="w-3 h-3 text-gray-600" />
+                            {userId && (
+                                <button onClick={(e) => { e.stopPropagation(); setUserId(undefined); }} className="flex items-center justify-center w-5 h-5 ml-2 rounded-full bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors">
+                                    <IoCloseSharp className="w-3 h-3 text-gray-600 dark:text-gray-300" />
                                 </button>
                             )}
                         </div>
                     </div>
 
-                    {/* Filtre Sélection Produit (Trigger modal) */}
-                    <div className="relative">
-                        <label htmlFor="select-product-filter" className="block text-sm font-medium text-gray-700 mb-2">{t('stats.productLabel')}</label>
-                        <div
-                            id="select-product-filter"
-                            className="flex items-center justify-between w-full  px-3 py-2 bg-white border border-gray-300 rounded-md shadow-sm cursor-pointer hover:border-blue-400 focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm text-gray-800"
-                            onClick={handleOpenProductSelect}
-                        >
-                            <span className="truncate">
+                    {/* Filtre Sélection Produit */}
+                    <div className="relative w-full sm:w-52">
+                        <label htmlFor="select-product-filter" className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">{t('stats.productLabel')}</label>
+                        <div id="select-product-filter" onClick={handleOpenProductSelect}
+                             className="flex items-center justify-between w-full px-3 py-2 bg-white dark:bg-gray-800/50 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm cursor-pointer hover:border-teal-400 dark:hover:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm transition-colors">
+                            <span className="truncate text-gray-800 dark:text-gray-200">
                                 {productId && selectedProductName ? selectedProductName : t('stats.selectProductPlaceholder')}
                             </span>
-                            {productId && ( // Show clear button if product is selected
-                                <button
-                                    type="button"
-                                    onClick={(e) => { e.stopPropagation(); clearProduct(); }} // Stop propagation
-                                    className="flex items-center justify-center w-5 h-5 ml-2 rounded-full bg-gray-200 hover:bg-gray-300 transition-colors"
-                                >
-                                    <IoCloseSharp className="w-3 h-3 text-gray-600" />
+                            {productId && (
+                                <button onClick={(e) => { e.stopPropagation(); setProductId(undefined); }} className="flex items-center justify-center w-5 h-5 ml-2 rounded-full bg-gray-200 dark:bg-gray-600 hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors">
+                                    <IoCloseSharp className="w-3 h-3 text-gray-600 dark:text-gray-300" />
                                 </button>
                             )}
                         </div>
                     </div>
                 </div>
 
-
-                {/* Groupe Date de Fin Personnalisée */}
-                <div>
-                    <label htmlFor="customEndDate" className="block text-sm font-medium text-gray-700 mb-2">{t('stats.endDateLabel')}</label>
-                    {/* Utiliser px-3 py-2 pour l'input date */}
-                    <input
-                        type="date"
-                        id="customEndDate"
-                        value={customEndDate ? DateTime.fromISO(customEndDate).toFormat('yyyy-MM-dd') : ''}
-                        onChange={(e) => setCustomEndDate(e.target.value ? DateTime.fromFormat(e.target.value, 'yyyy-MM-dd').toISO() ?? undefined : undefined)}
-                        className="px-3 py-2 block w-fit rounded-md border-gray-300 shadow-sm focus:border-blue-300 focus:ring focus:ring-blue-200 focus:ring-opacity-50 text-sm text-gray-800"
-                    />
-                </div>
-
-                {/* Groupe Options d'inclusion */}
-                <div className="flex flex-wrap gap-6"> {/* Utiliser flex-wrap gap pour les groupes d'inclusion */}
-                    {/* Visites Include Toggles */}
+                {/* --- Groupe Options et Date --- */}
+                <div className="flex flex-col gap-6">
+                     {/* 🎨 Input date avec le bon color-scheme pour le mode nuit */}
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">{t('stats.visitDetailsLabel')}</label>
-                        <div className="flex flex-wrap gap-2"> {/* style Bento pour les tags d'inclusion */}
-                            {Object.keys(visitIncludeLabels).map(key => {
-                                const dimKey = key as keyof VisitStatsIncludeOptions;
-                                const isIncluded = visitIncludes[dimKey];
-                                return (
-                                    <button
-                                        type="button"
-                                        key={dimKey}
-                                        onClick={() => handleVisitIncludeChange(dimKey, !isIncluded)}
-                                        className={`px-3 py-1 text-sm rounded-md transition border
-                                                  ${isIncluded
-                                                ? 'bg-blue-500 text-white border-blue-600 shadow-sm'
-                                                : 'bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200'
-                                            }`}
-                                    >
-                                        {visitIncludeLabels[dimKey]}
-                                    </button>
-                                );
-                            })}
+                        <label htmlFor="customEndDate" className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">{t('stats.endDateLabel')}</label>
+                        <input
+                            type="date" id="customEndDate"
+                            value={customEndDate ? DateTime.fromISO(customEndDate).toFormat('yyyy-MM-dd') : ''}
+                            onChange={(e) => setCustomEndDate(e.target.value ? DateTime.fromFormat(e.target.value, 'yyyy-MM-dd').toISO() ?? undefined : undefined)}
+                            className="px-3 py-2 block w-fit rounded-lg border-gray-300 dark:border-gray-600 shadow-sm focus:border-teal-400 focus:ring-2 focus:ring-teal-500 focus:ring-opacity-50 text-sm text-gray-800 dark:text-gray-200 bg-white dark:bg-gray-800/50 dark:[color-scheme:dark] transition-colors"
+                        />
+                    </div>
+                    {/* Groupe Options d'inclusion */}
+                    <div className="flex flex-wrap gap-x-8 gap-y-4">
+                        <div>
+                            <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">{t('stats.visitDetailsLabel')}</label>
+                            <div className="flex flex-wrap gap-2">
+                                {Object.keys(visitIncludeLabels).map(key => {
+                                    const dimKey = key as keyof VisitStatsIncludeOptions;
+                                    const isIncluded = visitIncludes[dimKey];
+                                    return (
+                                        <button key={dimKey} onClick={() => handleVisitIncludeChange(dimKey)}
+                                            // 🎨 Style des toggles avec `teal`
+                                            className={`px-3 py-1 text-xs rounded-full transition-all border
+                                                ${isIncluded
+                                                    ? 'bg-teal-500/10 dark:bg-teal-500/20 text-teal-700 dark:text-teal-300 border-teal-500/20'
+                                                    : 'bg-gray-100 dark:bg-gray-700/60 text-gray-700 dark:text-gray-300 border-gray-300/50 dark:border-gray-600/80 hover:bg-gray-200/70 dark:hover:bg-gray-700'
+                                                }`}>
+                                            {visitIncludeLabels[dimKey]}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                        <div>
+                            <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">{t('stats.orderDetailsLabel')}</label>
+                            <div className="flex flex-wrap gap-2">
+                                {Object.keys(orderIncludeLabels).map(key => {
+                                    const dimKey = key as keyof OrderStatsIncludeOptions;
+                                    const isIncluded = orderIncludes[dimKey];
+                                    return (
+                                        <button key={dimKey} onClick={() => handleOrderIncludeChange(dimKey)}
+                                            className={`px-3 py-1 text-xs rounded-full transition-all border
+                                                ${isIncluded
+                                                    ? 'bg-teal-500/10 dark:bg-teal-500/20 text-teal-700 dark:text-teal-300 border-teal-500/20'
+                                                    : 'bg-gray-100 dark:bg-gray-700/60 text-gray-700 dark:text-gray-300 border-gray-300/50 dark:border-gray-600/80 hover:bg-gray-200/70 dark:hover:bg-gray-700'
+                                                }`}>
+                                            {orderIncludeLabels[dimKey]}
+                                        </button>
+                                    );
+                                })}
+                            </div>
                         </div>
                     </div>
-
-                    {/* Commandes Include Toggles */}
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-2">{t('stats.orderDetailsLabel')}</label>
-                        <div className="flex flex-wrap gap-2"> {/* style Bento pour les tags d'inclusion */}
-                            {Object.keys(orderIncludeLabels).map(key => {
-                                const dimKey = key as keyof OrderStatsIncludeOptions;
-                                const isIncluded = orderIncludes[dimKey];
-                                return (
-                                    <button
-                                        type="button"
-                                        key={dimKey}
-                                        onClick={() => handleOrderIncludeChange(dimKey, !isIncluded)}
-                                        className={`px-3 py-1 text-sm rounded-md transition border
-                                                  ${isIncluded
-                                                ? 'bg-green-500 text-white border-green-600 shadow-sm' // Different color for Orders includes?
-                                                : 'bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200'
-                                            }`}
-                                    >
-                                        {orderIncludeLabels[dimKey]}
-                                    </button>
-                                );
-                            })}
-                        </div>
-                    </div>
-
                 </div>
-
-
             </div>
-
-            {/* ChildViewer modals are managed by the parent using useChildViewer,
-                 we just trigger them here */}
-
         </div>
     );
 };

@@ -42,11 +42,16 @@ function ProductList({ baseFilter, title, addTo }: { title?: string, addTo?: { c
     return (
         <div className="w-full flex flex-col  mt-2">
             <div className="flex flex-wrap justify-between items-center gap-4 mb-4">
-                <h1 className="m-0 text-xl font-semibold text-gray-800">{title || t('dashboard.products')}</h1>
+                <h1 className="m-0 text-xl font-semibold text-gray-800 dark:text-gray-100">{title || t('dashboard.products')}</h1>
                 <div className="flex items-center gap-2 sm:gap-4 flex-wrap">
                     <label htmlFor="product-search-input" className='relative'>
                         <input
-                            className="w-48 sm:w-64 pl-3 pr-10 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
+                            className="w-48 sm:w-64 pl-3 pr-10 py-1.5 border rounded-md
+                                bg-white dark:bg-gray-900
+                                text-gray-800 dark:text-gray-100
+                                border-gray-300 dark:border-gray-700
+                                placeholder-gray-400 dark:placeholder-gray-500
+                                focus:outline-none focus:ring-1 focus:ring-teal-500 focus:border-teal-500 text-sm"
                             placeholder={t('dashboard.searchPlaceholder')}
                             id="product-search-input"
                             type="text"
@@ -58,18 +63,22 @@ function ProductList({ baseFilter, title, addTo }: { title?: string, addTo?: { c
                         />
                         <IoSearch className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg" />
                     </label>
-                    <div className="flex items-center border border-gray-300 rounded-md p-0.5 bg-gray-100">
+                    <div className="flex items-center border border-gray-300 dark:border-gray-700 rounded-md p-0.5 bg-gray-100 dark:bg-gray-800">
                         <button
                             onClick={() => { setViewType('card') }}
-                            title={t('productList.viewCard')}
-                            className={`p-1.5 rounded ${viewType === 'card' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-800'}`}
+                            className={`p-1.5 rounded ${viewType === 'card'
+                                ? 'bg-white dark:bg-gray-900 text-teal-600 shadow-sm'
+                                : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
+                                }`}
                         >
                             <IoAppsSharp size={18} />
                         </button>
                         <button
                             onClick={() => setViewType('row')}
-                            title={t('productList.viewRow')}
-                            className={`p-1.5 rounded ${viewType === 'row' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-800'}`}
+                            className={`p-1.5 rounded ${viewType === 'row'
+                                ? 'bg-white dark:bg-gray-900 text-teal-600 shadow-sm'
+                                : 'text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200'
+                                }`}
                         >
                             <IoListSharp size={18} />
                         </button>
@@ -98,14 +107,14 @@ function ProductList({ baseFilter, title, addTo }: { title?: string, addTo?: { c
                             viewType === 'card' ? (
                                 <ProductItemCard key={p.id} product={p} />
                             ) : <motion.div
-                            key={p.id}
+                                key={p.id}
                                 layout // Animation d'ordre
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 exit={{ opacity: 0, y: -20, transition: { duration: 0.2 } }}
                                 transition={{ duration: 0.3, ease: "easeOut" }}
                                 className="origin-top"
-                                >
+                            >
                                 <ProductRowItem key={p.id}
                                     categoriesMap={
                                         p.categories &&
@@ -150,7 +159,13 @@ function ProductList({ baseFilter, title, addTo }: { title?: string, addTo?: { c
 function AddProductCard({ addTo }: { addTo?: { category_id: string, text: string } | null }) {
     const { t } = useTranslation();
     return (
-        <a href={`/products/new${addTo?.category_id ? '?catrgory_id=' + addTo.category_id : ''}`} className=" rounded-xl overflow-hidden border-2 border-dashed border-gray-300 hover:border-blue-400 hover:bg-blue-50/50 transition duration-200 cursor-pointer flex flex-col items-center justify-center text-center p-4 text-gray-500 hover:text-blue-600">
+        <a
+            href={`/products/new${addTo?.category_id ? '?catrgory_id=' + addTo.category_id : ''}`}
+            className="rounded-xl overflow-hidden border-2 border-dashed border-gray-300 dark:border-gray-600
+        hover:border-teal-500 hover:bg-teal-500/10
+        transition duration-200 cursor-pointer flex flex-col items-center justify-center text-center p-4
+        text-gray-500 dark:text-gray-400 hover:text-teal-600"
+        >
             <div className="w-24 h-42 mb-4">
                 <img src={'/res/empty/Empty_bag.png'} alt={t('productList.addProduct')} className='w-full h-full object-contain opacity-70' />
             </div>
@@ -161,7 +176,13 @@ function AddProductCard({ addTo }: { addTo?: { category_id: string, text: string
 function AddProductRow({ addTo }: { addTo?: { category_id: string, text: string } | null }) {
     const { t } = useTranslation();
     return (
-        <a href={`/products/new${addTo?.category_id ? '?catrgory_id=' + addTo.category_id : ''}`} className="flex items-center justify-center p-4 rounded-lg border-2 border-dashed border-gray-300 hover:border-blue-400 hover:bg-blue-50/50 transition duration-200 cursor-pointer text-gray-500 hover:text-blue-600">
+        <a
+            href={`/products/new${addTo?.category_id ? '?catrgory_id=' + addTo.category_id : ''}`}
+            className="rounded-xl overflow-hidden border-2 border-dashed border-gray-300 dark:border-gray-600
+        hover:border-teal-500 hover:bg-teal-500/10
+        transition duration-200 cursor-pointer flex flex-col items-center justify-center text-center p-4
+        text-gray-500 dark:text-gray-400 hover:text-teal-600"
+        >
             <span className="text-sm font-medium">{addTo?.text || t('productList.addProduct')}</span>
         </a>
     );
@@ -180,31 +201,31 @@ function ProductsFilters({ filter, setCollected }: { filter: FilterType, setColl
 
 
     return (
-        <div className="w-full flex flex-col mb-0">
-            <div className="w-full flex items-center p-2 gap-3 overflow-x-auto overflow-y-hidden rounded-xl scrollbar-hide border-b border-gray-200">
+        <div className="w-full flex flex-col bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm">
+            <div className="w-full flex flex-wrap items-center p-2 gap-2">
                 <div
                     onClick={() => toggleFilter('order')}
-                    className={`inline-flex items-center border rounded-lg px-2 py-0.5 cursor-pointer transition duration-200 whitespace-nowrap text-sm
-                          ${filter.order_by ? 'text-blue-600 bg-blue-100/60 border-blue-200' : 'text-gray-600 border-gray-300'}
-                          ${currentFilter === 'order' ? '!bg-blue-100/80 !border-blue-300' : 'hover:bg-gray-100'}`}
+                    className={`inline-flex items-center rounded-md px-3 py-1.5 cursor-pointer transition duration-200 whitespace-nowrap text-sm font-medium
+                          ${filter.order_by ? 'text-teal-700 bg-teal-100 dark:bg-teal-900/20 dark:text-teal-300' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50'}
+                          ${currentFilter === 'order' ? 'ring-2 ring-teal-400' : ''}`}
                 >
                     <span>{t('dashboard.orderFilters.order')}</span>
                     <IoChevronDown className={`ml-2 transition-transform duration-200 ${currentFilter === 'order' ? 'rotate-180' : ''}`} />
                 </div>
                 <div
                     onClick={() => toggleFilter('price')}
-                    className={`inline-flex items-center border rounded-lg px-2 py-0.5 cursor-pointer transition duration-200 whitespace-nowrap text-sm
-                          ${filter.min_price !== undefined || filter.max_price !== undefined ? 'text-blue-600 bg-blue-100/60 border-blue-200' : 'text-gray-600 border-gray-300'}
-                          ${currentFilter === 'price' ? '!bg-blue-100/80 !border-blue-300' : 'hover:bg-gray-100'}`}
+                    className={`inline-flex items-center rounded-md px-3 py-1.5 cursor-pointer transition duration-200 whitespace-nowrap text-sm font-medium
+                          ${filter.min_price !== undefined || filter.max_price !== undefined ? 'text-teal-700 bg-teal-100 dark:bg-teal-900/20 dark:text-teal-300' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50'}
+                          ${currentFilter === 'price' ? 'ring-2 ring-teal-400' : ''}`}
                 >
                     <span>{t('dashboard.orderFilters.price')}</span>
                     <IoChevronDown className={`ml-2 transition-transform duration-200 ${currentFilter === 'price' ? 'rotate-180' : ''}`} />
                 </div>
                 <div
                     onClick={() => toggleFilter('is_visible')}
-                    className={`inline-flex items-center border rounded-lg px-2 py-0.5 cursor-pointer transition duration-200 whitespace-nowrap text-sm
-                          ${filter.is_visible !== undefined ? 'text-blue-600 bg-blue-100/60 border-blue-200' : 'text-gray-600 border-gray-300'}
-                          ${currentFilter === 'is_visible' ? '!bg-blue-100/80 !border-blue-300' : 'hover:bg-gray-100'}`}
+                    className={`inline-flex items-center rounded-md px-3 py-1.5 cursor-pointer transition duration-200 whitespace-nowrap text-sm font-medium
+                          ${filter.is_visible !== undefined ? 'text-teal-700 bg-teal-100 dark:bg-teal-900/20 dark:text-teal-300' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50'}
+                          ${currentFilter === 'is_visible' ? 'ring-2 ring-teal-400' : ''}`}
                 >
                     <span>{t('common.visible')}</span>
                     <IoChevronDown className={`ml-2 transition-transform duration-200 ${currentFilter === 'is_visible' ? 'rotate-180' : ''}`} />
@@ -221,6 +242,7 @@ function ProductsFilters({ filter, setCollected }: { filter: FilterType, setColl
                     active={currentFilter === 'price'}
                     prices={[filter.min_price, filter.max_price]}
                     setPrice={(prices) => handleFilterChange({ min_price: prices?.[0], max_price: prices?.[1] })} />
+
                 <VisibleFilterComponent
                     active={currentFilter == 'is_visible'}
                     visible={filter.is_visible}

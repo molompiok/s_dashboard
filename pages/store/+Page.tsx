@@ -11,7 +11,7 @@ export { Page }
 function Page() {
   
   return (
-    <div className='page-stores  pb-[200px] flex pb-48 min-h-screen w-full flex-col '>
+    <div className='page-stores   flex pb-48 min-h-screen w-full flex-col '>
       <Topbar />
       <div className='w-full flex-grow flex flex-col items-center gap-4 p-4 md:p-6 lg:p-8'>
         <HomeStat />

@@ -22,11 +22,9 @@ import { ConfirmDelete } from '../Confirm/ConfirmDelete';
 import { useGlobalStore } from '../../api/stores/StoreStore';
 import { getMedia } from '../Utils/StringFormater';
 import { useChildViewer } from '../ChildViewer/useChildViewer';
-import { globalActionZust } from '../../renderer/AppStore/appZust';
 import { useTranslation } from 'react-i18next';
 
 export { HoriszontalSwiper }
-
 
 function HoriszontalSwiper({ values, onActiveIndexChange, onDeleteValue, goBack, forward, newViewRequire, editValue }: { editValue: (value: ValueInterface) => void, newViewRequire: (files: Blob[]) => void, goBack: () => boolean, forward: () => boolean, onDeleteValue?: (index: number) => void, onActiveIndexChange?: (index: number) => void, values: ValueInterface[] }) {
     const [swiperRef, setSwiperRef] = useState<SwiperType | null>(null);

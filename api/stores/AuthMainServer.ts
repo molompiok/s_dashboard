@@ -100,5 +100,5 @@ export function logoutMainServerUserGlobally() {
 export function handleUnauthorized() {
   console.log("Global 401 handler triggered. Logging out.");
   logoutMainServerUserGlobally();
-  navigate('/login?sessionExpired=true');
+  navigate('/auth/login?sessionExpired=true');
 }

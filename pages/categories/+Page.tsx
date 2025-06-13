@@ -120,7 +120,7 @@ function Page() {
 function AddCategoryCard({ addTo }: { addTo?: { category_id: string, text: string } | null }) {
     const { t } = useTranslation();
     return (
-        <a href={`/products/new${addTo?.category_id ? '?catrgory_id=' + addTo.category_id : ''}`} className=" rounded-xl overflow-hidden border-2 border-dashed border-gray-300 hover:border-blue-400 hover:bg-blue-50/50 transition duration-200 cursor-pointer flex flex-col items-center justify-center text-center p-4 text-gray-500 hover:text-blue-600">
+        <a href={`/categories/new${addTo?.category_id ? '?catrgory_id=' + addTo.category_id : ''}`} className=" rounded-xl overflow-hidden border-2 border-dashed border-gray-300 hover:border-blue-400 hover:bg-blue-50/50 transition duration-200 cursor-pointer flex flex-col items-center justify-center text-center p-4 text-gray-500 hover:text-blue-600">
             <div className="w-24 h-24 mb-4">
                 <img src={'/res/empty/Empty_bag.png'} alt={t('category.addNewButton')} className='w-full h-full object-contain opacity-70' />
             </div>
@@ -131,8 +131,12 @@ function AddCategoryCard({ addTo }: { addTo?: { category_id: string, text: strin
 function AddCategoryRow({ addTo }: { addTo?: { category_id: string, text: string } | null }) {
     const { t } = useTranslation();
     return (
-        <a href={`/products/new${addTo?.category_id ? '?catrgory_id=' + addTo.category_id : ''}`} className="flex items-center justify-center p-4 rounded-lg border-2 border-dashed border-gray-300 hover:border-blue-400 hover:bg-blue-50/50 transition duration-200 cursor-pointer text-gray-500 hover:text-blue-600">
-            <span className="text-sm font-medium">{addTo?.text || t('category.addNewButton')}</span>
+        <a href={`/categories/new${addTo?.category_id ? '?catrgory_id=' + addTo.category_id : ''}`}  className="rounded-xl overflow-hidden border-2 border-dashed border-gray-300 dark:border-gray-600
+        hover:border-teal-500 hover:bg-teal-500/10
+        transition duration-200 cursor-pointer flex flex-col items-center justify-center text-center p-4
+        text-gray-500 dark:text-gray-400 hover:text-teal-600"
+        >  
+         <span className="text-sm font-medium">{addTo?.text || t('category.addNewButton')}</span>
         </a>
     );
 }

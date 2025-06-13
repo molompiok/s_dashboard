@@ -83,7 +83,7 @@ function Page() {
                         <span className="font-medium">{email}</span>.
                     </p>
                     <p className="mt-6 text-sm">
-                        <Link href="/login" className="font-medium text-blue-600 hover:text-blue-500 hover:underline inline-flex items-center gap-1">
+                        <Link href="/auth/login" className="font-medium text-blue-600 hover:text-blue-500 hover:underline inline-flex items-center gap-1">
                             <IoArrowBack className="w-4 h-4" /> {t('registerPage.backToLogin')}
                         </Link>
                     </p>
@@ -154,7 +154,7 @@ function Page() {
 
                 {/* Lien Retour Login */}
                 <div className="text-sm text-center">
-                    <Link href="/login" className="font-medium text-blue-600 hover:text-blue-500 hover:underline inline-flex items-center gap-1">
+                    <Link href="/auth/login" className="font-medium text-blue-600 hover:text-blue-500 hover:underline inline-flex items-center gap-1">
                         <IoArrowBack className="w-4 h-4" /> {t('registerPage.backToLogin')}
                     </Link>
                 </div>

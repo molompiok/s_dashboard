@@ -118,7 +118,7 @@ function Page() {
                         {statusMessage} {/* Message dynamique */}
                     </p>
                     <p className="mt-6 text-sm">
-                        <Link href="/login" className="font-medium text-blue-600 hover:text-blue-500 hover:underline">
+                        <Link href="/auth/login" className="font-medium text-blue-600 hover:text-blue-500 hover:underline">
                             {t('setupAccountPage.backToLogin')}
                         </Link>
                     </p>

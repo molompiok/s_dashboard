@@ -6,7 +6,7 @@ import { getMedia } from '../Utils/StringFormater';
 import { getDefaultValues } from '../Utils/parseData';
 import { useGlobalStore } from '../../api/stores/StoreStore';
 import { useTranslation } from 'react-i18next';
-import { useState, useEffect, useMemo } from 'react'; // Ajouter useEffect
+import { useState, useEffect, useMemo, useRef } from 'react'; // Ajouter useEffect
 import { useDeleteProduct, useUpdateProduct, queryClient } from '../../api/ReactSublymusApi'; // ✅ Importer mutations
 import logger from '../../api/Logger';
 import { NO_PICTURE } from '../Utils/constants';
@@ -32,6 +32,25 @@ function ProductRowItem({ product, categoriesMap }: ProductRowItemProps) {
     // Utiliser l'état local pour la visibilité
     const [isVisible, setIsVisible] = useState(product.is_visible ?? true);
 
+    const menuRef = useRef<HTMLDivElement>(null);
+    // Fermer au clic extérieur
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (isMenuOpen && menuRef.current && !menuRef.current.contains(event.target as Node)) {
+                setIsMenuOpen(false);
+            }
+        };
+        // Ajouter l'écouteur seulement si le popup est actif
+        if (isMenuOpen) {
+            document.addEventListener('mousedown', handleClickOutside);
+        } else {
+            document.removeEventListener('mousedown', handleClickOutside);
+        }
+        // Nettoyer l'écouteur
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [isMenuOpen]);
     // Synchroniser isVisible si la prop product change
     useEffect(() => {
         setIsVisible(product.is_visible ?? true);
@@ -121,7 +140,7 @@ function ProductRowItem({ product, categoriesMap }: ProductRowItemProps) {
 
     return (
         // Appliquer les styles Tailwind comme précédemment
-        <div className="product-row-item flex items-center gap-3 sm:gap-4 p-2.5 bg-white rounded-lg shadow-sm border border-transparent hover:border-gray-200 hover:shadow-sm transition duration-150 w-full group relative"> {/* Ajouter relative */}
+        <div className="product-row-item flex items-center gap-3 sm:gap-4 p-2.5 dark:text-white rounded-lg shadow-sm border w-full group relative hover:border-blue-200 hover:shadow-md transition duration-200 bg-white dark:bg-white/5  border-transparent dark:border-white/10"> {/* Ajouter relative */}
 
             {/* Image */}
             <a href={`/products/${product.id}`} className="flex-shrink-0 block w-12 h-12 sm:w-16 sm:h-16 rounded-md overflow-hidden bg-gray-100 border border-gray-200">
@@ -138,20 +157,20 @@ function ProductRowItem({ product, categoriesMap }: ProductRowItemProps) {
             {/* Nom & ID */}
             <div className="flex-grow min-w-0 flex flex-col">
                 <a href={`/products/${product.id}`} className="group/link">
-                    <h3 className='font-medium text-sm sm:text-base text-gray-800 group-hover/link:text-blue-600 truncate' title={product.name}>
+                    <h3 className='font-medium text-sm sm:text-base dark:text-white text-gray-800 group-hover/link:text-blue-600 truncate' title={product.name}>
                         {product.name}
                     </h3>
                 </a>
-                <p className='text-xs text-gray-400 mt-0.5 flex items-center gap-1 group cursor-pointer w-fit' title={t('common.copyId')} onClick={() => handleCopy(getId(product.id))}>
+                <p className='text-xs text-gray-400 dark:text-white/60 mt-0.5 flex items-center gap-1 group cursor-pointer w-fit' title={t('common.copyId')} onClick={() => handleCopy(getId(product.id))}>
                     ID: {getId(product.id)}
-                    <IoCopyOutline className={`w-3 h-3 transition-all ${copiedId ? 'text-green-500 scale-110' : 'text-gray-400 opacity-0 group-hover:opacity-60'}`} />
+                    <IoCopyOutline className={`w-3 h-3 transition-all ${copiedId ? 'text-green-500 scale-110' : 'text-gray-400 dark:text-white/80 opacity-0 group-hover:opacity-60'}`} />
                 </p>
                 {/* Rating (peut être mis ici sur petit écran) */}
                 <div className="flex min-[500px]:hidden w-auto flex-wrap gap-x-3 gap-y-1 mt-1 text-xs text-gray-600">
                     <span className="inline-flex gap-1 items-center"><IoStarHalf className="text-amber-500" />{(product.rating || 0).toFixed(1)}</span>
                     <span className="inline-flex gap-1 items-center"><IoPeopleSharp />{shortNumber(product.comment_count || 0)}</span>
                     <button onClick={handleToggleVisibility} title={isVisible ? t('productList.setHidden') : t('productList.setVisible')} className="p-1 sx:hidden rounded-full hover:bg-gray-100">
-                        {isVisible ? <IoEyeOutline className="w-4 h-4 text-green-500" /> : <IoEyeOffOutline className="w-4 h-4 text-gray-400" />}
+                        {isVisible ? <IoEyeOutline className="w-4 h-4 text-green-500 dark:text-green-300" /> : <IoEyeOffOutline className="w-4 h-4 text-gray-400 dark:text-white" />}
                     </button>
                 </div>
             </div>
@@ -168,14 +187,14 @@ function ProductRowItem({ product, categoriesMap }: ProductRowItemProps) {
 
             {/* Rating (caché en dessous de 500px) */}
             <div className="hidden min-[500px]:flex flex-wrap gap-x-3 gap-y-1 mt-1 text-xs text-gray-600">
-                <span className="inline-flex gap-1 items-center"><IoStarHalf className="text-amber-500" />{(product.rating || 0).toFixed(1)}</span>
-                <span className="inline-flex gap-1 items-center"><IoPeopleSharp />{shortNumber(product.comment_count || 0)}</span>
+                <span className="inline-flex gap-1 items-center dark:text-white"><IoStarHalf className="text-amber-500" />{(product.rating || 0).toFixed(1)}</span>
+                <span className="inline-flex gap-1 items-center dark:text-white"><IoPeopleSharp />{shortNumber(product.comment_count || 0)}</span>
             </div>
 
             {/* Prix (sm+) */}
-            <div className="hidden sx:flex flex-col items-end flex-shrink-0 w-24">
-                <span className='text-sm font-medium text-gray-800'>{Number(product.price || 0).toLocaleString()} {product.currency}</span>
-                {product.barred_price && product.barred_price > product.price && (<span className="text-xs text-gray-400 line-through">{product.barred_price.toLocaleString()}</span>)}
+            <div className="hidden sx:flex flex-col items-end flex-shrink-0 w-24 dark:text-white">
+                <span className='text-sm font-medium text-gray-800 dark:text-white'>{Number(product.price || 0).toLocaleString()} {product.currency}</span>
+                {product.barred_price && product.barred_price > product.price && (<span className="text-xs text-gray-400 line-through dark:text-white">{product.barred_price.toLocaleString()}</span>)}
             </div>
 
             {/* Stock & Visibilité (lg+) */}
@@ -189,17 +208,20 @@ function ProductRowItem({ product, categoriesMap }: ProductRowItemProps) {
                 </span>
             </div>
             {/* Visibilité */}
-            <button onClick={handleToggleVisibility} title={isVisible ? t('productList.setHidden') : t('productList.setVisible')} className="p-1 rounded-full hidden sx:flex hover:bg-gray-100">
-                {isVisible ? <IoEyeOutline className="w-4 h-4 text-green-500" /> : <IoEyeOffOutline className="w-4 h-4 text-gray-400" />}
+            <button onClick={handleToggleVisibility} title={isVisible ? t('productList.setHidden') : t('productList.setVisible')} className="p-1 rounded-full hidden sx:flex hover:bg-gray-100 dark:hover:bg-gray-400/50">
+                {isVisible ? <IoEyeOutline className="w-4 h-4 text-green-500 dark:text-green-300" /> : <IoEyeOffOutline className="w-4 h-4 text-gray-400 dark:text-white" />}
             </button>
 
             {/* Actions Menu */}
             <div className="relative flex-shrink-0 ml-auto sm:ml-0">
-                <button onClick={(e) => { e.stopPropagation(); setIsMenuOpen(!isMenuOpen); }} className="p-1.5 rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-600 focus:outline-none focus:ring-1 focus:ring-blue-500" aria-haspopup="true" aria-expanded={isMenuOpen} title={t('common.actions')} disabled={deleteProductMutation.isPending || updateProductMutation.isPending}>
+                <button onClick={(e) => { e.stopPropagation(); !isMenuOpen && setIsMenuOpen(true); }} className="p-1.5 rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-600 focus:outline-none focus:ring-1 focus:ring-blue-500" aria-haspopup="true" aria-expanded={isMenuOpen} title={t('common.actions')} disabled={deleteProductMutation.isPending || updateProductMutation.isPending}>
                     <IoEllipsisVertical />
                 </button>
                 {isMenuOpen && (
-                    <div className="absolute right-0 mt-1 w-48 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-20 py-1" role="menu" onClick={(e) => e.stopPropagation()}>
+                    <div className="absolute right-0 mt-1 w-48 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-20 py-1"
+                        role="menu"
+                        ref={menuRef}
+                        onClick={(e) => e.stopPropagation()}>
                         {/* Lien Modifier */}
                         <a href={`/products/${product.id}`} role="menuitem" className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 w-full text-left">
                             <IoPencil className="w-4 h-4" /> {t('common.edit')}
@@ -224,28 +246,28 @@ function ProductRowItem({ product, categoriesMap }: ProductRowItemProps) {
 export function ProductItemSkeletonRow() {
     return (
         // Dimensions et styles similaires à ProductItemRow
-        <div className="product-item-row flex items-center gap-3 sm:gap-4 p-2.5 bg-white rounded-lg shadow-sm border border-gray-200 w-full animate-pulse">
+        <div className="product-item-row flex items-center gap-3 sm:gap-4 p-2.5 bg-white rounded-lg shadow-sm border border-gray-200 w-full animate-pulse dark:border-gray-700 dark:bg-gray-900/50">
 
             {/* Image Placeholder */}
-            <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-md bg-gray-300 flex-shrink-0"></div>
+            <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-md bg-gray-300 dark:bg-gray-700 flex-shrink-0"></div>
 
             {/* Nom & ID Placeholder */}
             <div className="flex-grow min-w-0 flex flex-col gap-1">
-                <div className="h-5 w-3/5 bg-gray-300 rounded"></div> {/* Nom */}
-                <div className="h-3 w-2/5 bg-gray-200 rounded"></div> {/* ID */}
+                <div className="h-5 w-3/5 bg-gray-300 dark:bg-gray-700 rounded"></div> {/* Nom */}
+                <div className="h-3 w-2/5 bg-gray-200 dark:bg-gray-600 rounded"></div> {/* ID */}
             </div>
 
             {/* Catégories Placeholder (visible sur md+) */}
-            <div className="hidden md:flex h-4 w-20 bg-gray-200 rounded flex-shrink-0"></div>
+            <div className="hidden md:flex h-4 w-20 bg-gray-200 dark:bg-gray-500 rounded flex-shrink-0"></div>
 
             {/* Prix Placeholder (visible sur sm+) */}
-            <div className="hidden sm:flex h-5 w-16 bg-gray-200 rounded flex-shrink-0"></div>
+            <div className="hidden sm:flex h-5 w-16 bg-gray-200 dark:bg-gray-500 rounded flex-shrink-0"></div>
 
             {/* Stock & Visibilité Placeholder (visible sur lg+) */}
-            <div className="hidden lg:flex h-5 w-20 bg-gray-200 rounded flex-shrink-0"></div>
+            <div className="hidden lg:flex h-5 w-20 bg-gray-200 dark:bg-gray-500 rounded flex-shrink-0"></div>
 
             {/* Actions Placeholder */}
-            <div className="w-6 h-6 bg-gray-200 rounded-full flex-shrink-0 ml-auto sm:ml-0"></div>
+            <div className="w-6 h-6 bg-gray-200 dark:bg-gray-500 rounded-full flex-shrink-0 ml-auto sm:ml-0"></div>
         </div>
     );
 }

@@ -1,192 +1,164 @@
 // Components/CommandesList/CommandesList.tsx
-// import './CommandesList.css'; // ❌ Supprimer
 
 import { IoChevronDown, IoChevronForward, IoSearch } from 'react-icons/io5';
-// import { useApp } from '../../renderer/AppStore/UseApp'; // Supprimé
-// import { ChildViewer } from '../ChildViewer/ChildViewer'; // Supposé non utilisé ici
-import { CommandItem } from '../CommandItem/CommandItem';
+import { CommandItem, CommandItemSkeleton } from '../CommandItem/CommandItem';
 import { CommandFilterType, CommandInterface } from '../../api/Interfaces/Interfaces';
 import { useEffect, useMemo, useState } from 'react';
-import { OrderStatusElement, statusColors /*, statusIcons */ } from '../Status/Satus'; // statusIcons non utilisé
+import { OrderStatusElement, statusColors } from '../Status/Satus';
 import { DateRange, DayPicker } from "react-day-picker";
-import "react-day-picker/style.css"; // Garder l'import CSS de react-day-picker
-import { ClientCall, debounce } from '../Utils/functions'; // Garder debounce, ClientCall
-// import { FiMaximize } from 'react-icons/fi'; // Non utilisé
+import "react-day-picker/style.css";
+import { ClientCall, debounce } from '../Utils/functions';
 import { getMedia } from '../Utils/StringFormater';
-import { useCommandStore } from '../../pages/commands/CommandStore'; // Sera remplacé par hook API
-import { useGetAllOrders } from '../../api/ReactSublymusApi'; // ✅ Importer le hook
+import { useGetAllOrders, queryClient } from '../../api/ReactSublymusApi';
 import { getTransmit, useGlobalStore } from '../../api/stores/StoreStore';
-import { useTranslation } from 'react-i18next'; // ✅ Importer useTranslation
-import { queryClient } from '../../api/ReactSublymusApi'; // Importer queryClient pour invalidation SSE
+import { useTranslation } from 'react-i18next';
 import { DateTime } from 'luxon';
 import Logger from '../../api/Logger';
-import { CommandItemSkeleton } from '../CommandItem/CommandItem';
 import { Pagination } from '../Pagination/Pagination';
 import { Data } from '../../renderer/AppStore/Data';
 import { navigate } from 'vike/client/router';
-
-
+import { ClipboardList, ListOrdered } from 'lucide-react';
 
 export { CommandeList };
 
-function CommandeList({ product_id, user_id }: { user_id?: string; product_id?: string }) {
-    const { t } = useTranslation(); // ✅ Initialiser i18n
-    const [filter, setFilter] = useState<CommandFilterType>({});
-    // const { getCommands } = useCommandStore(); // Supprimé
-    const { currentStore } = useGlobalStore();
-    // const [commands, setCommands] = useState<CommandInterface[]>([]); // Géré par React Query
+// ===== COMPOSANT PRINCIPAL : CommandeList =====
 
-    // ✅ Utiliser le hook React Query
+function CommandeList({ product_id, user_id }: { user_id?: string; product_id?: string }) {
+    const { t } = useTranslation();
+    const { currentStore } = useGlobalStore();
+    const [filter, setFilter] = useState<CommandFilterType>({});
+
+    // --- Data Fetching avec React Query ---
     const d = filter.max_date ? new Date(filter.max_date) : undefined;
     d?.setDate(d.getDate() + 1);
-    const { data: commandsData, isLoading, isError, error: apiError, refetch } = useGetAllOrders(
-        { ...filter, product_id, user_id, max_date: d?.toISOString() }, // Fusionner filtres
-        { enabled: !!currentStore } // Activer seulement si store chargé
+    const { data: commandsData, isLoading, isError, error: apiError } = useGetAllOrders(
+        { ...filter, product_id, user_id, max_date: d?.toISOString() },
+        { enabled: !!currentStore }
     );
-    const commands = commandsData?.list ?? []; // Extraire la liste
-    const meta = commandsData?.meta; // Extraire meta pour pagination future
+    const commands = commandsData?.list ?? [];
+    const meta = commandsData?.meta;
 
-    // Gestion SSE pour rafraîchissement temps réel
+    // --- Gestion des mises à jour en temps réel (SSE) ---
     useEffect(() => {
         if (!currentStore?.api_url) return;
-
         const transmit = getTransmit(currentStore.api_url);
-        const channel = `store/${Data.apiUrl}/new_command`; // Utiliser ID du store courant
-        // const channelUpdate = `store/${currentStore.id}/update_command`; // Écouter aussi les MAJ
-
+        const channel = `store/${Data.apiUrl}/new_command`;
         Logger.info(`Subscribing to SSE channel: ${channel}`);
         const subscription = transmit?.subscription(channel);
-        // const subscriptionUpdate = transmit?.subscription(channelUpdate);
 
         async function subscribe() {
-            if (!subscription /* || !subscriptionUpdate */) return;
-
+            if (!subscription) return;
             try {
                 await subscription.create();
-                // await subscriptionUpdate.create();
-
-                const handleMessage = (data: any) => {
+                subscription.onMessage<{ id: string }>((data) => {
                     Logger.info({ channel, data }, `Received SSE message`);
-                    // Invalider la query pour rafraîchir la liste
-                    // Utiliser debounce pour éviter les invalidations trop fréquentes
                     debounce(() => {
                         Logger.info("Invalidating 'allOrders' query due to SSE event.");
                         queryClient.invalidateQueries({ queryKey: ['allOrders'] });
-                        // Pas besoin de refetch() manuel si invalidateQueries est utilisé
-                    }, 'sse-command-update', 500); // Debounce de 500ms
-                };
-
-                subscription.onMessage<{ id: string }>(handleMessage);
-                // subscriptionUpdate.onMessage<{ id: string }>(handleMessage);
-
+                    }, 'sse-command-update', 500);
+                });
             } catch (err) {
                 Logger.error({ channel, error: err }, "Failed to subscribe to SSE channel");
             }
         }
-
         subscribe();
-
         return () => {
             Logger.info(`Unsubscribing from SSE channel: ${channel}`);
             subscription?.delete();
-            // subscriptionUpdate?.delete();
         };
+    }, [currentStore?.id, currentStore?.api_url]);
 
-    }, [currentStore?.id, currentStore?.api_url]); // Dépendances pour re-subscribe si store change
-
-    // --- Logique d'affichage des dates (inchangée) ---
+    // --- Logique d'affichage des dates ---
     const accuDate: string[] = [];
-    const getDate = (date: string) => {
-        const d = new Date(date).toLocaleDateString('fr', { // TODO: utiliser la locale i18n
-            day: 'numeric',
-            month: 'long',
-            year: 'numeric'
-        });
-        return d;
-    };
-    // --- Fin Logique Dates ---
+    const getDate = (date: string) => new Date(date).toLocaleDateString(t('localeCode', { ns: 'common', defaultValue: 'fr-FR' }), {
+        day: 'numeric', month: 'long', year: 'numeric'
+    });
 
-    const searchInput = <label htmlFor="commands-search-input" className='relative w-full max-w-xs ml-auto'> {/* Limiter largeur recherche */}
-        <input
-            className="w-full pl-3 pr-10 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
-            placeholder={t('dashboard.searchPlaceholder')} // 🌍 i18n
-            id="commands-search-input"
-            type="text"
-            value={filter.search || ''}
-            onChange={(e) => {
-                const search = e.currentTarget.value;
-                // Utiliser debounce pour la recherche
-                debounce(() => setFilter((prev) => ({ ...prev, search: search || undefined, page: 1 })), 'search-command', 400); // Reset page à 1
-            }}
-        />
-        <IoSearch className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400" />
-    </label>
+    // --- Éléments JSX ---
+    const searchInput = (
+        <label htmlFor="commands-search-input" className='relative w-full max-w-sm ml-auto'>
+            <input
+                className="w-full pl-4 pr-10 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-teal-500 text-sm bg-white dark:bg-gray-800 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"
+                placeholder={t('dashboard.searchPlaceholder')}
+                id="commands-search-input"
+                type="text"
+                value={filter.search || ''}
+                onChange={(e) => {
+                    const search = e.currentTarget.value;
+                    debounce(() => setFilter((prev) => ({ ...prev, search: search || undefined, page: 1 })), 'search-command', 400);
+                }}
+            />
+            <IoSearch className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500" />
+        </label>
+    );
+
     return (
-        // Utiliser flex-col et gap-2
-        <div className="w-full flex flex-col items-stretch gap-2">
+        <div className="w-full flex flex-col items-stretch gap-4 p-2 sm:p-4 rounded-xl dark:shadow-emerald-800/50 shadow-emerald-200/50  bg-white/50 dark:bg-white/5 border border-transparent dark:border-white/10">
             {/* Barre supérieure avec titre et recherche */}
-            <div className="w-full flex items-center justify-between gap-4 p-2"> {/* Ajouter padding et gap */}
-                {/* 🌍 i18n */}
-                <h2 className="text-lg font-semibold text-gray-700 whitespace-nowrap">{t('dashboard.recentOrders')}</h2>
-                <span className='hidden mob:inline-block'>
+            <div className="w-full flex items-center justify-between gap-4">
+                <div className='flex items-center gap-4'>
+                    <ClipboardList className='min-w-5 min-h-5 text-blue-500' />
+                    <h2 className="text-lg font-semibold text-gray-800 dark:text-gray-100 flex items-center gap-2">{t('dashboard.recentOrders')}</h2>
+                </div>
+                <div className='hidden mob:inline-block'>
                     {searchInput}
-                </span>
-                {/* Lien "Tout voir" (si non sur la page /commands) */}
+                </div>
                 {!ClientCall(() => location, { pathname: '' })?.pathname.startsWith('/commands') && (
-                    <a className='flex items-center gap-1 text-sm text-blue-600 p-2 rounded-lg hover:bg-blue-100/50 transition whitespace-nowrap min-w-max' href='/commands'>
-                        <span className='hidden sl2:inline-block'> {t('common.seeAll')}</span>
+                    <a className='flex items-center gap-1.5 text-sm font-semibold text-teal-600 dark:text-teal-400 p-2 rounded-lg hover:bg-teal-100/50 dark:hover:bg-teal-900/30 transition whitespace-nowrap min-w-max' href='/commands'>
+                        <span className='hidden sl2:inline-block'>{t('common.seeAll')}</span>
                         <IoChevronForward className='w-4 h-4' />
                     </a>
                 )}
             </div>
-            <span className='inline-block mob:hidden'>
+            <div className='inline-block mob:hidden'>
                 {searchInput}
-            </span>
-            {/* Filtres */}
+            </div>
+
             <CommandsFilters filter={filter} setFilter={setFilter} />
 
             {/* Liste des commandes */}
-            {/* Utiliser flex-col et gap-3 */}
             <div className="w-full flex flex-col items-stretch gap-3">
-                {isLoading && (
-                    // Squelette ou indicateur de chargement
-                    Array.from({ length: 5 }).map((_, i) => <CommandItemSkeleton />)
-                )}
+                {isLoading && Array.from({ length: 5 }).map((_, i) => <CommandItemSkeleton key={i} />)}
+
                 {isError && (
-                    // Message d'erreur
-                    <div className="p-6 text-center text-red-500">
-                        {t('error_occurred')} <span className='text-xs'>{apiError?.message}</span>
+                    <div className="p-6 text-center text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 rounded-lg">
+                        {t('error_occurred')} <span className='text-xs opacity-80'>{apiError?.message}</span>
                     </div>
                 )}
+
                 {!isLoading && !isError && commands.length === 0 && (
-                    // Message "Aucun résultat"
-                    <div className="flex flex-col items-center justify-center p-10 text-center text-gray-500">
+                    <div className="flex flex-col items-center justify-center p-10 text-center text-gray-500 dark:text-white">
                         <div className="w-40 h-40 bg-contain bg-center bg-no-repeat mb-4" style={{ background: getMedia({ isBackground: true, source: '/res/empty/search.png' }) }}></div>
-                        {t('common.noResults')}
+                        <h3 className="font-semibold text-lg">{t('common.noResults')}</h3>
+                        <p className="text-sm">{t('common.noResultsHint')}</p>
                     </div>
                 )}
+
                 {!isLoading && !isError && commands.map((a) => {
                     const d = getDate(a.created_at);
                     const isNewDate = !accuDate.includes(d);
                     if (isNewDate) accuDate.push(d);
-                    // Afficher la date seulement si elle est nouvelle (logique inchangée)
                     const dateHeader = isNewDate && !filter.order_by?.includes('price') && (
-                        <h2 className='my-3 font-bold text-base opacity-80'>{d}</h2>
+                        <h3 className='mt-4 mb-2 font-bold text-lg text-gray-700 dark:text-gray-300'>{d}</h3>
                     );
 
                     return (
                         <div key={a.id}>
                             {dateHeader}
-                            {/* Utiliser un lien ou un bouton selon l'action voulue */}
-                            <span onClick={()=>{
-                                navigate(`/commands/${a.id}`)
-                            }}>
-                                <CommandItem command={a} /> {/* Passer commandItem à CommandItem */}
-                            </span>
+                            <div
+                                className="w-full cursor-pointer rounded-lg transition-all duration-200 hover:bg-white hover:shadow-md dark:hover:bg-gray-800/80 focus-visible:ring-2 focus-visible:ring-teal-500 outline-none"
+                                onClick={() => navigate(`/commands/${a.id}`)}
+                                role="link"
+                                tabIndex={0}
+                            >
+                                <CommandItem command={a} />
+                            </div>
                         </div>
                     );
                 })}
             </div>
+
+            {/* Pagination: s'assurer que le composant Pagination gère le dark mode */}
             {meta && meta.total > meta.per_page && (
                 <Pagination
                     currentPage={meta.current_page}
@@ -200,71 +172,77 @@ function CommandeList({ product_id, user_id }: { user_id?: string; product_id?: 
     );
 }
 
-// --- Composant CommandsFilters (Fonctionnalité et état interne inchangés, juste styles Tailwind) ---
-function CommandsFilters({ filter, setFilter }: { filter: CommandFilterType, setFilter: (filter: CommandFilterType) => void }) {
-    const { t } = useTranslation(); // ✅ i18n
+
+// ===== COMPOSANT DE FILTRES : CommandsFilters =====
+
+export function CommandsFilters({ filter, setFilter }: { filter: CommandFilterType, setFilter: (filter: CommandFilterType | ((prev: CommandFilterType) => CommandFilterType)) => void }) {
+    const { t } = useTranslation();
     const [currentFilter, setCurrentFilter] = useState('');
 
     const handleFilterChange = (newFilterData: Partial<CommandFilterType>) => {
-        setFilter({ ...filter, ...newFilterData, page: 1 }); // Reset page à 1 lors d'un changement de filtre
+        setFilter(prev => ({ ...prev, ...newFilterData, page: 1 }));
     };
 
     const toggleFilter = (filterName: string) => {
         setCurrentFilter(current => current === filterName ? '' : filterName);
     };
 
+    const hasActiveFilters = filter.status?.length || filter.order_by || filter.min_price || filter.max_price || filter.min_date || filter.max_date;
+
     return (
-        // Utiliser flex-col
-        <div className="w-full flex flex-col mb-0">
-            {/* Onglets des filtres */}
-            {/* Utiliser flex, gap, p-2, overflow-x-auto, scrollbar-hide */}
-            <div className="w-full flex items-center p-2 gap-3 overflow-x-auto overflow-y-hidden rounded-xl scrollbar-hide border-b border-gray-200">
-                {/* Bouton Status */}
-                <div
+        <div className="w-full flex flex-col bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm">
+            <div className="w-full flex flex-wrap items-center p-2 gap-2">
+                {/* Utilisation de <button> pour l'accessibilité */}
+                <button
                     onClick={() => toggleFilter('status')}
-                    className={`inline-flex items-center border rounded-lg px-2 py-0.5 cursor-pointer transition duration-200 whitespace-nowrap text-sm
-                         ${filter.status && filter.status.length > 0 ? 'text-blue-600 bg-blue-100/60 border-blue-200' : 'text-gray-600 border-gray-300'}
-                         ${currentFilter === 'status' ? '!bg-blue-100/80 !border-blue-300' : 'hover:bg-gray-100'}`}
+                    className={`inline-flex items-center rounded-md px-3 py-1.5 cursor-pointer transition duration-200 whitespace-nowrap text-sm font-medium
+                         ${filter.status && filter.status.length > 0 ? 'text-teal-700 bg-teal-100 dark:bg-teal-900/20 dark:text-teal-300' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50'}
+                         ${currentFilter === 'status' ? 'ring-2 ring-teal-400' : ''}`}
                 >
                     <span>{t('dashboard.orderFilters.status')}</span>
                     <IoChevronDown className={`ml-2 transition-transform duration-200 ${currentFilter === 'status' ? 'rotate-180' : ''}`} />
-                </div>
-                {/* Bouton Ordre */}
-                <div
+                </button>
+                <button
                     onClick={() => toggleFilter('order')}
-                    className={`inline-flex items-center border rounded-lg px-2 py-0.5 cursor-pointer transition duration-200 whitespace-nowrap text-sm
-                         ${filter.order_by ? 'text-blue-600 bg-blue-100/60 border-blue-200' : 'text-gray-600 border-gray-300'}
-                         ${currentFilter === 'order' ? '!bg-blue-100/80 !border-blue-300' : 'hover:bg-gray-100'}`}
+                    className={`inline-flex items-center rounded-md px-3 py-1.5 cursor-pointer transition duration-200 whitespace-nowrap text-sm font-medium
+                         ${filter.order_by ? 'text-teal-700 bg-teal-100 dark:bg-teal-900/20 dark:text-teal-300' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50'}
+                         ${currentFilter === 'order' ? 'ring-2 ring-teal-400' : ''}`}
                 >
                     <span>{t('dashboard.orderFilters.order')}</span>
                     <IoChevronDown className={`ml-2 transition-transform duration-200 ${currentFilter === 'order' ? 'rotate-180' : ''}`} />
-                </div>
-                {/* Bouton Prix */}
-                <div
+                </button>
+                <button
                     onClick={() => toggleFilter('price')}
-                    className={`inline-flex items-center border rounded-lg px-2 py-0.5 cursor-pointer transition duration-200 whitespace-nowrap text-sm
-                          ${filter.min_price !== undefined || filter.max_price !== undefined ? 'text-blue-600 bg-blue-100/60 border-blue-200' : 'text-gray-600 border-gray-300'}
-                          ${currentFilter === 'price' ? '!bg-blue-100/80 !border-blue-300' : 'hover:bg-gray-100'}`}
+                    className={`inline-flex items-center rounded-md px-3 py-1.5 cursor-pointer transition duration-200 whitespace-nowrap text-sm font-medium
+                          ${filter.min_price !== undefined || filter.max_price !== undefined ? 'text-teal-700 bg-teal-100 dark:bg-teal-900/20 dark:text-teal-300' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50'}
+                          ${currentFilter === 'price' ? 'ring-2 ring-teal-400' : ''}`}
                 >
                     <span>{t('dashboard.orderFilters.price')}</span>
                     <IoChevronDown className={`ml-2 transition-transform duration-200 ${currentFilter === 'price' ? 'rotate-180' : ''}`} />
-                </div>
-                {/* Bouton Date */}
-                <div
+                </button>
+                <button
                     onClick={() => toggleFilter('date')}
-                    className={`inline-flex items-center border rounded-lg px-2 py-0.5 cursor-pointer transition duration-200 whitespace-nowrap text-sm
-                           ${filter.min_date || filter.max_date ? 'text-blue-600 bg-blue-100/60 border-blue-200' : 'text-gray-600 border-gray-300'}
-                           ${currentFilter === 'date' ? '!bg-blue-100/80 !border-blue-300' : 'hover:bg-gray-100'}`}
+                    className={`inline-flex items-center rounded-md px-3 py-1.5 cursor-pointer transition duration-200 whitespace-nowrap text-sm font-medium
+                           ${filter.min_date || filter.max_date ? 'text-teal-700 bg-teal-100 dark:bg-teal-900/20 dark:text-teal-300' : 'text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700/50'}
+                           ${currentFilter === 'date' ? 'ring-2 ring-teal-400' : ''}`}
                 >
                     <span>{t('dashboard.orderFilters.date')}</span>
                     <IoChevronDown className={`ml-2 transition-transform duration-200 ${currentFilter === 'date' ? 'rotate-180' : ''}`} />
-                </div>
+                </button>
+
+                {/* Bouton pour réinitialiser tous les filtres */}
+                {hasActiveFilters && (
+                    <button
+                        onClick={() => setFilter({ page: 1, })}
+                        className="ml-auto text-sm font-medium text-red-600 dark:text-red-400 hover:underline px-3 whitespace-nowrap"
+                    >
+                        {t('dashboard.orderFilters.resetAll')}
+                    </button>
+                )}
             </div>
 
             {/* Conteneur des options de filtre */}
-            {/* Utiliser mt-2 */}
-            <div className="mt-2">
-                {/* Chaque div enfant gère sa propre visibilité/hauteur */}
+            <div className="w-full">
                 <StatusFilterComponent
                     active={currentFilter === 'status'}
                     status={filter.status}
@@ -286,164 +264,215 @@ function CommandsFilters({ filter, setFilter }: { filter: CommandFilterType, set
     );
 }
 
-// --- Composant StatusFilterComponent ---
-function StatusFilterComponent({ status: currentStatus, setStatus, active }: { active: boolean, status: string[] | undefined, setStatus: (status: string[] | undefined) => void }) {
-    const { t } = useTranslation(); // ✅ i18n
-    const statusList = currentStatus || [];
+// ===== SOUS-COMPOSANTS DE FILTRES =====
 
+export function FilterPanelWrapper({ active, children }: { active: boolean, children: React.ReactNode }) {
+    // Wrapper unifié pour l'animation et le style des panneaux de filtres
+    return (
+        <div
+            className={`grid transition-all duration-300 ease-in-out ${active ? 'grid-rows-[1fr] opacity-100' : 'grid-rows-[0fr] opacity-0'}`}
+        >
+            <div className="overflow-hidden">
+                <div className="p-4 border-t border-gray-200 dark:border-gray-700">
+                    {children}
+                </div>
+            </div>
+        </div>
+    );
+}
+
+export function StatusFilterComponent({ status: currentStatus, setStatus, active }: { active: boolean, status: string[] | undefined, setStatus: (status: string[] | undefined) => void }) {
+    const statusList = currentStatus || [];
     const toggleStatus = (s: string) => {
         const newList = statusList.includes(s) ? statusList.filter(f => f !== s) : [...statusList, s];
         setStatus(newList.length > 0 ? newList : undefined);
     };
 
     return (
-        // Utiliser flex, flex-wrap, gap-1.5 et les styles de transition/visibilité
-        <div className={`gap-1.5 flex flex-wrap transition-all duration-200 ease-in-out overflow-hidden ${active ? 'h-auto opacity-100 visible p-4 border-t border-gray-200 -mt-px' : 'h-0 opacity-0 invisible p-0'}`}>
-            {Object.keys(statusColors).map(s => ( // Assumer que statusColors contient tous les status possibles
-                <button type="button" key={s} onClick={() => toggleStatus(s)}>
-                    {/* Passer les props pour le style conditionnel */}
-                    <OrderStatusElement
-                        status={s as any}
-                        //@ts-ignore
-                        isSelected={statusList.includes(s)}
-                    />
-                </button>
-            ))}
-        </div>
+        <FilterPanelWrapper active={active}>
+            <div className="flex flex-wrap gap-2">
+                {Object.keys(statusColors).map(s => (
+                    <button type="button" key={s} onClick={() => toggleStatus(s)} className="rounded-full focus-visible:ring-2 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-gray-800 focus-visible:ring-teal-500 outline-none">
+                        <OrderStatusElement
+                            status={s as any}
+                            //@ts-ignore
+                            isSelected={statusList.includes(s)}
+                        />
+                    </button>
+                ))}
+            </div>
+        </FilterPanelWrapper>
     );
 }
 
-// --- Composant OrderFilterComponent ---
 export function OrderFilterComponent({ order, setOrder, active }: { active: boolean, order: CommandFilterType['order_by'], setOrder: (order: CommandFilterType['order_by'] | undefined) => void }) {
-    const { t } = useTranslation(); // ✅ i18n
-    // Mapping des clés aux traductions
+    const { t } = useTranslation();
     const MapOder = {
         'date_desc': t('dashboard.orderFilters.orderValues.date_desc'),
         'date_asc': t('dashboard.orderFilters.orderValues.date_asc'),
         'total_price_desc': t('dashboard.orderFilters.orderValues.total_price_desc'),
         'total_price_asc': t('dashboard.orderFilters.orderValues.total_price_asc')
     };
-    type OrderKey = keyof typeof MapOder; // Type pour les clés valides
+    type OrderKey = keyof typeof MapOder;
 
     return (
-        <div className={`gap-1.5 flex flex-wrap transition-all duration-200 ease-in-out overflow-hidden ${active ? 'h-auto opacity-100 visible p-4 border-t border-gray-200 -mt-px' : 'h-0 opacity-0 invisible p-0'}`}>
-            {(["date_desc", "date_asc", "total_price_desc", "total_price_asc"] as const).map((o: OrderKey) => (
-                <button // Utiliser des boutons
-                    type="button"
-                    key={o}
-                    // Appliquer les styles conditionnels Tailwind
-                    className={`px-2 py-0.5 border rounded-lg text-sm cursor-pointer
-                       ${o === order ? 'bg-primary-100/60 text-primary border-primary-300/50' : 'border-gray-300 text-gray-500 hover:bg-gray-100'}`}
-                    onClick={() => setOrder(order === o ? undefined : o)}
-                >
-                    {MapOder[o]}
-                </button>
-            ))}
-        </div>
+        <FilterPanelWrapper active={active}>
+            <div className="flex flex-wrap gap-2">
+                {(["date_desc", "date_asc", "total_price_desc", "total_price_asc"] as const).map((o: OrderKey) => (
+                    <button
+                        type="button"
+                        key={o}
+                        className={`px-3 py-1.5 border rounded-lg text-sm font-medium transition-colors
+                           ${o === order
+                                ? 'bg-teal-600 text-white border-teal-600'
+                                : 'border-gray-300 text-gray-700 hover:bg-gray-100 dark:border-gray-600 dark:text-gray-300 dark:hover:bg-gray-700'
+                            }`}
+                        onClick={() => setOrder(order === o ? undefined : o)}
+                    >
+                        {MapOder[o]}
+                    </button>
+                ))}
+            </div>
+        </FilterPanelWrapper>
     );
 }
-
-// --- Composant PriceFilterComponent ---
 export function PriceFilterComponent({ prices, setPrice, active }: { active: boolean, prices: [number | undefined, number | undefined] | undefined, setPrice: (price: [number | undefined, number | undefined] | undefined) => void }) {
-    const { t } = useTranslation(); // ✅ i18n
-    const minPrice = prices?.[0] ?? ''; // Utiliser chaîne vide pour input contrôlé
+    const { t } = useTranslation();
+    const minPrice = prices?.[0] ?? '';
     const maxPrice = prices?.[1] ?? '';
 
     const handleMinChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const val = e.target.value === '' ? undefined : parseInt(e.target.value, 10);
         setPrice([isNaN(val as number) ? undefined : val, prices?.[1]]);
     };
+
     const handleMaxChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const val = e.target.value === '' ? undefined : parseInt(e.target.value, 10);
         setPrice([prices?.[0], isNaN(val as number) ? undefined : val]);
     };
-    const handleReset = (e: React.MouseEvent<HTMLSpanElement>) => {
-        e.preventDefault();
-        e.stopPropagation();
-        setPrice(undefined);
-    };
+
+    const handleReset = () => setPrice(undefined);
     const canReset = minPrice !== '' || maxPrice !== '';
+    const hasValues = minPrice !== '' || maxPrice !== '';
 
     return (
-        // Utiliser flex, flex-wrap, gap-4, items-end et les styles de transition/visibilité
-        <div className={`flex flex-wrap gap-4 items-end transition-all duration-200 ease-in-out overflow-hidden ${active ? 'h-auto opacity-100 visible p-4 border-t border-gray-200 -mt-px' : 'h-0 opacity-0 invisible p-0'}`}>
-            {/* Input Min Price */}
-            <label htmlFor="command-filter-min-price" className="flex flex-col gap-1 w-40">
-                <span className="text-sm text-gray-600">{t('dashboard.orderFilters.priceMin')}</span>
-                <input
-                    type="number"
-                    id="command-filter-min-price"
-                    value={minPrice}
-                    placeholder={t('dashboard.orderFilters.priceMin')}
-                    onChange={handleMinChange}
-                    min="0" // Attribut HTML min
-                    className="px-3 py-1.5 border border-gray-300 rounded-md w-full focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 appearance-none m-0" // style pour masquer flèches
-                />
-            </label>
-            {/* Input Max Price */}
-            <label htmlFor="command-filter-max-price" className="flex flex-col gap-1 w-40">
-                <span className="text-sm text-gray-600">{t('dashboard.orderFilters.priceMax')}</span>
-                <input
-                    type="number"
-                    id="command-filter-max-price"
-                    value={maxPrice}
-                    placeholder={t('dashboard.orderFilters.priceMax')}
-                    onChange={handleMaxChange}
-                    min="0" // Attribut HTML min
-                    className="px-3 py-1.5 border border-gray-300 rounded-md w-full focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 appearance-none m-0" // style pour masquer flèches
-                />
-            </label>
-            {/* Reset Button */}
-            {/* Utiliser w-full sm:w-auto pour layout */}
-            <div className="reset w-full sm:w-auto">
-                <span
-                    onClick={canReset ? handleReset : undefined}
-                    className={`inline-flex border rounded-lg px-3 py-1 text-sm transition ${canReset
-                        ? 'text-red-500 border-red-200 cursor-pointer hover:bg-red-50'
-                        : 'text-gray-400 border-gray-200 cursor-not-allowed'
-                        }`}
-                >
-                    {t('dashboard.orderFilters.reset')}
-                </span>
+        <FilterPanelWrapper active={active}>
+            <div className="space-y-4">
+                {/* Header avec indicateur d'état */}
+                <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                        <span className="text-sm font-medium text-gray-700 dark:text-gray-200">
+                            {t('dashboard.orderFilters.price')}
+                        </span>
+                        {hasValues && (
+                            <span className="font-medium text-gray-700 dark:text-gray-300">
+                                {minPrice || '0'}cfa - {maxPrice || '∞'}cfa
+                            </span>
+                        )}
+                    </div>
+                    {canReset && (
+                        <button
+                            onClick={handleReset}
+                            className="text-xs text-gray-500 hover:text-red-600 dark:text-white dark:hover:text-red-400 transition-colors"
+                        >
+                            Effacer
+                        </button>
+                    )}
+                </div>
+
+                {/* Inputs avec design amélioré */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                    <div className="relative group">
+                        <label htmlFor="command-filter-min-price" className="block text-xs font-medium text-gray-600 dark:text-white mb-1.5">
+                            {t('dashboard.orderFilters.priceMin')}
+                        </label>
+                        <div className="relative">
+                            <span className="absolute left-6 top-1/2 -translate-y-1/2 text-sm text-gray-500 dark:text-white">cfa</span>
+                            <input
+                                type="number"
+                                id="command-filter-min-price"
+                                value={minPrice}
+                                placeholder="0"
+                                onChange={handleMinChange}
+                                min="0"
+                                className="w-full pl-7  ml-5 pr-3 py-2.5 text-sm
+                                    bg-white dark:bg-gray-800
+                                    border border-gray-200 dark:border-gray-600
+                                    rounded-lg shadow-sm
+                                    placeholder:text-gray-400 dark:placeholder:text-gray-500
+                                    text-gray-900 dark:text-gray-100
+                                    focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500
+                                    transition-all duration-200
+                                    hover:border-gray-300 dark:hover:border-gray-500"
+                            />
+                        </div>
+                    </div>
+
+                    <div className="relative group">
+                        <label htmlFor="command-filter-max-price" className="block text-xs font-medium text-gray-600 dark:text-white mb-1.5">
+                            {t('dashboard.orderFilters.priceMax')}
+                        </label>
+                        <div className="relative">
+                            <span className="absolute left-6 top-1/2 -translate-y-1/2 text-sm text-gray-500 dark:text-white">cfa</span>
+                            <input
+                                type="number"
+                                id="command-filter-max-price"
+                                value={maxPrice}
+                                placeholder="1000"
+                                onChange={handleMaxChange}
+                                min="0"
+                                className="w-full pl-7 ml-5 pr-3 py-2.5 text-sm
+                                    bg-white dark:bg-gray-800
+                                    border border-gray-200 dark:border-gray-600
+                                    rounded-lg shadow-sm
+                                    placeholder:text-gray-400 dark:placeholder:text-gray-500
+                                    text-gray-900 dark:text-gray-100
+                                    focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500
+                                    transition-all duration-200
+                                    hover:border-gray-300 dark:hover:border-gray-500"
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                {/* Séparateur visuel entre les inputs */}
+                <div className="flex items-center justify-center -my-2">
+                    <div className="w-6 h-px bg-gray-200 dark:bg-gray-600"></div>
+                    <span className="px-2 text-xs text-gray-400 dark:text-gray-500">à</span>
+                    <div className="w-6 h-px bg-gray-200 dark:bg-gray-600"></div>
+                </div>
+
+                {/* Résumé des valeurs sélectionnées */}
+
             </div>
-        </div>
+        </FilterPanelWrapper>
     );
 }
+export function DateFilterComponent({ date, setDate, active }: { active: boolean; date: [string | undefined, string | undefined] | undefined; setDate: (date: [string | undefined, string | undefined] | undefined) => void; }) {
+    const { t } = useTranslation();
+    const currentDate = useMemo(() => new Date(), []);
+    const defaultMonth = useMemo(() => (date?.[0] ? new Date(date[0]) : currentDate), [date, currentDate]);
 
-// --- Composant DateFilterComponent ---
-export function DateFilterComponent({ date, setDate, active }: { active: boolean, date: [string | undefined, string | undefined] | undefined, setDate: (date: [string | undefined, string | undefined] | undefined) => void }) {
-    const { t, i18n } = useTranslation(); // ✅ i18n
-    const currentDate = useMemo(() => new Date(), []); // Mémoriser la date actuelle
-    const defaultMonth = useMemo(() => date?.[0] ? new Date(date[0]) : currentDate, [date, currentDate]);
-
-    // Convertir les dates ISO string en objets Date pour DayPicker
     const selectedRange: DateRange | undefined = useMemo(() => {
         const fromDate = date?.[0] ? new Date(date[0]) : undefined;
-        const toDate = date?.[1] ? new Date(date[1]) : fromDate; // Si 'to' manque, utiliser 'from'
+        const toDate = date?.[1] ? new Date(date[1]) : fromDate;
         return fromDate ? { from: fromDate, to: toDate } : undefined;
     }, [date]);
 
-    const [activeRangeShortcut, setActiveRangeShortcut] = useState<string | null>(() => {
-        // Essayer de déterminer si la plage actuelle correspond à un raccourci
-        if (!date || (!date[0] && !date[1])) return 'all';
-        // Ajouter la logique pour comparer date avec MapMarge (complexe à cause des heures/ms)
-        return null;
-    });
+    const [activeRangeShortcut, setActiveRangeShortcut] = useState<string | null>(() => !date || (!date[0] && !date[1]) ? 'all' : null);
 
-
-    // Mapping des clés aux traductions pour les raccourcis
-    const MapMargeName: Record<string, string> = {
+    const MapMargeName = useMemo(() => ({
         '3_days': t('dashboard.orderFilters.dateRanges.3_days'),
         '7_days': t('dashboard.orderFilters.dateRanges.7_days'),
         '1_month': t('dashboard.orderFilters.dateRanges.1_month'),
-        'all': t('dashboard.orderFilters.dateRanges.all')
-    };
-    // Calcul des plages (exécuté une seule fois)
+        all: t('dashboard.orderFilters.dateRanges.all'),
+    }), [t]);
+
     const MapMarge = useMemo(() => ({
         '3_days': [DateTime.fromJSDate(currentDate).minus({ days: 3 }).startOf('day').toISO(), DateTime.fromJSDate(currentDate).endOf('day').toISO()],
         '7_days': [DateTime.fromJSDate(currentDate).minus({ days: 7 }).startOf('day').toISO(), DateTime.fromJSDate(currentDate).endOf('day').toISO()],
         '1_month': [DateTime.fromJSDate(currentDate).minus({ months: 1 }).startOf('day').toISO(), DateTime.fromJSDate(currentDate).endOf('day').toISO()],
-        'all': undefined
+        all: undefined,
     }), [currentDate]);
 
     const handleShortcutClick = (key: keyof typeof MapMarge) => {
@@ -452,67 +481,93 @@ export function DateFilterComponent({ date, setDate, active }: { active: boolean
     };
 
     const handleDayPickerSelect = (range: DateRange | undefined) => {
-        setActiveRangeShortcut(null); // Désactiver les raccourcis si sélection manuelle
+        setActiveRangeShortcut(null);
         const fromISO = range?.from?.toISOString();
         const toISO = range?.to?.toISOString();
-        // S'assurer que 'to' est bien après 'from' pour DayPicker range
         setDate(fromISO || toISO ? [fromISO, toISO ?? fromISO] : undefined);
     };
 
-
     return (
-        <div className={`flex flex-col items-start gap-4 transition-all duration-200 ease-in-out overflow-hidden ${active ? 'h-auto opacity-100 visible p-4 border-t border-gray-200 -mt-px' : 'h-0 opacity-0 invisible p-0'}`}>
-            {/* Raccourcis de date */}
-            <div className="flex flex-wrap gap-3">
-                {(['3_days', '7_days', '1_month', 'all'] as const).map(d => (
-                    <button // Utiliser bouton
-                        type="button"
-                        key={d}
-                        // Appliquer styles conditionnels Tailwind
-                        className={`px-2 py-0.5 border rounded-lg text-sm cursor-pointer
-                           ${d === activeRangeShortcut ? 'bg-yellow-100 text-yellow-600 border-yellow-200' : 'border-gray-300 text-gray-500 hover:bg-gray-100'}`}
-                        onClick={() => handleShortcutClick(d)}
-                    >
-                        {MapMargeName[d]}
-                    </button>
-                ))}
+        <FilterPanelWrapper active={active}>
+            <div className="flex flex-col md:flex-row items-start gap-6">
+                <div className="flex flex-col gap-4">
+                    <h4 className="font-medium text-gray-700 dark:text-gray-200">
+                        {t('dashboard.orderFilters.dateRanges.shortcuts')}
+                    </h4>
+                    <div className="flex flex-wrap gap-2">
+                        {(['3_days', '7_days', '1_month', 'all'] as const).map((d) => {
+                            const isActive = (d === activeRangeShortcut) && date?.[0];
+                            return (
+                                <button
+                                    key={d}
+                                    type="button"
+                                    className={`
+                                    px-3 py-1.5 rounded-lg text-sm font-medium transition-colors duration-150 outline-none
+                                    border 
+                                    ${isActive
+                                            ? 'bg-teal-600 text-white border-teal-600'
+                                            : 'border-gray-300 text-gray-700 hover:bg-gray-100 focus:bg-gray-100 ' +
+                                            'dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700 dark:focus:bg-gray-700'
+                                        }
+                                `}
+                                    onClick={() => handleShortcutClick(d)}
+                                >
+                                    {MapMargeName[d]}
+                                </button>
+                            );
+                        })}
+                    </div>
+                </div>
+
+                {/* DayPicker entièrement stylisé pour light/dark mode */}
+                <DayPicker
+                    mode="range"
+                    selected={selectedRange}
+                    onSelect={handleDayPickerSelect}
+                    defaultMonth={defaultMonth}
+                    toDate={currentDate}
+                    // showOutsideDays 
+                    // fixedWeeks
+                    classNames={{
+                        // months: 'flex flex-col sm:flex-row gap-x-4 gap-y-2',
+                        month: 'space-y-4',
+                        // caption: 'flex justify-center pt-1 relative items-center',
+                        // caption_label: 'text-sm font-bold text-gray-800 dark:text-gray-200',
+                        // // nav_button: 'h-7 w-7 bg-transparent p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700',
+                        // table: 'w-full border-collapse space-y-1 mt-2',
+                        // head_row: 'flex',
+                        // head_cell: 'flex-1 text-xs font-normal text-gray-500 dark:text-white rounded-md',
+                        // row: 'flex w-full mt-2',
+                        // cell: 'text-center text-sm p-0 flex-1 relative',
+                        // day: 'h-9 w-9 p-0 font-normal rounded-md transition-colors hover:bg-teal-100 dark:hover:bg-teal-800/50 aria-selected:opacity-100',
+                        range_start: 'bg-gray-200 text-gray-900 dark:text-gray-900',
+                        range_end: 'bg-gray-200 text-gray-900 dark:text-gray-900',
+                        range_middle: 'bg-gray-200 text-gray-900 dark:text-gray-900',
+                        // selected: 'bg-teal-500 text-white hover:bg-teal-600 focus:bg-teal-600',
+                        // today: 'bg-gray-100 dark:bg-gray-700 text-teal-600 dark:text-teal-300 font-bold',
+                        // outside: 'text-gray-400 dark:text-gray-500 opacity-50 aria-selected:opacity-30',
+                        // disabled: 'text-gray-300 dark:text-gray-600',
+
+                        // months: 'flex flex-col sm:flex-row gap-4',
+                        // month: 'space-y-4',
+                        // caption: 'flex justify-center pt-1 relative items-center',
+                        // caption_label: 'text-sm font-medium text-gray-800 dark:text-gray-200',
+                        // table: 'w-full border-collapse space-y-1',
+                        // head_row: 'flex',
+                        // head_cell: 'flex-1 text-xs font-normal text-gray-500 dark:text-white',
+                        // row: 'flex w-full',
+                        cell: 'text-center text-sm p-1 flex-1 hover:bg-gray-100 dark:hover:bg-gray-800',
+                        day: 'h-8 w-8 p-0 font-normal dark:text-gray-50',
+                        root: 'text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 rounded-lg p-3',
+                        selected: 'bg-emerald-400 text-gray-900 ',
+                        today: 'border border-emerald-400 rounded-md text-emerald-500 dark:text-emerald-300',
+                        outside: 'text-gray-400 dark:text-gray-500',
+                        disabled: 'text-gray-300 dark:text-gray-600',
+                        chevron: ` fill-emerald-500 `,
+
+                    }}
+                />
             </div>
-            {/* react-day-picker */}
-            {/* Appliquer des styles via la prop `styles` ou `classNames` pour intégrer Tailwind */}
-            <DayPicker
-                mode="range"
-                selected={selectedRange}
-                onSelect={handleDayPickerSelect}
-                defaultMonth={defaultMonth} // Utiliser le mois par défaut calculé
-                toDate={currentDate} // Ne pas permettre de sélectionner le futur
-                // locale={l} // Importer la locale 'fr' depuis date-fns
-                showOutsideDays
-                fixedWeeks
-                // Exemple d'utilisation de classNames pour Tailwind (peut nécessiter des ajustements)
-                classNames={{
-                    root: "bg-white p-3 rounded-lg shadow",
-                    caption: "flex justify-center items-center relative mb-4",
-                    caption_label: "text-lg font-medium text-gray-800",
-                    nav: "flex items-center",
-                    nav_button: "h-8 w-8 flex items-center justify-center rounded-full hover:bg-gray-100 absolute",
-                    nav_button_previous: "left-1",
-                    nav_button_next: "right-1",
-                    table: "w-full border-collapse",
-                    head_row: "flex",
-                    head_cell: "w-10 text-xs font-medium text-gray-500 pb-2 text-center",
-                    row: "flex w-full mt-2",
-                    cell: "w-10 h-10 flex items-center justify-center text-sm relative text-gray-700",
-                    day: "h-8 w-8 rounded-full hover:bg-blue-100 cursor-pointer",
-                    day_today: "font-bold text-blue-600",
-                    day_selected: "!bg-blue-500 text-white hover:!bg-blue-600",
-                    day_range_start: "!rounded-l-full !bg-blue-500 text-white",
-                    day_range_end: "!rounded-r-full !bg-blue-500 text-white",
-                    day_range_middle: "!rounded-none bg-blue-100 text-blue-700",
-                    day_outside: "text-gray-300",
-                    day_disabled: "text-gray-300 cursor-not-allowed",
-                }}
-            />
-        </div>
+        </FilterPanelWrapper>
     );
 }
-

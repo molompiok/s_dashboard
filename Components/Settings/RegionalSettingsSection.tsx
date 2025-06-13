@@ -26,7 +26,7 @@ const supportedLocales = [
 
 const supportedCurrencies = [
     { value: 'XOF', label: 'Franc CFA (XOF)' },
-    { value: 'EUR', label: 'Euro (€)' },
+    { value: 'EUR', label: 'Euro (cfa)' },
     { value: 'USD', label: 'Dollar Américain ($)' },
     // Ajouter d'autres devises
 ];

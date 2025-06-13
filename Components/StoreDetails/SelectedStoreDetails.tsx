@@ -2,21 +2,20 @@
 
 import { PeriodType, StoreInterface } from "../../api/Interfaces/Interfaces";
 import { useTranslation } from "react-i18next";
-import { 
-    BarChart3, 
-    CheckCircle, 
-    ChevronRight, 
-    X, 
-    Monitor, 
-    Globe, 
-    HardDrive, 
-    Layers, 
-    PauseCircle, 
-    Edit, 
-    Users, 
-    Settings, 
-    Store, 
-    TrendingUp 
+import {
+    BarChart3,
+    CheckCircle,
+    X,
+    Monitor,
+    Globe,
+    HardDrive,
+    Layers,
+    PauseCircle,
+    Edit,
+    Users,
+    Settings,
+    Store,
+    TrendingUp
 } from "lucide-react";
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
 import { useGetVisitDetails, useGetOrderDetailsStats, useStartStore, useStopStore } from "../../api/ReactSublymusApi";
@@ -27,7 +26,8 @@ import { useChildViewer } from "../ChildViewer/useChildViewer";
 import { ChildViewer } from "../ChildViewer/ChildViewer";
 import { showErrorToast, showToast } from "../Utils/toastNotifications";
 import { ConfirmPopup } from "../Confirm/ConfirmPopup";
-import { http } from "../Utils/functions";
+import { Bar } from "react-chartjs-2";
+import { DateTime } from "luxon";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
@@ -60,24 +60,41 @@ const StatCard = ({ icon: Icon, title, current, limit, color, percentage }: any)
         </div>
         <Progress progress={percentage} color={color.replace('bg-', 'bg-')} />
         <div className="mt-2 text-right">
-            <span className={`text-xs font-medium ${
-                percentage > 80 
-                    ? 'text-red-500 dark:text-red-400' 
-                    : percentage > 60 
-                        ? 'text-yellow-500 dark:text-yellow-400' 
-                        : 'text-emerald-500 dark:text-emerald-400'
-            }`}>
+            <span className={`text-xs font-medium ${percentage > 80
+                ? 'text-red-500 dark:text-red-400'
+                : percentage > 60
+                    ? 'text-yellow-500 dark:text-yellow-400'
+                    : 'text-emerald-500 dark:text-emerald-400'
+                }`}>
                 {percentage.toFixed(1)}%
             </span>
         </div>
     </div>
 );
 
+
+function getDatesArray(period: PeriodType, count = 7) {
+    const now = DateTime.local();
+
+    return Array.from({ length: count }).map((_, i) => {
+        switch (period) {
+            case 'day':
+                return now.minus({ days: i }).toLocaleString();
+            case 'week':
+                return now.minus({ weeks: i }).toLocaleString();
+            case 'month':
+                return now.minus({ months: i }).toLocaleString();
+            default:
+                return now.toLocaleString();
+        }
+    }).reverse();
+}
+
 export function SelectedStoreDetails({ store, onEditRequired }: SelectedStoreDetailsProps) {
-    const { t, i18n } = useTranslation();
+    const { t } = useTranslation();
     const { openChild } = useChildViewer();
     const [period, setPeriod] = useState<PeriodType>('month');
-
+    const [showFull, setShowFull] = useState(false);
     const {
         data: orderStatsData,
         isLoading: isLoadingOderStats
@@ -161,6 +178,30 @@ export function SelectedStoreDetails({ store, onEditRequired }: SelectedStoreDet
         });
     };
 
+    // --- Préparation données Chart.js (Exemple simple) ---
+    let chartLabels = statsData?.order_stats?.slice(0, 7).map(_d => _d.date)
+    chartLabels = (chartLabels?.length || 0) > 0 ? chartLabels : getDatesArray(period);
+    let chartOrderData = statsData?.order_stats?.slice(0, 7).map(d => d.orders_count);
+    chartOrderData = (chartOrderData?.length || 0) > 0 ? chartOrderData : Array.from({ length: 7 }).map(() => 0.05);
+    let chartVisitData = statsData?.visits_stats?.slice(0, 7).map(d => d.visits);
+    chartVisitData = (chartVisitData?.length || 0) > 0 ? chartVisitData : Array.from({ length: 7 }).map(() => 0.05);
+
+    const chartData = {
+        labels: chartLabels,
+        datasets: [
+            { label: t('dashboard.totalOrders'), data: chartOrderData, backgroundColor: 'rgba(59, 130, 246, 0.5)' }, // Bleu
+            { label: t('dashboard.visits'), data: chartVisitData, backgroundColor: 'rgba(16, 185, 129, 0.5)' }, // Vert
+        ],
+    };
+
+    console.log(chartData);
+
+    const chartOptions = {
+        responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } // Pas de décimales pour commandes/visites
+    };
+    // --- Fin Chart.js ---
+
     // Stats et données
     const diskUsageGb = 2.5;
     const diskLimitGb = store.disk_storage_limit_gb ?? 10;
@@ -182,17 +223,36 @@ export function SelectedStoreDetails({ store, onEditRequired }: SelectedStoreDet
     const limitProducts = 1000;
     const productUsagePercent = limitProducts > 0 ? (currentProducts / limitProducts) * 100 : 0;
 
+
+    const description = store.description || 'Aucune description disponible';
+    const limit = 100;
+
+    const isLong = description.length > limit;
+    const displayedDescription = showFull ? description : description.slice(0, limit);
+
     // Composant Description
     const Desc = (
         <>
             <p className="text-gray-600 dark:text-gray-300 mb-3 leading-relaxed text-sm sx:text-base">
-                {store.description || 'Aucune description disponible'}
+                {displayedDescription}
+                {isLong && (
+                    <>
+                        {!showFull && '...'}
+                        <button
+                            onClick={() => setShowFull(!showFull)}
+                            className="ml-2 text-emerald-600 dark:text-emerald-400 hover:underline font-medium"
+                        >
+                            {showFull ? 'Voir moins' : 'Voir plus'}
+                        </button>
+                    </>
+                )}
             </p>
+
             <div className="flex items-center gap-2 text-xs sx:text-sm">
                 <Globe className="w-4 h-4 sx:w-4 sx:h-4 text-gray-500" />
                 <span className="text-gray-500 dark:text-gray-400">URL: </span>
                 <a
-                    href={http+store.default_domain}
+                    href={`http://${store.default_domain}`}
                     target="_blank"
                     rel="noreferrer"
                     className="text-emerald-500 dark:text-emerald-400 hover:text-emerald-600 dark:hover:text-emerald-300 font-medium hover:underline transition-colors"
@@ -219,11 +279,10 @@ export function SelectedStoreDetails({ store, onEditRequired }: SelectedStoreDet
                                     <h1 className="text-xl font-bold text-gray-900 dark:text-white truncate" title={store.name}>
                                         {store.name}
                                     </h1>
-                                    <span className={`inline-flex items-center gap-1 sx:gap-1.5 px-2 sx:px-3 py-1 rounded-full text-xs sx:text-sm font-medium backdrop-blur-sm ${
-                                        store.is_active
+                                    <span className={`inline-flex items-center gap-1 sx:gap-1.5 px-2 sx:px-3 py-1 rounded-full text-xs sx:text-sm font-medium backdrop-blur-sm ${store.is_active
                                             ? 'bg-emerald-500/20 dark:bg-emerald-400/20 text-emerald-700 dark:text-emerald-300 border border-emerald-300/30'
                                             : 'bg-gray-500/20 dark:bg-gray-400/20 text-gray-600 dark:text-gray-400 border border-gray-300/30'
-                                    }`}>
+                                        }`}>
                                         {store.is_active ? <CheckCircle className="w-4 h-4 sx:w-4 sx:h-4" /> : <PauseCircle className="w-4 h-4 sx:w-4 sx:h-4" />}
                                         {store.is_active ? 'Active' : 'Inactive'}
                                     </span>
@@ -243,11 +302,10 @@ export function SelectedStoreDetails({ store, onEditRequired }: SelectedStoreDet
                         <button
                             onClick={handleStartStop}
                             disabled={isActionLoading}
-                            className={`flex items-center justify-center gap-2 px-3 py-2  rounded-xl  font-medium text-xs  transition-all duration-300 min-w-[120px]  backdrop-blur-sm ${
-                                store.is_running
-                                    ? 'bg-amber-500/20 dark:bg-amber-400/20 border border-amber-300/30 dark:border-amber-400/20 text-amber-700 dark:text-amber-300 hover:bg-amber-500/30 dark:hover:bg-amber-400/30 hover:shadow-lg hover:shadow-amber-500/20'
-                                    : 'bg-emerald-500/20 dark:bg-emerald-400/20 border border-emerald-300/30 dark:border-emerald-400/20 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/30 dark:hover:bg-emerald-400/30 hover:shadow-lg hover:shadow-emerald-500/20'
-                            } disabled:opacity-50 disabled:cursor-not-allowed`}
+                            className={`flex items-center justify-center gap-2 px-3 py-2  rounded-xl  font-medium text-xs  transition-all duration-300 min-w-[120px]  backdrop-blur-sm ${store.is_running
+                                ? 'bg-amber-500/20 dark:bg-amber-400/20 border border-amber-300/30 dark:border-amber-400/20 text-amber-700 dark:text-amber-300 hover:bg-amber-500/30 dark:hover:bg-amber-400/30 hover:shadow-lg hover:shadow-amber-500/20'
+                                : 'bg-emerald-500/20 dark:bg-emerald-400/20 border border-emerald-300/30 dark:border-emerald-400/20 text-emerald-700 dark:text-emerald-300 hover:bg-emerald-500/30 dark:hover:bg-emerald-400/30 hover:shadow-lg hover:shadow-emerald-500/20'
+                                } disabled:opacity-50 disabled:cursor-not-allowed`}
                         >
                             {store.is_running ? <X className="w-4 h-4" /> : <Monitor className="w-4 h-4 sx:w-4 sx:h-4" />}
                             {store.is_running ? 'Arrêter' : 'Démarrer'}
@@ -299,11 +357,10 @@ export function SelectedStoreDetails({ store, onEditRequired }: SelectedStoreDet
                                 <button
                                     key={p}
                                     onClick={() => setPeriod(p)}
-                                    className={`px-2 sx:px-3 py-1 sx:py-1.5 rounded-md sx:rounded-lg text-xs font-medium transition-all duration-300 ${
-                                        p === period
-                                            ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30'
-                                            : 'text-gray-600 dark:text-gray-400 hover:bg-white/20 dark:hover:bg-white/10'
-                                    }`}
+                                    className={`px-2 sx:px-3 py-1 sx:py-1.5 rounded-md sx:rounded-lg text-xs font-medium transition-all duration-300 ${p === period
+                                        ? 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30'
+                                        : 'text-gray-600 dark:text-gray-400 hover:bg-white/20 dark:hover:bg-white/10'
+                                        }`}
                                 >
                                     {p === 'day' ? 'Jour' : p === 'week' ? 'Semaine' : 'Mois'}
                                 </button>
@@ -312,14 +369,16 @@ export function SelectedStoreDetails({ store, onEditRequired }: SelectedStoreDet
                     </div>
                 </div>
 
-                <div className="h-48 sx:h-56  bg-white/5 dark:bg-white/5 backdrop-blur-sm rounded-xl sx:rounded-2xl flex items-center justify-center border border-white/10 dark:border-white/5">
+                <div className="sx:h-56 w-full h-full bg-white/5 dark:bg-white/5 backdrop-blur-sm rounded-xl sx:rounded-2xl flex items-center justify-center border border-white/10 dark:border-white/5">
                     {isLoadingStats ? (
                         <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400">
                             <div className="w-4 h-4 border-2 border-emerald-500 border-t-transparent rounded-full animate-spin"></div>
                             <span className="text-sm">Chargement des statistiques...</span>
                         </div>
                     ) : (
-                        <div className="text-gray-500 dark:text-gray-400 text-sm">Graphique des statistiques ici</div>
+                        <div className="w-full h-full text-gray-500  dark:text-gray-400 text-sm">
+                            <Bar width="100%" height="100%" options={chartOptions as any} data={chartData} />
+                        </div>
                     )}
                 </div>
             </div>

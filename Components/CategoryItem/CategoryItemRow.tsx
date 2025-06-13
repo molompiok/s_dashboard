@@ -6,7 +6,7 @@ import { getMedia } from "../Utils/StringFormater";
 import { useGlobalStore } from "../../api/stores/StoreStore";
 import { useTranslation } from "react-i18next";
 import { DateTime } from "luxon";
-import { useState, useEffect } from 'react'; // Ajouter useEffect
+import { useState, useEffect, useRef } from 'react'; // Ajouter useEffect
 import { limit } from "../Utils/functions";
 import { NO_PICTURE } from "../Utils/constants";
 import { useDeleteCategory, useUpdateCategory, queryClient } from "../../api/ReactSublymusApi"; // ✅ Importer les mutations
@@ -32,7 +32,25 @@ function CategoryItemRow({ category /*, onDeleteSuccess, onVisibilityChangeSucce
     const [imgError, setImgError] = useState(false);
     // Utiliser l'état local pour refléter immédiatement le changement de visibilité
     const [isVisible, setIsVisible] = useState(category.is_visible ?? true);
-
+     const menuRef = useRef<HTMLDivElement>(null);
+     // Fermer au clic extérieur
+        useEffect(() => {
+            const handleClickOutside = (event: MouseEvent) => {
+                if (isMenuOpen && menuRef.current && !menuRef.current.contains(event.target as Node)) {
+                    setIsMenuOpen(false);
+                }
+            };
+            // Ajouter l'écouteur seulement si le popup est actif
+            if (isMenuOpen) {
+                document.addEventListener('mousedown', handleClickOutside);
+            } else {
+                document.removeEventListener('mousedown', handleClickOutside);
+            }
+            // Nettoyer l'écouteur
+            return () => {
+                document.removeEventListener('mousedown', handleClickOutside);
+            };
+        }, [isMenuOpen]);
     // Synchroniser isVisible si la prop category change de l'extérieur
     useEffect(() => {
         setIsVisible(category.is_visible ?? true);
@@ -103,11 +121,11 @@ function CategoryItemRow({ category /*, onDeleteSuccess, onVisibilityChangeSucce
 
     return (
         // Appliquer les styles Tailwind comme précédemment
-        <div className="category-item-row flex items-center gap-3 sm:gap-4 p-2.5 bg-white rounded-lg shadow-sm border border-transparent hover:border-gray-200 hover:shadow-sm transition duration-150 w-full group relative"> {/* Ajouter relative pour le menu */}
+        <div className="category-item-row flex items-center gap-3 sm:gap-4 p-2.5 dark:text-white rounded-lg shadow-sm border w-full group relative hover:border-blue-200 hover:shadow-md transition duration-200 bg-white dark:bg-white/5  border-transparent dark:border-white/10"> {/* Ajouter relative */}
 
             {/* Image/Icône */}
             {/* Utiliser un lien pour l'image et le nom */}
-            <a onClick={()=>{
+            <a onClick={() => {
                 navigate(`/categories/${category.id}`);
             }} className="flex-shrink-0 block w-12 h-12 sm:w-16 sm:h-16 rounded-md overflow-hidden bg-gray-100 border border-gray-200">
                 {/* Gestion Erreur Image */}
@@ -131,19 +149,19 @@ function CategoryItemRow({ category /*, onDeleteSuccess, onVisibilityChangeSucce
             {/* Nom & Description */}
             <div className="flex-grow min-w-0 flex flex-col">
                 <a href={`/categories/${category.id}`} className="group/link">
-                    <h3 className='font-medium text-sm sm:text-base text-gray-800 group-hover/link:text-blue-600 truncate' title={category.name}>
+                    <h3 className='font-medium text-sm sm:text-base text-gray-800 dark:text-white group-hover/link:text-blue-600 truncate' title={category.name}>
                         {category.name}
                     </h3>
                 </a>
                 {category.description && (
-                    <p className=' text-xs text-gray-500 mt-0.5 truncate' title={category.description}>
+                    <p className=' text-xs text-gray-500 dark:text-white/80 mt-0.5 truncate' title={category.description}>
                         {limit(category.description, 60)}
                     </p>
                 )}
             </div>
 
             {/* Nombre Produits */}
-            <div className="hidden sl2:flex items-center justify-center gap-1 text-xs text-gray-500 flex-shrink-0 w-20" title={t('category.productCountTooltip')}>
+            <div className="hidden sl2:flex items-center justify-center gap-1 text-xs text-gray-500 dark:text-white/80 flex-shrink-0 w-20" title={t('category.productCountTooltip')}>
                 <IoPricetagsOutline className="w-3.5 h-3.5" />
                 <span>{category.product_count ?? 0}</span>
             </div>
@@ -157,7 +175,7 @@ function CategoryItemRow({ category /*, onDeleteSuccess, onVisibilityChangeSucce
             </div>
 
             {/* Date Ajout */}
-            <div className="hidden lg:flex items-center gap-1 text-xs text-gray-500 flex-shrink-0 w-24" title={t('common.createdAt')}>
+            <div className="hidden lg:flex items-center gap-1 text-xs text-gray-500 dark:text-white/80 flex-shrink-0 w-24" title={t('common.createdAt')}>
                 <span>{createdAt}</span>
             </div>
 
@@ -165,8 +183,8 @@ function CategoryItemRow({ category /*, onDeleteSuccess, onVisibilityChangeSucce
             <div className="relative flex-shrink-0 ml-auto sm:ml-0">
                 {/* Bouton Kebab */}
                 <button
-                    onClick={(e) => { e.stopPropagation(); setIsMenuOpen(!isMenuOpen); }}
-                    className="p-1.5 rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-600 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                    onClick={(e) => { e.stopPropagation();e.preventDefault() ;setIsMenuOpen(!isMenuOpen); }}
+                    className="p-1.5 rounded-full text-gray-400 dark:text-white/80 hover:bg-gray-100 dark:hover:bg-gray-600 hover:text-gray-600 dark:hover:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
                     aria-haspopup="true" aria-expanded={isMenuOpen} title={t('common.actions')}
                     disabled={deleteCategoryMutation.isPending || updateCategoryMutation.isPending} // Désactiver si action en cours
                 >
@@ -174,18 +192,18 @@ function CategoryItemRow({ category /*, onDeleteSuccess, onVisibilityChangeSucce
                 </button>
                 {/* Menu déroulant */}
                 {isMenuOpen && (
-                    <div
-                        className="absolute right-0 mt-1 w-48 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-20 py-1" // Augmenter z-index
+                    <div ref={menuRef}
+                        className="absolute right-0 mt-1 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-20 py-1" // Augmenter z-index
                         role="menu" aria-orientation="vertical"
                     // Ajouter un listener pour fermer le menu au clic extérieur
-                    // onClick={(e) => e.stopPropagation()} // Garder, mais il faut un listener global
+                    onClick={(e) => e.stopPropagation()} // Garder, mais il faut un listener global
                     >
                         {/* Lien Voir (garder <a>) */}
-                        <a href={`/categories/${category.id}`} role="menuitem" className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 w-full text-left">
+                        <a href={`/categories/${category.id}`} role="menuitem" className="flex items-center gap-2 px-3 py-1.5 text-sm dark:text-white text-gray-700 hover:bg-gray-100 hover:text-gray-900 w-full text-left">
                             <IoChevronForward className="w-4 h-4" /> {t('common.view')}
                         </a>
                         {/* Action Visibilité (utiliser <button>) */}
-                        <button onClick={handleToggleVisibility} role="menuitem" className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 w-full text-left disabled:opacity-50" disabled={updateCategoryMutation.isPending}>
+                        <button onClick={handleToggleVisibility} role="menuitem" className="flex items-center gap-2 px-3 py-1.5 text-sm dark:text-white text-gray-700 hover:bg-gray-100 hover:text-gray-900 w-full text-left disabled:opacity-50" disabled={updateCategoryMutation.isPending}>
                             {isVisible ? <IoEyeOffOutline className="w-4 h-4" /> : <IoEyeOutline className="w-4 h-4" />}
                             {isVisible ? t('productList.setHidden') : t('productList.setVisible')}
                         </button>
@@ -201,16 +219,16 @@ function CategoryItemRow({ category /*, onDeleteSuccess, onVisibilityChangeSucce
 }
 export function CategoryItemSkeletonRow() {
     return (
-        <div className="category-item-row flex items-center gap-3 sm:gap-4 p-2.5 bg-white rounded-lg shadow-sm border border-gray-200 w-full animate-pulse">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-md bg-gray-300 flex-shrink-0"></div>
+        <div className="product-item-row flex items-center gap-3 sm:gap-4 p-2.5 bg-white rounded-lg shadow-sm border border-gray-200 w-full animate-pulse dark:border-gray-700 dark:bg-gray-900/50">
+            <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-md bg-gray-300 dark:bg-gray-700 flex-shrink-0"></div>
             <div className="flex-grow min-w-0 flex flex-col gap-1">
-                <div className="h-5 w-3/5 bg-gray-300 rounded"></div> {/* Nom */}
-                <div className="hidden md:block h-3 w-4/5 bg-gray-200 rounded"></div> {/* Desc */}
+                <div className="h-5 w-3/5 bg-gray-300 dark:bg-gray-700 rounded"></div> {/* Nom */}
+                <div className="h-3 w-2/5 bg-gray-200 dark:bg-gray-600 rounded"></div> {/* ID */}
             </div>
-            <div className="hidden sm:flex h-4 w-12 bg-gray-200 rounded flex-shrink-0"></div> {/* Nb Produits */}
-            <div className="hidden md:flex h-4 w-8 bg-gray-200 rounded flex-shrink-0"></div> {/* Visibilité */}
-            <div className="hidden lg:flex h-4 w-16 bg-gray-200 rounded flex-shrink-0"></div> {/* Date */}
-            <div className="w-6 h-6 bg-gray-200 rounded-full flex-shrink-0 ml-auto sm:ml-0"></div>
+            <div className="hidden md:flex h-4 w-20 bg-gray-200 dark:bg-gray-500 rounded flex-shrink-0"></div>
+            <div className="hidden sm:flex h-5 w-16 bg-gray-200 dark:bg-gray-500 rounded flex-shrink-0"></div>
+            <div className="hidden lg:flex h-5 w-20 bg-gray-200 dark:bg-gray-500 rounded flex-shrink-0"></div>
+            <div className="w-6 h-6 bg-gray-200 dark:bg-gray-500 rounded-full flex-shrink-0 ml-auto sm:ml-0"></div>
         </div>
-    );
+    )
 }

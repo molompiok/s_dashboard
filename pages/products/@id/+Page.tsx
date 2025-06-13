@@ -36,9 +36,6 @@ import { useTranslation } from 'react-i18next';
 import logger from '../../../api/Logger';
 import { ApiError } from '../../../api/SublymusApi';
 import { IoAdd, IoPencil } from 'react-icons/io5'; // Icons pour le formulaire
-import { useWindowSize } from '../../../Hooks/useWindowSize';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import { Grid, Pagination } from 'swiper/modules';
 
 import 'swiper/css';
 import 'swiper/css/pagination';
@@ -49,10 +46,9 @@ import { FeatureInfo } from '../../../Components/FeatureInfo/FeatureInfo';
 import { HoriszontalSwiper } from '../../../Components/HorizontalSwiper/HorizontalSwiper';
 import { VisibilityControl } from '../../../Components/Controls/VisibilityControl';
 import { CreateControl } from '../../../Components/Controls/CreateControl';
-import { preview } from 'vite';
-import { globalActionZust } from '../../../renderer/AppStore/appZust';
+
 import { ProductSettings } from './ProductSettings';
-import { OrderDetailSkeleton, ProductFormSkeleton } from '../../../Components/Skeletons/allsKeletons';
+import { ProductFormSkeleton } from '../../../Components/Skeletons/allsKeletons';
 import { showErrorToast, showToast } from '../../../Components/Utils/toastNotifications';
 // Constantes
 const FEATURE_LIMIT = 5;

@@ -40,10 +40,10 @@ export function Indicator({
   return (
     <span
       style={style}
-      className={`relative inline-flex items-center group ${className}`}
+      className={`relative inline-flex items-center group  ${className}`}
     >
       {/* Icône */}
-      <IoHelp className="w-6 h-6 p-1 bg-gray-100 rounded-full text-gray-600" />
+      <IoHelp className="w-6 h-6 p-1  rounded-full text-gray-600 dark:text-white bg-white dark:bg-white/5 border border-gray/10 dark:border-white/10" />
 
       {/* Bulle d’infos */}
       <div

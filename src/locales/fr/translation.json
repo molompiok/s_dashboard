@@ -47,7 +47,10 @@
         "saveChanges": "Enregistrer les modifications",
         "select": "Sélectionner...",
         "noOptions": "Aucune option",
-        "deleting": "Suppression..."
+        "deleting": "Suppression...",
+        "details": "Details",
+        "active": "Active",
+        "infoMissing": "Certaines informations sont manquantes"
     },
     "loginPage": {
         "title": "Connectez-vous à votre compte",
@@ -568,7 +571,7 @@
         "passwordPlaceholder": "Mot de passe",
         "fullNamePlaceholder": "Nom complet",
         "passwordConfirmPlaceholder": "Confirmez le mot de passe",
-       "forgotPasswordLink": "Changez de mot de passe ?",
+        "forgotPasswordLink": "Changez de mot de passe ?",
         "loginButton": "Se connecter",
         "registerButton": "Créer un compte",
         "orContinueWith": "Ou continuer avec",
@@ -622,7 +625,10 @@
         "profileUpdateSuccess": "Profil mis à jour avec succès.",
         "profileUpdateFailed": "La mise à jour du profil a échoué.",
         "accountDeleteSuccess": "Compte supprimé avec succès.",
-        "accountDeleteFailed": "Échec de la suppression du compte."
+        "accountDeleteFailed": "Échec de la suppression du compte.",
+        "authenticationFailed": "Échec de l'authentification. Veuillez vérifier vos identifiants.",
+        "cannotLoadProfile": "Impossible de charger le profil utilisateur. Veuillez réessayer plus tard.",
+        "goToLogin": "Retourner à la page de connexion"
     },
     "authNotice": {
         "verify": {
@@ -1015,6 +1021,8 @@
             "week": "Semaine",
             "month": "Mois"
         },
+        "visitsTitle": "Statistiques de Visites",
+        "ordersTitle": "Statistiques de Commandes",
         "visitStatsHiddenForProduct": "Pas de Stats disponible pour ce produit",
         "visitStatsHiddenForClient": "Pas de Stats disponible pour ce client",
         "countLabel": "Nombre de périodes",
@@ -1296,7 +1304,7 @@
         "helpText": "PNG, JPG, WEBP, SVG, GIF jusqu'à 2MB."
     },
     "themeEditor": {
-        "listAnnoncePlaceholder":"barre d'annonce",
+        "listAnnoncePlaceholder": "barre d'annonce",
         "previewing": "Aperçu en direct",
         "reloadPreview": "Recharger l'aperçu",
         "pageTitle": "Éditeur de Thème - {{name}}",
@@ -1421,7 +1429,6 @@
             "promotionTextBackgroundColorDesc": "Couleur de fond de la promotion.",
             "promotionTextPosition": "Position de la promotion",
             "promotionTextPositionDesc": "Choisissez la position de la promotion."
-
         },
         "gradient": {
             "none": "Aucun",
@@ -1503,7 +1510,7 @@
         "pageInfoShort": "Page {{currentPage}} sur {{lastPage}}"
     },
     "storeCreate": {
-        "editTitle":"Modification des informations ",
+        "editTitle": "Modification des informations ",
         "mainTitle": "Créez votre boutique en ligne",
         "stepName": "Nom",
         "stepLogo": "Logo",
@@ -1541,6 +1548,8 @@
         "creationError": "Une erreur est survenue lors de la création."
     },
     "dashboard": {
+        "quickManage": "Dasboard de la boutique {{storeName}}",
+        "periodRevenue": "Revenue",
         "home": "Accueil",
         "products": "Produits",
         "categories": "Catégories",
@@ -1571,6 +1580,7 @@
             "date": "Date",
             "totalOrders": "Commandes",
             "visits": "Visites",
+            "resetAll": "Réinitialiser",
             "statusValues": {
                 "pending": "En attente",
                 "confirmed": "Confirmée",
@@ -1592,6 +1602,7 @@
             "priceMin": "Prix Minimum",
             "priceMax": "Prix Maximum",
             "dateRanges": {
+                "shortcuts": "Interval de date",
                 "3_days": "3 jours",
                 "7_days": "7 jours",
                 "1_month": "1 mois",

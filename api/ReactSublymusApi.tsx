@@ -759,6 +759,11 @@ export const useUpdateCategory = (): UseMutationResult<UpdateCategoryResponse, A
             const categoryId = variables.category_id;
             queryClient.invalidateQueries({ queryKey: CATEGORIES_QUERY_KEYS.lists() } as InvalidateQueryFilters);
             queryClient.invalidateQueries({ queryKey: CATEGORIES_QUERY_KEYS.details({ slug: data.category.slug }) } as InvalidateQueryFilters);
+            // Invalider les détails par slug et ancien slug si disponible
+            queryClient.invalidateQueries({ queryKey: CATEGORIES_QUERY_KEYS.details({ slug: data.category.slug }) } as InvalidateQueryFilters);
+            if (variables.data.slug && variables.data.slug !== data.category.slug) {
+                queryClient.invalidateQueries({ queryKey: CATEGORIES_QUERY_KEYS.details({ slug: variables.data.slug }) } as InvalidateQueryFilters);
+            }
             queryClient.setQueryData<GetCategoryResponse>(CATEGORIES_QUERY_KEYS.details({ category_id: categoryId }), data.category);
             // Invalider aussi par slug si le slug a pu changer
         },

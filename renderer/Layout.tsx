@@ -17,7 +17,7 @@ import { useChildViewer } from '../Components/ChildViewer/useChildViewer';
 import {
   IoHome, IoHomeOutline, IoStorefront, IoStorefrontOutline,
   IoPeople, IoPeopleOutline, IoDocumentText, IoDocumentTextOutline,
-  IoCube, IoCubeOutline, IoLayers, IoLayersOutline, IoBarChart,
+  IoBagHandle, IoBagHandleOutline, IoLayers, IoLayersOutline, IoBarChart,
   IoMoon, IoSunny, IoMenu, IoClose
 } from 'react-icons/io5';
 import { Toaster } from 'react-hot-toast';
@@ -75,9 +75,39 @@ function Layout({ children, pageContext }: { children: React.ReactNode; pageCont
     }
   }, [token, user]);
 
+  const [isDarkMode, setIsDarkMode] = useState(false);
+
+    useEffect(() => {
+        // Fonction pour vérifier la préférence initiale du thème
+        const checkTheme = () => {
+            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+            setIsDarkMode(prefersDark);
+        };
+
+        // Vérifier le thème au montage du composant
+        checkTheme();
+
+        // Créer un listener pour les changements de thème
+        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+        const handleThemeChange = (e:any) => {
+            setIsDarkMode(e.matches); 
+            console.log('--- mode ----->>>>>',e.matches);
+            e.matches ? document.body.classList.add('dark') : document.body.classList.remove('dark')
+        };
+
+        // Ajouter l'écouteur d'événements
+        mediaQuery.addEventListener('change', handleThemeChange);
+
+        // Nettoyer l'écouteur lors du démontage du composant
+        return () => {
+            mediaQuery.removeEventListener('change', handleThemeChange);
+        };
+    }, []);
+
   const toggleSidebar = () => {
     setSideLeft(!sideLeft);
   };
+
 
   return (
     <React.StrictMode>
@@ -91,25 +121,25 @@ function Layout({ children, pageContext }: { children: React.ReactNode; pageCont
             <Logo />
             <div className="flex-1 space-y-1 px-2 py-4">
               <Link href="/store" activeIcon={<IoHome className='w-5 h-5' />} defaultIcon={<IoHomeOutline className='w-5 h-5' />}>
-                <span className="hidden md:inline-block">{t('navigation.home')}</span>
+                {t('navigation.home')}
               </Link>
-              <Link href="/products" activeIcon={<IoCube className='w-5 h-5' />} defaultIcon={<IoCubeOutline className='w-5 h-5' />}>
-                <span className="hidden md:inline-block">{t('navigation.products')}</span>
+              <Link href="/products" activeIcon={<IoBagHandle className='w-5 h-5' />} defaultIcon={<IoBagHandleOutline className='w-5 h-5' />}>
+                {t('navigation.products')}
               </Link>
               <Link href="/categories" activeIcon={<IoLayers className='w-5 h-5' />} defaultIcon={<IoLayersOutline className='w-5 h-5' />}>
-                <span className="hidden md:inline-block">{t('navigation.categories')}</span>
+                {t('navigation.categories')}
               </Link>
               <Link href="/commands" activeIcon={<IoDocumentText className='w-5 h-5' />} defaultIcon={<IoDocumentTextOutline className='w-5 h-5' />}>
-                <span className="hidden md:inline-block">{t('navigation.orders')}</span>
+                {t('navigation.orders')}
               </Link>
               <Link href="/users" activeIcon={<IoPeople className='w-5 h-5' />} defaultIcon={<IoPeopleOutline className='w-5 h-5' />}>
-                <span className="hidden md:inline-block">{t('navigation.teams')}</span>
+                {t('navigation.teams')}
               </Link>
               <Link href="/stats" activeIcon={<IoBarChart className='w-5 h-5' />} defaultIcon={<IoBarChart className='w-5 h-5' />}>
-                <span className="hidden md:inline-block">{t('navigation.stats')}</span>
+                {t('navigation.stats')}
               </Link>
               <Link href="/" add={['/themes']} activeIcon={<IoStorefront className='w-5 h-5' />} defaultIcon={<IoStorefrontOutline className='w-5 h-5' />}>
-                <span className="hidden md:inline-block">{t('navigation.stores')}</span>
+                {t('navigation.stores')}
               </Link>
             </div>
 
@@ -165,7 +195,7 @@ function Layout({ children, pageContext }: { children: React.ReactNode; pageCont
         {/* Bottom Navigation Mobile */}
         <Bottombar>
           <BottomBarLink href="/store" activeIcon={<IoHome className='w-5 h-5' />} defaultIcon={<IoHomeOutline className='w-5 h-5' />} />
-          <BottomBarLink href="/products" activeIcon={<IoCube className='w-5 h-5' />} defaultIcon={<IoCubeOutline className='w-5 h-5' />} />
+          <BottomBarLink href="/products" add={['/categories']} activeIcon={<IoBagHandle className='w-5 h-5' />} defaultIcon={<IoBagHandleOutline className='w-5 h-5' />} />
           <BottomBarLink href="/commands" activeIcon={<IoDocumentText className='w-5 h-5' />} defaultIcon={<IoDocumentTextOutline className='w-5 h-5' />} />
           <BottomBarLink href="/users" activeIcon={<IoPeople className='w-5 h-5' />} defaultIcon={<IoPeopleOutline className='w-5 h-5' />} />
           <BottomBarLink href="/" activeIcon={<IoStorefront className='w-5 h-5' />} defaultIcon={<IoStorefrontOutline className='w-5 h-5' />} />

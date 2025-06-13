@@ -53,14 +53,14 @@ export function CategoriesToolbar({
 
     const categoriesSearchInput = <label htmlFor="category-toolbar-search" className='w-full  ml-auto  relative'>
         <input
-            className="w-full sx2:w-56 pl-3 pr-10 py-1.5 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
+            className="w-full sx2:w-56 pl-3 pr-10 py-1.5  dark:text-white  border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-blue-500 focus:border-blue-500 text-sm"
             placeholder={t('category.searchPlaceholder')}
             id="category-toolbar-search"
             type="text"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
         />
-        <IoSearch className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg pointer-events-none" />
+        <IoSearch className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-white/60 text-lg pointer-events-none" />
     </label>
     return (
         // Conteneur Toolbar : flex, justify-between, items-center, gap, mb, p, bg, rounded, shadow, border
@@ -68,16 +68,16 @@ export function CategoriesToolbar({
 
             {/* Groupe Gauche: Recherche & Filtres */}
             <div className="flex items-center w-full gap-3 sm:gap-4 flex-wrap">
-                <h1 className="text-2xl font-semibold text-gray-900">{t('dashboard.categories')}</h1>
+                <h1 className="text-2xl font-semibold text-gray-900 dark:text-white ">{t('dashboard.categories')}</h1>
                 {/* Recherche */}
-                <span className='hidden sx2:flex'>{categoriesSearchInput}</span>
+                <span className=' ml-auto hidden sx2:flex'>{categoriesSearchInput}</span>
                 <div className="flex ml-auto sx2:ml-0 items-center gap-3 sm:gap-4">
                     {/* Toggle Vue */}
-                    <div className="flex items-center border border-gray-300 rounded-md p-0.5 bg-gray-100">
-                        <button onClick={() => onViewChange('card')} title={t('productList.viewCard')} className={`p-1.5 rounded ${currentView === 'card' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-800'}`} aria-pressed={currentView === 'card'}>
+                    <div className="flex items-center border border-gray-300 dark:border-gray-600 rounded-md p-0.5 dark:bg-gray-800 bg-gray-100">
+                        <button onClick={() => onViewChange('card')} title={t('productList.viewCard')} className={`p-1.5 rounded ${currentView === 'card' ? 'bg-white/20 dark:bg-gray-900/50 text-blue-600 shadow-sm' : 'text-gray-500 dark:text-white/60 dark:hover:text-white  hover:text-gray-800'}`} aria-pressed={currentView === 'card'}>
                             <IoAppsSharp size={18} />
                         </button>
-                        <button onClick={() => onViewChange('row')} title={t('productList.viewRow')} className={`p-1.5 rounded ${currentView === 'row' ? 'bg-white text-blue-600 shadow-sm' : 'text-gray-500 hover:text-gray-800'}`} aria-pressed={currentView === 'row'}>
+                        <button onClick={() => onViewChange('row')} title={t('productList.viewRow')} className={`p-1.5 rounded ${currentView === 'row' ? 'bg-white/20 dark:bg-gray-900/50 text-blue-600 shadow-sm' : 'text-gray-500  dark:text-white/60 dark:hover:text-white hover:text-gray-800'}`} aria-pressed={currentView === 'row'}>
                             <IoListSharp size={18} />
                         </button>
                     </div>
@@ -90,7 +90,7 @@ export function CategoriesToolbar({
                     <button
                         onClick={() => toggleFilterPopup('order')}
                         className={`inline-flex items-center border rounded-lg px-2.5 py-1 cursor-pointer transition duration-200 whitespace-nowrap text-sm
-                               ${filter.order_by ? 'text-blue-600 bg-blue-100/60 border-blue-200' : 'text-gray-600 border-gray-300'}
+                               ${filter.order_by ? 'text-blue-600 bg-blue-100/60 border-blue-200' : 'text-gray-600  dark:text-white/80 border-gray-300'}
                                ${currentOpenFilter === 'order' ? '!bg-blue-100/80 !border-blue-300' : 'hover:bg-gray-100'}`}
                     >
                         <span>{t('dashboard.orderFilters.order')}</span>
@@ -112,8 +112,8 @@ export function CategoriesToolbar({
                     <button
                         onClick={() => toggleFilterPopup('visibility')}
                         className={`inline-flex items-center border rounded-lg px-2.5 py-1 cursor-pointer transition duration-200 whitespace-nowrap text-sm
-                               ${filter.is_visible !== undefined ? 'text-blue-600 bg-blue-100/60 border-blue-200' : 'text-gray-600 border-gray-300'}
-                               ${currentOpenFilter === 'visibility' ? '!bg-blue-100/80 !border-blue-300' : 'hover:bg-gray-100'}`}
+                               ${filter.is_visible !== undefined ? 'text-blue-600 bg-blue-100/60 border-blue-200' : 'text-gray-600  dark:text-white/80 border-gray-300'}
+                               ${currentOpenFilter === 'visibility' ? '!bg-blue-100/80 dark:bg-gray-500/50 !border-blue-300' : 'hover:bg-gray-100 dark:hover:bg-gray-600/30'}`}
                     >
                         <span>{t('common.visibility')}</span>
                         <IoChevronDown className={`ml-2 h-4 w-4 transition-transform duration-200 ${currentOpenFilter === 'visibility' ? 'rotate-180' : ''}`} />

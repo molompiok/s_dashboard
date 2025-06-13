@@ -1,305 +1,198 @@
 // components/Stats/OrderStatsSection.tsx
 import React, { useMemo, useState, useEffect } from 'react';
-// Assurez-vous que les types sont importés correctement depuis votre source
 import { OrderStatsResponse, OrderStatsIncludeOptions, StatsPeriod, OrderStatsResultItem } from '../../api/Interfaces/Interfaces';
-import LineChart from './LineChart'; // Importer le graphique modifié
-import ChartLegend from './ChartLegend'; // Importer la légende custom
-import DimensionBreakdown from './DimensionBreakdown'; // Le composant DimensionBreakdown
-import { ChartData } from 'chart.js'; // Type pour les données de Chart.js
-import { DateTime } from 'luxon'; // Pour le calcul de plage de dates et formatage
+import LineChart from './LineChart';
+import ChartLegend from './ChartLegend';
+import DimensionBreakdown from './DimensionBreakdown';
+import { ChartData } from 'chart.js';
+import { DateTime } from 'luxon';
+import { useTranslation } from 'react-i18next';
 
 interface OrderStatsSectionProps {
     data: OrderStatsResponse | undefined;
     period: StatsPeriod;
-    includes: OrderStatsIncludeOptions; // Les dimensions demandées
-    // ex: filterStartDate: DateTime | undefined; filterEndDate: DateTime | undefined;
+    includes: OrderStatsIncludeOptions;
+    isLoading: boolean; // 🎨 Added to handle loading state
 }
 
-// Labels et couleurs prédéfinies pour les datasets Commandes/CA/Articles
+// 🎨 Updated dataset colors for `teal` theme and dark mode
 const datasetColors = {
-    orders_count: { label: 'Commandes', color: '#4f46e5' }, // indigo-600
-    total_price: { label: 'Chiffre d\'affaires', color: '#059669' }, // emerald-600
-    items_count: { label: 'Articles vendus', color: '#fcd34d' }, // amber-300
+    total_price: { labelKey: 'stats.kpi.totalRevenue', light: '#0d9488', dark: '#2dd4bf' }, // teal-600, teal-400
+    orders_count: { labelKey: 'stats.kpi.totalOrders', light: '#4f46e5', dark: '#818cf8' }, // indigo-600, indigo-400
+    items_count: { labelKey: 'stats.kpi.itemsCount', light: '#f59e0b', dark: '#fcd34d' }, // amber-500, amber-300
 };
 
-
-// Mapping des clés de dimension API aux labels d'affichage conviviaux pour les COMMANDES
-const orderDimensionLabels: Record<keyof OrderStatsIncludeOptions | string, string> = { // Use string index for robustness
-    status: 'Statut de la commande',
-    payment_status: 'Statut du paiement',
-    payment_method: 'Méthode de paiement',
-    with_delivery: 'Avec livraison', // Data keys will be 'true' or 'false'
+const orderDimensionLabels: Record<keyof OrderStatsIncludeOptions | string, string> = {
+    status: 'Statut de la commande', payment_status: 'Statut du paiement',
+    payment_method: 'Méthode de paiement', with_delivery: 'Avec livraison',
 };
 
+// 🎨 Skeleton Component
+const OrderStatsSkeleton: React.FC = () => (
+    <div className="bg-white/80 dark:bg-white/5 backdrop-blur-lg p-4 sm:p-6 rounded-lg shadow-sm border border-gray-200/80 dark:border-white/10 h-full flex flex-col animate-pulse">
+        <div className="h-6 w-1/2 bg-gray-300 dark:bg-gray-700 rounded-md mb-4"></div>
+        <div className="flex-grow bg-gray-200 dark:bg-gray-800/50 rounded-lg mb-4"></div>
+        <div className="flex gap-2">
+            <div className="h-8 w-24 bg-gray-200 dark:bg-gray-800/50 rounded-md"></div>
+            <div className="h-8 w-24 bg-gray-200 dark:bg-gray-800/50 rounded-md"></div>
+            <div className="h-8 w-24 bg-gray-200 dark:bg-gray-800/50 rounded-md"></div>
+        </div>
+    </div>
+);
 
-const OrderStatsSection: React.FC<OrderStatsSectionProps> = ({ data, period, includes /*, filterStartDate, filterEndDate */ }) => {
 
-    // Prépare les données du graphique de tendance (Commandes/CA/Articles)
+const OrderStatsSection: React.FC<OrderStatsSectionProps> = ({ data, period, includes, isLoading }) => {
+    const { t } = useTranslation();
+    const [isDarkMode, setIsDarkMode] = useState(false);
+
+    useEffect(() => {
+        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+        setIsDarkMode(mediaQuery.matches);
+        const handler = (e: MediaQueryListEvent) => setIsDarkMode(e.matches);
+        mediaQuery.addEventListener('change', handler);
+        return () => mediaQuery.removeEventListener('change', handler);
+    }, []);
+
     const chartData = useMemo<ChartData<'line'>>(() => {
-        // ... (logique chartData identique à la version précédente, sans yAxisID) ...
-        if (!data || data.length === 0) {
-            return { labels: [], datasets: [] };
-        }
+        if (!data || data.length === 0) return { labels: [], datasets: [] };
 
         const labels = data.map(item => item.date).sort();
-        const datasets = [];
+        const datasets:any[] = [];
+        //@ts-ignore
+        const currency = (data[0])?.currency ?? 'cfa'; // Get currency from first item
 
-        const createTooltipLabel = (label: string, value: number, key: 'orders_count' | 'total_price' | 'items_count' /*, currency?: string*/) => {
-            let formattedValue = value.toLocaleString(undefined, { maximumFractionDigits: key === 'total_price' ? 2 : 0 });
-            // const currencySymbol = key === 'total_price' ? currency || '' : ''; // Get currency symbol if available
-            return `${label}: ${formattedValue}`; // ${currencySymbol}`;
-        };
-        // NOTE: Le tooltip ne gère pas la devise via un simple callback `label`. Pour une devise formatée dans le tooltip, il faudrait:
-        // 1. Récupérer la devise (ex: from store config or data item)
-        // 2. Passez-la en paramètre au composant LineChart.
-        // 3. Modifier LineChart pour que son tooltip callback pour l'axe Y (s'il y en a un) formate en devise SI le dataset correspondant est le revenu.
-        // OU faire des callbacks de tooltip SPÉCIFIQUES à CHAQUE dataset dans OrderStatsSection comme dans l'ancienne version.
-        // Laissez les callbacks spécifiques à chaque dataset ici pour être explicite.
-        const currency = 'cfa'; // Get currency from first item (or store config)
-
-        if (data.some(item => (item.orders_count || 0) > 0)) {
-            datasets.push({
-                label: datasetColors.orders_count.label,
-                data: data.map(item => item.orders_count || 0),
-                borderColor: datasetColors.orders_count.color,
-                backgroundColor: `${datasetColors.orders_count.color}33`,
-                fill: true, tension: 0.3, pointRadius: 3, pointHoverRadius: 6,
-                tooltip: { callbacks: { label: (context: any) => createTooltipLabel(context.dataset.label || '', context.parsed.y, 'orders_count') } }
-            });
-        }
-        if (data.some(item => (item.total_price || 0) > 0)) {
-            datasets.push({
-                label: datasetColors.total_price.label,
-                data: data.map(item => item.total_price || 0),
-                borderColor: datasetColors.total_price.color,
-                backgroundColor: `${datasetColors.total_price.color}33`,
-                fill: true, tension: 0.3, pointRadius: 3, pointHoverRadius: 6,
-                tooltip: { callbacks: { label: (context: any) => `${context.dataset.label || ''}: ${context.parsed.y.toLocaleString(undefined, { style: 'currency', currency: currency || 'USD', minimumFractionDigits: 0, maximumFractionDigits: 2 })}` } } // Format currency directly here
-            });
-        }
-        if (data.some(item => (item.items_count || 0) > 0)) {
-            datasets.push({
-                label: datasetColors.items_count.label,
-                data: data.map(item => item.items_count || 0),
-                borderColor: datasetColors.items_count.color,
-                backgroundColor: `${datasetColors.items_count.color}33`,
-                fill: true, tension: 0.3, pointRadius: 3, pointHoverRadius: 6,
-                tooltip: { callbacks: { label: (context: any) => createTooltipLabel(context.dataset.label || '', context.parsed.y, 'items_count') } }
-            });
-        }
-        // Return delivery price?
-
-        return { labels, datasets };
-    }, [data]);
-
-
-    // Prépare les items pour la légende custom du graphique principal (commandes)
-    const legendItems = useMemo(() => {
-        return chartData.datasets.map(ds => ({
-            label: ds.label || 'N/A',
-            color: ds.borderColor as string || '#ccc',
-        }));
-    }, [chartData]);
-
-    // Calcule les dates de début et fin RÉELLES couvertes par les données de COMMANDES
-    const actualDateRange = useMemo(() => {
-        // ... (logique actualDateRange identique à la version visites) ...
-        if (!data || data.length === 0) return { actualStartDate: undefined, actualEndDate: undefined };
-
-        const dates = data.map(item => {
-            try {
-                if (period === 'month') {
-                    if (item.date.length === 7 && item.date.includes('-')) {
-                        const [yearStr, numStr] = item.date.split('-');
-                        const year = parseInt(yearStr, 10);
-                        const num = parseInt(numStr, 10);
-
-                        if (item.date.length === 7 && numStr.length === 2 && period === 'month') { // Could be YYYY-MM or YYYY-WW
-                            // Assume YYYY-WW from backend if month aggregation is weeks? Check StatsUtils logic.
-                            const dtWeek = DateTime.fromObject({ weekYear: year, weekNumber: num, weekday: 1 });
-                            if (dtWeek.isValid) return dtWeek;
-                            // If not valid ISO Week, try YYYY-MM
-                            const dtMonth = DateTime.fromFormat(item.date, 'yyyy-MM');
-                            if (dtMonth.isValid) return dtMonth;
+        const addDataset = (key: keyof typeof datasetColors, dataKey: keyof OrderStatsResultItem) => {
+            //@ts-ignore
+            if (data.some(item => (item[dataKey] ?? 0) > 0)) {
+                const colors = datasetColors[key];
+                const color = isDarkMode ? colors.dark : colors.light;
+                datasets.push({
+                    label: t(colors.labelKey), data: data.map(item => item[dataKey] ?? 0),
+                    borderColor: color, backgroundColor: `${color}33`, fill: true,
+                    tension: 0.3, pointRadius: 3, pointHoverRadius: 6,
+                    tooltip: { // Keep tooltip logic for currency formatting
+                        callbacks: {
+                            label: (context: any) => {
+                                let label = context.dataset.label || '';
+                                if (dataKey === 'total_price') {
+                                    return `${label}: ${context.parsed.y.toLocaleString(t('common.locale'), { style: 'currency', currency, minimumFractionDigits: 0 })}`;
+                                }
+                                return `${label}: ${context.parsed.y.toLocaleString(t('common.locale'))}`;
+                            }
                         }
                     }
-                    // Try YYYY-MM-DD or generic ISO parsing
-                    const dt = DateTime.fromISO(item.date);
-                    if (dt.isValid) return dt;
-
-                    console.warn(`OrderStatsSection: Could not parse date string "${item.date}" for period "${period}"`);
-                    return DateTime.invalid('Unparsable');
-                }
-            } catch (e) {
-                console.error(`OrderStatsSection: Error parsing date string "${item.date}" for period "${period}": ${e}`);
-                return DateTime.invalid('Error during parsing');
+                });
             }
-        }).filter(dt => !!dt?.isValid);
+        };
 
+        addDataset('total_price', 'total_price');
+        addDataset('orders_count', 'orders_count');
+        addDataset('items_count', 'items_count');
+        
+        return { labels, datasets };
+    }, [data, isDarkMode, t]);
+
+    const legendItems = useMemo(() => chartData.datasets.map(ds => ({
+        label: ds.label ?? 'N/A', color: ds.borderColor as string ?? '#ccc',
+    })), [chartData]);
+
+    const { actualStartDate, actualEndDate } = useMemo(() => {
+        if (!data || data.length === 0) return { actualStartDate: undefined, actualEndDate: undefined };
+        const dates = data.map(item => DateTime.fromISO(item.date)).filter(dt => dt.isValid);
         if (dates.length === 0) return { actualStartDate: undefined, actualEndDate: undefined };
+        return { actualStartDate: DateTime.min(...dates), actualEndDate: DateTime.max(...dates) };
+    }, [data]);
+    
+    const navigationDateRange = useMemo(() => ({
+        min_date: actualStartDate?.startOf(period).toISO(),
+        max_date: actualEndDate?.endOf(period).endOf('day').toISO(),
+    }), [actualStartDate, actualEndDate, period]);
 
-        const actualStartDate = DateTime.min(...dates);
-        const actualEndDate = DateTime.max(...dates);
-
-        return {
-            actualStartDate: actualStartDate ? actualStartDate.startOf(period) : undefined,
-            actualEndDate: actualEndDate ? actualEndDate.endOf(period).endOf('day') : undefined
-        };
-    }, [data, period]);
-
-    // Range for navigation (uses actual data range for now)
-    const navigationDateRange = useMemo(() => {
-        return {
-            min_date: actualDateRange.actualStartDate?.toISO(),
-            max_date: actualDateRange.actualEndDate?.toISO(),
-        };
-    }, [actualDateRange]);
-
-    // Agréger les données de dimension sur toute la période reçue (commandes)
     const aggregatedDimensionData = useMemo(() => {
-        // ... (logique aggregatedDimensionData identique à la version précédente) ...
         const aggregation: Record<string, Record<string, number>> = {};
-
-        if (!data || data.length === 0) return aggregation;
-
-        // Iterate over dimensions requested via 'includes' props
-        const dimensionsToCheck = Object.keys(includes).filter(key => {
-            return includes[key as keyof OrderStatsIncludeOptions] === true && orderDimensionLabels[key] !== undefined;
-        }) as (keyof OrderStatsIncludeOptions)[];
-
+        if (!data) return aggregation;
+        const dimensionsToCheck = Object.keys(includes).filter(key => includes[key as keyof typeof includes]);
+        
         dimensionsToCheck.forEach(dimKey => {
-            // dimKey IS the data key and also the intended filter param name
-            const dataKey = dimKey; // For orders, the key name seems consistent
-
-            // Check if this dataKey exists in any data item and is an object (breakdown structure)
-            const isDataKeyPresentAndValid = data.some(item =>
-                item[dataKey as keyof OrderStatsResultItem] !== undefined && typeof item[dataKey as keyof OrderStatsResultItem] === 'object' && item[dataKey as keyof OrderStatsResultItem] !== null
-            );
-
-            if (!isDataKeyPresentAndValid) return; // Skip this dimension if no valid data is found
-
-            aggregation[dataKey] = {};
-
+            if (!data.some(item => item[dimKey as keyof OrderStatsResultItem])) return;
+            aggregation[dimKey] = {};
             data.forEach(item => {
-                const dimensionBreakdown = item[dataKey as keyof OrderStatsResultItem];
-
-                if (dimensionBreakdown && typeof dimensionBreakdown === 'object') { // Ensure it's a valid object
-                    Object.entries(dimensionBreakdown).forEach(([subKey, count]) => {
-                        if (typeof count === 'number') {
-                            aggregation[dataKey][subKey] = (aggregation[dataKey][subKey] || 0) + count;
-                        }
+                const breakdown = item[dimKey as keyof typeof item];
+                if (breakdown && typeof breakdown === 'object') {
+                    Object.entries(breakdown).forEach(([subKey, count]) => {
+                        if (typeof count === 'number') aggregation[dimKey][subKey] = (aggregation[dimKey][subKey] || 0) + count;
                     });
                 }
             });
         });
-
-        // Return aggregation indexed by Data Key ('status', 'payment_method', etc.)
         return aggregation;
-    }, [data, includes /*, orderDimensionLabels */]);
-
-    // État local pour suivre la dimension de breakdown sélectionnée (commandes)
+    }, [data, includes]);
+    
     const [selectedDimensionKey, setSelectedDimensionKey] = useState<string | null>(null);
 
-    // Met à jour la dimension sélectionnée quand les données ou les dimensions incluses changent
     useEffect(() => {
-        const availableDimensionKeys = Object.keys(aggregatedDimensionData);
-        if (selectedDimensionKey && availableDimensionKeys.includes(selectedDimensionKey)) {
-            return;
-        }
-        if (availableDimensionKeys.length > 0) {
-            setSelectedDimensionKey(availableDimensionKeys[0]);
-        } else {
-            setSelectedDimensionKey(null);
-        }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [aggregatedDimensionData]);
+        const availableKeys = Object.keys(aggregatedDimensionData);
+        if (selectedDimensionKey && availableKeys.includes(selectedDimensionKey)) return;
+        setSelectedDimensionKey(availableKeys.length > 0 ? availableKeys[0] : null);
+    }, [aggregatedDimensionData, selectedDimensionKey]);
 
-
-    // Data et titre pour la dimension sélectionnée (commandes)
     const selectedDimensionData = selectedDimensionKey ? aggregatedDimensionData[selectedDimensionKey] : undefined;
     const selectedDimensionTitle = selectedDimensionKey ? orderDimensionLabels[selectedDimensionKey] : undefined;
-    // Filter param name for navigation - uses the DataKey directly for orders
-    const selectedFilterParamName = selectedDimensionKey || undefined;
 
+    if (isLoading) return <OrderStatsSkeleton />;
 
-    // Indicateur de données manquantes pour le graphique principal
-    const noChartData = (!data || data.length === 0) && !chartData.datasets.some(ds => ds.data.some(v => v !== 0));
-
-    // Indicateur si des breakdowns sont demandés mais aucune donnée de dimension disponible/agrégée
-    //@ts-ignore
-    const noDimensionData = !Object.keys(aggregatedDimensionData).length > 0 && Object.keys(includes).some(key => includes[key as keyof OrderStatsIncludeOptions]);
-
+    const noChartData = !chartData.datasets.some(ds => ds.data.some(v => (v as number) > 0));
+    const noDimensionData = Object.keys(aggregatedDimensionData).length === 0 && Object.values(includes).some(v => v);
 
     return (
-        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 h-full flex flex-col">
-            {/* Titre */}
-            <h2 className="text-xl font-semibold text-gray-700 mb-4">Statistiques de Commandes</h2>
+        <div className="bg-white/80 dark:bg-white/5 backdrop-blur-lg p-4 sm:p-6 rounded-lg shadow-sm border border-gray-200/80 dark:border-white/10 h-full flex flex-col">
+            <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4">{t('stats.ordersTitle')}</h2>
 
-            {/* Graphique de tendance et Légende */}
             {noChartData ? (
-                <div className="text-center text-gray-500 p-8">Aucune donnée de commande pour la période sélectionnée ou filtrée.</div>
+                <div className="flex-grow flex items-center justify-center text-center text-gray-500 dark:text-gray-400 p-8">{t('stats.noOrderData')}</div>
             ) : (
-                <div className="flex flex-col">
-                    {/* Pas de multi-axe Y pour la lisibilité */}
-                    <LineChart data={chartData} period={period} />
-                    <ChartLegend items={legendItems} />
-                </div>
-            )}
+                <>
+                    <div className="flex flex-col">
+                        <LineChart data={chartData} period={period} />
+                        <ChartLegend items={legendItems} />
+                    </div>
 
-
-            {/* Section des breakdowns de dimension (Commandes) */}
-            {!noChartData && ( // Afficher la section breakdowns seulement s'il y a des données de tendance
-                <div className="mt-6">
-
-                    {noDimensionData ? (
-                        // Message si des dimensions étaient demandées mais aucune donnée trouvée
-                        <div className="text-center text-gray-500">Aucune donnée détaillée (statuts, paiements, etc.) pour la période sélectionnée ou filtrée.</div>
-                    ) : (
-                        <>
-                            {/* Onglets de sélection de dimension (style Bento) */}
-                            <div className="flex flex-wrap gap-2 mb-4">
-                                {Object.keys(aggregatedDimensionData).map((dimKey) => { // Itère sur les clés REELLEMENT agrégées
-                                    const label = orderDimensionLabels[dimKey] || dimKey;
-                                    const isSelected = dimKey === selectedDimensionKey;
-                                    return (
+                    <div className="mt-6 border-t border-gray-200/80 dark:border-white/10 pt-4">
+                        {noDimensionData ? (
+                             <div className="text-center text-gray-500 dark:text-gray-400">{t('stats.noDetailedData')}</div>
+                        ) : (
+                            <>
+                                <div className="flex flex-wrap gap-2 mb-4">
+                                    {Object.keys(aggregatedDimensionData).map((dimKey) => (
                                         <button
-                                            type="button"
-                                            key={dimKey}
-                                            onClick={() => setSelectedDimensionKey(dimKey)}
-                                            className={`px-3 py-1 text-sm rounded-md transition border
-                                                  ${isSelected
-                                                    ? 'bg-blue-500 text-white border-blue-600 shadow-sm'
-                                                    : 'bg-gray-100 text-gray-700 border-gray-300 hover:bg-gray-200'
+                                            key={dimKey} onClick={() => setSelectedDimensionKey(dimKey)}
+                                            className={`px-3 py-1 text-sm rounded-md transition-all border
+                                                ${dimKey === selectedDimensionKey
+                                                    ? 'bg-teal-500/10 dark:bg-teal-500/20 text-teal-700 dark:text-teal-300 border-teal-500/20 shadow-sm'
+                                                    : 'bg-gray-100 dark:bg-gray-700/60 text-gray-700 dark:text-gray-300 border-gray-300/50 dark:border-gray-600/80 hover:bg-gray-200/70 dark:hover:bg-gray-700'
                                                 }`}
                                         >
-                                            {label}
+                                            {orderDimensionLabels[dimKey] || dimKey}
                                         </button>
-                                    );
-                                })}
-                            </div>
+                                    ))}
+                                </div>
 
-                            {/* Conteneur pour la DimensionBreakdown sélectionnée */}
-                            {selectedDimensionKey && selectedDimensionData && selectedDimensionTitle && (
-                                <DimensionBreakdown
-                                    key={`order-breakdown-${selectedDimensionKey}`} // Clé unique
-                                    title={selectedDimensionTitle}
-                                    data={selectedDimensionData}
-                                    period={period}
-                                    navigationBaseUrl="/commands" // URL base pour naviguer vers les listes de commandes
-                                    filterParamName={selectedFilterParamName || 'dimension'} // Use the DataKey as filter param name
-                                    dateRangeParams={navigationDateRange} // Plage de dates pour la navigation
-                                />
-                            )}
-
-                            {!selectedDimensionKey && Object.keys(aggregatedDimensionData).length > 0 && (
-                                // Message si des données de dimension existent mais qu'aucune n'est encore sélectionnée
-                                <div className="text-center text-gray-500">Sélectionnez une dimension ci-dessus pour afficher les détails.</div>
-                            )}
-                        </>
-                    )}
-                </div>
+                                {selectedDimensionKey && selectedDimensionData && selectedDimensionTitle && (
+                                    <DimensionBreakdown
+                                        key={`order-breakdown-${selectedDimensionKey}`}
+                                        title={selectedDimensionTitle}
+                                        data={selectedDimensionData}
+                                        period={period}
+                                        navigationBaseUrl="/commands"
+                                        filterParamName={selectedDimensionKey}
+                                        dateRangeParams={navigationDateRange}
+                                    />
+                                )}
+                            </>
+                        )}
+                    </div>
+                </>
             )}
-
         </div>
     );
 };

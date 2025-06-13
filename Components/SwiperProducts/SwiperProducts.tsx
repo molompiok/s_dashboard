@@ -16,7 +16,6 @@ import { getFileType } from '../Utils/functions';
 import { NEW_VIEW } from '../Utils/constants';
 import { ConfirmDelete } from '../Confirm/ConfirmDelete';
 import { useGlobalStore } from '../../api/stores/StoreStore';
-import { globalActionZust } from '../../renderer/AppStore/appZust';
 import { useTranslation } from 'react-i18next';
 
 export { SwiperProducts }
@@ -27,10 +26,8 @@ function SwiperProducts({ views, setViews }: { views: (string | Blob)[], setView
   const [localViews, setLocalViews] = useState(views);
   const [isHover, setHover] = useState(false);
   const [requireDetele, setRequireDetele] = useState(-1);
-  const [mouseMove, setMouseMove] = useState(false);
   const [currentIndex, setCurrentIndex] = useState(0);
-  const { currentStore } = useGlobalStore()
-
+  
   const { t } = useTranslation()
   useEffect(() => {
     setLocalViews(views.length > 0 ? views : [NEW_VIEW])
@@ -149,8 +146,7 @@ function SwiperProducts({ views, setViews }: { views: (string | Blob)[], setView
                   onDrop={handleDrop}
                   onDragLeave={(e) => setHover(false)}
                   onDragExit={(e) => setHover(false)}
-                  onMouseMove={() => setMouseMove(true)}
-                  onMouseLeave={() => setMouseMove(false)}>
+                  >
                   <label htmlFor='chose-product-views' className="center"  >
                     <input id='chose-product-views' multiple type="file" accept={'image/*,video/*'} style={{ display: 'none' }} onChange={(e) => {
                       const files = e.currentTarget.files;

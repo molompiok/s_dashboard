@@ -32,11 +32,13 @@ function CategoryItemMini({
     const { t } = useTranslation();
     const [category, setCategory] = useState(initialCategory);
 
-    const { data: fetchedCategory, isLoading, isError } = useGetCategory({
+    const { data: fetchedCategory, isLoading, isError , refetch } = useGetCategory({
         category_id: !initialCategory ? category_id : undefined
     },
         { enabled: !initialCategory && !!category_id }
     );
+
+    
 
     useEffect(() => {
         if (fetchedCategory) setCategory(fetchedCategory);
@@ -82,7 +84,7 @@ function CategoryItemMini({
     return (
         <ContainerElement
             {...containerProps}
-            className={`relative w-20 h-20 p-1.5 rounded-xl transition duration-200 ease-in-out flex flex-col items-center justify-center text-center cursor-pointer bg-white shadow-sm border border-gray-200 ${hoverEffect ? 'hover:scale-105 hover:shadow-md hover:border-blue-200 group' : ''}`}
+            className={`relative w-20 h-20 p-1.5 rounded-xl transition duration-200 ease-in-out flex flex-col items-center justify-center text-center cursor-pointer bg-white shadow-sm  hover:border-blue-200 hover:shadow-md dark:bg-white/5 border border-gray-100  dark:border-white/10 ${hoverEffect ? 'hover:scale-105 hover:shadow-md hover:border-blue-200 group' : ''}`}
         >
             {/* Bouton/Compteur */}
             <div

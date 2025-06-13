@@ -14,14 +14,14 @@ interface LinkProps {
 export function Link({ href, children, activeIcon, defaultIcon, add = [], className = '' }: LinkProps) {
   const { urlPathname } = usePageContext();
   
+  
   // Vérifier si le lien est actif
-  const isActive = urlPathname === href || add.some(path => urlPathname.startsWith(path));
+  const isActive = (href === '/' && href === urlPathname ) ||  (href!=='/' && urlPathname.startsWith(href)) || add.some(path => urlPathname.startsWith(path));
   
   // Classes de base pour les liens
   const baseClasses = `
     group relative flex items-center gap-3 px-3 py-2.5 text-sm font-medium 
     rounded-xl transition-all duration-300 ease-out
-    hover:scale-[1.02] active:scale-[0.98]
   `;
   
   // Classes pour l'état actif
@@ -52,23 +52,12 @@ export function Link({ href, children, activeIcon, defaultIcon, add = [], classN
       <div className={`
         flex-shrink-0 transition-transform duration-300
         ${isActive ? 'text-emerald-600 dark:text-emerald-400' : 'text-gray-500 dark:text-gray-400'}
-        group-hover:scale-110
       `}>
         {isActive && activeIcon ? activeIcon : defaultIcon}
       </div>
       
       {/* Texte du lien */}
-      <span className="flex-1 truncate">
-        {children}
-      </span>
-      
-      {/* Effet de brillance au survol */}
-      <div className={`
-        absolute inset-0 rounded-xl opacity-0 group-hover:opacity-100
-        bg-gradient-to-r from-transparent via-white/10 to-transparent
-        transform translate-x-[-100%] group-hover:translate-x-[100%]
-        transition-all duration-700 ease-out pointer-events-none
-      `} />
+       {children && <span className="visible md:hidden  lg:flex lg:visible truncate items-center gap-2">{children}</span>}
     </a>
   );
 }
@@ -88,7 +77,7 @@ export function BottomBarLink({ href, activeIcon, defaultIcon, add = [] }: Omit<
           ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30' 
           : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'
         }
-        hover:scale-105 active:scale-95
+        
       `}
     >
       <div className={`
