@@ -50,6 +50,8 @@
         "deleting": "Suppression...",
         "details": "Details",
         "active": "Active",
+        "previous": "Précédent",
+        "finish": "Terminer",
         "infoMissing": "Certaines informations sont manquantes"
     },
     "loginPage": {
@@ -701,6 +703,17 @@
         }
     },
     "product": {
+        "step": {
+            "info": "Infos de Base",
+            "variants": "Variantes",
+            "stock": "Stocks & Prix",
+            "publish": "Publication"
+        },
+        "noVariantsForStock": "Aucune variante à configurer",
+        "noVariantsForStockDesc": "Ajoutez des variantes (comme la taille ou la couleur) à l'étape précédente pour gérer les stocks de chaque combinaison.",
+        "viewOnStore": "Voir en boutique",
+        "saveAndContinue": "Enregistrer et continuer",
+        "viewDetails": "Voir les detail du produit",
         "viewRequired": "Une image principale est requise pour le produit.",
         "priceTooHigh": "Le prix ne doit pas dépasser {{max}}.",
         "barredPriceTooHigh": "Le prix barré ne doit pas dépasser {{max}}.",

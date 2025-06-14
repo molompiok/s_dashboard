@@ -150,7 +150,7 @@ function Page() {
                     </div>
                     <div className="px-4 py-5 sm:p-6 space-y-6">
                         <div className="flex items-center gap-4">
-                            <div className="relative w-20 h-20 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center overflow-hidden ring-2 ring-offset-2 ring-teal-500/50 dark:ring-offset-gray-900">
+                            <div className="relative min-w-20 h-20 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center overflow-hidden ring-2 ring-offset-2 ring-teal-500/50 dark:ring-offset-gray-900">
                                 {avatarUrl ? <img src={avatarUrl} alt={t('profilePage.profile.avatarAlt')} className="w-full h-full object-cover" /> : <span className="text-2xl font-semibold text-gray-500 dark:text-gray-400">{currentUser.full_name?.substring(0, 2).toUpperCase() || '?'}</span>}
                                 <label htmlFor="avatar-upload" className="absolute inset-0 bg-black/50 flex items-center justify-center text-white opacity-0 hover:opacity-100 transition-opacity cursor-pointer">
                                     <IoCameraOutline size={24} />

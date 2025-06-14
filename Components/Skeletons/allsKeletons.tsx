@@ -130,66 +130,84 @@ export function OrderDetailSkeleton() {
   );
 }
 
-export function ProductFormSkeleton() {
-  return (
-    <div className="space-y-6 animate-pulse">
-      <Topbar />
-      {/* Image Carousel */}
-      <div className="flex space-x-4 overflow-x-auto">
-        {Array.from({ length: 3 }).map((_, i) => (
-          <div key={i} className="h-60 w-60 bg-gray-200 dark:bg-gray-500  rounded-xl shrink-0" />
-        ))}
-      </div>
-
-      {/* Nom du produit */}
-      <div className="space-y-2">
-        <div className="h-4 w-1/4 bg-gray-200 dark:bg-gray-500  rounded" />
-        <div className="h-10 w-full bg-gray-200 dark:bg-gray-500  rounded-md" />
-      </div>
-
-      {/* Description */}
-      <div className="space-y-2">
-        <div className="h-4 w-1/4 bg-gray-200 dark:bg-gray-500  rounded" />
-        <div className="h-32 w-full bg-gray-200 dark:bg-gray-500  rounded-md" />
-      </div>
-
-      {/* Prix de base */}
-      <div className="space-y-2">
-        <div className="h-4 w-1/4 bg-gray-200 dark:bg-gray-500  rounded" />
-        <div className="h-10 w-1/2 bg-gray-200 dark:bg-gray-500  rounded-md" />
-      </div>
-
-      {/* Prix barré */}
-      <div className="space-y-2">
-        <div className="h-4 w-1/4 bg-gray-200 dark:bg-gray-500  rounded" />
-        <div className="h-10 w-1/2 bg-gray-200 dark:bg-gray-500  rounded-md" />
-      </div>
-
-      {/* Catégories */}
-      <div className="space-y-2">
-        <div className="h-4 w-1/4 bg-gray-200 dark:bg-gray-500  rounded" />
-        <div className="flex space-x-4">
-          <div className="h-20 w-16 bg-gray-200 dark:bg-gray-500  rounded-md" />
-          <div className="h-20 w-16 bg-gray-200 dark:bg-gray-500  rounded-md" />
-        </div>
-      </div>
-
-      {/* Variantes */}
-      <div className="space-y-2">
-        <div className="h-4 w-1/3 bg-gray-200 dark:bg-gray-500  rounded" />
-        <div className="h-16 w-full bg-gray-100 rounded-md" />
-      </div>
-
-      {/* Visibilité */}
-      <div className="flex space-x-4">
-        <div className="h-10 w-24 bg-gray-200 dark:bg-gray-500  rounded-md" />
-        <div className="h-10 w-24 bg-gray-200 dark:bg-gray-500  rounded-md" />
-      </div>
-
+// Ce composant interne imite une section du formulaire
+const SkeletonSection = ({ children }: { children: React.ReactNode }) => (
+    <div className="bg-white/80 dark:bg-white/5 backdrop-blur-lg rounded-lg shadow-sm border border-gray-200/80 dark:border-white/10 p-4 sm:p-6 space-y-6">
+        {children}
     </div>
-  );
-}
+);
 
+// Le Skeleton principal
+export function ProductFormSkeleton() {
+    return (
+        <div className="w-full min-h-screen flex flex-col animate-pulse">
+            {/* Le Topbar est fixe et non "pulsant" pour donner un point d'ancrage visuel */}
+            <Topbar back title="..." />
+
+            <main className="w-full max-w-5xl mx-auto p-4 md:p-6 lg:p-8 flex flex-col gap-8">
+                {/* 1. Squelette du Stepper */}
+                <div className="flex items-center justify-center p-2 bg-gray-100/50 dark:bg-black/10 rounded-xl space-x-2 sm:space-x-4">
+                    {Array.from({ length: 3 }).map((_, i) => (
+                        <div key={i} className="flex items-center">
+                            <div className="flex flex-col items-center">
+                                <div className="h-10 w-10 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+                                <div className="mt-2 h-3 w-16 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
+                            </div>
+                            {i < 3 && <div className="hidden sm:block w-10 h-0.5 mx-2 bg-gray-200 dark:bg-gray-700" />}
+                        </div>
+                    ))}
+                </div>
+
+                {/* 2. Squelette de la première étape ("Informations Générales") */}
+                <SkeletonSection>
+                    {/* Titre de la section */}
+                    <div className="h-7 w-1/3 bg-gray-300 dark:bg-gray-600 rounded-lg"></div>
+                    
+                    {/* Champ Nom */}
+                    <div className="space-y-2">
+                        <div className="h-4 w-1/4 bg-gray-200 dark:bg-gray-500 rounded"></div>
+                        <div className="h-10 w-full bg-gray-200 dark:bg-gray-500 rounded-lg"></div>
+                    </div>
+
+                    {/* Gestionnaire d'images */}
+                     <div className="space-y-2">
+                        <div className="h-4 w-1/4 bg-gray-200 dark:bg-gray-500 rounded"></div>
+                        <div className="grid grid-cols-[repeat(auto-fill,minmax(120px,1fr))] gap-3">
+                            {Array.from({ length: 3 }).map((_, i) => (
+                                <div key={i} className="aspect-square bg-gray-200 dark:bg-gray-500 rounded-lg" />
+                            ))}
+                            <div className="aspect-square bg-gray-100 dark:bg-gray-600/50 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600"></div>
+                        </div>
+                    </div>
+
+                    {/* Description */}
+                    <div className="space-y-2">
+                        <div className="h-4 w-1/4 bg-gray-200 dark:bg-gray-500 rounded"></div>
+                        <div className="h-32 w-full bg-gray-200 dark:bg-gray-500 rounded-lg"></div>
+                    </div>
+
+                    {/* Prix */}
+                    <div className="grid md:grid-cols-2 gap-6">
+                         <div className="space-y-2">
+                            <div className="h-4 w-1/3 bg-gray-200 dark:bg-gray-500 rounded"></div>
+                            <div className="h-10 w-full bg-gray-200 dark:bg-gray-500 rounded-lg"></div>
+                        </div>
+                         <div className="space-y-2">
+                            <div className="h-4 w-1/3 bg-gray-200 dark:bg-gray-500 rounded"></div>
+                            <div className="h-10 w-full bg-gray-200 dark:bg-gray-500 rounded-lg"></div>
+                        </div>
+                    </div>
+                </SkeletonSection>
+
+                 {/* 3. Squelette des boutons de navigation */}
+                 <div className="flex justify-between items-center mt-8 border-t dark:border-gray-700 pt-6">
+                    <div className="h-10 w-28 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                    <div className="h-10 w-28 bg-gray-300 dark:bg-gray-600 rounded-lg"></div>
+                 </div>
+            </main>
+        </div>
+    );
+}
 
 
 export function StockProductSkeleton() {

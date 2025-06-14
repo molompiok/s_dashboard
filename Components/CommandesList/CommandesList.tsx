@@ -118,7 +118,7 @@ function CommandeList({ product_id, user_id }: { user_id?: string; product_id?: 
 
             {/* Liste des commandes */}
             <div className="w-full flex flex-col items-stretch gap-3">
-                {isLoading && Array.from({ length: 5 }).map((_, i) => <CommandItemSkeleton key={i} />)}
+                {(isLoading || !currentStore) && Array.from({ length: 5 }).map((_, i) => <CommandItemSkeleton key={i} />)}
 
                 {isError && (
                     <div className="p-6 text-center text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 rounded-lg">
@@ -126,7 +126,7 @@ function CommandeList({ product_id, user_id }: { user_id?: string; product_id?: 
                     </div>
                 )}
 
-                {!isLoading && !isError && commands.length === 0 && (
+                {!isLoading && currentStore && !isError && commands.length === 0 && (
                     <div className="flex flex-col items-center justify-center p-10 text-center text-gray-500 dark:text-white">
                         <div className="w-40 h-40 bg-contain bg-center bg-no-repeat mb-4" style={{ background: getMedia({ isBackground: true, source: '/res/empty/search.png' }) }}></div>
                         <h3 className="font-semibold text-lg">{t('common.noResults')}</h3>
@@ -146,7 +146,6 @@ function CommandeList({ product_id, user_id }: { user_id?: string; product_id?: 
                         <div key={a.id}>
                             {dateHeader}
                             <div
-                                className="w-full cursor-pointer rounded-lg transition-all duration-200 hover:bg-white hover:shadow-md dark:hover:bg-gray-800/80 focus-visible:ring-2 focus-visible:ring-teal-500 outline-none"
                                 onClick={() => navigate(`/commands/${a.id}`)}
                                 role="link"
                                 tabIndex={0}

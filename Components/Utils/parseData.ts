@@ -6,10 +6,11 @@ export { getNewFeature, getDefaultFeature, getDefaultValues, IsFeaturesHere }
 function getNewFeature() {
     return {
         id: NEW_ID_START + ClientCall(Math.random, 0).toString(),
+        _request_mode:'new',
         created_at: '',
         name: '',
         product_id: '',
-        required: false,
+        required: true,
         type: '',
         updated_at: '',
         default: '',

@@ -20,6 +20,7 @@ const onRenderHtml: OnRenderHtmlAsync = async (pageContext): ReturnType<OnRender
   if (!Page) throw new Error('My onRenderHtml() hook expects pageContext.Page to be defined')
 
   const headersOriginal = pageContext.headers as Record<string, string> || {};
+  const baseUrlFromHeader = headersOriginal['x-base-url'];
   const apiUrlFromHeader = headersOriginal['x-target-api-service'];
   const serverUrlFromHeader = headersOriginal['x-server-url'] ;
   const serverApiFromHeader = headersOriginal['x-server-api-url'] || 'server.sublymus-server.com'
@@ -54,6 +55,7 @@ const onRenderHtml: OnRenderHtmlAsync = async (pageContext): ReturnType<OnRender
   const documentHtml = escapeInject`<!DOCTYPE html>
     <html lang="fr">
       <head style="z-index=-10">
+      <!--${baseUrlFromHeader}-->
         <meta charset="UTF-8" />
         <link rel="icon" href="${logoUrl}" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0">

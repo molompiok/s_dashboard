@@ -121,13 +121,13 @@ function FeatureInfo({ feature: initialFeature, onChange, onCancel }: FeatureInf
     // Utiliser flex flex-col gap-4 ou 6, padding
     <div className="feature-info p-4 sm:p-6 flex flex-col gap-5">
       <div>
-        <h3 className="block text-sm font-medium text-gray-700 mb-2">{t('feature.selectDisplayType')}</h3>
+        <h3 className="block text-sm font-medium text-gray-700 dark:text-white/60 mb-2">{t('feature.selectDisplayType')}</h3>
         {/* FeatureTypes est déjà un composant Swiper */}
         <FeatureTypes active={f.type} onSelected={handleTypeChange} />
       </div>
 
       <div>
-        <label className=' text-sm font-medium text-gray-700 mb-1 flex justify-between items-center' htmlFor="feature-info-name-input">
+        <label className=' text-sm font-medium text-gray-700 dark:text-white/60 mb-1 flex justify-between items-center' htmlFor="feature-info-name-input">
           <span>{t('feature.nameLabel')} <IoPencil className="inline-block ml-1 w-3 h-3 text-gray-400" /></span>
           <span className={`text-xs ${(f.name?.trim()?.length || 0) > 56 ? 'text-red-600' : 'text-gray-400'}`}>
             {(f.name?.trim()?.length || 0)} / 56
@@ -156,15 +156,15 @@ function FeatureInfo({ feature: initialFeature, onChange, onCancel }: FeatureInf
             name="required"
             type="checkbox"
             className="h-4 w-4  rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
-            checked={f.required ?? false}
+            checked={f.required ?? true}
             onChange={() => handleCheckboxChange('required')}
           />
         </div>
         <div className="ml-3 text-sm leading-6">
-          <label htmlFor="feature-required" className="font-medium text-gray-800 cursor-pointer">
+          <label htmlFor="feature-required" className="font-medium text-gray-800 dark:text-gray-300 cursor-pointer">
             {t('feature.isRequiredLabel')}
           </label>
-          <p className="text-gray-500 text-xs">{t('feature.isRequiredDesc')}</p>
+          <p className="text-gray-500  dark:text-gray-400  text-xs">{t('feature.isRequiredDesc')}</p>
         </div>
       </div>
 
@@ -176,17 +176,17 @@ function FeatureInfo({ feature: initialFeature, onChange, onCancel }: FeatureInf
           {/* Min/Max Length */}
           <div className='grid grid-cols-2 gap-4'>
             <div>
-              <label htmlFor="feature-min-size" className='block text-xs font-medium text-gray-700 mb-1'>{t('feature.minLength')}</label>
+              <label htmlFor="feature-min-size" className='block text-xs font-medium text-gray-700 dark:text-white/60 mb-1'>{t('feature.minLength')}</label>
               <input type="number" id="feature-min-size" name="min_size" value={f.min_size ?? 0} onChange={handleInputChange} className="block w-full rounded-md px-4 border-gray-300 shadow-sm sm:text-sm h-9" />
             </div>
             <div>
-              <label htmlFor="feature-max-size" className='block text-xs font-medium text-gray-700 mb-1'>{t('feature.maxLength')}</label>
+              <label htmlFor="feature-max-size" className='block text-xs font-medium text-gray-700 dark:text-white/60 mb-1'>{t('feature.maxLength')}</label>
               <input type="number" id="feature-max-size" name="max_size" value={f.max_size ?? 0} onChange={handleInputChange} className="block w-full rounded-md px-4 border-gray-300 shadow-sm sm:text-sm h-9" />
             </div>
           </div>
           {/* Regex */}
           <div>
-            <label htmlFor="feature-regex" className='block text-xs font-medium text-gray-700 mb-1'>{t('feature.regexLabel')} ({t('common.optionalField')})</label>
+            <label htmlFor="feature-regex" className='block text-xs font-medium text-gray-700 dark:text-white/60 mb-1'>{t('feature.regexLabel')} ({t('common.optionalField')})</label>
             <input type="text" id="feature-regex" name="regex" value={f.regex ?? ''} onChange={handleInputChange} placeholder={t('feature.regexPlaceholder')} className="block w-full rounded-md px-4 border-gray-300 shadow-sm sm:text-sm h-9" />
           </div>
         </div>

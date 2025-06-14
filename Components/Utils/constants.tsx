@@ -69,7 +69,7 @@ enum OrderStatus {
 }
 
 enum PaymentMethod {
-  CREDIT_CARD = 'credit_card',
+  CARD = 'credit_card',
   PAYPAL = 'paypal',
   MOBILE_MONEY = 'mobile_money',
   CASH = 'cash',

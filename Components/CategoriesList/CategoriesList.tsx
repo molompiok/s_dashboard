@@ -14,7 +14,7 @@ export { CategoriesList };
 
 function CategoriesList({ title }: { title?: string }) {
     const { t } = useTranslation();
-    // const { currentStore } = useGlobalStore();
+    const { currentStore } = useGlobalStore();
     const listRef = useRef<HTMLDivElement>(null);
     const [containerWidth, setContainerWidth] = useState<number>(0);
     const [list, setList] = useState<ListType<CategoryInterface>>()
@@ -67,7 +67,7 @@ function CategoriesList({ title }: { title?: string }) {
                 className={`w-full flex flex-wrap items-start gap-2 min-h-[${lineCount > 1 ? 180 : 90}px]`}
                 ref={listRef}
             >
-                <AddCategory isNew={allCategories.length === 0} />
+                {currentStore && !isLoading && <AddCategory isNew={allCategories.length === 0} /> }
                 {isLoading && Array.from({ length: 5 }).map((_, i) => <CategoryItemSkeleton key={`skel-${i}`} />)}
                 {!isLoading && !isError && displayCategories.map((c) =>
                     <CategoryItemMini key={c.id+Date.now()} category={{...c}} openCategory />

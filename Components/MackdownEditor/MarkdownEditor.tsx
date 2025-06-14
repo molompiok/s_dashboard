@@ -67,15 +67,17 @@ export function MarkdownEditor({ value, setValue }: { value: any, setValue: (val
   );
 }
 
-export function MarkdownEditor2({ value, setValue,error }: { value: string, setValue: (value: string) => void ,error?:boolean}) {
+
+
+export function MarkdownEditor2({ value, setValue, error }: { value: string, setValue: (value: string) => void, error?: boolean }) {
   const editorRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null); // ✅ Référence pour ajuster la hauteur
   const [editor, setEditor] = useState<JSX.Element>()
-
+  const [tryCount, setCount] = useState(0)
   const handleChange = () => {
-    
+
     const instance = editorRef.current?.getInstance();
-    const a = instance?.getMarkdown().substring(0,1000) || " ";
+    const a = instance?.getMarkdown().substring(0, 1000) || " ";
     const v = a.trim();
     v && setValue(v);
 
@@ -89,11 +91,18 @@ export function MarkdownEditor2({ value, setValue,error }: { value: string, setV
 
       setEditor(
         <Editor
-          ref={editorRef}
-          onKeyup={()=>{
+          ref={(ref) => {
+            editorRef.current = ref
+            if (!ref || typeof window === 'undefined') return
+            const i = ref.getInstance()
+            i.setMarkdown(value || "");
+            // console.log({ value });
+
+          }}
+          onKeyup={() => {
             handleChange()
           }}
-          
+
           initialValue={value || " "}
           previewStyle="vertical"
           initialEditType="wysiwyg"
@@ -113,31 +122,47 @@ export function MarkdownEditor2({ value, setValue,error }: { value: string, setV
   }, []);
 
   useEffect(() => {
-    if (editorRef.current) {
+    console.log('=================>>>>>>>>>>>>>', value, value.length, '<><>', editorRef.current);
+    const updateValue = () => {
+      if (!editorRef.current) {
+        if (tryCount < 100) {
+          setCount((prev) => prev + 1);
+          setTimeout(() => {
+            // console.log({tryCount});
+            
+            updateValue();
+          }, 700);
+        }else{
+          return
+        }
+      }
+      if (!editorRef.current) return
       const editor = editorRef.current.getInstance();
-      console.log(editor.getMarkdown() !== value, editor.getMarkdown(), value);
-      
+      // console.log(editor.getMarkdown() !== value, editor.getMarkdown(), value);
+
       if (editor && editor.getMarkdown() !== value) {
         editor.setMarkdown(value || "");
         adjustHeight(); // 🔥 Ajuster la hauteur au chargement
       }
     }
-  }, [value]);
+    updateValue()
+
+  }, [value, editorRef]);
 
   // 📏 Fonction pour ajuster la hauteur de l'éditeur
   const adjustHeight = () => {
     if (!containerRef.current) return;
-    
+
     // 🏗 Récupérer la hauteur du contenu et ajuster
     const contentHeight = containerRef.current.scrollHeight;
-    const newHeight = Math.min(Math.max(contentHeight, 150), 300); // Min: 150px, Max: 300px
+    const newHeight = Math.min(Math.max(contentHeight, 150), 300); // Min: 15``0px, Max: 300px
     containerRef.current.style.height = `${newHeight}px`;
   };
 
   if (!editor) return <p>Chargement de l'éditeur...</p>;
 
   return (
-    <div className={'editor '+(error?"error":'')} ref={containerRef} style={{ minHeight: '150px', maxHeight: '300px', overflowY: 'auto' }}>
+    <div className={'editor ' + (error ? "error" : '')} ref={containerRef} style={{ minHeight: '150px', maxHeight: '300px', overflowY: 'auto' }}>
       {editor}
     </div>
   );

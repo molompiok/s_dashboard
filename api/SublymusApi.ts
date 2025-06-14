@@ -234,7 +234,7 @@ export type UpdateUserResponse = { message?: string; user: UserInterface };
 // Products
 export type GetProductListParams = FilterType; // Type pour getList
 export type GetProductListResponse = ListType<ProductInterface>;
-export type GetProductParams = { product_id?: string; slug?: string; with_feature?: boolean }; // Type pour getOne
+export type GetProductParams = { product_id?: string; slug?: string,with_all?:boolean, with_categories?:boolean, with_feature?: boolean }; // Type pour getOne
 export type GetProductResponse = ProductInterface | null;
 export type CreateProductParams = { product: Partial<ProductInterface>, views?: (string | Blob)[] }; // Adapté pour _buildFormData
 export type CreateProductResponse = { message?: string, product: ProductInterface };

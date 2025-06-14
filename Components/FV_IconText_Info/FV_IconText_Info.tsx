@@ -1,5 +1,4 @@
 // Components/FV_IconText_Info/FV_IconText_Info.tsx
-// import './FV_IconText_Info.css'; // ❌ Supprimer
 
 import { useRef, useState, useEffect } from 'react';
 import { FeatureInterface, ValueInterface } from '../../api/Interfaces/Interfaces';
@@ -102,70 +101,113 @@ function FV_IconText_Info({ value: initialValue, feature, onChange, onCancel }: 
     const showIconPlaceholder = !iconUrl;
     const showIconUpload = feature.type === 'icon' || feature.type === 'icon_text';
 
-
     return (
-        // Utiliser flex flex-col gap-4 ou 5, padding
-        <div className="icon-text-info p-4 sm:p-6 flex flex-col gap-5">
+        <div className="icon-text-info p-4 sm:p-6 flex flex-col gap-6 bg-white/5 dark:bg-white/5 backdrop-blur-sm rounded-lg">
             {/* Section Icône (si type le requiert) */}
             {showIconUpload && (
-                <div>
-                    <label className='block text-sm font-medium text-gray-700 mb-1' htmlFor='icon-text-icon-input'>
+                <div className="space-y-2">
+                    <label className='block text-sm font-semibold text-gray-800 dark:text-gray-200' htmlFor='icon-text-icon-input'>
                         {t('value.iconLabel')}
                     </label>
-                    <label htmlFor='icon-text-icon-input' className={`relative block w-36 h-36 rounded-lg cursor-pointer overflow-hidden group bg-gray-100 border ${imageError ? 'border-red-500' : 'border-gray-300'} hover:bg-gray-200`}>
+                    <label 
+                        htmlFor='icon-text-icon-input' 
+                        className={`relative block w-40 h-40 rounded-xl cursor-pointer overflow-hidden group transition-all duration-200 ${
+                            imageError 
+                                ? 'border-2 border-red-500 dark:border-red-400 bg-red-50/50 dark:bg-red-900/20' 
+                                : 'border-2 border-dashed border-gray-300 dark:border-gray-600 bg-gray-50/50 dark:bg-gray-800/30 hover:border-blue-400 dark:hover:border-blue-500 hover:bg-blue-50/30 dark:hover:bg-blue-900/20'
+                        } backdrop-blur-sm`}
+                    >
                         <div
-                            className="absolute inset-0 bg-contain bg-center bg-no-repeat"
+                            className="absolute inset-0 bg-contain bg-center bg-no-repeat transition-opacity duration-200"
                             style={{ background: iconUrl }}
                         ></div>
+                        
                         {showIconPlaceholder && (
-                            <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-400 group-hover:text-blue-500 p-2 text-center">
-                                <IoCloudUploadOutline size={32} />
-                                <span className="mt-1 text-xs">{t('value.selectIconPrompt')}</span>
+                            <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-500 dark:text-gray-400 group-hover:text-blue-600 dark:group-hover:text-blue-400 p-4 text-center transition-colors duration-200">
+                                <IoCloudUploadOutline className="w-10 h-10 mb-2" />
+                                <span className="text-sm font-medium">{t('value.selectIconPrompt')}</span>
                             </div>
                         )}
+                        
                         {!showIconPlaceholder && (
-                            <div className="absolute bottom-1 right-1 p-1.5 bg-white/70 backdrop-blur-sm rounded-full shadow text-gray-600 group-hover:text-blue-600 opacity-0 group-hover:opacity-100 transition-opacity">
-                                <RiImageEditFill size={16} />
+                            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/20 dark:group-hover:bg-black/40 transition-colors duration-200 flex items-end justify-end p-2">
+                                <div className="p-2 bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-full shadow-lg text-gray-700 dark:text-gray-300 group-hover:text-blue-600 dark:group-hover:text-blue-400 opacity-0 group-hover:opacity-100 transition-all duration-200 transform translate-y-2 group-hover:translate-y-0">
+                                    <RiImageEditFill className="w-5 h-5" />
+                                </div>
                             </div>
                         )}
-                        <input id='icon-text-icon-input' name="icon" type="file" accept='image/*' className="sr-only" onChange={handleFileChange} />
+                        
+                        <input 
+                            id='icon-text-icon-input' 
+                            name="icon" 
+                            type="file" 
+                            accept='image/*' 
+                            className="sr-only" 
+                            onChange={handleFileChange} 
+                        />
                     </label>
-                    {imageError && <p className="mt-1 text-xs text-red-600">{imageError}</p>}
+                    {imageError && (
+                        <p className="text-sm text-red-600 dark:text-red-400 bg-red-50/50 dark:bg-red-900/20 px-3 py-1 rounded-md backdrop-blur-sm">
+                            {imageError}
+                        </p>
+                    )}
                 </div>
             )}
 
             {/* Nom de l'option */}
-            {(feature.type?.includes('text')) && ( // Afficher si type contient 'text'
-                <div>
-                    <label className=' text-sm font-medium text-gray-700 mb-1 flex justify-between items-center' htmlFor="icon-text-name-input">
-                        <span>{t('value.nameLabel')} <IoPencil className="inline-block ml-1 w-3 h-3 text-gray-400" /></span>
-                        <span className={`text-xs ${(v.text?.trim()?.length || 0) > 32 ? 'text-red-600' : 'text-gray-400'}`}>
+            {(feature.type?.includes('text')) && (
+                <div className="space-y-2">
+                    <label className='text-sm font-semibold text-gray-800 dark:text-gray-200 flex justify-between items-center' htmlFor="icon-text-name-input">
+                        <span className="flex items-center gap-2">
+                            {t('value.nameLabel')} 
+                            <IoPencil className="w-4 h-4 text-gray-400 dark:text-gray-500" />
+                        </span>
+                        <span className={`text-xs px-2 py-1 rounded-full backdrop-blur-sm ${
+                            (v.text?.trim()?.length || 0) > 32 
+                                ? 'text-red-700 dark:text-red-300 bg-red-100/60 dark:bg-red-900/30' 
+                                : 'text-gray-600 dark:text-gray-400 bg-gray-100/60 dark:bg-gray-800/40'
+                        }`}>
                             {(v.text?.trim()?.length || 0)} / 32
                         </span>
                     </label>
-                    <input
-                        ref={textRef}
-                        id="icon-text-name-input"
-                        name="text" // Important
-                        className={`block px-4 w-full rounded-md shadow-sm sm:text-sm h-10 ${textError ? 'border-red-500 ring-red-500 focus:border-red-500 focus:ring-red-500' : 'border-gray-300 focus:border-blue-500 focus:ring-blue-500'}`}
-                        placeholder={t('value.namePlaceholder')}
-                        type="text"
-                        value={v.text || ''}
-                        onChange={handleInputChange}
-                    />
-                    {textError && <p className="mt-1 text-xs text-red-600">{textError}</p>}
+                    <div className="relative">
+                        <input
+                            ref={textRef}
+                            id="icon-text-name-input"
+                            name="text"
+                            className={`block w-full px-4 py-3 rounded-xl border-2 transition-all duration-200 backdrop-blur-sm bg-white/50 dark:bg-gray-800/50 text-gray-900 dark:text-gray-100 placeholder-gray-500 dark:placeholder-gray-400 ${
+                                textError 
+                                    ? 'border-red-500 dark:border-red-400 focus:border-red-500 dark:focus:border-red-400 focus:ring-4 focus:ring-red-100 dark:focus:ring-red-900/30' 
+                                    : 'border-gray-300 dark:border-gray-600 focus:border-blue-500 dark:focus:border-blue-400 focus:ring-4 focus:ring-blue-100 dark:focus:ring-blue-900/30'
+                            } focus:outline-none`}
+                            placeholder={t('value.namePlaceholder')}
+                            type="text"
+                            value={v.text || ''}
+                            onChange={handleInputChange}
+                        />
+                    </div>
+                    {textError && (
+                        <p className="text-sm text-red-600 dark:text-red-400 bg-red-50/50 dark:bg-red-900/20 px-3 py-1 rounded-md backdrop-blur-sm">
+                            {textError}
+                        </p>
+                    )}
                 </div>
             )}
 
             {/* Prix et Stock */}
-            <ValuePricing value={v} addToValue={handlePricingChange} />
+            <div className="bg-white/30 dark:bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20 dark:border-white/10">
+                <ValuePricing value={v} addToValue={handlePricingChange} />
+            </div>
 
             {/* Confirmation */}
-            <Confirm
-                canConfirm={!textError && !imageError} // Actif si pas d'erreurs locales
-                onCancel={onCancel}
-                confirm={t('common.ok')}
-                onConfirm={handleConfirm} />
+            <div className="bg-white/20 dark:bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20 dark:border-white/10">
+                <Confirm
+                    canConfirm={!textError && !imageError}
+                    onCancel={onCancel}
+                    confirm={t('common.ok')}
+                    onConfirm={handleConfirm} 
+                />
+            </div>
         </div>
     );
 }
@@ -179,11 +221,10 @@ function IconTextValue({ value, feature, onRemove, onClick }: { onClick?: () => 
     const { t } = useTranslation();
 
     return (
-        // Utiliser flex, flex-col, items-center, gap, padding, rounded, border, hover, relative
         <div
             onClick={onClick}
-            className="value-icon-text relative flex flex-col items-center gap-1 p-1.5 rounded-lg border border-gray-200 cursor-pointer hover:border-blue-300 hover:bg-blue-50/30 transition group w-20" // Taille fixe
-            title={value.text || t('value.editOption')} // 🌍 i18n
+            className="value-icon-text relative group flex flex-col items-center gap-2 p-1 rounded-xl border-2 border-gray-100/30 dark:border-gray-300/20 cursor-pointer transition-all duration-200 bg-white/20 dark:bg-gray-900/10 backdrop-blur-sm hover:bg-white/30 dark:hover:bg-gray-600/10 hover:border-blue-400/60 dark:hover:border-blue-400/50 hover:shadow-lg hover:shadow-blue-500/20 dark:hover:shadow-blue-400/10"
+            title={value.text || t('value.editOption')}
         >
             {/* Bouton Supprimer */}
             {onRemove && (
@@ -192,27 +233,42 @@ function IconTextValue({ value, feature, onRemove, onClick }: { onClick?: () => 
                     onClick={(e) => {
                         e.stopPropagation();
                         openChild(<ChildViewer>
-                            <ConfirmDelete title={t('value.confirmDelete', { name: value.text || 'cette option' })} onCancel={() => openChild(null)} onDelete={() => { onRemove(); openChild(null); }} />
+                            <ConfirmDelete 
+                                title={t('value.confirmDelete', { name: value.text || 'cette option' })} 
+                                onCancel={() => openChild(null)} 
+                                onDelete={() => { onRemove(); openChild(null); }} 
+                            />
                         </ChildViewer>, { background: '#3455' });
                     }}
-                    className="absolute -top-2 -right-2 z-10 w-6 h-6 flex items-center justify-center bg-red-500 text-white rounded-full shadow hover:bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="absolute -top-2 -right-2 z-10 w-6 h-6 flex items-center justify-center bg-red-500 dark:bg-red-600 text-white rounded-full shadow-lg hover:bg-red-600 dark:hover:bg-red-700 opacity-0 group-hover:opacity-100 transition-all duration-200 transform scale-75 group-hover:scale-100 backdrop-blur-sm"
                     title={t('common.delete')}
                 >
-                    <IoClose size={14} />
+                    <IoClose className="w-3.5 h-3.5" />
                 </button>
             )}
+            
             {/* Icône */}
             {(feature?.type?.includes('icon')) && (
                 <div
-                    className="icon-value w-12 h-12 rounded-md bg-contain bg-center bg-no-repeat bg-gray-100 mb-1" // Utiliser contain
-                    style={{ background: getMedia({ isBackground: true, source: icon, size: 'contain', from: 'api' }) || getMedia({ isBackground: true, source: '/res/empty/empty-image.jpg', size: 'contain' }) }} // Placeholder si pas d'icône
+                    className="icon-value w-18 h-18 rounded-lg bg-contain bg-center bg-no-repeat bg-white/40 dark:bg-gray-800/40 backdrop-blur-sm group-hover:scale-105 transition-transform duration-200"
+                    style={{ 
+                        background: getMedia({ isBackground: true, source: icon, size: 'contain', from: 'api' }) || 
+                                   getMedia({ isBackground: true, source: '/res/empty/empty-image.jpg', size: 'contain' }) 
+                    }}
                 ></div>
             )}
+            
             {/* Texte */}
             {feature?.type?.includes('text') && (
-                <span className={`w-full text-xs text-center truncate ${value.text ? 'text-gray-700' : 'text-gray-400 italic'}`} title={value.text || t('value.emptyText')}>
-                    {value.text || `(${t('value.emptyText')})`}
-                </span>
+                <div className="w-full px-1">
+                    <span className={`block text-xs text-center truncate transition-colors duration-200 ${
+                        value.text 
+                            ? 'text-gray-800 dark:text-gray-200 group-hover:text-gray-900 dark:group-hover:text-gray-100' 
+                            : 'text-gray-500 dark:text-gray-400 italic'
+                    }`} title={value.text || t('value.emptyText')}>
+                        {value.text || `(${t('value.emptyText')})`}
+                    </span>
+                </div>
             )}
         </div>
     );
@@ -223,15 +279,19 @@ function TextValue({ value, feature, onRemove, onClick }: { onClick?: () => void
     const { t } = useTranslation();
 
     return (
-        // Utiliser flex, items-center, gap, padding, rounded, border, hover, relative
         <div
             onClick={onClick}
-            className="value-text relative inline-flex items-center gap-1 pl-2 pr-1 py-0.5 rounded-full border border-gray-300 cursor-pointer hover:border-blue-400 hover:bg-blue-50/30 transition group min-w-[60px]" // min-w pour éviter trop petit
+            className="value-text relative group inline-flex items-center gap-2 pl-4 pr-2 py-2 rounded-full border-2 border-white/30 dark:border-white/20 cursor-pointer transition-all duration-200 min-w-[80px] bg-white/25 dark:bg-white/15 backdrop-blur-sm hover:bg-white/35 dark:hover:bg-white/20 hover:border-blue-400/60 dark:hover:border-blue-400/50 hover:shadow-md hover:shadow-blue-500/20 dark:hover:shadow-blue-400/10"
             title={value.text || t('value.editOption')}
         >
-            <span className={`text-xs truncate ${value.text ? 'text-gray-800' : 'text-gray-400 italic'}`} title={value.text || t('value.emptyText')}>
+            <span className={`text-sm truncate font-medium transition-colors duration-200 ${
+                value.text 
+                    ? 'text-gray-800 dark:text-gray-200 group-hover:text-gray-900 dark:group-hover:text-gray-100' 
+                    : 'text-gray-500 dark:text-gray-400 italic'
+            }`} title={value.text || t('value.emptyText')}>
                 {value.text || `(${t('value.emptyText')})`}
             </span>
+            
             {/* Bouton Supprimer */}
             {onRemove && (
                 <button
@@ -239,13 +299,17 @@ function TextValue({ value, feature, onRemove, onClick }: { onClick?: () => void
                     onClick={(e) => {
                         e.stopPropagation();
                         openChild(<ChildViewer>
-                            <ConfirmDelete title={t('value.confirmDelete', { name: value.text || 'cette option' })} onCancel={() => openChild(null)} onDelete={() => { onRemove(); openChild(null); }} />
+                            <ConfirmDelete 
+                                title={t('value.confirmDelete', { name: value.text || 'cette option' })} 
+                                onCancel={() => openChild(null)} 
+                                onDelete={() => { onRemove(); openChild(null); }} 
+                            />
                         </ChildViewer>, { background: '#3455' });
                     }}
-                    className="flex items-center justify-center w-4 h-4 bg-gray-200 text-gray-500 rounded-full hover:bg-red-500 hover:text-white opacity-0 group-hover:opacity-100 transition-opacity ml-1" // Apparait au survol
+                    className="flex items-center justify-center w-5 h-5 bg-white/60 dark:bg-gray-700/60 text-gray-600 dark:text-gray-400 rounded-full hover:bg-red-500 dark:hover:bg-red-600 hover:text-white opacity-0 group-hover:opacity-100 transition-all duration-200 transform scale-75 group-hover:scale-100 backdrop-blur-sm shadow-sm"
                     title={t('common.delete')}
                 >
-                    <IoClose size={10} />
+                    <IoClose className="w-3 h-3" />
                 </button>
             )}
         </div>

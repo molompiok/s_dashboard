@@ -40,13 +40,9 @@ export function StoresList({maxVisible=5.8, maxSize=1200,stores, isLoading, sele
     const n = size.width< maxSize ? ((size.width - 260) / maxSize) * (maxVisible-1.1) + 1.1  :maxVisible
     const onManage = (store:StoreInterface)=>{
         openChild(<BigSpinner text='Chargement des informations..' />,{background:'#3455'})
-        setTimeout(() => {
-            setCurrentStore(store)
-            window.location.href='/store'
-            setTimeout(() => {
-                // openChild(null)
-            }, 500);
-        }, 2500);
+        setCurrentStore(store)
+        window.location.href='/store'
+        
     }
     const onVisit = (store:StoreInterface)=>{
         

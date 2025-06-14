@@ -153,7 +153,7 @@ function Page() {
                     {/* Photo */}
                     <div className="relative flex-shrink-0">
                         <div
-                            className="w-24 h-24 flex items-center font-bold text-gray-500 justify-center text-4xl rounded-full object-cover border-4 border-white shadow"
+                            className="min-w-24 h-24 flex items-center font-bold text-gray-500 justify-center text-4xl rounded-full object-cover border-4 border-white shadow"
                             style={{ background: getMedia({ isBackground: true, source: user.photo?.[0], from: 'api' }) }}
                         >
                             {!user.photo?.[0] && (user.full_name?.substring(0, 2).toUpperCase() || '?')}

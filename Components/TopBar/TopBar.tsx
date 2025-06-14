@@ -9,6 +9,7 @@ import { useAuthStore } from '../../api/stores/AuthStore';
 import { getMedia } from '../Utils/StringFormater'; // ✅ Importer getMedia
 import { useMyLocation } from '../../Hooks/useRepalceState';
 import { navigate } from 'vike/client/router';
+import { useGlobalStore } from '../../api/stores/StoreStore';
 
 export { Topbar };
 
@@ -23,7 +24,7 @@ interface TopbarProps {
     notif?: boolean;
     onBack?: () => void;
     title?: string;
-    onOption?:()=>void,
+    onOption?: () => void,
     breadcrumbs?: BreadcrumbItem[];
 }
 
@@ -40,7 +41,7 @@ function Topbar({
     const { openChild } = useChildViewer();
     const { nextPage } = useMyLocation()
     const { user } = useAuthStore()
-
+    const { currentStore } = useGlobalStore()
     // --- Préparer les infos utilisateur pour l'avatar ---
     const userPhotoUrl = user?.photo?.[0]; // Prend la première photo
     const userInitials = user?.full_name?.slice(0, 2).toUpperCase() || '?'; // Initiales ou '?'
@@ -98,36 +99,39 @@ function Topbar({
                         <h2 className='text-base font-semibold text-gray-800 truncate' title={displayName}>{displayName}</h2>
                     </>
                 ) : (
-                    <nav aria-label="Breadcrumb">
-                        <ol className="flex items-center gap-1.5 text-sm">
-                            {/* ... (logique breadcrumbs inchangée) ... */}
-                            {breadcrumbs.map((crumb, index) => (
-                                <li key={index} className="flex items-center gap-1.5">
-                                    {index > 0 && (
-                                        <IoChevronForward className="w-3 h-3 text-gray-400 flex-shrink-0" />
-                                    )}
-                                    {crumb.url && index < breadcrumbs.length - 1 ? (
-                                        <a
-                                            href={crumb.url}
-                                            className="text-gray-500 hover:text-gray-700 hover:underline truncate max-w-[80px] sm:max-w-[120px] md:max-w-xs" /* Ajusté max-w */
-                                        >
-                                            {crumb.name}
-                                        </a>
-                                    ) : (
-                                        <span
-                                            className={`font-medium ${index === breadcrumbs.length - 1
-                                                ? 'text-gray-700'
-                                                : 'text-gray-500'
-                                                } truncate max-w-[80px] sm:max-w-[120px] md:max-w-xs`} /* Ajusté max-w */
-                                            aria-current={index === breadcrumbs.length - 1 ? 'page' : undefined}
-                                        >
-                                            {crumb.name}
-                                        </span>
-                                    )}
-                                </li>
-                            ))}
-                        </ol>
-                    </nav>
+                    <>
+                        <h2 className='truncate'>{currentStore?.name}</h2>
+                        <nav aria-label="Breadcrumb">
+                            <ol className="flex items-center gap-1.5 text-sm">
+                                {/* ... (logique breadcrumbs inchangée) ... */}
+                                {breadcrumbs.map((crumb, index) => (
+                                    <li key={index} className="flex items-center gap-1.5">
+                                        {index > 0 && (
+                                            <IoChevronForward className="w-3 h-3 text-gray-400 flex-shrink-0" />
+                                        )}
+                                        {crumb.url && index < breadcrumbs.length - 1 ? (
+                                            <a
+                                                href={crumb.url}
+                                                className="text-gray-500 hover:text-gray-700 hover:underline truncate max-w-[80px] sm:max-w-[120px] md:max-w-xs" /* Ajusté max-w */
+                                            >
+                                                {crumb.name}
+                                            </a>
+                                        ) : (
+                                            <span
+                                                className={`font-medium ${index === breadcrumbs.length - 1
+                                                    ? 'text-gray-700'
+                                                    : 'text-gray-500'
+                                                    } truncate max-w-[80px] sm:max-w-[120px] md:max-w-xs`} /* Ajusté max-w */
+                                                aria-current={index === breadcrumbs.length - 1 ? 'page' : undefined}
+                                            >
+                                                {crumb.name}
+                                            </span>
+                                        )}
+                                    </li>
+                                ))}
+                            </ol>
+                        </nav>
+                    </>
                 )}
             </div>
 

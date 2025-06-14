@@ -97,7 +97,7 @@ function ProductList({ baseFilter, title, addTo }: { title?: string, addTo?: { c
                     }`}>
                     {viewType === 'card' && <AddProductCard addTo={addTo} />}
                     {viewType === 'row' && <AddProductRow addTo={addTo} />}
-                    {isLoading && (
+                    {(isLoading || !currentStore) && (
                         viewType === 'card'
                             ? Array.from({ length: 5 }).map((_, i) => <ProductItemSkeletonCard />)
                             : Array.from({ length: 5 }).map((_, i) => <ProductItemSkeletonRow />)

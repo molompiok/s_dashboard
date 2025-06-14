@@ -113,7 +113,7 @@ function ColorInfo({ value: initialValue, feature, onChange, onCancel }: ColorIn
 
             {/* Nom de la couleur */}
             <div>
-                <label className='block text-sm font-medium text-gray-700 mb-1 flex justify-between items-center' htmlFor="feature-info-text-input">
+                <label className='text-sm font-medium text-gray-700 mb-1 flex justify-between items-center' htmlFor="feature-info-text-input">
                     <span>{t('value.colorNameLabel')} <IoPencil className="inline-block ml-1 w-3 h-3 text-gray-400" /></span>
                     <span className={`text-xs ${(v.text?.trim()?.length || 0) > 32 ? 'text-red-600' : 'text-gray-400'}`}>
                         {(v.text?.trim()?.length || 0)} / 32

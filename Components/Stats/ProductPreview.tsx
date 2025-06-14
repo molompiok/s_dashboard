@@ -90,7 +90,7 @@ const ProductPreview: React.FC<ProductPreviewProps> = ({ product, isLoading }) =
                         </StatItem>
                         {product.is_visible !== undefined && (
                             <StatItem icon={Eye} colorClass={product.is_visible ? 'text-green-500 dark:text-green-400' : 'text-red-500 dark:text-red-400'}>
-                                {product.is_visible ? t('product.visible') : t('product.hidden')}
+                                {product.is_visible ? t('common.visible') : t('product.hidden')}
                             </StatItem>
                         )}
                     </div>

@@ -18,14 +18,12 @@ import { ChildViewer } from '../ChildViewer/ChildViewer';
 import { useChildViewer } from '../ChildViewer/useChildViewer';
 // Importer d'autres formulaires Info ici (DateInfo, InputInfo, etc.)
 
-
 export { Feature };
 
 // Props du composant Feature
 interface FeatureProps {
     feature: Partial<FeatureInterface>; // Utiliser Partial car peut être en cours de création
     setFeature: (cb: (current: Partial<FeatureInterface> | undefined) => Partial<FeatureInterface> | undefined) => void;
-
     onDelete: () => void; // Callback pour supprimer la feature du state parent
 }
 
@@ -56,7 +54,6 @@ function Feature({ feature, setFeature, onDelete }: FeatureProps) {
         }));
         openChild(null);
     };
-
 
     const handleValueRemove = (valueIdToRemove: string) => {
         setFeature((current) => ({
@@ -117,36 +114,56 @@ function Feature({ feature, setFeature, onDelete }: FeatureProps) {
     // Vérifier si on peut ajouter une valeur
     const canAddValue = (feature?.values?.length ?? 0) < VALUE_LIMIT;
     const hashIconAdd = ([FeatureType.COLOR, FeatureType.DATE, FeatureType.ICON, FeatureType.ICON_TEXT] satisfies FeatureType[]).includes(feature.type as any);
+    
     return (
-        // Conteneur Feature : bordure, padding, rounded, etc.
-        <div className="feature border border-gray-200 rounded-lg p-3 bg-white/50">
+        // Conteneur Feature avec backdrop blur et transparence adaptée au mode sombre
+        <div className="feature group relative  bg-white/20 dark:bg-gray-900/10 border border-white/30 dark:border-white/20 rounded-xl p-4 shadow-lg hover:shadow-xl transition-all duration-200 hover:bg-white/25 dark:hover:bg-gray-600/10">
             {/* En-tête Feature: Nom, Type, Actions */}
-            <div className="top flex justify-between items-center mb-3 flex-wrap gap-2">
-                {/* Utiliser text-base font-medium */}
-                <h3 className="text-base font-medium text-gray-800 m-0">
-                    {feature?.name || t('feature.untitled')} {/* 🌍 i18n */}
-                    {/* Afficher type et requis de manière discrète */}
-                    <span className="ml-2 text-xs font-normal text-gray-500">
-                        ({t(`featureTypes.${feature?.type}`, feature?.type ?? '')}) {/* 🌍 i18n */}
-                        {feature?.required && <span className="ml-1 text-red-500 font-medium">* {t('common.required')}</span>}
-                    </span>
-                </h3>
-                <div className="flex items-center gap-2">
-                    <button onClick={handleOpenFeatureSettings} className="p-1 text-gray-400 hover:text-gray-600" title={t('feature.editSettings')}> {/* 🌍 i18n */}
-                        <IoEllipsisHorizontal className='icon-25' />
+            <div className="top flex justify-between items-start mb-4 gap-3">
+                <div className="flex-1 min-w-0">
+                    {/* Titre principal */}
+                    <h3 className="text-lg font-semibold text-gray-900 dark:text-white truncate mb-1">
+                        {feature?.name || t('feature.untitled')} {/* 🌍 i18n */}
+                    </h3>
+                    
+                    {/* Métadonnées (type et requis) */}
+                    <div className="flex items-center gap-2 flex-wrap">
+                        <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-blue-100/60 dark:bg-blue-700/20 text-blue-800 dark:text-blue-200 backdrop-blur-sm">
+                            {t(`featureTypes.${feature?.type}`, feature?.type ?? '')} {/* 🌍 i18n */}
+                        </span>
+                        {feature?.required && (
+                            <span className="inline-flex items-center px-2 py-1 rounded-md text-xs font-medium bg-red-100/60 dark:bg-red-900/40 text-red-800 dark:text-red-200 backdrop-blur-sm">
+                                * {t('common.required')}
+                            </span>
+                        )}
+                    </div>
+                </div>
+                
+                {/* Actions */}
+                <div className="flex items-center gap-1 flex-shrink-0">
+                    <button 
+                        onClick={handleOpenFeatureSettings} 
+                        className="p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-white/20 dark:hover:bg-white/10 transition-all duration-150" 
+                        title={t('feature.editSettings')} /* 🌍 i18n */
+                    >
+                        <IoEllipsisHorizontal className="w-5 h-5" />
                     </button>
-                    {/* Ne pas permettre suppression de la feature par défaut */}
+                    
+                    {/* Bouton de suppression (seulement si pas par défaut) */}
                     {!feature?.is_default && (
-                        <button onClick={handleFeatureDelete} className="p-1 text-gray-400 hover:text-red-600" title={t('common.delete')}>
-                            <IoTrash className='icon-25' />
+                        <button 
+                            onClick={handleFeatureDelete} 
+                            className="p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50/50 dark:hover:bg-red-900/20 transition-all duration-150" 
+                            title={t('common.delete')}
+                        >
+                            <IoTrash className="w-5 h-5" />
                         </button>
                     )}
                 </div>
             </div>
 
             {/* Liste des Valeurs + Bouton Ajouter */}
-            {/* Utiliser flex flex-wrap gap-2 */}
-            <div className="list-values flex flex-wrap gap-2 items-center">
+            <div className="list-values flex flex-wrap gap-3 items-center">
                 {(feature?.values ?? []).map((v) => (
                     // Le composant Value choisit le bon rendu
                     <Value
@@ -164,28 +181,48 @@ function Feature({ feature, setFeature, onDelete }: FeatureProps) {
                         type="button"
                         onClick={() => handleOpenValuePopup()}
                         disabled={!canAddValue}
-                        className={`add-new flex flex-col items-center  justify-center w-16  sm:w-20  rounded-lg border-2 border-dashed border-gray-300 text-gray-400 hover:border-blue-400 hover:text-blue-500 transition cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${hashIconAdd ? 'h-16' : 'h-8 px-12'} `}
+                        className={`add-new group/btn flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-400/50 dark:border-gray-500/50 text-gray-600 dark:text-gray-400 hover:border-blue-500/70 dark:hover:border-blue-400/70 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50/30 dark:hover:bg-blue-900/20 transition-all duration-200 backdrop-blur-sm ${
+                            hashIconAdd 
+                                ? 'w-18 h-18 sm:w-20 sm:h-20' 
+                                : 'h-10 px-4 flex-row gap-2'
+                        }`}
                     >
-
-                        {
-                            hashIconAdd &&
-                            <IoAdd className='w-6 h-6 sm:w-8 sm:h-8' />
-                        }
-                        <span className='text-[10px] sm:text-xs font-medium whitespace-nowrap mt-1'>
-                            {t('value.add')} ({feature?.values?.length ?? 0}/{VALUE_LIMIT})
+                        <IoAdd className={`transition-transform duration-200 group-hover/btn:scale-110 ${
+                            hashIconAdd ? 'w-6 h-6 sm:w-7 sm:h-7 mb-1' : 'w-4 h-4'
+                        }`} />
+                        <span className={`font-medium transition-colors duration-200 ${
+                            hashIconAdd 
+                                ? 'text-[10px] sm:text-xs text-center leading-tight' 
+                                : 'text-sm'
+                        }`}>
+                            {hashIconAdd ? (
+                                <>
+                                    <div>{t('value.add')}</div>
+                                    <div className="text-gray-500 dark:text-gray-400">
+                                        ({feature?.values?.length ?? 0}/{VALUE_LIMIT})
+                                    </div>
+                                </>
+                            ) : (
+                                `${t('value.add')} (${feature?.values?.length ?? 0}/${VALUE_LIMIT})`
+                            )}
                         </span>
                     </button>
                 )}
+
+                {/* Indicateur de limite atteinte */}
                 {!canAddValue && (
-                    <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-lg border-2 border-dashed border-gray-200 flex items-center justify-center">
-                        <span className="text-[10px] text-gray-400 px-1 text-center">{t('value.limitReached', { limit: VALUE_LIMIT })}</span>
+                    <div className={`flex items-center justify-center rounded-xl border-2 border-dashed border-gray-300/50 dark:border-gray-600/50 bg-gray-50/30 dark:bg-gray-800/30 backdrop-blur-sm ${
+                        hashIconAdd ? 'w-18 h-18 sm:w-20 sm:h-20' : 'h-10 px-4'
+                    }`}>
+                        <span className="text-xs text-gray-500 dark:text-gray-400 text-center font-medium">
+                            {t('value.limitReached', { limit: VALUE_LIMIT })}
+                        </span>
                     </div>
                 )}
             </div>
         </div>
     );
 }
-
 // --- Composant interne Value (Dispatcher) ---
 export function Value({ value, feature, onRemove, onClick }: { onClick?: () => void, onRemove?: () => void, value: ValueInterface, feature: FeatureInterface }) {
     // Choisir le composant de rendu basé sur feature.type
