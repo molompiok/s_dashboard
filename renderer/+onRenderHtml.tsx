@@ -72,7 +72,7 @@ const onRenderHtml: OnRenderHtmlAsync = async (pageContext): ReturnType<OnRender
     documentHtml,
     pageContext: {
       lang,
-      // baseUrl: baseUrlFromHeader,
+      baseUrl: baseUrlFromHeader,
       serverUrl: serverUrlFromHeader,
       apiUrl: apiUrlFromHeader,
     }
