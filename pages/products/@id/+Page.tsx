@@ -20,7 +20,7 @@ import { MarkdownEditor2 } from '../../../Components/MackdownEditor/MarkdownEdit
 import { CategoriesPopup } from '../../../Components/CategoriesPopup/CategoriesPopup';
 import { CategoryItemMini } from '../../../Components/CategoryItem/CategoryItemMini';
 import { VisibilityControl } from '../../../Components/Controls/VisibilityControl';
-import { ClientCall, debounce, limit, toNameString } from '../../../Components/Utils/functions';
+import { ClientCall, debounce, http, limit, toNameString } from '../../../Components/Utils/functions';
 import { useChildViewer } from '../../../Components/ChildViewer/useChildViewer';
 import { ChildViewer } from '../../../Components/ChildViewer/ChildViewer';
 import { showErrorToast, showToast } from '../../../Components/Utils/toastNotifications';
@@ -90,12 +90,11 @@ function Page() {
     const [step, setStep] = useState<WizardStep>('info');
     const [product, setProduct] = useState<Partial<ProductInterface>>(initialEmptyProduct);
     const [originalProduct, setOriginalProduct] = useState<ProductInterface | null | undefined>(null);
-    const [isSaving, setIsSaving] = useState(false);
-
+   
     const [s] = useState({
         features: [] as FeatureInterface[] | undefined
     })
-    const { data: fetchedProduct, isLoading, isError, error } = useGetProduct({ product_id: productId, with_feature: true, }, { enabled: !isNewProduct });
+    const { data: fetchedProduct, isLoading, isError, error , refetch} = useGetProduct({ product_id: productId, with_feature: true, }, { enabled: !isNewProduct });
 
     const createProductMutation = useCreateProduct();
     const updateProductMutation = useUpdateProduct();
@@ -111,16 +110,13 @@ function Page() {
 
     const updateProductWithDebounce = useCallback((dataToUpdate: Partial<ProductInterface>) => {
         if (isNewProduct) return;
-        setIsSaving(true);
         debounce(() => {
             updateProductMutation.mutate({ product_id: productId, data: dataToUpdate }, {
                 onSuccess: (data) => {
-                    //@ts-ignore
-                    setOriginalProduct(data.product);
-                    showToast(t('common.saved'), "SUCCESS");
+                    showToast(t('common.saveChanges'), "SUCCESS");
+                    refetch()
                 },
                 onError: (err) => showErrorToast(err),
-                onSettled: () => setIsSaving(false),
             });
         }, 'product_update', DEBOUNCE_TIME);
     }, [isNewProduct, productId, updateProductMutation, t]);
@@ -137,18 +133,23 @@ function Page() {
                 },
                 {
                     onSuccess: (data) => {
-                        if (!data.product?.id) return;
-                        console.log("Features updated successfully", data);
-                        const updatedProduct = { ...originalProduct, ...data.product };
-                        setOriginalProduct(updatedProduct);
-                        if (s.features) {
-                            debounce(() => {
-                                updateFeatures();
-                            }, 'update-product-feature', DEBOUNCE_FEATURES_TIME);
-                            return;
+                        try {
+                            if (!data.product?.id) return;
+                            console.log("Features updated successfully", data);
+                            const updatedProduct = { ...originalProduct, ...data.product };
+                            setOriginalProduct(updatedProduct);
+                            if (s.features) {
+                                debounce(() => {
+                                    updateFeatures();
+                                }, 'update-product-feature', DEBOUNCE_FEATURES_TIME);
+                                return;
+                            }
+                            setProduct(updatedProduct);
+                            showToast("Fonctionnalités mises à jour avec succès"); // ✅ Toast succès
+                        } catch (error) {
+                            console.log(error);
+
                         }
-                        setProduct(updatedProduct);
-                        showToast("Fonctionnalités mises à jour avec succès"); // ✅ Toast succès
                     },
                     onError: (error: ApiError) => {
                         console.log
@@ -164,18 +165,21 @@ function Page() {
     }
 
     const handleFieldUpdate = (field: keyof ProductInterface, value: any) => {
+
+        if (field == 'description') return console.log('description', value);
+
         if (field == 'features') {
             if (Array.isArray(value)) {
                 s.features = value;
                 console.log('---333333->>>', value);
 
-                updateFeatures()
+                isNewProduct ? setProduct(prev => ({ ...prev, features: value })) : updateFeatures()
             }
             return
         }
         const newState = { ...product, [field]: value };
         setProduct(newState);
-        updateProductWithDebounce({ [field]: value });
+        !isNewProduct && updateProductWithDebounce({ [field]: value });
     };
 
     const handleSaveAndContinue = () => {
@@ -185,7 +189,7 @@ function Page() {
             return;
         }
 
-        createProductMutation.mutate({ product, views: [] }, {
+        createProductMutation.mutate({ product, views: product.features?.[0]?.values?.[0]?.views || [] }, {
             onSuccess: (data) => {
                 showToast(t('product.createSuccess'));
                 replaceLocation(`/products/${data.product.id}`);
@@ -198,7 +202,7 @@ function Page() {
     };
 
     const nextStep = () => {
-        const steps: WizardStep[] = ['info', 'variants', 'stock', 'publish'];
+        const steps: WizardStep[] = ['info', 'variants',/* 'stock',*/ 'publish'];
         const currentIndex = steps.indexOf(step);
         if (currentIndex < steps.length - 1) setStep(steps[currentIndex + 1]);
     };
@@ -217,8 +221,12 @@ function Page() {
         { name: isNewProduct ? t('product.createBreadcrumb') : limit(originalProduct?.name || '...', 30) },
     ];
 
+
+    console.log({product, originalProduct});
+    
+
     return (
-        <div className="product-wizard-page w-full min-h-screen flex flex-col">
+        <div className="product-wizard-page pb-48 w-full min-h-screen flex flex-col">
             <Topbar back title={isNewProduct ? t('product.createTitle') : t('product.editTitle')} breadcrumbs={breadcrumbs} />
             <main className="w-full max-w-5xl mx-auto p-2 mob:p-4 md:p-6 lg:p-8 flex flex-col gap-8">
                 <Stepper currentStep={step} setStep={setStep} isNewProduct={isNewProduct && !originalProduct} />
@@ -233,9 +241,9 @@ function Page() {
                 </AnimatePresence>
 
                 <div className="flex justify-between items-center mt-8 border-t dark:border-gray-700 pt-6">
-                    <button onClick={prevStep} disabled={step === 'info'} className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                    {step !== 'info' && <button onClick={prevStep} className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
                         <IoArrowBack /> {t('common.previous')}
-                    </button>
+                    </button>}
                     {isNewProduct && !originalProduct ? (
                         <button onClick={handleSaveAndContinue} disabled={createProductMutation.isPending} className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white bg-teal-600 hover:bg-teal-700 disabled:opacity-50 transition-colors">
                             {t('product.saveAndContinue')} <IoArrowForward />
@@ -245,7 +253,7 @@ function Page() {
                             {t('common.next')} <IoArrowForward />
                         </button>
                     ) : (
-                        <a href={`${currentStore.default_domain}/product/${product.slug}`} className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white bg-green-600 hover:bg-green-700 disabled:opacity-50 transition-colors">
+                        <a target="_blank" rel="noopener noreferrer" href={`${http}${currentStore.default_domain}/${product.slug}`} className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white bg-green-600 hover:bg-green-700 disabled:opacity-50 transition-colors">
                             <IoCheckmarkCircleOutline /> {t('product.viewOnStore')}
                         </a>
                     )}
@@ -263,20 +271,32 @@ const ProductInfoStep = ({ product, onUpdate }: { product: Partial<ProductInterf
     const { openChild } = useChildViewer();
     const defaultFeature = getDefaultFeature(product);
     const defaultValue = getDefaultValues(product);
-    const imageItems: ImageItem[] = (defaultFeature?.values?.[0].views || []).map(v => ({ id: ClientCall(Math.random, 0), source: v as string }))
+    const imageItems: ImageItem[] = (defaultFeature?.values?.[0].views || []).map(v => ({ id: typeof v == 'string' ? v : v.size + v.type + (v as File).name + (v as File).lastModified, source: v as string }))
 
     const handleImagesChange = (newImages: ImageItem[], value_id?: string) => {
-
         let value: ValueInterface | undefined;
         if (value_id) {
             value = defaultFeature?.values?.find(v => v.id == value_id);
         } else {
             value = defaultValue[0];
         }
-        if (!value) return
+        if (!value) {
+            value = {
+                id: ClientCall(() => Date.now().toString(32) + Math.random().toString(32), 0), // ID temporaire
+                feature_id: '',
+                index: 0,
+                text: '',
+            }
+            if (!defaultFeature) {
+                product.features = [getNewFeature()]
+                product.features[0].values = [value];
+                product.features[0].is_default = true;
+            } else {
+                defaultFeature.values = [value];
+            }
+        }
         value.views = newImages.map(i => i.source);
-        value._request_mode = 'edited'
-        console.log({ value });
+        value._request_mode = 'new'
 
         onUpdate('features', product.features);
     };
@@ -284,9 +304,6 @@ const ProductInfoStep = ({ product, onUpdate }: { product: Partial<ProductInterf
     const handleCategoriesChange = (categories_id: string[]) => {
         onUpdate('categories_id', categories_id);
     };
-
-    console.log('##############################', product);
-
 
     return (
         <div className={`${sectionStyle} space-y-6`}>
@@ -430,7 +447,16 @@ const ProductPublishStep = ({ product, onUpdate }: { product: ProductInterface, 
     return (
         <div className={`${sectionStyle} space-y-6`}>
             <h2 className="text-xl font-bold text-gray-900 dark:text-white">{t('product.step.publish')}</h2>
-            {/* <VisibilityControl  isVisible={!!product.is_visible} onSetVisibility={(v) => onUpdate('is_visible', v)} /> */}
+            <VisibilityControl
+                t={t}
+                onDeleteRequired={() => {
+
+                }}
+                title={t('product.visibilityTitle')}
+                isLoading={false}
+
+                isVisible={!!product.is_visible}
+                onSetVisibility={(v) => onUpdate('is_visible', v)} />
             <div className="pt-6 border-t dark:border-gray-700">
                 <SEOSettings
                     product={product}

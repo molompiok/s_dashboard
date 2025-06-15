@@ -200,7 +200,8 @@ function CommandUser({ user, command }: { command: Partial<CommandInterface>, us
 
     return (
         <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 p-4 bg-white/80 dark:bg-white/5 backdrop-blur-md rounded-lg shadow-sm border border-gray-200/80 dark:border-white/10">
-            <div className="w-24 h-24 rounded-full bg-cover bg-center bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 font-bold text-4xl flex items-center justify-center shrink-0 border-4 border-white/80 dark:border-gray-800/50 shadow" style={{ backgroundImage: getMedia({ isBackground: true, source: user.photo?.[0], from: 'api' }) }}>
+            <div className="w-24 h-24 rounded-full bg-cover bg-center bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 font-bold text-4xl flex items-center justify-center shrink-0 border-4 border-white/80 dark:border-gray-800/50 shadow" 
+            style={{ background: getMedia({ isBackground: true, source: user.photo?.[0], from: 'api' }) }}>
                 {!user.photo?.[0] && (user.full_name?.substring(0, 2).toUpperCase() || '?')}
             </div>
             <div className="flex flex-col gap-3 flex-grow min-w-0 text-center sm:text-left">
@@ -219,7 +220,7 @@ function CommandProduct({ item, openProduct = true }: { openProduct?: boolean, i
 
     return (
         <div className={`relative p-3 pb-8 rounded-xl flex flex-col sm:flex-row items-start gap-3 shadow-sm border ${item.status === OrderStatus.RETURNED ? 'bg-red-500/5 border-red-500/10' : 'bg-white/80 dark:bg-white/5 border-gray-200/80 dark:border-white/10'}`}>
-            <div className="w-16 h-16 md:w-20 md:h-20 rounded-lg shrink-0 bg-cover bg-center bg-gray-200 dark:bg-gray-700" style={{ backgroundImage: getMedia({ isBackground: true, source: imageUrl, from: 'api' }) }}></div>
+            <div className="w-16 h-16 md:w-20 md:h-20 rounded-lg shrink-0 bg-cover bg-center bg-gray-200 dark:bg-gray-700" style={{ background: getMedia({ isBackground: true, source: imageUrl, from: 'api' }) }}></div>
             <div className="flex-grow flex flex-col gap-2 min-w-0">
                 <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-1">
                     <div className="flex-grow min-w-0">
@@ -246,7 +247,7 @@ function CommandProduct({ item, openProduct = true }: { openProduct?: boolean, i
 
 function CommandStatusHistory({ events, low }: { events: EventStatus[], low: boolean }) {
     const { t, i18n } = useTranslation();
-    const sortedEvents = useMemo(() => [...events].sort((a, b) => new Date(b.change_at).getTime() - new Date(a.change_at).getTime()), [events]);
+    const sortedEvents = useMemo(() => [...events].sort((a, b) => new Date(a.change_at).getTime() - new Date(b.change_at).getTime()), [events]);
 
     return (
         <div className="flex flex-col">

@@ -36,43 +36,258 @@ function Page() {
     const { setUser, setToken } = useAuthStore();
     const { setCurrentStore } = useGlobalStore();
 
-    // ... (Logique des hooks et états inchangée, elle est déjà bonne)
-    const { data: meData, isLoading: isLoadingMe, isError: isMeError, error: meError } = useGetMe({ enabled: !!useAuthStore.getState().getToken() });
-    const currentUser = meData?.user;
+    // --- Récupération Données Utilisateur ---
+    const { data: meData, isLoading: isLoadingMe, isError: isMeError, error: meError } = useGetMe({
+        // Activer seulement si on pense être connecté (vérifier token?)
+        // enabled: !!useAuthStore.getState().token
+    });
+    const currentUser = meData?.user; // L'objet User complet avec adresses/téléphones
+
+    // --- États Locaux ---
+    // Profil
     const [profileForm, setProfileForm] = useState<ProfileFormState>({});
     const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
     const [profileErrors, setProfileErrors] = useState<{ [key: string]: string }>({});
     const profileFileInputRef = useRef<HTMLInputElement>(null);
+    // Mot de passe
     const [passwordForm, setPasswordForm] = useState<PasswordFormState>({});
     const [passwordErrors, setPasswordErrors] = useState<{ [key: string]: string }>({});
+    // Langue
     const [selectedLocale, setSelectedLocale] = useState(i18n.language);
+    // Erreurs API générales
     const [apiError, setApiError] = useState<string | null>(null);
+
+    // --- Mutations ---
     const updateUserMutation = useUpdateUser();
     const logoutAllMutation = useLogoutAllDevices();
     const deleteAccountMutation = useDeleteAccount();
+    const isLoadingMutation = updateUserMutation.isPending || logoutAllMutation.isPending || deleteAccountMutation.isPending;
 
+    // Initialiser le formulaire profil quand les données user arrivent
     useEffect(() => {
         if (currentUser) {
             setProfileForm({ full_name: currentUser.full_name ?? '' });
-            setAvatarPreview(null);
+            setAvatarPreview(null); // Reset preview
             setProfileErrors({});
+            // Initialiser la langue sélectionnée
             setSelectedLocale(currentUser.locale ?? i18n.language);
         }
     }, [currentUser, i18n.language]);
 
+    // --- Détection Changements Profil ---
     const profileHasChanges = useMemo(() => {
         if (!currentUser) return false;
         return (profileForm.full_name !== (currentUser.full_name ?? '')) || !!profileForm.avatarFile;
     }, [profileForm, currentUser]);
 
-    // ... (Logique des handlers inchangée)
-    const handleProfileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => { setProfileForm(prev => ({ ...prev, [e.target.name]: e.target.value })); setProfileErrors(prev => ({ ...prev, [e.target.name]: '' })); };
-    const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => { if (avatarPreview) URL.revokeObjectURL(avatarPreview); const file = e.target.files?.[0]; if (file) { setProfileForm(prev => ({ ...prev, avatarFile: file })); setAvatarPreview(URL.createObjectURL(file)); } e.target.value = ''; };
-    const handleProfileSave = () => { /* ... */ };
-    const handlePasswordChange = (e: React.FormEvent<HTMLFormElement>) => { /* ... */ };
-    const handleLogoutAll = () => { /* ... */ };
-    const handleDeleteAccount = () => { /* ... */ };
-    const handleLocaleChange = (event: React.ChangeEvent<HTMLSelectElement>) => { /* ... */ };
+    // --- Handlers Profil ---
+    const handleProfileInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const { name, value } = e.target;
+        setProfileForm(prev => ({ ...prev, [name]: value }));
+        setProfileErrors(prev => ({ ...prev, [name]: '' }));
+        setApiError(null);
+    };
+
+    const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (avatarPreview) URL.revokeObjectURL(avatarPreview); // Nettoyer ancienne preview locale
+
+        if (file) {
+            // TODO: Validation taille/type image avatar
+            setProfileForm(prev => ({ ...prev, avatarFile: file }));
+            setAvatarPreview(URL.createObjectURL(file));
+            setProfileErrors(prev => ({ ...prev, avatarFile: '' }));
+            setApiError(null);
+        } else {
+            setProfileForm(prev => ({ ...prev, avatarFile: null }));
+            setAvatarPreview(null);
+        }
+        e.target.value = ''; // Reset input
+    };
+
+    const handleProfileSave = () => {
+        setProfileErrors({});
+        setApiError(null);
+        if (!profileHasChanges || updateUserMutation.isPending) return;
+
+        // Validation locale
+        if (!profileForm.full_name || profileForm.full_name.trim().length < 3) {
+            setProfileErrors({ full_name: t('registerPage.validation.nameRequired') });
+            return;
+        }
+
+        let dataChanged: any = {};
+
+        if (profileForm.full_name !== (currentUser?.full_name ?? '')) {
+            dataChanged.full_name = profileForm.full_name;
+        }
+        if (profileForm.avatarFile) {
+            dataChanged.photo = [profileForm.avatarFile]; // Juste pour indiquer qu'il y a un fichier
+        }
+
+        // Si rien n'a changé (ne devrait pas arriver si bouton activé)
+        if (Object.keys(dataChanged).length === 0) return;
+
+        // Appeler la mutation updateUser qui gère FormData
+        updateUserMutation.mutate({
+            data: dataChanged
+        }, {
+            onSuccess: (data) => {
+                logger.info("Profile updated successfully", data.user);
+                // Reset : Vider le fichier et la preview locale
+                setProfileForm(prev => ({ ...prev, avatarFile: null }));
+                setAvatarPreview(null);
+                setUser(data.user)
+                showToast("Profil mis à jour avec succès", "SUCCESS")
+                queryClient.invalidateQueries({ queryKey: ['me'] }); // Forcer rafraîchissement
+
+            },
+            onError: (error: ApiError) => {
+                logger.error({ error }, "Profile update failed");
+                setApiError(error.message);
+                showErrorToast(error)
+            }
+        });
+    };
+
+    // --- Handlers Sécurité ---
+    const handlePasswordChange = (e: React.FormEvent<HTMLFormElement>) => {
+        e.preventDefault();
+        setPasswordErrors({});
+        setApiError(null);
+        if (updateUserMutation.isPending) return;
+
+        const { password, password_confirmation, current_password } = passwordForm;
+        let errors: { [key: string]: string } = {};
+        let isValid = true;
+
+        // Ajouter validation mot de passe actuel si nécessaire/possible
+        if (!current_password) {
+            errors.current_password = t('registerPage.validation.currentPasswordRequired'); isValid = false;
+        }
+
+        if (!password || password.length < 8) {
+            errors.password = t('registerPage.validation.passwordLength'); isValid = false;
+        }
+        if (password !== password_confirmation) {
+            errors.password_confirmation = t('registerPage.validation.passwordMismatch'); isValid = false;
+        }
+        setPasswordErrors(errors);
+        if (!isValid) return;
+
+        updateUserMutation.mutate({
+            data: passwordForm
+        }, {
+            onSuccess: (data) => {
+                logger.info("Password changed successfully");
+                setPasswordForm({}); // Vider le formulaire mdp
+                setUser(data.user)
+                showToast("Profil mis à jour avec succès", "SUCCESS")
+            },
+            onError: (error: ApiError) => {
+                logger.error({ error }, "Password change failed");
+                setApiError(error.message);
+                showErrorToast(error)
+            }
+        });
+    };
+
+    const handleLogoutAll = () => {
+        if (logoutAllMutation.isPending) return;
+        openChild(
+            <ChildViewer title={t('profilePage.security.logoutAllConfirmTitle')}>
+                <ConfirmDelete // Utiliser ConfirmDelete pour avoir une structure titre/description
+                    // Ne pas afficher le titre interne de ConfirmDelete si ChildViewer a déjà un titre
+                    title={t('profilePage.security.logoutAllConfirmTitle')} // Redondant si ChildViewer a un titre
+                    description={t('profilePage.security.logoutAllConfirmDesc')} // Ajout Description
+                    confirmText={t('profilePage.security.logoutAllButton')} // Texte du bouton Confirmer
+                    cancelText={t('common.cancel')} // Texte du bouton Annuler
+                    isDanger={false} // Pas une action destructive "rouge"
+                    isLoading={logoutAllMutation.isPending} // Passer état chargement
+                    onCancel={() => openChild(null)}
+                    onDelete={() => { // Utiliser onDelete comme callback de confirmation
+                        logoutAllMutation.mutate(undefined, {
+                            onSuccess: () => {
+                                logger.info("Logout from all devices successful.");
+                                setUser(undefined)
+                                setToken(undefined)
+                                openChild(null); // Fermer après succès
+                                showToast("Déconnexion de tous les appareils réussie", "SUCCESS")
+                            },
+                            onError: (error: ApiError) => {
+                                logger.error({ error }, "Logout all devices failed.");
+                                setApiError(error.message); // Afficher erreur sur la page principale?
+                                openChild(null); // Fermer même en cas d'erreur?
+                                showErrorToast(error)
+                            }
+                        });
+                    }}
+                />
+            </ChildViewer>,
+            { background: '#3455', blur: 3 } // Fond rouge pour danger
+        );
+
+    };
+
+    const handleDeleteAccount = () => {
+        if (deleteAccountMutation.isPending) return;
+        openChild(
+            <ChildViewer>
+                <ConfirmDelete
+                    title={t('profilePage.security.deleteAccountConfirmTitle')}
+                    warningText={t('profilePage.security.deleteAccountWarning')}
+                    // Ajouter confirmation par email/mdp si besoin de sécurité accrue
+                    onCancel={() => openChild(null)}
+                    onDelete={() => {
+                        deleteAccountMutation.mutate(undefined, { // Pas d'argument
+                            onSuccess: () => {
+                                logger.info("Account deletion requested successfully.");
+                                showToast("Compte supprimé définitivement", "SUCCESS")
+                                window.location.href = `https://sublymus.com`
+                            },
+                            onError: (error: ApiError) => {
+                                logger.error({ error }, "Account deletion failed.");
+                                setApiError(error.message);
+                                openChild(null);
+                                showErrorToast(error)
+                            }
+                        });
+                    }}
+                />
+            </ChildViewer>,
+            { background: '#3455', blur: 3 } // Fond rouge pour danger
+        );
+    };
+
+    // --- Handler Préférences ---
+    const handleLocaleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
+        const newLocale = event.target.value;
+        setSelectedLocale(newLocale);
+        i18n.changeLanguage(newLocale); // Changer langue UI
+        localStorage.setItem('user_locale_pref', newLocale); // Sauver dans localStorage pour persistance
+
+        // Appeler l'API pour sauvegarder la préférence (utiliser updateUser)
+        const formData = new FormData();
+        formData.append('locale', newLocale);
+        updateUserMutation.mutate({
+            data: {
+                locale: newLocale
+            }
+        }, {
+            onSuccess: (data) => {
+                setUser(data.user)
+                showToast("Profil mis à jour avec succès", "SUCCESS")
+                logger.info(`User locale preference updated to ${newLocale}`);
+                queryClient.invalidateQueries({ queryKey: ['me'] }); // Recharger 'me' pour confirmer
+            },
+            onError: (error) => {
+                logger.error({ error }, "Failed to save user locale preference.");
+                showErrorToast(error)
+                i18n.changeLanguage(currentUser?.locale ?? 'fr'); // Revenir à l'ancienne langue?
+            }
+        });
+    };
+
 
     if (isLoadingMe || !currentUser) {
         return <ProfilePageSkeleton />;
@@ -81,7 +296,7 @@ function Page() {
     // 2. État d'Erreur Critique (Erreur API ou Utilisateur non trouvé)
     // Si la requête `useGetMe` échoue ou ne renvoie pas d'utilisateur,
     // c'est que la session est probablement invalide. On ne peut pas continuer.
-    if (isMeError ) {
+    if (isMeError) {
         // Déterminer le message d'erreur le plus pertinent
         const title = t('auth.authenticationFailed');
         const description = meError?.status === 401

@@ -68,7 +68,7 @@ const ProductPreview: React.FC<ProductPreviewProps> = ({ product, isLoading }) =
                 <div className="flex-shrink-0">
                     <div
                         className="w-28 h-28 rounded-lg bg-cover bg-center border border-gray-200/50 dark:border-gray-700/50 shadow-md"
-                        style={{ backgroundImage: mainImage }}
+                        style={{ background: mainImage }}
                     ></div>
                 </div>
 

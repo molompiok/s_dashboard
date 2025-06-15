@@ -72,7 +72,7 @@ function ClientList({ product_id, user_id, initialClients }: { initialClients: U
                 {isError && <div className="p-6 text-center text-red-500">{apiError?.message || t('error_occurred')}</div>}
                 {!isLoading && !isError && clients.length === 0 && (
                     <div className="flex flex-col items-center justify-center p-10 text-center text-gray-500 dark:text-gray-400">
-                        <div className="w-40 h-40 bg-contain bg-center bg-no-repeat mb-4 opacity-70 dark:opacity-50" style={{ backgroundImage: getMedia({ isBackground: true, source: '/res/empty/users.png' }) }}></div>
+                        <div className="w-40 h-40 bg-contain bg-center bg-no-repeat mb-4 opacity-70 dark:opacity-50" style={{ background: getMedia({ isBackground: true, source: '/res/empty/users.png' }) }}></div>
                         {t('clientList.noClientsFound')}
                     </div>
                 )}

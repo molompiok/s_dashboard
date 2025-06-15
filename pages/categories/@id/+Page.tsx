@@ -236,7 +236,7 @@ function Page() {
                     <div>
                         <label className={labelStyle} htmlFor="chose-category-view">{t('category.coverImageLabel')} <Indicator className="ml-2" title={t('category.coverImageTooltipTitle')} description={t('category.coverImageTooltipDesc')} /></label>
                         <label htmlFor="chose-category-view" className={`${imagePickerStyle(!!fieldErrors.view)} w-full aspect-[3/1]`}>
-                            <div className="absolute inset-0 bg-cover bg-center" style={{ backgroundImage: viewUrl ? `url(${viewUrl})` : 'none' }}></div>
+                            <div className="absolute inset-0 bg-cover bg-center" style={{ background: viewUrl ? `url(${viewUrl})` : 'none' }}></div>
                             {showViewPlaceholder && <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-400 group-hover:text-teal-500"><IoCloudUploadOutline size={40} /><span className="mt-1 text-xs">{t('category.selectImagePrompt')}</span></div>}
                             {!showViewPlaceholder && <div className="absolute bottom-2 right-2 p-1.5 bg-white/80 dark:bg-black/50 backdrop-blur-sm rounded-full shadow text-gray-700 dark:text-gray-300 group-hover:text-teal-600 opacity-0 group-hover:opacity-100 transition-opacity"><RiImageEditFill size={18} /></div>}
                             <input id="chose-category-view" type="file" accept="image/*" className="sr-only" onChange={(e) => handleFileChange(e, 'view')} />
@@ -248,7 +248,7 @@ function Page() {
                         <div className="flex-shrink-0 w-full sm:w-auto">
                             <label className={labelStyle} htmlFor="chose-category-icon">{t('category.iconLabel')} <Indicator className="ml-2" title={t('category.iconTooltipTitle')} description={t('category.iconTooltipDesc')} /></label>
                             <label htmlFor="chose-category-icon" className={`${imagePickerStyle(!!fieldErrors.icon)} w-36 h-36`}>
-                                <div className="absolute inset-0 bg-contain bg-center bg-no-repeat" style={{ backgroundImage: iconUrl ? `url(${iconUrl})` : 'none' }}></div>
+                                <div className="absolute inset-0 bg-contain bg-center bg-no-repeat" style={{ background: iconUrl ? `url(${iconUrl})` : 'none' }}></div>
                                 {showIconPlaceholder && <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-400 group-hover:text-teal-500 p-2 text-center"><IoCloudUploadOutline size={32} /><span className="mt-1 text-xs">{t('category.selectIconPrompt')}</span></div>}
                                 {!showIconPlaceholder && <div className="absolute bottom-1 right-1 p-1.5 bg-white/80 dark:bg-black/50 backdrop-blur-sm rounded-full shadow text-gray-700 dark:text-gray-300 group-hover:text-teal-600 opacity-0 group-hover:opacity-100 transition-opacity"><RiImageEditFill size={16} /></div>}
                                 <input id="chose-category-icon" type="file" accept="image/*" className="sr-only" onChange={(e) => handleFileChange(e, 'icon')} />

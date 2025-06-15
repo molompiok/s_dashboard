@@ -195,12 +195,12 @@ function FV_IconText_Info({ value: initialValue, feature, onChange, onCancel }: 
             )}
 
             {/* Prix et Stock */}
-            <div className="bg-white/30 dark:bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20 dark:border-white/10">
+            <div className="p-2 ">
                 <ValuePricing value={v} addToValue={handlePricingChange} />
             </div>
 
             {/* Confirmation */}
-            <div className="bg-white/20 dark:bg-white/10 backdrop-blur-sm rounded-xl p-4 border border-white/20 dark:border-white/10">
+            <div className="">
                 <Confirm
                     canConfirm={!textError && !imageError}
                     onCancel={onCancel}
@@ -223,7 +223,7 @@ function IconTextValue({ value, feature, onRemove, onClick }: { onClick?: () => 
     return (
         <div
             onClick={onClick}
-            className="value-icon-text relative group flex flex-col items-center gap-2 p-1 rounded-xl border-2 border-gray-100/30 dark:border-gray-300/20 cursor-pointer transition-all duration-200 bg-white/20 dark:bg-gray-900/10 backdrop-blur-sm hover:bg-white/30 dark:hover:bg-gray-600/10 hover:border-blue-400/60 dark:hover:border-blue-400/50 hover:shadow-lg hover:shadow-blue-500/20 dark:hover:shadow-blue-400/10"
+            className="value-icon-text relative group flex flex-col items-center gap-2 p-1 rounded-xl border-2 border-gray-100/30 dark:border-gray-300/20 cursor-pointer transition-all duration-200  dark:bg-gray-900/10 backdrop-blur-sm hover:bg-white/30 dark:hover:bg-gray-600/10 hover:border-blue-400/60 dark:hover:border-blue-400/50 hover:shadow-lg hover:shadow-blue-500/20 dark:hover:shadow-blue-400/10"
             title={value.text || t('value.editOption')}
         >
             {/* Bouton Supprimer */}
@@ -281,7 +281,7 @@ function TextValue({ value, feature, onRemove, onClick }: { onClick?: () => void
     return (
         <div
             onClick={onClick}
-            className="value-text relative group inline-flex items-center gap-2 pl-4 pr-2 py-2 rounded-full border-2 border-white/30 dark:border-white/20 cursor-pointer transition-all duration-200 min-w-[80px] bg-white/25 dark:bg-white/15 backdrop-blur-sm hover:bg-white/35 dark:hover:bg-white/20 hover:border-blue-400/60 dark:hover:border-blue-400/50 hover:shadow-md hover:shadow-blue-500/20 dark:hover:shadow-blue-400/10"
+            className="value-text relative group inline-flex items-center gap-2 pl-4 pr-2 py-2 rounded-full border-2 border-white/30 dark:border-white/20 cursor-pointer transition-all duration-200 min-w-[80px] bg-white/25 dark:bg-white/15 backdrop-blur-sm hover:bg-white/35 dark:hover: hover:border-blue-400/60 dark:hover:border-blue-400/50 hover:shadow-md hover:shadow-blue-500/20 dark:hover:shadow-blue-400/10"
             title={value.text || t('value.editOption')}
         >
             <span className={`text-sm truncate font-medium transition-colors duration-200 ${

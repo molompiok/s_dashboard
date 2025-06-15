@@ -701,7 +701,7 @@ export function StoreCreationEditionWizard({
                                         <div className="w-10 h-10 sl2:w-12 sl2:h-12 rounded-full bg-cover bg-center 
                                               bg-white/20 dark:bg-gray-700/30 flex-shrink-0 flex items-center justify-center
                                               border border-white/20 dark:border-gray-600/30"
-                                            style={{ backgroundImage: logoPreview ? `url(${logoPreview})` : 'none' }}>
+                                            style={{ background: logoPreview ? `url(${logoPreview})` : 'none' }}>
                                             {!logoPreview && (
                                                 <IoStorefront className="w-4 h-4 sl2:w-5 sl2:h-5 text-gray-400 dark:text-gray-500" />
                                             )}

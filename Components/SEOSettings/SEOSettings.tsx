@@ -22,7 +22,9 @@ const SettingsConfig = [
 
 
 export const SEOSettings: React.FC<SEOSettingsProps> = ({ product }) => {
-  const previewImage = getDefaultValues(product)?.[0].views?.[0];
+  console.log('SEOSettings -- product',product);
+  
+  const previewImage = getDefaultValues(product)?.[0]?.views?.[0];
   const labelStyle = "block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1";
 
   const {t }= useTranslation() 

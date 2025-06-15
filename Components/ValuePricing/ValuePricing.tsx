@@ -50,7 +50,7 @@ function ValuePricing({ value, addToValue }: ValuePricingProps) {
             <div>
                 <label className='block text-sm font-medium text-gray-700 mb-1' htmlFor={`value-price-${value.id}`}>
                     {t('value.additionalPriceLabel')} <span className='text-gray-400 text-xs'>({t('common.optionalField')})</span>
-                    <IoPencil className="inline-block ml-1 w-3 h-3 text-gray-400" />
+                    <IoPencil className="inline-block  ml-1 min-w-3 h-3 text-gray-400" />
                 </label>
                 <div className='relative max-w-[180px]'> {/* Limiter largeur */}
                     <input

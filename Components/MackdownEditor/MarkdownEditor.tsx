@@ -122,8 +122,7 @@ export function MarkdownEditor2({ value, setValue, error }: { value: string, set
   }, []);
 
   useEffect(() => {
-    console.log('=================>>>>>>>>>>>>>', value, value.length, '<><>', editorRef.current);
-    const updateValue = () => {
+   const updateValue = () => {
       if (!editorRef.current) {
         if (tryCount < 100) {
           setCount((prev) => prev + 1);

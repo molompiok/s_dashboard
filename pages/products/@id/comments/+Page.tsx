@@ -198,7 +198,7 @@ const CommentCard = ({ comment, onDelete }: { comment: CommentInterface, onDelet
             className="relative bg-white/80 dark:bg-white/5 backdrop-blur-md rounded-lg shadow-sm border border-gray-200/80 dark:border-white/10 p-4 flex flex-col gap-3"
         >
             <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-cover bg-center bg-gray-200 dark:bg-gray-700 text-gray-500 font-semibold text-sm flex items-center justify-center shrink-0" style={{ backgroundImage: getMedia({ isBackground: true, source: comment.user?.photo?.[0], from: 'api' }) }}>
+                <div className="w-10 h-10 rounded-full bg-cover bg-center bg-gray-200 dark:bg-gray-700 text-gray-500 font-semibold text-sm flex items-center justify-center shrink-0" style={{ background: getMedia({ isBackground: true, source: comment.user?.photo?.[0], from: 'api' }) }}>
                     {!comment.user?.photo?.[0] && (comment.user?.full_name?.substring(0, 2).toUpperCase() || '?')}
                 </div>
                 <div className="flex flex-col min-w-0">

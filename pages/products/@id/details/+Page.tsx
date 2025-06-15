@@ -246,7 +246,7 @@ const DetailInfo = ({ detail, onSave, onCancel }: { detail: Partial<DetailInterf
           {viewUrl && (
             <div
               className="absolute inset-0 bg-cover bg-center"
-              style={{ backgroundImage: `url(${viewUrl})` }}
+              style={{ background: `url(${viewUrl})` }}
             />
           )}
 

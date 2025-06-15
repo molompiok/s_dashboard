@@ -119,7 +119,7 @@ const ClientPreview: React.FC<ClientPreviewProps> = ({ client, isLoading }) => {
                 <div className="relative flex-shrink-0">
                     <div
                         className="w-20 h-20 flex items-center justify-center font-bold text-gray-500 dark:text-gray-400 text-3xl rounded-full object-cover border-4 border-white/80 dark:border-gray-800/50 shadow-md bg-gray-200 dark:bg-gray-700"
-                        style={{ backgroundImage: getMedia({ isBackground: true, source: client.photo?.[0] }) }}
+                        style={{ background: getMedia({ isBackground: true, source: client.photo?.[0] }) }}
                     >
                         {!client.photo?.[0] && (client.full_name?.substring(0, 2).toUpperCase() || '?')}
                     </div>

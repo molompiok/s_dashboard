@@ -33,7 +33,7 @@ function IsFeaturesHere(product: Partial<ProductInterface>) {
 }
 
 function getDefaultFeature(product: Partial<ProductInterface>) {
-    const defaultFeature = product.features?.find(f => f.id == product.default_feature_id);
+    const defaultFeature = product.features?.find(f => f.id == product.default_feature_id)||product.features?.find(f => !!f.is_default);
     return defaultFeature
 }
 

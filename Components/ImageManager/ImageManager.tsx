@@ -18,17 +18,23 @@ export const ImageManager: React.FC<ImageManagerProps> = ({ images, onImagesChan
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const containerRef = React.useRef<HTMLDivElement>(null);
 
-  console.log('images 1',{images});
-
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
+    console.log('files--', files);
+
     if (files.length === 0) return;
 
     const availableSlots = MAX_IMAGES - images.length;
+    files.forEach((f, i) => Object.defineProperty(f, 'name', {
+      value: f.name + i,
+      writable: false,
+    }));
     const filesToAdd = files.slice(0, availableSlots).map(file => ({
-      id: ClientCall(function(){return Math.random()},0),
+      id: ClientCall(function () { return Math.random() }, 0),
       source: file,
     }));
+    console.log('filesToAdd', filesToAdd);
+
 
     onImagesChange([...images, ...filesToAdd]);
     e.target.value = ''; // reset input
@@ -37,11 +43,15 @@ export const ImageManager: React.FC<ImageManagerProps> = ({ images, onImagesChan
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     const files = Array.from(e.dataTransfer.files || []);
+    console.log('files--', files);
     if (files.length === 0) return;
-
+    files.forEach((f, i) => Object.defineProperty(f, 'name', {
+      value: f.name + i,
+      writable: false,
+    }));
     const availableSlots = MAX_IMAGES - images.length;
     const filesToAdd = files.slice(0, availableSlots).map(file => ({
-      id: ClientCall(function(){return Math.random()},0),
+      id: ClientCall(function () { return Math.random() }, 0),
       source: file,
     }));
 
@@ -79,8 +89,6 @@ export const ImageManager: React.FC<ImageManagerProps> = ({ images, onImagesChan
     }
   };
 
-  console.log('images 2',{images});
-  
 
   return (
     <div

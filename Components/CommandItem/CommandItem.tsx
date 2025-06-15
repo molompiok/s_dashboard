@@ -21,7 +21,7 @@ export function CommandItem({ command }: { command: CommandInterface }) {
                     {/* Image Client */}
                     <div
                         className="w-11 h-11 rounded-full bg-cover bg-center bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 font-semibold text-sm flex items-center justify-center shrink-0"
-                        style={{ backgroundImage: getMedia({ isBackground: true, source: command.user?.photo?.[0], from: 'api' }) }}
+                        style={{ background: getMedia({ isBackground: true, source: command.user?.photo?.[0], from: 'api' }) }}
                     >
                         {!command.user?.photo?.[0] && command.user?.full_name.substring(0, 2).toUpperCase()}
                     </div>
