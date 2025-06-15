@@ -9,6 +9,7 @@ import { Confirm } from '../Confirm/Confirm'; // Gardé
 import { useTranslation } from 'react-i18next'; // ✅ i18n
 import { NEW_ID_START } from '../Utils/constants';
 import { FeatureType } from '../Utils/functions';
+import { features } from 'process';
 
 export { FeatureInfo };
 
@@ -120,11 +121,13 @@ function FeatureInfo({ feature: initialFeature, onChange, onCancel }: FeatureInf
   return (
     // Utiliser flex flex-col gap-4 ou 6, padding
     <div className="feature-info p-4 sm:p-6 flex flex-col gap-5">
-      <div>
-        <h3 className="block text-sm font-medium text-gray-700 dark:text-white/60 mb-2">{t('feature.selectDisplayType')}</h3>
-        {/* FeatureTypes est déjà un composant Swiper */}
-        <FeatureTypes active={f.type} onSelected={handleTypeChange} />
-      </div>
+      {
+        !f.is_default && <div>
+          <h3 className="block text-sm font-medium text-gray-700 dark:text-white/60 mb-2">{t('feature.selectDisplayType')}</h3>
+          {/* FeatureTypes est déjà un composant Swiper */}
+          <FeatureTypes active={f.type} onSelected={handleTypeChange} />
+        </div>
+      }
 
       <div>
         <label className=' text-sm font-medium text-gray-700 dark:text-white/60 mb-1 flex justify-between items-center' htmlFor="feature-info-name-input">
@@ -156,8 +159,8 @@ function FeatureInfo({ feature: initialFeature, onChange, onCancel }: FeatureInf
             name="required"
             type="checkbox"
             className="h-4 w-4  rounded border-gray-300 text-blue-600 focus:ring-blue-500 cursor-pointer"
-            checked={f.required ?? true}
-            onChange={() => handleCheckboxChange('required')}
+            checked={f.is_default || (f.required ?? true)}
+            onChange={() =>!f.is_default && handleCheckboxChange('required')}
           />
         </div>
         <div className="ml-3 text-sm leading-6">

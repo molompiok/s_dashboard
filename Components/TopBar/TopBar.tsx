@@ -80,12 +80,20 @@ function Topbar({
         );
     };
 
+    {/* Bouton Notifications */ }
+    {/* {notif && (
+                    <a href="/notifications" className="notify-icon-ctn relative p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400" title={t('topbar.notifications')}>
+                        <IoNotifications className='w-5 h-5' />
+                        <span className="available absolute top-1.5 right-1.5 block h-2 w-2 rounded-full bg-red-500 ring-1 ring-white"></span>
+                        <span className="sr-only">{t('topbar.viewNotifications')}</span>
+                    </a>
+                )} */}
     return (
-        <div className="top-bar sticky top-0 z-40 flex items-center h-16 px-4 sm:px-6 bg-white/80 dark:bg-gray-900/80 border-b border-gray-200 dark:border-gray-700 w-full backdrop-blur-md shadow-sm">
+        <div className="top-bar sticky top-0 z-40 flex items-center h-16 pl-4 sm:pl-6 bg-white/80 dark:bg-gray-900/80 border-b border-gray-200 dark:border-gray-700 w-full backdrop-blur-md shadow-sm">
             {back && (
                 <button
                     onClick={handleBackClick}
-                    className='p-2 -ml-2 mr-2 text-gray-500 hover:bg-gray-100 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400'
+                    className='p-2 -ml-2 mr-2 text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400'
                     title={t('common.back')}
                 >
                     <IoChevronBack className='w-5 h-5' />
@@ -95,33 +103,33 @@ function Topbar({
             <div className='left flex flex-col flex-grow min-w-0 mr-4'>
                 {displayTitle ? (
                     <>
-                        <h3 className='text-sm text-gray-500 truncate'>{displayTitle}</h3>
-                        <h2 className='text-base font-semibold text-gray-800 truncate' title={displayName}>{displayName}</h2>
+                        <h3 className='text-sm text-gray-500 dark:text-gray-400 truncate'>{displayTitle}</h3>
+                        <h2 className='text-base font-semibold text-gray-800 dark:text-gray-100 truncate' title={displayName}>{displayName}</h2>
                     </>
                 ) : (
                     <>
-                        <h2 className='truncate'>{currentStore?.name}</h2>
+                        <h2 className='truncate text-gray-800 dark:text-gray-100'>{currentStore?.name}</h2>
                         <nav aria-label="Breadcrumb">
                             <ol className="flex items-center gap-1.5 text-sm">
                                 {/* ... (logique breadcrumbs inchangée) ... */}
                                 {breadcrumbs.map((crumb, index) => (
                                     <li key={index} className="flex items-center gap-1.5">
                                         {index > 0 && (
-                                            <IoChevronForward className="w-3 h-3 text-gray-400 flex-shrink-0" />
+                                            <IoChevronForward className="w-3 h-3 text-gray-400 dark:text-gray-500 flex-shrink-0" />
                                         )}
                                         {crumb.url && index < breadcrumbs.length - 1 ? (
                                             <a
                                                 href={crumb.url}
-                                                className="text-gray-500 hover:text-gray-700 hover:underline truncate max-w-[80px] sm:max-w-[120px] md:max-w-xs" /* Ajusté max-w */
+                                                className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:underline truncate max-w-[80px] sm:max-w-[120px] md:max-w-xs"
                                             >
                                                 {crumb.name}
                                             </a>
                                         ) : (
                                             <span
                                                 className={`font-medium ${index === breadcrumbs.length - 1
-                                                    ? 'text-gray-700'
-                                                    : 'text-gray-500'
-                                                    } truncate max-w-[80px] sm:max-w-[120px] md:max-w-xs`} /* Ajusté max-w */
+                                                    ? 'text-gray-700 dark:text-gray-100'
+                                                    : 'text-gray-500 dark:text-gray-400'
+                                                    } truncate max-w-[80px] sm:max-w-[120px] md:max-w-xs`}
                                                 aria-current={index === breadcrumbs.length - 1 ? 'page' : undefined}
                                             >
                                                 {crumb.name}
@@ -136,29 +144,22 @@ function Topbar({
             </div>
 
             {/* Section Droite: Recherche, Notifications (commenté) & Avatar */}
-            <div className='right flex items-center gap-3 flex-shrink-0'>
+            <div className='right flex h-16 bg-white/60 dark:bg-gray-900/60 rounded-tl-md backdrop-blur-md pr-4 sm:pr-6 rounded-tb-md items-center gap-3 flex-shrink-0'>
                 {search && (
                     <button
                         onClick={handleSearchClick}
-                        className='search-icon p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400'
+                        className='search-icon p-2 text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400'
                         title={t('topbar.searchAction')}
                     >
                         <IoSearch className='w-5 h-5' />
                     </button>
                 )}
                 {/* Bouton Notifications */}
-                {/* {notif && (
-                    <a href="/notifications" className="notify-icon-ctn relative p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-400" title={t('topbar.notifications')}>
-                        <IoNotifications className='w-5 h-5' />
-                        <span className="available absolute top-1.5 right-1.5 block h-2 w-2 rounded-full bg-red-500 ring-1 ring-white"></span>
-                        <span className="sr-only">{t('topbar.viewNotifications')}</span>
-                    </a>
-                )} */}
-                {/* --- ✅ Avatar Utilisateur --- */}
-                {user && ( // Afficher seulement si l'utilisateur est chargé
+                {/* ... notifications commenté ... */}
+                {user && (
                     <div className="relative">
                         <button
-                            className="flex items-center justify-center w-9 h-9 rounded-full bg-gray-200 text-gray-600 text-sm font-semibold overflow-hidden hover:ring-2 hover:ring-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-1"
+                            className="flex items-center justify-center w-9 h-9 rounded-full bg-gray-200 dark:bg-gray-800 text-gray-600 dark:text-gray-300 text-sm font-semibold overflow-hidden hover:ring-2 hover:ring-blue-300 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-offset-1"
                             onClick={() => {
                                 nextPage('/profile');
                             }}
@@ -168,19 +169,16 @@ function Topbar({
                                 <img
                                     src={avatarImageUrl}
                                     alt={t('topbar.userAvatarAlt', { name: displayName })}
-                                    className="w-full h-full object-cover" // Assure que l'image couvre bien
+                                    className="w-full h-full object-cover"
                                 />
                             ) : (
-                                <span>{userInitials}</span> // Afficher les initiales si pas de photo
+                                <span>{userInitials}</span>
                             )}
                         </button>
-                        {/* Placeholder pour un futur menu déroulant */}
-                        {/* <div className="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 ring-1 ring-black ring-opacity-5 hidden"> ... liens profil, logout ... </div> */}
                     </div>
                 )}
-                {/* --- Fin Avatar --- */}
-
             </div>
         </div>
     );
+
 }

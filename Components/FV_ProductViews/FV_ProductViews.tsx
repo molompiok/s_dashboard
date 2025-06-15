@@ -23,33 +23,31 @@ function ProductViews({ value, feature, onRemove, onClick }: { onClick?: () => v
     return (
         <div className='product-views-ctn w-[90px] h-[90px] pt-8 p-2'>
             <div
-                className="product-views relative flex flex-col items-center gap-1 p-1.5 rounded-lg border border-gray-200 cursor-pointer hover:border-blue-300 hover:bg-blue-50/30 transition group"
+                className="product-views relative flex flex-col items-center gap-1 p-1.5 rounded-lg cursor-pointer transition hover:scale-105"
                 onClick={onClick}
             >
                 {
                     v.views?.slice(0, 3).reverse().map(((i, _) => (
                         getFileType(i) == 'image' ?
-                            <div key={_} className={`img_${_}`} style={{
+                            <div key={_} className={`img_${(v.views?.length == 1) ? '' : _}`} style={{
                                 background: getMedia({ isBackground: true, source: i, from: 'api' })
                             }}></div>
                             : <video className={`img_${_}`} key={_} muted={true} src={getMedia({ source: i, from: 'api' })} />
                     )))
                 }
-                {onRemove && (
-                    <button
-                        type="button"
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            openChild(<ChildViewer>
-                                <ConfirmDelete title={t('value.confirmDelete', { name: value.text || 'cette couleur' })} onCancel={() => openChild(null)} onDelete={() => { onRemove(); openChild(null); }} />
-                            </ChildViewer>, { background: '#3455' });
-                        }}
-                        className="absolute -top-2 -right-2 z-10 w-6 h-6 flex items-center justify-center bg-red-500 text-white rounded-full shadow hover:bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
-                        title={t('common.delete')}
-                    >
-                        <IoClose size={14} />
-                    </button>
-                )}
+                <button
+                    type="button"
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        openChild(<ChildViewer>
+                            <ConfirmDelete title={t('value.confirmDelete', { name: value.text || 'cette couleur' })} onCancel={() => openChild(null)} onDelete={() => { onRemove?.(); openChild(null); }} />
+                        </ChildViewer>, { background: '#3455' });
+                    }}
+                    className="absolute -top-5 scale-80 -right-2 z-10 w-6 h-6 flex items-center justify-center bg-gray-200 text-gray-500 rounded-full shadow hover:bg-gray-300  transition-opacity"
+                    title={t('common.delete')}
+                >
+                    <IoClose size={14} />
+                </button>
             </div>
         </div>
     );

@@ -71,8 +71,8 @@ export function BottomBarLink({ href, activeIcon, defaultIcon, add = [] }: Omit<
     <a
       href={href}
       className={`
-        flex flex-col items-center justify-center p-2 rounded-xl
-        transition-all duration-300 ease-out min-w-[60px]
+        flex flex-col items-center justify-center py-2 rounded-xl
+        transition-all duration-300 ease-out min-w-[45px]
         ${isActive 
           ? 'text-emerald-600 dark:text-emerald-400 bg-emerald-50 dark:bg-emerald-900/30' 
           : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300'

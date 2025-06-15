@@ -114,7 +114,7 @@ function Layout({ children, pageContext }: { children: React.ReactNode; pageCont
       <PageContextProvider pageContext={pageContext}>
         <Frame>
           {/* Mobile Header */}
-          <MobileHeader onToggleSidebar={toggleSidebar} isDark={isDark} onToggleDark={() => setIsDark(!isDark)} />
+          {/* <MobileHeader onToggleSidebar={toggleSidebar} isDark={isDark} onToggleDark={() => setIsDark(!isDark)} /> */}
 
           {/* Sidebar */}
           <Sidebar isOpen={sideLeft} onClose={() => setSideLeft(false)}>
@@ -447,7 +447,7 @@ function Content({ children }: { children: React.ReactNode }) {
   return (
     <div className={`
       flex-grow w-full h-screen overflow-x-hidden overflow-y-auto
-      ${hasSidebar ? 'pt-16 md:pt-0 pb-20 md:pb-0' : ''}
+      ${hasSidebar ? 'md:pt-0 pb-20 md:pb-0' : ''}
     `}>
       <div className="w-full h-full ">
         {children}

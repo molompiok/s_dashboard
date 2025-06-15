@@ -69,7 +69,7 @@ const Stepper = ({ currentStep, setStep, isNewProduct }: { currentStep: WizardSt
                             </div>
                             <p className={`mt-2 text-xs font-medium transition-colors ${step.id === currentStep ? 'text-teal-600 dark:text-teal-400' : 'text-gray-500 dark:text-gray-400'}`}>{step.name}</p>
                         </button>
-                        {stepIdx !== steps.length - 1 && <div className="hidden sm:block w-10 h-0.5 mx-2 bg-gray-200 dark:bg-gray-700" />}
+                        {stepIdx !== steps.length - 1 && <div className="w-5 sx:w-10 h-0.5 mx-2 bg-gray-200 dark:bg-gray-700" />}
                     </li>
                 ))}
             </ol>
@@ -208,7 +208,7 @@ function Page() {
     };
 
     const prevStep = () => {
-        const steps: WizardStep[] = ['info', 'variants', 'stock', 'publish'];
+        const steps: WizardStep[] = ['info', 'variants', /*'stock',*/ 'publish'];
         const currentIndex = steps.indexOf(step);
         if (currentIndex > 0) setStep(steps[currentIndex - 1]);
     };
@@ -240,10 +240,10 @@ function Page() {
                     </motion.div>
                 </AnimatePresence>
 
-                <div className="flex justify-between items-center mt-8 border-t dark:border-gray-700 pt-6">
-                    {step !== 'info' && <button onClick={prevStep} className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+                <div className="flex justify-between items-center">
+                    {step !== 'info' ? <button onClick={prevStep} className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
                         <IoArrowBack /> {t('common.previous')}
-                    </button>}
+                    </button>:<div></div>}
                     {isNewProduct && !originalProduct ? (
                         <button onClick={handleSaveAndContinue} disabled={createProductMutation.isPending} className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white bg-teal-600 hover:bg-teal-700 disabled:opacity-50 transition-colors">
                             {t('product.saveAndContinue')} <IoArrowForward />

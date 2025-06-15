@@ -90,22 +90,9 @@ function Page() {
 
   const storeName = currentStore?.name;
 
-  const breadcrumbs: BreadcrumbItem[] = useMemo(() => {
-    const crumbs: BreadcrumbItem[] = [
-      { name: t('navigation.home'), url: '/' },
-      { name: t('navigation.stores') },
-    ];
-    if (storeName) {
-      crumbs.push({ name: limit(storeName, 25) });
-    } else if (currentStore?.id) {
-      crumbs.push({ name: t('common.loading') });
-    }
-    return crumbs;
-  }, [t, currentStore, storeName]);
-
   return (
     <div className="min-h-screen pb-[200px]">
-      <Topbar breadcrumbs={breadcrumbs} />
+      <Topbar key={'acceuil-admin'} search={false}/>
 
       {/* Container principal avec padding adaptatif */}
       <main className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">

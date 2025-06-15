@@ -29,7 +29,7 @@ interface FeatureProps {
 }
 
 // Limite de valeurs par feature
-const VALUE_LIMIT = 7;
+const VALUE_LIMIT = 5;
 
 function Feature({ feature, setFeature, onDelete }: FeatureProps) {
     const { t } = useTranslation(); // ✅ i18n
@@ -171,7 +171,7 @@ function Feature({ feature, setFeature, onDelete }: FeatureProps) {
                         key={v.id}
                         value={v}
                         feature={feature as FeatureInterface} // Passer la feature typée
-                        onRemove={feature?.is_default ? undefined : () => handleValueRemove(v.id)} // Pas de suppression pour valeur de feature défaut?
+                        onRemove={() => handleValueRemove(v.id)} // Pas de suppression pour valeur de feature défaut?
                         onClick={() => handleOpenValuePopup(v)}
                     />
                 ))}
