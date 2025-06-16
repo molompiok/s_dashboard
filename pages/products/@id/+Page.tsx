@@ -37,7 +37,6 @@ export { Page };
 // --- Constantes et Types ---
 type WizardStep = 'info' | 'variants' | 'stock' | 'publish';
 const DEBOUNCE_TIME = 3000;
-const DEBOUNCE_FEATURES_TIME = 3000
 const initialEmptyProduct: Partial<ProductInterface> = {
     name: '', description: '', price: undefined, barred_price: undefined,
     categories_id: [], features: [], is_visible: false, stock: null,
@@ -76,8 +75,6 @@ const Stepper = ({ currentStep, setStep, isNewProduct }: { currentStep: WizardSt
         </nav>
     );
 };
-
-
 // --- Composant Principal ---
 function Page() {
     const { t } = useTranslation();
@@ -90,11 +87,13 @@ function Page() {
     const [step, setStep] = useState<WizardStep>('info');
     const [product, setProduct] = useState<Partial<ProductInterface>>(initialEmptyProduct);
     const [originalProduct, setOriginalProduct] = useState<ProductInterface | null | undefined>(null);
-   
+
     const [s] = useState({
-        features: [] as FeatureInterface[] | undefined
+        init: false,
+        features: [] as FeatureInterface[] | undefined,
+        product: undefined as Partial<ProductInterface> | undefined
     })
-    const { data: fetchedProduct, isLoading, isError, error , refetch} = useGetProduct({ product_id: productId, with_feature: true, }, { enabled: !isNewProduct });
+    const { data: fetchedProduct, isLoading, isError, error, refetch } = useGetProduct({ product_id: productId, with_feature: true, }, { enabled: !isNewProduct });
 
     const createProductMutation = useCreateProduct();
     const updateProductMutation = useUpdateProduct();
@@ -102,24 +101,35 @@ function Page() {
     const isLoadingMutation = createProductMutation.isPending || updateProductMutation.isPending || multipleUpdateMutation.isPending;
 
     useEffect(() => {
-        if (fetchedProduct) {
+        if (fetchedProduct && !s.init) {
+            s.init = true;
             setProduct(fetchedProduct);
             setOriginalProduct(fetchedProduct);
+            return
+        }
+        if (fetchedProduct && !s.product && isLoadingMutation) {
+            setProduct(fetchedProduct);
+            setOriginalProduct(fetchedProduct);
+            console.log(fetchedProduct.features?.map(f => ({ name: f.name, index: f.index })));
+
         }
     }, [fetchedProduct]);
 
-    const updateProductWithDebounce = useCallback((dataToUpdate: Partial<ProductInterface>) => {
-        if (isNewProduct) return;
-        debounce(() => {
-            updateProductMutation.mutate({ product_id: productId, data: dataToUpdate }, {
-                onSuccess: (data) => {
-                    showToast(t('common.saveChanges'), "SUCCESS");
-                    refetch()
-                },
-                onError: (err) => showErrorToast(err),
-            });
-        }, 'product_update', DEBOUNCE_TIME);
-    }, [isNewProduct, productId, updateProductMutation, t]);
+    const updateProduct = () => {
+
+        const d = s.product
+        s.product = undefined
+        d && updateProductMutation.mutate({ product_id: productId, data: d }, {
+            onSuccess: (data) => {
+                showToast(t('common.saveChanges'), "SUCCESS");
+                if (s.product) {
+                    updateProduct();
+                }
+                refetch()
+            },
+            onError: (err) => showErrorToast(err),
+        });
+    }
 
     const updateFeatures = () => {
         try {
@@ -135,16 +145,12 @@ function Page() {
                     onSuccess: (data) => {
                         try {
                             if (!data.product?.id) return;
-                            console.log("Features updated successfully", data);
-                            const updatedProduct = { ...originalProduct, ...data.product };
-                            setOriginalProduct(updatedProduct);
                             if (s.features) {
-                                debounce(() => {
-                                    updateFeatures();
-                                }, 'update-product-feature', DEBOUNCE_FEATURES_TIME);
+                                updateFeatures();
                                 return;
                             }
-                            setProduct(updatedProduct);
+                            setProduct(data.product);
+                            setOriginalProduct(data.product);
                             showToast("Fonctionnalités mises à jour avec succès"); // ✅ Toast succès
                         } catch (error) {
                             console.log(error);
@@ -166,20 +172,26 @@ function Page() {
 
     const handleFieldUpdate = (field: keyof ProductInterface, value: any) => {
 
-        if (field == 'description') return console.log('description', value);
-
         if (field == 'features') {
+
             if (Array.isArray(value)) {
                 s.features = value;
                 console.log('---333333->>>', value);
 
-                isNewProduct ? setProduct(prev => ({ ...prev, features: value })) : updateFeatures()
+                isNewProduct
+                    ? setProduct(prev => ({ ...prev, features: value }))
+                    : debounce(() => {
+                        updateFeatures();
+                    }, 'feature_update', DEBOUNCE_TIME);
             }
             return
         }
-        const newState = { ...product, [field]: value };
-        setProduct(newState);
-        !isNewProduct && updateProductWithDebounce({ [field]: value });
+
+        setProduct((prev) => ({ ...prev, [field]: value }));
+        s.product = { ...(s.product || {}), [field]: value }
+        !isNewProduct && debounce(() => {
+            updateProduct()
+        }, 'product_update', DEBOUNCE_TIME);
     };
 
     const handleSaveAndContinue = () => {
@@ -222,8 +234,8 @@ function Page() {
     ];
 
 
-    console.log({product, originalProduct});
-    
+    console.log({ product, originalProduct });
+
 
     return (
         <div className="product-wizard-page pb-48 w-full min-h-screen flex flex-col">
@@ -234,7 +246,9 @@ function Page() {
                 <AnimatePresence mode="wait">
                     <motion.div key={step} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ duration: 0.25 }}>
                         {step === 'info' && <ProductInfoStep product={product} onUpdate={handleFieldUpdate} />}
-                        {step === 'variants' && originalProduct && <ProductVariantsStep product={originalProduct} onUpdate={(d) => handleFieldUpdate('features', d)} />}
+                        {step === 'variants' && originalProduct && <ProductVariantsStep product={originalProduct} onUpdate={(d) => {
+                            handleFieldUpdate('features', d);
+                        }} />}
                         {step === 'stock' && originalProduct && <ProductStockStep product={originalProduct} onUpdate={handleFieldUpdate} />}
                         {step === 'publish' && originalProduct && <ProductPublishStep product={originalProduct} onUpdate={handleFieldUpdate} />}
                     </motion.div>
@@ -243,7 +257,7 @@ function Page() {
                 <div className="flex justify-between items-center">
                     {step !== 'info' ? <button onClick={prevStep} className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
                         <IoArrowBack /> {t('common.previous')}
-                    </button>:<div></div>}
+                    </button> : <div></div>}
                     {isNewProduct && !originalProduct ? (
                         <button onClick={handleSaveAndContinue} disabled={createProductMutation.isPending} className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white bg-teal-600 hover:bg-teal-700 disabled:opacity-50 transition-colors">
                             {t('product.saveAndContinue')} <IoArrowForward />
@@ -271,7 +285,7 @@ const ProductInfoStep = ({ product, onUpdate }: { product: Partial<ProductInterf
     const { openChild } = useChildViewer();
     const defaultFeature = getDefaultFeature(product);
     const defaultValue = getDefaultValues(product);
-    const imageItems: ImageItem[] = (defaultFeature?.values?.[0].views || []).map(v => ({ id: typeof v == 'string' ? v : v.size + v.type + (v as File).name + (v as File).lastModified, source: v as string }))
+    const imageItems: ImageItem[] = (defaultFeature?.values?.[0]?.views || []).map(v => ({ id: typeof v == 'string' ? v : v.size + v.type + (v as File).name + (v as File).lastModified, source: v as string }))
 
     const handleImagesChange = (newImages: ImageItem[], value_id?: string) => {
         let value: ValueInterface | undefined;
@@ -304,6 +318,7 @@ const ProductInfoStep = ({ product, onUpdate }: { product: Partial<ProductInterf
     const handleCategoriesChange = (categories_id: string[]) => {
         onUpdate('categories_id', categories_id);
     };
+
 
     return (
         <div className={`${sectionStyle} space-y-6`}>
@@ -361,18 +376,47 @@ const ProductVariantsStep = ({ product, onUpdate }: { product: ProductInterface,
 
     const handleFeatureChange = (updatedFeature: FeatureInterface) => {
 
+        if(!updatedFeature) return
+        
         const newFeatures = product.features?.map(f => f.id === updatedFeature.id ? updatedFeature : f);
 
         onUpdate(newFeatures || []);
     };
 
-    const handleAddFeature = () => openChild(<ChildViewer title={t('feature.createTitle')}><FeatureInfo feature={getNewFeature()} onChange={f => {
-        console.log('new feature ++++> ', f);
-
+    const handleAddFeature = () => openChild(<ChildViewer title={t('feature.createTitle')}><FeatureInfo feature={{ ...getNewFeature(), index: features.length }} onChange={f => {
         onUpdate([...(product.features || []), f as FeatureInterface]);
         openChild(null);
     }} onCancel={() => openChild(null)} /></ChildViewer>);
 
+    const handleMove = async (feature: FeatureInterface, direction: 'up' | 'down') => {
+        product.features?.sort((a, b) => ((a.index || 0) - (b.index || 0))).map((f, i) => {
+            if (f.index !== i) {
+                f.index = i;
+                f._request_mode = 'edited'
+            }
+            return f
+        })
+
+        feature.values?.sort((a, b) => ((a.index || 0) - (b.index || 0))).map((v, i) => {
+            if (v.index !== i) {
+                v.index = i;
+                v._request_mode = 'edited'
+            }
+            return v
+        })
+
+        const newIndex =  direction === 'up' ? (feature.index || 0) - 1 : (feature.index || 0) + 1;
+        const neighbor = product.features?.find(d => d.index === newIndex);
+
+        if (!neighbor) return;
+
+        neighbor.index = feature.index;
+        neighbor._request_mode = 'edited'
+        feature.index = newIndex;
+        feature._request_mode = 'edited'
+
+        onUpdate(product.features || []);
+    };
 
     return (
         <div className={`${sectionStyle} space-y-6`}>
@@ -391,14 +435,28 @@ const ProductVariantsStep = ({ product, onUpdate }: { product: ProductInterface,
                 </div>
             </div>
             <div className="space-y-4">
-                {features.map((f) =>
-                    <Feature key={f.id}
-                        feature={f}
-                        setFeature={(updater) => handleFeatureChange(updater(f) as FeatureInterface)}
-                        onDelete={() => {
-                            onUpdate((product.features || []).filter(_f => _f.id !== f.id))
-                        }}
-                    />)}
+                <AnimatePresence initial={false}>
+
+                    {features.sort((a, b) => ((a.index || 0) - (b.index || 0))).map((f, i) =>
+                        <motion.div key={f.id} layout initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, transition: { duration: 0.2 } }} transition={{ duration: 0.3, ease: "easeOut" }}>
+                            <Feature key={f.id}
+                                feature={f}
+                                setFeature={(updater) => handleFeatureChange(updater(f) as FeatureInterface)}
+                                onDelete={() => {
+                                    onUpdate((product.features || []).filter(_f => _f.id !== f.id).sort((a, b) => ((a.index || 0) - (b.index || 0))).map((f, i) => {
+                                        if (f.index !== i) {
+                                            f.index = i;
+                                            f._request_mode = 'edited'
+                                        }
+                                        return f
+                                    })
+                                    )
+                                }}
+                                onDown={() => handleMove(f, 'down')} onUp={() => handleMove(f, 'up')}
+                                canUp={i > 0} canDown={i < features.length - 1}
+                            />
+                        </motion.div>)}
+                </AnimatePresence>
             </div>
 
             <button
@@ -452,7 +510,7 @@ const ProductPublishStep = ({ product, onUpdate }: { product: ProductInterface, 
                 onDeleteRequired={() => {
 
                 }}
-                title={t('product.visibilityTitle')}
+                title={t('product.visibilityTitle')} 
                 isLoading={false}
 
                 isVisible={!!product.is_visible}

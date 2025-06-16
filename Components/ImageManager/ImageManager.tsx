@@ -60,20 +60,9 @@ export const ImageManager: React.FC<ImageManagerProps> = ({ images, onImagesChan
     }
   };
 
+  
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
-  };
-
-  const removeImage = (idToRemove: string) => {
-    onImagesChange(images.filter(img => img.id !== idToRemove));
-  };
-
-  const moveImage = (fromIndex: number, toIndex: number) => {
-    if (fromIndex === toIndex) return;
-    const updated = [...images];
-    const [moved] = updated.splice(fromIndex, 1);
-    updated.splice(toIndex, 0, moved);
-    onImagesChange(updated);
   };
 
   const handleDragStart = (e: React.DragEvent<HTMLDivElement>, index: number) => {
@@ -89,6 +78,19 @@ export const ImageManager: React.FC<ImageManagerProps> = ({ images, onImagesChan
     }
   };
 
+  const removeImage = (idToRemove: string) => {
+    onImagesChange(images.filter(img => img.id !== idToRemove));
+  };
+
+  const moveImage = (fromIndex: number, toIndex: number) => {
+    if (fromIndex === toIndex) return;
+    const updated = [...images];
+    const [moved] = updated.splice(fromIndex, 1);
+    updated.splice(toIndex, 0, moved);
+    onImagesChange(updated);
+  };
+
+  
 
   return (
     <div

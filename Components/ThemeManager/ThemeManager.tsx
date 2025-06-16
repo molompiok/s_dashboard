@@ -375,3 +375,73 @@ export function ThemeCardSkeleton() {
         </div>
     );
 }
+
+// components/Skeletons/ThemeManagerSkeleton.tsx
+
+// Ce composant interne imite une carte "verre dépoli" du skeleton
+const SkeletonCard = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
+    <div className={`bg-gray-100/80 dark:bg-white/5 rounded-2xl border border-gray-200/50 dark:border-white/10 p-4 ${className}`}>
+        {children}
+    </div>
+);
+
+export default function ThemeManagerSkeleton() {
+  return (
+    <div className="w-full space-y-4 animate-pulse">
+        {/* Skeleton du Thème Actuel */}
+        <SkeletonCard>
+            <div className="space-y-4">
+                {/* En-tête de la section */}
+                <div className="flex justify-between items-center">
+                    <div className="h-6 w-1/3 bg-gray-300 dark:bg-gray-600 rounded-md"></div>
+                    <div className="h-9 w-32 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                </div>
+
+                {/* Contenu du thème actuel */}
+                <div className="flex flex-col sm:flex-row gap-6 items-start">
+                    {/* Image */}
+                    <div className="w-full sm:w-1/3 sm:max-w-xs aspect-video bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                    {/* Infos */}
+                    <div className="flex-grow space-y-3 w-full">
+                        <div className="h-6 w-3/5 bg-gray-300 dark:bg-gray-600 rounded-md"></div>
+                        <div className="h-4 w-full bg-gray-200 dark:bg-gray-700 rounded"></div>
+                        <div className="h-4 w-4/6 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                        <div className="flex flex-wrap gap-2 mt-2">
+                           <div className="h-5 w-16 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+                           <div className="h-5 w-20 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+                        </div>
+                    </div>
+                </div>
+
+                 {/* Options de personnalisation */}
+                <div className="pt-4 border-t border-gray-200/50 dark:border-white/10">
+                     <div className="h-4 w-1/4 bg-gray-200 dark:bg-gray-600 rounded mb-3"></div>
+                     <div className="grid grid-cols-[repeat(auto-fill,minmax(80px,1fr))] gap-3">
+                        {Array.from({ length: 6 }).map((_, i) => (
+                            <div key={i} className="aspect-square bg-gray-200/50 dark:bg-gray-700/50 rounded-lg"></div>
+                        ))}
+                     </div>
+                </div>
+            </div>
+        </SkeletonCard>
+
+        {/* Skeleton des Thèmes Disponibles */}
+        <SkeletonCard>
+            <div className="space-y-4">
+                {/* En-tête */}
+                 <div className="flex justify-between items-center">
+                    <div className="h-5 w-2/5 bg-gray-300 dark:bg-gray-600 rounded-md"></div>
+                    <div className="h-5 w-24 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                </div>
+
+                {/* Carrousel de thèmes */}
+                <div className="flex space-x-4">
+                    {Array.from({ length: 4 }).map((_, i) => (
+                         <div key={i} className="w-40 h-44 bg-gray-200/50 dark:bg-gray-700/50 rounded-lg shrink-0"></div>
+                    ))}
+                </div>
+            </div>
+        </SkeletonCard>
+    </div>
+  );
+}

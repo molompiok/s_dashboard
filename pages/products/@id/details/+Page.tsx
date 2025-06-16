@@ -161,7 +161,7 @@ function Page() {
 }
 
 // --- Composant DetailItem ---
-const DetailItem = ({ detail, onDelete, onOption, onUp, onDown, canUp, canDown }: { detail: DetailInterface, onDelete: () => void, onOption: () => void, onUp: () => void, onDown: () => void, canUp: boolean, canDown: boolean }) => {
+const DetailItem = ({ detail, onDelete, onOption, onUp, onDown, canUp, canDown }: { onUp: () => void, onDown: () => void, canUp: boolean, canDown: boolean , detail: DetailInterface, onDelete: () => void, onOption: () => void}) => {
     const { t } = useTranslation();
     const view = detail?.view?.[0];
     return <div className="bg-white/60 dark:bg-white/5 backdrop-blur-lg rounded-lg shadow-sm border border-gray-200/80 dark:border-white/10 p-4 flex flex-col md:flex-row gap-4 items-start">

@@ -3,8 +3,8 @@
 import { useState, useEffect, useMemo } from 'react';
 import { BreadcrumbItem, Topbar } from '../../Components/TopBar/TopBar';
 import { StoresList } from '../../Components/StoreList/StoresList';
-import { SelectedStoreDetails } from '../../Components/StoreDetails/SelectedStoreDetails';
-import { ThemeManager } from '../../Components/ThemeManager/ThemeManager';
+import StoreSkeleton, { SelectedStoreDetails } from '../../Components/StoreDetails/SelectedStoreDetails';
+import ThemeManagerSkeleton, { ThemeManager } from '../../Components/ThemeManager/ThemeManager';
 import { StoreToolbar } from '../../Components/StoreList/StoreToolbar';
 import { StoreFilterType, StoreInterface } from '../../api/Interfaces/Interfaces';
 import { useGlobalStore } from '../../api/stores/StoreStore';
@@ -24,6 +24,7 @@ function Page() {
   const { currentStore, setCurrentStore } = useGlobalStore();
   const [filter, setFilter] = useState<StoreFilterType>({});
   const [isLoadingInitialStore, setIsLoadingInitialStore] = useState(true);
+  const [isStoreChanging, setIsStoreChanging] = useState(false);
   const { openChild } = useChildViewer();
 
   const { data: storesData, isLoading: isLoadingList, isError, error } = useGetStoreList(filter);
@@ -88,11 +89,12 @@ function Page() {
     setCurrentStore(store);
   };
 
-  const storeName = currentStore?.name;
-
+  // const storeName = currentStore?.name;
+  const isFilterActive=!!Object.keys(filter).length;
+  const filterHide = storesList.length == 0 && isFilterActive
   return (
     <div className="min-h-screen pb-[200px]">
-      <Topbar key={'acceuil-admin'} search={false}/>
+      <Topbar key={'acceuil-admin'} search={false} />
 
       {/* Container principal avec padding adaptatif */}
       <main className="w-full max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
@@ -178,16 +180,20 @@ function Page() {
             </div>
           )}  */}
         </div>
-        <div className="p-4">
-          <StoresList
-            stores={storesList}
-            isLoading={isLoadingList}
-            selectedStoreId={currentStore?.id}
-            onSelectStore={handleSelectStore}
-            newStoreRequire={handleStoreCreateEdit}
-          />
-        </div>
-
+        <StoresList
+          stores={storesList}
+          isFilterActive={isFilterActive}
+          isLoading={isLoadingList}
+          selectedStoreId={currentStore?.id}
+          onSelectStore={(store) => {
+            handleSelectStore(store)
+            setIsStoreChanging(true)
+            setTimeout(() => {
+              setIsStoreChanging(false)
+            }, 500);
+          }}
+          newStoreRequire={handleStoreCreateEdit}
+        />
         {/* Contenu Principal - Grille moderne */}
         {isLoadingInitialStore ? (
           <div className="flex items-center justify-center py-20">
@@ -204,15 +210,26 @@ function Page() {
           <div className="grid grid-cols-1 xl:grid-cols-12 gap-8">
             {/* Colonne principale - Détails et Thème */}
             <div className="xl:col-span-8 space-y-8">
-              <SelectedStoreDetails
-                store={currentStore}
-                onEditRequired={handleStoreCreateEdit}
-              />
+              {
+                isStoreChanging
+                  ? (
+                    <StoreSkeleton />
+                  )
+                  : !filterHide && <SelectedStoreDetails
+                    store={currentStore}
+                    onEditRequired={handleStoreCreateEdit}
+                  />
+              }
+
             </div>
 
             {/* Colonne secondaire - Inventaire et autres */}
             <div className="xl:col-span-4">
-              <ThemeManager store={currentStore} />
+              {
+                isStoreChanging
+                  ? <ThemeManagerSkeleton />
+                  : !filterHide && <ThemeManager store={currentStore} />
+              }
             </div>
           </div>
         ) : (

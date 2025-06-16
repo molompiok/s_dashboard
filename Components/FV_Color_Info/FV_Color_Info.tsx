@@ -172,7 +172,7 @@ function ColorValue({ value, feature, onRemove, onClick }: { onClick?: () => voi
                             <ConfirmDelete title={t('value.confirmDelete', { name: value.text || 'cette couleur' })} onCancel={() => openChild(null)} onDelete={() => { onRemove(); openChild(null); }} />
                         </ChildViewer>, { background: '#3455' });
                     }}
-                    className="absolute -top-2 -right-2 z-10 w-6 h-6 flex items-center justify-center bg-red-500 text-white rounded-full shadow hover:bg-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="absolute -top-2 -right-2 z-10 w-6 h-6 flex items-center justify-center  rounded-full shadow bg-gray-200 text-gray-500 hover:bg-gray-300 "
                     title={t('common.delete')}
                 >
                     <IoClose size={14} />

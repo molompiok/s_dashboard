@@ -254,7 +254,7 @@ function IconTextValue({ value, feature, onRemove, onClick }: { onClick?: () => 
                             />
                         </ChildViewer>, { background: '#3455' });
                     }}
-                    className="absolute -top-2 -right-2 z-10 w-6 h-6 flex items-center justify-center bg-red-500 dark:bg-red-600 text-white rounded-full shadow-lg hover:bg-red-600 dark:hover:bg-red-700 opacity-0 group-hover:opacity-100 transition-all duration-200 transform scale-75 group-hover:scale-100 backdrop-blur-sm"
+                    className="absolute -top-2 -right-2 z-10 w-6 h-6 flex items-center justify-center rounded-full shadow-lg  bg-gray-200 text-gray-500 hover:bg-gray-300 transition-all duration-200 transform scale-75 group-hover:scale-100 backdrop-blur-sm"
                     title={t('common.delete')}
                 >
                     <IoClose className="w-3.5 h-3.5" />
@@ -318,7 +318,7 @@ function TextValue({ value, feature, onRemove, onClick }: { onClick?: () => void
                             />
                         </ChildViewer>, { background: '#3455' });
                     }}
-                    className="flex items-center justify-center w-5 h-5 bg-white/60 dark:bg-gray-700/60 text-gray-600 dark:text-gray-400 rounded-full hover:bg-red-500 dark:hover:bg-red-600 hover:text-white opacity-0 group-hover:opacity-100 transition-all duration-200 transform scale-75 group-hover:scale-100 backdrop-blur-sm shadow-sm"
+                    className="flex items-center justify-center w-5 h-5 ml-auto bg-gray-200 text-gray-500 hover:bg-gray-300 rounded-full  transform scale-75 group-hover:scale-100 backdrop-blur-sm shadow-sm"
                     title={t('common.delete')}
                 >
                     <IoClose className="w-3 h-3" />

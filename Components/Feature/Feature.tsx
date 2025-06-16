@@ -1,7 +1,7 @@
 // Components/Feature/Feature.tsx
 
 import { FeatureInterface, ValueInterface } from '../../api/Interfaces/Interfaces';
-import { IoAdd, IoClose, IoEllipsisHorizontal, IoTrash } from 'react-icons/io5';
+import { IoAdd, IoChevronDown, IoChevronUp, IoClose, IoEllipsisHorizontal, IoTrash } from 'react-icons/io5';
 import { ClientCall, FeatureType } from '../Utils/functions';
 import { IconTextValue, TextValue } from '../FV_IconText_Info/FV_Color_Info';
 import { ColorValue } from '../FV_Color_Info/FV_Color_Info';
@@ -13,11 +13,13 @@ import { useTranslation } from 'react-i18next'; // ✅ i18n
 import { FV_IconText_Info } from '../FV_IconText_Info/FV_Color_Info';
 import { ColorInfo } from '../FV_Color_Info/FV_Color_Info';
 import logger from '../../api/Logger';
-import { JSX, useMemo } from 'react';
+import { JSX, useEffect, useMemo, useState } from 'react';
 import { ChildViewer } from '../ChildViewer/ChildViewer';
 import { useChildViewer } from '../ChildViewer/useChildViewer';
 import { ProductViews } from '../FV_ProductViews/FV_ProductViews';
+import { motion, AnimatePresence } from 'framer-motion';
 // Importer d'autres formulaires Info ici (DateInfo, InputInfo, etc.)
+
 
 export { Feature };
 
@@ -26,15 +28,29 @@ interface FeatureProps {
     feature: Partial<FeatureInterface>; // Utiliser Partial car peut être en cours de création
     setFeature: (cb: (current: Partial<FeatureInterface> | undefined) => Partial<FeatureInterface> | undefined) => void;
     onDelete: () => void; // Callback pour supprimer la feature du state parent
+    onUp: () => void,
+    onDown: () => void,
+    canUp: boolean,
+    canDown: boolean,
 }
+
+
 
 // Limite de valeurs par feature
 const VALUE_LIMIT = 5;
 
-function Feature({ feature, setFeature, onDelete }: FeatureProps) {
+function Feature({ feature: initailFeature, setFeature, onDelete, onUp, onDown, canUp, canDown }: FeatureProps) {
     const { t } = useTranslation(); // ✅ i18n
     const { openChild } = useChildViewer();
 
+    const [feature, setFeatureLocal] = useState(initailFeature);
+
+    const [s] = useState({
+        onTouch:false
+    })
+    useEffect(() => {
+        setFeatureLocal(initailFeature)
+    }, [initailFeature])
     // --- Handlers ---
     const handleValueChange = (updatedValue: ValueInterface) => {
         updatedValue._request_mode = 'edited';
@@ -112,6 +128,81 @@ function Feature({ feature, setFeature, onDelete }: FeatureProps) {
         </ChildViewer>, { background: '#3455' });
     };
 
+
+
+    // Extraction de la logique commune
+    const reorder = (fromIndex: number, toIndex: number) => {
+        if (fromIndex === toIndex) return;
+
+        setFeature((current) => {
+            if (!current?.values) return current;
+
+            const currentSortedValues = [...current.values].sort(
+                (a, b) => (a.index ?? 0) - (b.index ?? 0)
+            );
+
+            const overV = currentSortedValues[fromIndex];
+            const oldV = currentSortedValues[toIndex];
+
+            if (!overV || !oldV) return;
+
+            overV.index = toIndex;
+            oldV.index = fromIndex < toIndex
+                ? toIndex - 0.5
+                : toIndex + 0.5;
+
+            overV._request_mode = 'edited';
+            oldV._request_mode = 'edited';
+
+            const finalValues = currentSortedValues.sort(
+                (a, b) => (a.index ?? 0) - (b.index ?? 0)
+            ).map((value, index) => ({
+                ...value,
+                index,
+                _request_mode: 'edited' as const,
+            }));
+
+            finalValues.forEach(v => console.log(v.text, v.index));
+            console.log({ fromIndex, toIndex });
+            setFeatureLocal({ ...feature, values: finalValues });
+            return {
+                ...current,
+                values: finalValues,
+            };
+        });
+    };
+
+
+    const handleDragStart = (e: React.DragEvent<HTMLDivElement>, index: number) => {
+        e.dataTransfer.setData('over-index', index.toString());
+        e.dataTransfer.effectAllowed = 'move';
+    };
+
+    const handleDropOnImage = (e: React.DragEvent<HTMLDivElement>, toIndex: number) => {
+        e.preventDefault();
+        const fromIndex = parseInt(e.dataTransfer.getData('over-index'), 10);
+        if (isNaN(fromIndex)) return;
+        reorder(fromIndex, toIndex);
+    };
+
+
+    const [dragFromIndex, setDragFromIndex] = useState<number | null>(null);
+
+    const handleTouchStart = (index: number) => {
+        setDragFromIndex(index);
+    };
+
+    const handleTouchEnd = (toIndex: number) => {
+        if (dragFromIndex === null) return;
+
+        const fromIndex = dragFromIndex;
+        setDragFromIndex(null);
+        reorder(fromIndex,toIndex)
+    };
+
+
+
+
     // Vérifier si on peut ajouter une valeur
     const canAddValue = (feature?.values?.length ?? 0) < VALUE_LIMIT;
     const hashIconAdd = ([FeatureType.COLOR, FeatureType.DATE, FeatureType.ICON, FeatureType.ICON_TEXT] satisfies FeatureType[]).includes(feature.type as any);
@@ -142,6 +233,8 @@ function Feature({ feature, setFeature, onDelete }: FeatureProps) {
 
                 {/* Actions */}
                 <div className="flex items-center gap-1 flex-shrink-0">
+                    <button onClick={onUp} disabled={!canUp} title={t('common.moveUp')} className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-700 dark:text-gray-200 dark:hover:text-gray-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"><IoChevronUp /></button>
+                    <button onClick={onDown} disabled={!canDown} title={t('common.moveDown')} className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 hover:text-gray-700 dark:text-gray-200 dark:hover:text-gray-200 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"><IoChevronDown /></button>
                     <button
                         onClick={handleOpenFeatureSettings}
                         className="p-2 rounded-lg text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-white/20 dark:hover:bg-white/10 transition-all duration-150"
@@ -165,16 +258,34 @@ function Feature({ feature, setFeature, onDelete }: FeatureProps) {
 
             {/* Liste des Valeurs + Bouton Ajouter */}
             <div className="list-values flex flex-wrap gap-3 items-center">
-                {(feature?.values ?? []).map((v) => (
-                    // Le composant Value choisit le bon rendu
-                    <Value
-                        key={v.id}
-                        value={v}
-                        feature={feature as FeatureInterface} // Passer la feature typée
-                        onRemove={() => handleValueRemove(v.id)} // Pas de suppression pour valeur de feature défaut?
-                        onClick={() => handleOpenValuePopup(v)}
-                    />
-                ))}
+                <AnimatePresence>
+                    {(feature?.values?.sort(
+                        (a, b) => (a.index ?? 0) - (b.index ?? 0)
+                    ) ?? []).map((v, index) => (
+                        <motion.div
+                            key={v.id}
+                            id={v.id}
+                            initial={{ opacity: 0, scale: 0.8 }}
+                            animate={{ opacity: 1, scale: 1 }}
+                            exit={{ opacity: 0, scale: 0.8 }}
+                            transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                            draggable
+                            onDragStart={(e) => handleDragStart(e as any, index)}
+                            onDragOver={(e) => e.preventDefault()}
+                            onDrop={(e) => handleDropOnImage(e, index)}
+                            onTouchStart={(e) => handleTouchStart(index)}
+                            onTouchMove={(e) => e.preventDefault()}
+                            onTouchEnd={(e) => handleTouchEnd(index)}
+                        > <Value
+                                key={v.id}
+                                value={v}
+                                feature={feature as FeatureInterface} // Passer la feature typée
+                                onRemove={() => handleValueRemove(v.id)} // Pas de suppression pour valeur de feature défaut?
+                                onClick={() => handleOpenValuePopup(v)}
+                            />
+                        </motion.div>
+                    ))}
+                </AnimatePresence>
 
                 {/* Bouton Ajouter Valeur */}
                 {canAddValue && (
@@ -183,15 +294,15 @@ function Feature({ feature, setFeature, onDelete }: FeatureProps) {
                         onClick={() => handleOpenValuePopup()}
                         disabled={!canAddValue}
                         className={`add-new group/btn flex flex-col items-center justify-center rounded-xl border-2 border-dashed border-gray-400/50 dark:border-gray-500/50 text-gray-600 dark:text-gray-400 hover:border-blue-500/70 dark:hover:border-blue-400/70 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50/30 dark:hover:bg-blue-900/20 transition-all duration-200 backdrop-blur-sm ${hashIconAdd
-                                ? 'w-18 h-18 sm:w-20 sm:h-20'
-                                : 'h-10 px-4 flex-row gap-2'
+                            ? 'w-18 h-18 sm:w-20 sm:h-20'
+                            : 'h-10 px-4 flex-row gap-2'
                             }`}
                     >
                         <IoAdd className={`transition-transform duration-200 group-hover/btn:scale-110 ${hashIconAdd ? 'w-6 h-6 sm:w-7 sm:h-7 mb-1' : 'w-4 h-4'
                             }`} />
                         <span className={`font-medium transition-colors duration-200 ${hashIconAdd
-                                ? 'text-[10px] sm:text-xs text-center leading-tight'
-                                : 'text-sm'
+                            ? 'text-[10px] sm:text-xs text-center leading-tight'
+                            : 'text-sm'
                             }`}>
                             {hashIconAdd ? (
                                 <>
@@ -253,7 +364,7 @@ export function getInfoPopup({ value, feature, onChange, onCancel }: {
     value: ValueInterface,
     onChange: (value: ValueInterface) => void
 }): JSX.Element | null {
-    if (feature.is_default) return <FV_IconText_Info feature={{...feature, type:'text'}} onChange={onChange} value={value} onCancel={onCancel} />;
+    if (feature.is_default) return <FV_IconText_Info feature={{ ...feature, type: 'text' }} onChange={onChange} value={value} onCancel={onCancel} />;
     switch (feature.type) {
         case FeatureType.ICON_TEXT:
         case FeatureType.ICON:

@@ -427,3 +427,103 @@ export function SelectedStoreDetails({ store, onEditRequired }: SelectedStoreDet
         </div>
     );
 }
+
+// components/Skeletons/StoreSkeleton.tsx
+
+// Ce composant interne imite une carte "verre dépoli" du skeleton
+const SkeletonCard = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
+    <div className={`bg-gray-100/80 dark:bg-white/5 rounded-2xl border border-gray-200/50 dark:border-white/10 p-4 ${className}`}>
+        {children}
+    </div>
+);
+
+export default function StoreSkeleton() {
+  return (
+    <div className="max-w-7xl mx-auto space-y-6 px-4 animate-pulse">
+      
+      {/* Squelette de l'en-tête */}
+      <SkeletonCard>
+        <div className="flex flex-col lg:flex-row lg:items-start gap-4">
+          {/* Infos principales */}
+          <div className="flex-1 min-w-0 space-y-4">
+            <div className="flex items-center gap-4">
+              {/* Icône de la boutique */}
+              <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-2xl"></div>
+              <div className="space-y-2">
+                {/* Nom de la boutique */}
+                <div className="h-6 w-48 bg-gray-300 dark:bg-gray-600 rounded-md"></div>
+                {/* Statut */}
+                <div className="h-5 w-24 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
+              </div>
+            </div>
+
+            {/* Description */}
+            <div className="space-y-1.5">
+              <div className="h-4 w-full bg-gray-200 dark:bg-gray-700 rounded"></div>
+              <div className="h-4 w-3/4 bg-gray-200 dark:bg-gray-700 rounded"></div>
+            </div>
+
+            {/* URL */}
+            <div className="h-4 w-1/2 bg-gray-200 dark:bg-gray-700 rounded"></div>
+          </div>
+
+          {/* Actions */}
+          <div className="flex  gap-2 lg:flex-col lg:min-w-[200px]">
+            <div className="h-10 w-full bg-gray-200 dark:bg-gray-700 rounded-xl"></div>
+            <div className="h-10 w-full bg-gray-200 dark:bg-gray-700 rounded-xl"></div>
+            <div className="h-10 w-full bg-gray-200 dark:bg-gray-700 rounded-xl"></div>
+          </div>
+        </div>
+      </SkeletonCard>
+
+      {/* Squelette des Statistiques */}
+      <SkeletonCard>
+        <div className="space-y-4">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-2xl"></div>
+            <div className="space-y-2">
+              <div className="h-6 w-56 bg-gray-300 dark:bg-gray-600 rounded-md"></div>
+              <div className="h-4 w-48 bg-gray-200 dark:bg-gray-700 rounded"></div>
+            </div>
+          </div>
+          {/* Graphique */}
+          <div className="h-56 bg-gray-200 dark:bg-gray-700/50 rounded-2xl"></div>
+        </div>
+      </SkeletonCard>
+
+      {/* Squelette de l'Utilisation & Limites */}
+      <SkeletonCard>
+        <div className="space-y-4">
+            <div className="flex items-center gap-4">
+                <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-2xl"></div>
+                <div className="space-y-2">
+                <div className="h-6 w-56 bg-gray-300 dark:bg-gray-600 rounded-md"></div>
+                <div className="h-4 w-48 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                </div>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+              {/* Carte de limite */}
+              <div className="p-4 bg-gray-200/50 dark:bg-gray-700/50 rounded-xl space-y-2">
+                <div className="h-5 w-5 bg-gray-300 dark:bg-gray-600 rounded-md"></div>
+                <div className="h-4 w-3/4 bg-gray-300 dark:bg-gray-600 rounded"></div>
+                <div className="h-3 w-1/2 bg-gray-300 dark:bg-gray-600 rounded"></div>
+              </div>
+               {/* Carte de limite */}
+              <div className="p-4 bg-gray-200/50 dark:bg-gray-700/50 rounded-xl space-y-2">
+                <div className="h-5 w-5 bg-gray-300 dark:bg-gray-600 rounded-md"></div>
+                <div className="h-4 w-3/4 bg-gray-300 dark:bg-gray-600 rounded"></div>
+                <div className="h-3 w-1/2 bg-gray-300 dark:bg-gray-600 rounded"></div>
+              </div>
+               {/* Carte de limite */}
+              <div className="p-4 bg-gray-200/50 dark:bg-gray-700/50 rounded-xl space-y-2">
+                <div className="h-5 w-5 bg-gray-300 dark:bg-gray-600 rounded-md"></div>
+                <div className="h-4 w-3/4 bg-gray-300 dark:bg-gray-600 rounded"></div>
+                <div className="h-3 w-1/2 bg-gray-300 dark:bg-gray-600 rounded"></div>
+              </div>
+            </div>
+        </div>
+      </SkeletonCard>
+    </div>
+  );
+}

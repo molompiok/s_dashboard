@@ -1,9 +1,7 @@
 // Components/Button/Button.tsx
-// import './Button.css'; // ❌ Supprimer
 
-import React, { JSX, ButtonHTMLAttributes } from 'react'; // Importer ButtonHTMLAttributes
+import{ JSX, ButtonHTMLAttributes } from 'react'; // Importer ButtonHTMLAttributes
 import { IoChevronForward } from 'react-icons/io5';
-import { ClipLoader } from 'react-spinners'; // Pour l'indicateur de chargement
 
 export { Button };
 
@@ -25,11 +23,11 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 
 // Mapping des styles de variantes vers les classes Tailwind
 const variantClasses: Record<NonNullable<ButtonProps['variant']>, string> = {
-    primary: 'bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500 disabled:bg-blue-400',
-    secondary: 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50 focus:ring-blue-500 disabled:bg-gray-100 disabled:text-gray-400',
-    danger: 'bg-red-600 text-white hover:bg-red-700 focus:ring-red-500 disabled:bg-red-400',
-    warning: 'bg-yellow-500 text-white hover:bg-yellow-600 focus:ring-yellow-500 disabled:bg-yellow-300',
-    ghost: 'bg-transparent text-gray-600 hover:bg-gray-100 focus:ring-gray-500 disabled:text-gray-400',
+    primary: 'bg-blue-600 text-white hover:bg-blue-700 ',
+    secondary: 'bg-white text-gray-700 border border-gray-300 hover:bg-gray-50  disabled:text-gray-400',
+    danger: 'bg-red-600 text-white hover:bg-red-700  disabled:bg-red-400',
+    warning: 'bg-yellow-500 text-white hover:bg-yellow-600  disabled:bg-yellow-300',
+    ghost: 'bg-transparent text-gray-600 hover:bg-gray-100  disabled:text-gray-400',
 };
 
 // Mapping des tailles vers les classes Tailwind
@@ -65,7 +63,7 @@ function Button({
 
     // Construire les classes dynamiquement
     const combinedClassName = `
-        button inline-flex items-center border border-transparent font-medium shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 transition duration-150 ease-in-out
+        button inline-flex  items-center border border-transparent font-medium shadow-sm  transition duration-150 ease-in-out
         ${isVertical ? 'flex-col' : 'flex-row'}
         ${justifyClasses[justifyContent]}
         ${sizeClasses[size]}
@@ -76,7 +74,7 @@ function Button({
     `.replace(/\s+/g, ' ').trim(); // Nettoyer les espaces
 
     // Déterminer l'icône forward à afficher
-    const finalForwardIcon = forwardIcon === null ? null : (forwardIcon === undefined ? <IoChevronForward className='ml-auto w-4 h-4' /> : forwardIcon);
+    const finalForwardIcon = forwardIcon === null ? null : (forwardIcon === undefined ? <IoChevronForward className='ml-auto w-4 h-4 dark:text-white/80' /> : forwardIcon);
 
     return (
         <button
@@ -99,10 +97,8 @@ function Button({
 
             {/* Titre ou Children */}
             {(title || children) && !loading && ( // Ne pas afficher texte si loading? Ou afficher texte + spinner? Affichons texte + spinner.
-                 <span className="button-text">{title || children}</span>
+                 <span className="button-text dark:text-white">{title || children}</span>
             )}
-             {loading && title && <span className="button-text">{title}</span>} {/* Afficher titre même si loading */}
-
 
             {/* Icône Forward (si fournie et pas en chargement) */}
             {!loading && finalForwardIcon && (

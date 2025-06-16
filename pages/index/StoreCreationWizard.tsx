@@ -38,7 +38,6 @@ export function StoreCreationEditionWizard({
     const { t } = useTranslation(); // ✅ i18n
     const [swiper, setSwiper] = useState<SwiperType | null>(null);
     const [activeIndex, setActiveIndex] = useState(0);
-    const [maxReachedIndex, setMaxReachedIndex] = useState(initialStoreData ? 3 : 0); // Index max atteint valablement
 
     const isEditing = !!initialStoreData?.id;
 
@@ -49,7 +48,8 @@ export function StoreCreationEditionWizard({
     const [savedStore, setSavedStore] = useState<StoreInterface | null>(null);
 
     const [s] = useState({
-        collected: {} as StoreInterface
+        collected: {} as StoreInterface,
+        init: false
     })
     // --- État du Formulaire ---
     const [collected, setCollected] = useState({
@@ -67,7 +67,7 @@ export function StoreCreationEditionWizard({
     const [coverError, setCoverError] = useState('');
     const [titleError, setTitleError] = useState('');
     const [descriptionError, setDescriptionError] = useState('');
-
+    const [maxReachedIndex, setIndexError] = useState<number>(-1)
     // --- Hooks API ---
     const [debouncedName, setDebouncedName] = useState(collected.name || '');
     let { data: availabilityData, isLoading: isCheckingName } = useCheckStoreNameAvailability(
@@ -122,12 +122,7 @@ export function StoreCreationEditionWizard({
                 message: t(isValid ? (collected.name == initialStoreData.name ? 'storeCreate.validation.currentStoreName' : 'storeCreate.validation.nameAvailable') : 'storeCreate.validation.nameUnavailable')
             });
             // Mettre à jour l'index max si le nom est valide à l'étape 0
-            if (isValid && activeIndex === 0) {
-                setMaxReachedIndex(prev => Math.max(prev, 1));
-            } else if (!isValid && activeIndex === 0) {
-                // Si devient invalide, bloquer la progression
-                setMaxReachedIndex(prev => Math.min(prev, 0));
-            }
+            validateStep(0)
         } else if (!isCheckingName && collected.name.length >= 3) {
             // Gérer l'erreur de fetch de disponibilité
             setNameCheck({ type: 'invalid', message: t('storeCreate.validation.nameCheckError') });
@@ -152,26 +147,46 @@ export function StoreCreationEditionWizard({
         }
     }, [activeIndex, createStoreMutation.isPending]);
 
+    useEffect(() => {
+        validateStep(activeIndex)
+    }, [isNameValid, collected])
     // --- Validation locale des étapes ---
-    const validateStep = (indexToValidate: number): boolean => {
-        switch (indexToValidate) {
-            case 0: return isNameValid;
-            case 1:
-                const logoOk = collected.logo.length > 0;
-                tryInvalid && !logoOk && !logoError && setLogoError(logoOk ? '' : t('storeCreate.validation.logoRequired'));
-                return logoOk;
-            case 2:
-                const coverOk = collected.cover_image.length > 0;
-                tryInvalid &&  !coverOk && !coverError && setCoverError(coverOk ? '' : t('storeCreate.validation.coverRequired'));
-                return coverOk;
-            case 3:
-                const titleOk = collected.title.trim().length > 0;
-                const descOk = collected.description.trim().length > 0;
-                tryInvalid && !titleOk && !titleError && setTitleError(titleOk ? '' : t('storeCreate.validation.titleRequired'));
-                tryInvalid && !descOk && !descriptionError && setDescriptionError(descOk ? '' : t('storeCreate.validation.descriptionRequired'));
-                return titleOk && descOk;
-            default: return false;
+    const validateStep = (indexToValidate: number, validate = true): boolean => {
+        console.log('=======> VALIDATION START index:', indexToValidate, 'validate:', validate);
+
+        if (!isNameValid && (validate || indexToValidate == 0)) {
+            validate && setIndexError(0);
+            console.log('=======> VALIDATION END index:', indexToValidate, 'isValid:', false, 'error index:', 0);
+            return false
         }
+        const logoOk = collected.logo?.length > 0;
+        tryInvalid && !logoOk && !logoError && setLogoError(logoOk ? '' : t('storeCreate.validation.logoRequired'));
+        if (!logoOk && (validate || indexToValidate == 1)) {
+            validate && setIndexError(1);
+            console.log('=======> VALIDATION END index:', indexToValidate, 'isValid:', false, 'error index:', 1);
+            return false
+        }
+        const coverOk = collected.cover_image?.length > 0;
+        tryInvalid && !coverOk && !coverError && setCoverError(coverOk ? '' : t('storeCreate.validation.coverRequired'));
+        if (!coverOk && (validate || indexToValidate == 2)) {
+            validate && setIndexError(2);
+
+            console.log('=======> VALIDATION END index:', indexToValidate, 'isValid:', false, 'error index:', 2);
+            return false
+        }
+        const titleOk = collected.title.trim().length > 0;
+        const descOk = collected.description.trim().length > 0;
+        tryInvalid && !titleOk && !titleError && setTitleError(titleOk ? '' : t('storeCreate.validation.titleRequired'));
+        tryInvalid && !descOk && !descriptionError && setDescriptionError(descOk ? '' : t('storeCreate.validation.descriptionRequired'));
+        if (!(titleOk && descOk) && (validate || indexToValidate == 3)) {
+            validate && setIndexError(3)
+            console.log('=======> VALIDATION END index:', indexToValidate, 'isValid:', false, 'error index:', 3);
+            return false
+        }
+        validate && setIndexError(3)
+        console.log('=======> VALIDATION END index:', indexToValidate, 'validate:', validate, 'isValid:', true, 'error index:', -1);
+        return true
+
     };
 
     // --- Handlers ---
@@ -204,20 +219,22 @@ export function StoreCreationEditionWizard({
         // Reset erreurs
         if (field === 'logo') setLogoError('');
         if (field === 'cover_image') setCoverError('');
-        // Mettre à jour l'index max atteint si étape validée
-        if (field === 'logo' && activeIndex === 1) setMaxReachedIndex(prev => Math.max(prev, 2));
-        if (field === 'cover_image' && activeIndex === 2) setMaxReachedIndex(prev => Math.max(prev, 3));
-
         e.target.value = ''; // Permet de re-sélectionner le même fichier
     };
 
     const handleNext = (e: any) => {
         e.preventDefault()
         e.stopPropagation()
+
         if (activeIndex < 3) {
-            if (validateStep(activeIndex)) {
+            if (validateStep(activeIndex,false)) {
                 swiper?.slideNext();
             }
+            return
+        }
+        if (!validateStep(activeIndex)) {
+            setActiveIndex(maxReachedIndex)
+            swiper?.slideTo(maxReachedIndex)
             return
         }
 
@@ -295,7 +312,7 @@ export function StoreCreationEditionWizard({
 
 
 
-    console.log({ savedStore, loadingState });
+    console.log({ activeIndex, maxReachedIndex });
 
 
 
@@ -430,9 +447,6 @@ export function StoreCreationEditionWizard({
                             onSwiper={setSwiper}
                             onActiveIndexChange={(s) => {
                                 setActiveIndex(s.activeIndex);
-                                if (s.previousIndex !== undefined && validateStep(s.previousIndex)) {
-                                    setMaxReachedIndex(prev => Math.max(prev, s.previousIndex + 1));
-                                }
                             }}
                             className={`h-full ${createStoreMutation.isPending ? 'opacity-50 pointer-events-none overflow-visible' : ''}`}
                             allowTouchMove={false}
@@ -566,7 +580,7 @@ export function StoreCreationEditionWizard({
                                 </div>
                                 <div className='mx-auto w-[1px] h-[20px] border-2 border-dashed hover:border-solid border-gray-600/40'></div>
                                 <label htmlFor="store-cover_image-input"
-                                    style={{ background: getMedia({ isBackground: true, size:'cover', source: coverPreview, from: 'server' }) }}
+                                    style={{ background: getMedia({ isBackground: true, size: 'cover', source: coverPreview, from: 'server' }) }}
                                     className={`relative group cursor-pointer mx-auto flex flex-col items-center justify-center 
                                          w-full aspect-video
                                           overflow-hidden transition-all duration-300
@@ -701,7 +715,7 @@ export function StoreCreationEditionWizard({
                                         <div className="w-10 h-10 sl2:w-12 sl2:h-12 rounded-full bg-cover bg-center 
                                               bg-white/20 dark:bg-gray-700/30 flex-shrink-0 flex items-center justify-center
                                               border border-white/20 dark:border-gray-600/30"
-                                            style={{ background: logoPreview ? `url(${logoPreview})` : 'none' }}>
+                                            style={{ background: getMedia({isBackground:true,source:logoPreview,from:'server'}) }}>
                                             {!logoPreview && (
                                                 <IoStorefront className="w-4 h-4 sl2:w-5 sl2:h-5 text-gray-400 dark:text-gray-500" />
                                             )}
@@ -711,7 +725,7 @@ export function StoreCreationEditionWizard({
                                                 {collected.title || t('storeCreate.previewDefaultTitle')}
                                             </h3>
                                             <p className="text-xs text-green-700 dark:text-green-400 truncate">
-                                                https://{collected.name || 'votrenom'}.sublymus.com
+                                                https://{collected.name.replaceAll(' ','-').toLowerCase() || 'votrenom'}.sublymus.com
                                             </p>
                                         </div>
                                     </div>
@@ -746,11 +760,10 @@ export function StoreCreationEditionWizard({
                     <button
                         type="button"
                         onClick={handleNext}
-                        disabled={!validateStep(activeIndex) || createStoreMutation.isPending}
                         className={`inline-flex items-center gap-1 sl2:gap-1.5 px-2 sl2:px-3 py-2 sl2:py-2.5 
                           rounded-lg sl2:rounded-xl text-xs sl2:text-sm font-medium 
                           transition-all duration-200 focus:outline-none focus:ring-2 focus:ring-offset-0
-                          ${(!validateStep(activeIndex) || createStoreMutation.isPending)
+                          ${(!validateStep(activeIndex, false) || createStoreMutation.isPending)
                                 ? 'bg-gray-300/50 dark:bg-gray-700/30 text-gray-500 dark:text-gray-400 cursor-not-allowed border border-gray-300/30 dark:border-gray-600/20'
                                 : 'bg-green-500/90 dark:bg-green-600/90 text-white hover:bg-green-600 dark:hover:bg-green-500 focus:ring-green-400 shadow-lg shadow-green-500/25 dark:shadow-green-600/20'
                             }`}
