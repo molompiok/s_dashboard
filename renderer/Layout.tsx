@@ -339,7 +339,7 @@ function Frame({ children }: { children: React.ReactNode }) {
         />
       </div>
       <div
-        className="frame-child overflow-auto flex w-full transition-all duration-300 relative min-h-screen"
+        className="frame-child flex w-full transition-all duration-300 relative min-h-screen"
         style={{ filter: blur ? `blur(${blur}px)` : 'none' }}
       >
 

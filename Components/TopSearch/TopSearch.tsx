@@ -22,6 +22,8 @@ import { useTranslation } from 'react-i18next'; // ✅ i18n
 import { debounce } from '../Utils/functions'; // Garder debounce
 import logger from '../../api/Logger';
 import { useGlobalStore } from '../../api/stores/StoreStore';
+import { cardStyle } from '../Button/Style';
+import { CommandItem } from '../CommandItem/CommandItem';
 // Importer potentiellement CommandItem ou ClientItem pour afficher commandes/clients
 // import { CommandItem } from '../CommandesList/CommandItem';
 // import { ClientItem } from '../ClientList/ClientItem'; // Supposons qu'il existe
@@ -71,7 +73,7 @@ function TopSearch({ onClientSelected, onProductSelected, onCategorySelected, on
 
     // Calcul slidesPerView pour Swiper (peut être simplifié)
     const size = useWindowSize().width;
-    const productSize = size < 800 ? ((size - 260) / (700 - 260)) * 1.8 + 1 : 3.3;
+    const productSize = size < 800 ? ((size - 260) / 220) + 1.3 : 3.98;
     const categorySize = size < 800 ? ((size - 260) / (700 - 260)) * 4 + 2.2 : 6.4;
 
 
@@ -89,7 +91,7 @@ function TopSearch({ onClientSelected, onProductSelected, onCategorySelected, on
 
     return (
         // Conteneur principal: padding, flex col, gap
-        <div className="top-search p-4  pb-48 flex flex-col gap-5 w-full  h-full max-h-[80vh] overflow-y-auto bg-white rounded-lg shadow-xl"> {/* Hauteur max et scroll */}
+        <div className="top-search p-4  pb-48 flex flex-col gap-5 w-full  h-full max-h-[80vh] overflow-y-auto rounded-lg shadow-xl"> {/* Hauteur max et scroll */}
 
             {/* Barre de Recherche */}
             <div className="relative w-full">
@@ -104,11 +106,11 @@ function TopSearch({ onClientSelected, onProductSelected, onCategorySelected, on
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
                 />
-                <IoSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
+                <IoSearch className="absolute left-3 top-1/2 -translate-y-1/2 dark:text-white text-gray-400 w-5 h-5 pointer-events-none" />
             </div>
 
             {/* Indicateur de chargement ou d'erreur */}
-            {isLoading && <p className="text-sm text-gray-500 text-center py-4">{t('common.loading')}...</p>}
+            {isLoading && <p className="text-sm dark:text-white text-gray-500 text-center py-4">{t('common.loading')}...</p>}
             {isError && <p className="text-sm text-red-500 text-center py-4">{error?.message || t('error_occurred')}</p>}
 
             {/* Résultats */}
@@ -117,7 +119,7 @@ function TopSearch({ onClientSelected, onProductSelected, onCategorySelected, on
                     {/* Catégories */}
                     {searchResults.categories.length > 0 && (
                         <section>
-                            <h3 className="text-xs font-semibold uppercase text-gray-500 mb-2 px-1">{t('topSearch.categoriesTitle')}</h3>
+                            <h3 className="text-xs font-semibold uppercase dark:text-white text-gray-500 mb-2 px-1">{t('topSearch.categoriesTitle')}</h3>
                             <Swiper
                                 modules={[FreeMode]}
                                 slidesPerView={categorySize}
@@ -138,7 +140,7 @@ function TopSearch({ onClientSelected, onProductSelected, onCategorySelected, on
                     {/* Produits */}
                     {searchResults.products.length > 0 && (
                         <section>
-                            <h3 className="text-xs font-semibold uppercase text-gray-500 mb-2 px-1">{t('topSearch.productsTitle')}</h3>
+                            <h3 className="text-xs font-semibold uppercase dark:text-white text-gray-500 mb-2 px-1">{t('topSearch.productsTitle')}</h3>
                             <Swiper
                                 style={{ overflow: 'visible' }}
                                 modules={[FreeMode]} slidesPerView={productSize} spaceBetween={10} freeMode={true} className="top-search-swiper -mx-1 px-1"
@@ -155,13 +157,19 @@ function TopSearch({ onClientSelected, onProductSelected, onCategorySelected, on
                     {/* Clients */}
                     {searchResults.clients.length > 0 && (
                         <section>
-                            <h3 className="text-xs font-semibold uppercase text-gray-500 mb-2 px-1">{t('topSearch.clientsTitle')}</h3>
+                            <h3 className="text-xs font-semibold uppercase dark:text-white  text-gray-500 mb-2 px-1">{t('topSearch.clientsTitle')}</h3>
                             <div className="flex flex-col gap-2">
                                 {/* TODO: Créer un ClientItemSearch ou adapter ClientItemRow */}
                                 {searchResults.clients.map((c) => (
-                                    <button key={c.id} onClick={() => handleSelect(c, 'client')} className="text-left p-2 rounded hover:bg-gray-100 flex items-center gap-2">
-                                        <div className="w-6 h-6 rounded-full bg-gray-200 flex-shrink-0"></div> {/* Placeholder avatar */}
-                                        <span className="text-sm text-gray-700 truncate">{c.full_name || c.email}</span>
+                                    <button key={c.id} onClick={() => handleSelect(c, 'client')} className={'flex items-center gap-4 '+cardStyle+' p-2 mob:p-2 sm:p-2'}>
+                                        <div className="w-12 h-12 rounded-full bg-cover bg-center bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 font-semibold text-sm flex items-center justify-center shrink-0"
+                                        style={{
+                                            background:c.photo?.[0] ? getMedia({isBackground:true,from:'api', source:c.photo[0]}):'#3455'
+                                        }}
+                                        >
+                                             {!c.photo?.[0] && (c.full_name?.substring(0, 2).toUpperCase() || '?')}
+                                        </div>
+                                        <span className="text-sm dark:text-white  text-gray-700 truncate">{c.full_name || c.email}</span>
                                     </button>
                                 ))}
                             </div>
@@ -171,13 +179,13 @@ function TopSearch({ onClientSelected, onProductSelected, onCategorySelected, on
                     {/* Commandes */}
                     {searchResults.commands.length > 0 && (
                         <section>
-                            <h3 className="text-xs font-semibold uppercase text-gray-500 mb-2 px-1">{t('topSearch.commandsTitle')}</h3>
+                            <h3 className="text-xs font-semibold uppercase text-gray-500 mb-2 px-1">{t('topSearch.commandsTitle')} <span>{}</span></h3>
                             <div className="flex flex-col gap-2">
                                 {/* TODO: Créer un CommandItemSearch ou adapter CommandItem */}
                                 {searchResults.commands.map((cmd) => (
-                                    <button key={cmd.id} onClick={() => handleSelect(cmd, 'command')} className="text-left p-2 rounded hover:bg-gray-100 text-sm text-gray-700">
-                                        #{cmd.reference ?? cmd.id.substring(0, 8)} - {cmd.user?.full_name} ({cmd.total_price} {cmd.currency})
-                                    </button>
+                                    <span key={cmd.id} onClick={() => handleSelect(cmd, 'command')} >
+                                    <CommandItem command={cmd}/>
+                                    </span>
                                 ))}
                             </div>
                         </section>
@@ -187,7 +195,7 @@ function TopSearch({ onClientSelected, onProductSelected, onCategorySelected, on
             )}
             {/* Message si aucune correspondance */}
             {!hasResults && (
-                <div className="text-center py-10 text-gray-500">
+                <div className="text-center py-10 dark:text-white text-gray-500 ">
                     <div className="w-32 h-32 mx-auto bg-contain bg-center bg-no-repeat mb-4 opacity-70" style={{ background: getMedia({ isBackground: true, source: '/res/empty/search.png' }) }}></div>
                     {t('topSearch.noResultsFound', { term: debouncedSearchTerm })}
                 </div>

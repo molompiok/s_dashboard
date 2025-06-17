@@ -29,7 +29,7 @@ const Types = [
 function FeatureTypes({ className, onSelected, active }: { active?: string, onSelected: (type: string) => void, className?: string }) {
   const { t } = useTranslation();
   const s = useWindowSize().width;
-  const n = s <= 580 ? ((s - 220) / 360) + 1 : 2;
+  const n = s <= 700 ? ((s - 260) / 120) + 1.5 : 5.17;
 
   return (
     <Swiper
@@ -44,7 +44,7 @@ function FeatureTypes({ className, onSelected, active }: { active?: string, onSe
       {Types.map(typeInfo => (
         <SwiperSlide key={typeInfo.name}>
           <div
-            className={`no-select flex items-center w-full h-full gap-3 sm:gap-4 rounded-xl cursor-pointer p-2 sm:p-3 transition duration-200 ease-in-out border
+            className={`no-select flex flex-col items-center w-full h-full gap-3 sm:gap-4 rounded-xl cursor-pointer p-2 sm:p-3 transition duration-200 ease-in-out border
               ${active === typeInfo.name
                 ? 'bg-teal-100 dark:bg-teal-900 border-teal-300 dark:border-teal-600 ring-1 ring-teal-400 dark:ring-teal-500'
                 : 'bg-white dark:bg-gray-600/60 border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-300 dark:hover:border-gray-600'

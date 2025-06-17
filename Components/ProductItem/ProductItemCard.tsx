@@ -129,11 +129,11 @@ function ProductItemCard({ product, onClick }: ProductItemCardProps) {
 
     return (
         // Rendre comme un div cliquable globalement, mais les actions sont dans le menu
-        <div className="product-item-card relative group aspect-[65/100] rounded-xl overflow-visible shadow-sm  hover:border-blue-200 hover:shadow-md transition duration-200 flex flex-col bg-white dark:bg-white/5 border border-transparent dark:border-white/10">
-            {/* Conteneur Image (lien vers détail produit) */}
-            <span onClick={() => {
+        <div onClick={() => {
                 onClick ? onClick() : navigate(`/products/${product.id}`);
-            }} className="block w-full overflow-hidden rounded-tr-xl  rounded-tl-xl  aspect-square relative flex-shrink-0 bg-gray-100">
+            }}className="product-item-card relative group aspect-[65/100] rounded-xl overflow-visible shadow-sm  hover:border-blue-200 hover:shadow-md transition duration-200 flex flex-col bg-white dark:bg-white/5 border border-transparent dark:border-white/10">
+            {/* Conteneur Image (lien vers détail produit) */}
+            <span  className="block w-full overflow-hidden rounded-tr-xl  rounded-tl-xl  aspect-square relative flex-shrink-0 bg-gray-100">
                 {/* Gestion Erreur Image */}
                 {!imgError ? (
                     fileType === 'image' ? (
@@ -179,17 +179,17 @@ function ProductItemCard({ product, onClick }: ProductItemCardProps) {
                             </button>
                             {/* Menu déroulant */}
                             {isMenuOpen && (
-                                <div className="absolute right-0 mt-1 w-40 bg-white dark:bg-gray-800 rounded-md shadow-lg ring-1 ring-black/10 dark:ring-white/10 py-1 z-20" 
+                                <div className="absolute right-0 mt-1 w-40 bg-white dark:bg-gray-800 dark:text-white rounded-md shadow-lg ring-1 ring-black/10 dark:ring-white/10 py-1 z-20" 
                                 role="menu"
                                 ref={menuRef} 
-                                onClick={(e) => e.stopPropagation()}>
-                                    <a href={`/products/${product.id}/edit`} role="menuitem" className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 w-full text-left">
+                                onClick={(e) => {e.preventDefault();e.stopPropagation()}}>
+                                    <a onClick={()=>navigate(`/products/${product.id}`)} role="menuitem" className="flex items-center gap-2 px-3 py-1.5 text-sm dark:text-white text-gray-700 hover:bg-gray-100 hover:text-gray-900 w-full text-left">
                                         <IoPencil className="w-4 h-4" /> {t('common.edit')}
                                     </a>
                                     <button onClick={(e) => {
                                         e.preventDefault()
                                         handleToggleVisibility()
-                                    }} role="menuitem" className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 w-full text-left disabled:opacity-50" disabled={updateProductMutation.isPending}>
+                                    }} role="menuitem" className="flex items-center gap-2 px-3 py-1.5 text-sm dark:text-white text-gray-700 hover:bg-gray-100 hover:text-gray-900 w-full text-left disabled:opacity-50" disabled={updateProductMutation.isPending}>
                                         {isVisible ? <IoEyeOffOutline className="w-4 h-4" /> : <IoEyeOutline className="w-4 h-4" />}
                                         {isVisible ? t('productList.setHidden') : t('productList.setVisible')}
                                     </button>

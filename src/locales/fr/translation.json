@@ -709,6 +709,7 @@
             "stock": "Stocks & Prix",
             "publish": "Publication"
         },
+        "seeProduct":" Voir le produit",
         "noVariantsForStock": "Aucune variante à configurer",
         "noVariantsForStockDesc": "Ajoutez des variantes (comme la taille ou la couleur) à l'étape précédente pour gérer les stocks de chaque combinaison.",
         "viewOnStore": "Voir en boutique",

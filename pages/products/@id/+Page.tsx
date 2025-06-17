@@ -31,6 +31,8 @@ import { FeatureInfo } from '../../../Components/FeatureInfo/FeatureInfo';
 import { log } from 'console';
 import { ApiError } from '../../../api/SublymusApi';
 import { Plus } from 'lucide-react';
+import { SpinnerIcon } from '../../../Components/Confirm/Spinner';
+import { cardStyle } from '../../../Components/Button/Style';
 
 export { Page };
 
@@ -58,13 +60,13 @@ const Stepper = ({ currentStep, setStep, isNewProduct }: { currentStep: WizardSt
     const currentStepIndex = steps.findIndex(s => s.id === currentStep);
 
     return (
-        <nav className="flex items-center justify-center p-2 bg-gray-100/50 dark:bg-black/10 rounded-xl" aria-label="Progress">
+        <nav className={`flex items-center justify-center  rounded-xl ${cardStyle}`} aria-label="Progress">
             <ol role="list" className="flex items-center space-x-2 sm:space-x-4">
                 {steps.map((step, stepIdx) => (
                     <li key={step.name} className="flex items-center">
                         <button onClick={() => setStep(step.id)} disabled={isNewProduct && stepIdx > 0} className="flex flex-col items-center text-center disabled:cursor-not-allowed group">
-                            <div className={`relative flex h-10 w-10 items-center justify-center rounded-full transition-all duration-300 ${stepIdx <= currentStepIndex ? 'bg-teal-600' : 'bg-gray-200 dark:bg-gray-700 group-hover:bg-gray-300 dark:group-hover:bg-gray-600'}`}>
-                                <step.icon className={`h-5 w-5 ${stepIdx <= currentStepIndex ? 'text-white' : 'text-gray-500 dark:text-gray-400'}`} />
+                            <div className={`relative flex h-10 w-10 items-center justify-center rounded-full transition-all duration-300 ${stepIdx == currentStepIndex ? 'bg-teal-600' : isNewProduct? 'bg-gray-200 dark:bg-gray-700 group-hover:bg-gray-300 dark:group-hover:bg-gray-600':'bg-teal-600/10 dark:bg-teal-600/20'}`}>
+                                <step.icon className={`h-6 w-6 ${stepIdx == currentStepIndex ? 'text-white' : isNewProduct? 'text-gray-500 dark:text-gray-400':'text-teal-700'}`} />
                             </div>
                             <p className={`mt-2 text-xs font-medium transition-colors ${step.id === currentStep ? 'text-teal-600 dark:text-teal-400' : 'text-gray-500 dark:text-gray-400'}`}>{step.name}</p>
                         </button>
@@ -78,9 +80,9 @@ const Stepper = ({ currentStep, setStep, isNewProduct }: { currentStep: WizardSt
 // --- Composant Principal ---
 function Page() {
     const { t } = useTranslation();
-    const { params, replaceLocation } = useMyLocation();
     const { openChild } = useChildViewer();
     const { currentStore } = useGlobalStore()
+    const { params, replaceLocation } = useMyLocation();
     const productId = params[1];
     const isNewProduct = productId === 'new';
 
@@ -260,6 +262,9 @@ function Page() {
                     </button> : <div></div>}
                     {isNewProduct && !originalProduct ? (
                         <button onClick={handleSaveAndContinue} disabled={createProductMutation.isPending} className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white bg-teal-600 hover:bg-teal-700 disabled:opacity-50 transition-colors">
+                            {
+                                createProductMutation.isPending && <SpinnerIcon/>
+                            }
                             {t('product.saveAndContinue')} <IoArrowForward />
                         </button>
                     ) : step !== 'publish' ? (
@@ -420,7 +425,7 @@ const ProductVariantsStep = ({ product, onUpdate }: { product: ProductInterface,
 
     return (
         <div className={`${sectionStyle} space-y-6`}>
-            <div className='flex items-center flex-wrap sx2:flex-nowrap'>
+            <div className='flex items-center flex-wrap sl:flex-nowrap'>
                 <h2 className="inline text-xl font-bold text-gray-900 dark:text-white">
                     {t('product.step.variants')}
                 </h2>

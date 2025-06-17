@@ -2,7 +2,8 @@ import React from 'react';
 import { IoCloudUploadOutline, IoTrash } from 'react-icons/io5';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getMedia } from '../Utils/StringFormater';
-import { ClientCall } from '../Utils/functions';
+import { ClientCall, getFileType } from '../Utils/functions';
+import { NO_PICTURE } from '../Utils/constants';
 
 export type ImageItem = { id: string; source: string | File };
 
@@ -60,7 +61,7 @@ export const ImageManager: React.FC<ImageManagerProps> = ({ images, onImagesChan
     }
   };
 
-  
+
   const handleDragOver = (e: React.DragEvent) => {
     e.preventDefault();
   };
@@ -90,7 +91,7 @@ export const ImageManager: React.FC<ImageManagerProps> = ({ images, onImagesChan
     onImagesChange(updated);
   };
 
-  
+
 
   return (
     <div
@@ -99,42 +100,53 @@ export const ImageManager: React.FC<ImageManagerProps> = ({ images, onImagesChan
       onDragOver={handleDragOver}
       ref={containerRef}
     >
-      <div className="grid grid-cols-[repeat(auto-fill,minmax(120px,1fr))] gap-3">
+      <div className="grid grid-cols-[repeat(auto-fill,minmax(100px,1fr))] gap-3">
         <AnimatePresence>
-          {images.map((image, index) => (
-            <motion.div
-              key={image.id}
-              initial={{ opacity: 0, scale: 0.8 }}
-              animate={{ opacity: 1, scale: 1 }}
-              exit={{ opacity: 0, scale: 0.8 }}
-              transition={{ type: 'spring', stiffness: 300, damping: 20 }}
-              draggable
-              onDragStart={(e) => handleDragStart(e as any, index)}
-              onDragOver={(e) => e.preventDefault()}
-              onDrop={(e) => handleDropOnImage(e, index)}
-              className="relative aspect-square rounded-lg overflow-hidden shadow-md cursor-grab active:cursor-grabbing"
-            >
-              <img
-                src={
-                  typeof image.source === 'string'
-                    ? getMedia({ source: image.source, from: 'api' })
-                    : URL.createObjectURL(image.source)
+          {images.map((image, index) => {
+            const fileType = getFileType(image.source);
+            const src = getMedia({ source: image.source, from: 'api' });
+
+            return (
+              <motion.div
+                key={image.id}
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                transition={{ type: 'spring', stiffness: 300, damping: 20 }}
+                draggable
+                onDragStart={(e) => handleDragStart(e as any, index)}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={(e) => handleDropOnImage(e, index)}
+                className="relative aspect-square rounded-lg overflow-hidden shadow-md cursor-grab active:cursor-grabbing"
+              >
+                {
+                  fileType === 'image' ? (
+                    <img src={src || NO_PICTURE}
+                      alt="Product" loading="lazy" className="w-full h-full object-cover block"
+                      onError={(e) => {
+                        e.currentTarget.src = NO_PICTURE
+                      }} />
+                  ) : fileType === 'video' ? (
+                    <video muted autoPlay loop playsInline className="w-full h-full object-cover block" src={src || ''} onError={(e) => {
+                      e.currentTarget.src = NO_PICTURE
+                    }} />
+                  ) : (
+                    <img src={NO_PICTURE} alt="Product" loading="lazy" className="w-full h-full object-cover block bg-gray-100 dark:bg-gray-800" />
+                  )
                 }
-                className="w-full h-full object-cover pointer-events-none"
-                alt="Product"
-              />
-              <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
-                <button
-                  type="button"
-                  onClick={() => removeImage(image.id)}
-                  className="absolute top-1.5 right-1.5 p-1.5 bg-red-600/80 text-white rounded-full hover:bg-red-700 transition-all"
-                  aria-label="Supprimer l'image"
-                >
-                  <IoTrash size={14} />
-                </button>
-              </div>
-            </motion.div>
-          ))}
+                <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
+                  <button
+                    type="button"
+                    onClick={() => removeImage(image.id)}
+                    className="absolute top-1.5 right-1.5 p-1.5 bg-red-600/80 text-white rounded-full hover:bg-red-700 transition-all"
+                    aria-label="Supprimer l'image"
+                  >
+                    <IoTrash size={14} />
+                  </button>
+                </div>
+              </motion.div>
+            )
+          })}
         </AnimatePresence>
 
         {/* Bouton d'ajout d'image */}

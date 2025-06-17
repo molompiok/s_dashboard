@@ -68,66 +68,64 @@ export function Skeleton({ className, ...props }: SkeletonProps) {
   );
 }
 
-export function OrderDetailSkeleton() {
-  return (
-    <div className="space-y-6 animate-pulse">
-      <Topbar />
-      {/* Top Card */}
-      <div className="rounded-2xl  p-4 bg-white dark:bg-gray-800 shadow-sm space-y-3">
-        <div className="flex items-start justify-between">
-          <div className="h-20 w-20 bg-gray-200 dark:bg-gray-500  rounded-md" />
-          <div className="flex-1 ml-4 space-y-2">
-            <div className="h-4 w-1/2 bg-gray-200 dark:bg-gray-500  rounded" />
-            <div className="h-4 w-1/3 bg-gray-200 dark:bg-gray-500  rounded" />
-            <div className="h-6 w-24 bg-gray-300 rounded-full" />
-          </div>
-        </div>
-      </div>
-
-      {/* Infos client */}
-      <div className="rounded-2xl  p-4 bg-white dark:bg-gray-800 shadow-sm space-y-3">
-        <div className="h-4 w-1/3 bg-gray-200 dark:bg-gray-500  rounded" />
-        <div className="flex items-center space-x-4">
-          <div className="h-16 w-16 rounded-full bg-gray-200 dark:bg-gray-500 " />
-          <div className="flex-1 space-y-2">
-            <div className="h-4 w-1/2 bg-gray-200 dark:bg-gray-500  rounded" />
-            <div className="h-4 w-1/3 bg-gray-200 dark:bg-gray-500  rounded" />
-            <div className="h-4 w-2/3 bg-gray-200 dark:bg-gray-500  rounded" />
-          </div>
-        </div>
-      </div>
-
-      {/* Liste des produits */}
-      <div className="space-y-4">
-        {Array.from({ length: 3 }).map((_, i) => (
-          <div
-            key={i}
-            className="rounded-2xl  p-4 bg-white dark:bg-gray-800 shadow-sm flex space-x-4"
-          >
-            <div className="h-20 w-20 bg-gray-200 dark:bg-gray-500  rounded" />
-            <div className="flex-1 space-y-2">
-              <div className="h-4 w-1/2 bg-gray-200 dark:bg-gray-500  rounded" />
-              <div className="h-4 w-3/4 bg-gray-200 dark:bg-gray-500  rounded" />
-              <div className="h-4 w-1/4 bg-gray-200 dark:bg-gray-500  rounded" />
-              <div className="h-6 w-20 bg-gray-300 rounded-full" />
-            </div>
-          </div>
-        ))}
-      </div>
-
-      {/* Statuts */}
-      <div className="rounded-2xl  p-4 bg-white dark:bg-gray-800 shadow-sm space-y-4">
-        <div className="h-4 w-1/3 bg-gray-200 dark:bg-gray-500  rounded" />
-        <div className="space-y-2">
-          {Array.from({ length: 2 }).map((_, i) => (
-            <div key={i} className="h-4 w-2/3 bg-gray-200 dark:bg-gray-500  rounded" />
-          ))}
-        </div>
-        <div className="h-8 w-32 bg-gray-300 rounded-md ml-auto" />
-      </div>
-
+// Ce composant interne imite une carte "verre dépoli" du skeleton
+const SkeletonCard = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
+    <div className={`bg-gray-100/80 dark:bg-white/5 rounded-lg border border-gray-200/50 dark:border-white/10 p-4 ${className}`}>
+        {children}
     </div>
-  );
+);
+
+export function OrderDetailSkeleton() {
+    return (
+        <div className="w-full min-h-screen flex flex-col animate-pulse">
+            <Topbar back title="..." />
+
+            <main className="w-full max-w-4xl mx-auto p-4 md:p-6 lg:p-8 flex flex-col gap-6">
+                {/* Squelette de CommandTop */}
+                <SkeletonCard className="flex flex-wrap items-start gap-x-6 gap-y-4">
+                    <div className="flex items-center gap-4 flex-shrink-0">
+                        <div className="w-24 h-24 bg-gray-200 dark:bg-gray-700 rounded-md"></div>
+                        <div className="flex flex-col gap-2">
+                            <div className="h-4 w-24 bg-gray-300 dark:bg-gray-600 rounded"></div>
+                            <div className="h-4 w-32 bg-gray-300 dark:bg-gray-600 rounded"></div>
+                        </div>
+                    </div>
+                    <div className="h-6 w-40 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
+                    <div className="h-6 w-48 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
+                </SkeletonCard>
+
+                {/* Titre Section */}
+                <div className="h-6 w-1/3 bg-gray-300 dark:bg-gray-600 rounded-lg mt-2"></div>
+                
+                {/* Squelette de CommandUser */}
+                <SkeletonCard className="flex flex-col sm:flex-row items-center sm:items-start gap-4">
+                    <div className="w-24 h-24 rounded-full bg-gray-200 dark:bg-gray-700 shrink-0"></div>
+                    <div className="flex flex-col gap-3 flex-grow w-full">
+                        <div className="h-6 w-1/2 bg-gray-300 dark:bg-gray-600 rounded-lg"></div>
+                        <div className="h-4 w-3/4 bg-gray-300 dark:bg-gray-600 rounded-md"></div>
+                        <div className="h-4 w-2/3 bg-gray-300 dark:bg-gray-600 rounded-md"></div>
+                    </div>
+                </SkeletonCard>
+
+                {/* Titre Section */}
+                <div className="h-6 w-1/2 bg-gray-300 dark:bg-gray-600 rounded-lg mt-2"></div>
+                
+                {/* Squelette de la liste de produits */}
+                <div className="flex flex-col gap-3">
+                    {Array.from({ length: 2 }).map((_, i) => (
+                        <SkeletonCard key={i} className="flex items-start gap-3">
+                            <div className="w-20 h-20 rounded-lg bg-gray-200 dark:bg-gray-700 shrink-0"></div>
+                            <div className="flex-grow flex flex-col gap-2">
+                                <div className="h-5 w-3/4 bg-gray-300 dark:bg-gray-600 rounded-md"></div>
+                                <div className="h-4 w-1/2 bg-gray-300 dark:bg-gray-600 rounded-md"></div>
+                                <div className="h-8 w-1/3 bg-gray-300 dark:bg-gray-600 rounded-full ml-auto"></div>
+                            </div>
+                        </SkeletonCard>
+                    ))}
+                </div>
+            </main>
+        </div>
+    );
 }
 
 // Ce composant interne imite une section du formulaire

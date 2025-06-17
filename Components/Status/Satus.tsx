@@ -45,7 +45,7 @@ const statusColors: Record<OrderStatus, { text: string; bg: string; border?: str
 
 
 // Fonction pour obtenir les classes Tailwind ou un style par défaut
-const getStatusClasses = (status: OrderStatus | string): { text: string; bg: string } => {
+ const getStatusClasses = (status: OrderStatus | string): { text: string; bg: string } => {
     const upperStatus = status?.toLowerCase() as OrderStatus; // Tenter de caster
    return statusColors[upperStatus] ?? { text: 'text-gray-700', bg: 'bg-gray-200' }; // Couleur par défaut
 };

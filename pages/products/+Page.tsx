@@ -12,8 +12,8 @@ export { Page };
 function Page() {
   const { t } = useTranslation();
   const breadcrumbs: BreadcrumbItem[] = [
-    { name: t('navigation.home'), url: '/' },
-    { name: t('navigation.products') }, // Dernier élément sans URL
+    { name: t('navigation.home'), url: '/store' },
+    { name: t('navigation.products') },
 ];
   return (
     // Conteneur principal: pleine largeur, fond léger, organisation en colonne

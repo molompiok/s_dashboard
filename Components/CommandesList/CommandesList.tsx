@@ -17,7 +17,7 @@ import Logger from '../../api/Logger';
 import { Pagination } from '../Pagination/Pagination';
 import { Data } from '../../renderer/AppStore/Data';
 import { navigate } from 'vike/client/router';
-import { ClipboardList, ListOrdered } from 'lucide-react';
+import { Calendar, CalendarCheck, CalendarDays, ClipboardList, ListOrdered } from 'lucide-react';
 
 export { CommandeList };
 
@@ -451,7 +451,7 @@ export function DateFilterComponent({ date, setDate, active }: { active: boolean
     const { t } = useTranslation();
     const currentDate = useMemo(() => new Date(), []);
     const defaultMonth = useMemo(() => (date?.[0] ? new Date(date[0]) : currentDate), [date, currentDate]);
-
+    const [isOpenCalendar, openCalendar] = useState(false);
     const selectedRange: DateRange | undefined = useMemo(() => {
         const fromDate = date?.[0] ? new Date(date[0]) : undefined;
         const toDate = date?.[1] ? new Date(date[1]) : fromDate;
@@ -515,57 +515,76 @@ export function DateFilterComponent({ date, setDate, active }: { active: boolean
                                 </button>
                             );
                         })}
+                        <div className={`
+                                    px-3 py-1.5 rounded-lg text-sm font-medium transition-colors duration-150 outline-none
+                                    border 
+                                    ${isOpenCalendar
+                                            ? 'bg-teal-600/20 text-teal-600 border-teal-600'
+                                            : 'border-gray-300 text-gray-700 hover:bg-gray-100 focus:bg-gray-100 ' +
+                                            'dark:border-gray-600 dark:text-gray-200 dark:hover:bg-gray-700 dark:focus:bg-gray-700'
+                                        }
+                                `} onClick={() => openCalendar(prev => !prev)}>
+                            {
+                                isOpenCalendar ? <CalendarCheck
+                                className={"w-6 h-6 text-teal-600  "}
+                            />:<CalendarDays
+                                className={"w-6 h-6 text-gray-600 dark:text-white"}
+                            />
+                            }
+                        </div>
                     </div>
                 </div>
 
                 {/* DayPicker entièrement stylisé pour light/dark mode */}
-                <DayPicker
-                    mode="range"
-                    selected={selectedRange}
-                    onSelect={handleDayPickerSelect}
-                    defaultMonth={defaultMonth}
-                    toDate={currentDate}
-                    // showOutsideDays 
-                    // fixedWeeks
-                    classNames={{
-                        // months: 'flex flex-col sm:flex-row gap-x-4 gap-y-2',
-                        month: 'space-y-4',
-                        // caption: 'flex justify-center pt-1 relative items-center',
-                        // caption_label: 'text-sm font-bold text-gray-800 dark:text-gray-200',
-                        // // nav_button: 'h-7 w-7 bg-transparent p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700',
-                        // table: 'w-full border-collapse space-y-1 mt-2',
-                        // head_row: 'flex',
-                        // head_cell: 'flex-1 text-xs font-normal text-gray-500 dark:text-white rounded-md',
-                        // row: 'flex w-full mt-2',
-                        // cell: 'text-center text-sm p-0 flex-1 relative',
-                        // day: 'h-9 w-9 p-0 font-normal rounded-md transition-colors hover:bg-teal-100 dark:hover:bg-teal-800/50 aria-selected:opacity-100',
-                        range_start: 'bg-gray-200 text-gray-900 dark:text-gray-900',
-                        range_end: 'bg-gray-200 text-gray-900 dark:text-gray-900',
-                        range_middle: 'bg-gray-200 text-gray-900 dark:text-gray-900',
-                        // selected: 'bg-teal-500 text-white hover:bg-teal-600 focus:bg-teal-600',
-                        // today: 'bg-gray-100 dark:bg-gray-700 text-teal-600 dark:text-teal-300 font-bold',
-                        // outside: 'text-gray-400 dark:text-gray-500 opacity-50 aria-selected:opacity-30',
-                        // disabled: 'text-gray-300 dark:text-gray-600',
+                {
+                    isOpenCalendar && <DayPicker
+                        mode="range"
+                        selected={selectedRange}
+                        onSelect={handleDayPickerSelect}
+                        defaultMonth={defaultMonth}
+                        toDate={currentDate}
+                        // showOutsideDays 
+                        // fixedWeeks
+                        classNames={{
+                            // months: 'flex flex-col sm:flex-row gap-x-4 gap-y-2',
+                            month: 'space-y-4',
+                            // caption: 'flex justify-center pt-1 relative items-center',
+                            // caption_label: 'text-sm font-bold text-gray-800 dark:text-gray-200',
+                            // // nav_button: 'h-7 w-7 bg-transparent p-1 rounded-md hover:bg-gray-100 dark:hover:bg-gray-700',
+                            // table: 'w-full border-collapse space-y-1 mt-2',
+                            // head_row: 'flex',
+                            // head_cell: 'flex-1 text-xs font-normal text-gray-500 dark:text-white rounded-md',
+                            // row: 'flex w-full mt-2',
+                            // cell: 'text-center text-sm p-0 flex-1 relative',
+                            // day: 'h-9 w-9 p-0 font-normal rounded-md transition-colors hover:bg-teal-100 dark:hover:bg-teal-800/50 aria-selected:opacity-100',
+                            range_start: 'bg-gray-200 text-gray-900 dark:text-gray-900',
+                            range_end: 'bg-gray-200 text-gray-900 dark:text-gray-900',
+                            range_middle: 'bg-gray-200 text-gray-900 dark:text-gray-900',
+                            // selected: 'bg-teal-500 text-white hover:bg-teal-600 focus:bg-teal-600',
+                            // today: 'bg-gray-100 dark:bg-gray-700 text-teal-600 dark:text-teal-300 font-bold',
+                            // outside: 'text-gray-400 dark:text-gray-500 opacity-50 aria-selected:opacity-30',
+                            // disabled: 'text-gray-300 dark:text-gray-600',
 
-                        // months: 'flex flex-col sm:flex-row gap-4',
-                        // month: 'space-y-4',
-                        // caption: 'flex justify-center pt-1 relative items-center',
-                        // caption_label: 'text-sm font-medium text-gray-800 dark:text-gray-200',
-                        // table: 'w-full border-collapse space-y-1',
-                        // head_row: 'flex',
-                        // head_cell: 'flex-1 text-xs font-normal text-gray-500 dark:text-white',
-                        // row: 'flex w-full',
-                        cell: 'text-center text-sm p-1 flex-1 hover:bg-gray-100 dark:hover:bg-gray-800',
-                        day: 'h-8 w-8 p-0 font-normal dark:text-gray-50',
-                        root: 'text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 rounded-lg p-3',
-                        selected: 'bg-emerald-400 text-gray-900 ',
-                        today: 'border border-emerald-400 rounded-md text-emerald-500 dark:text-emerald-300',
-                        outside: 'text-gray-400 dark:text-gray-500',
-                        disabled: 'text-gray-300 dark:text-gray-600',
-                        chevron: ` fill-emerald-500 `,
+                            // months: 'flex flex-col sm:flex-row gap-4',
+                            // month: 'space-y-4',
+                            // caption: 'flex justify-center pt-1 relative items-center',
+                            // caption_label: 'text-sm font-medium text-gray-800 dark:text-gray-200',
+                            // table: 'w-full border-collapse space-y-1',
+                            // head_row: 'flex',
+                            // head_cell: 'flex-1 text-xs font-normal text-gray-500 dark:text-white',
+                            // row: 'flex w-full',
+                            cell: 'text-center text-sm p-1 flex-1 hover:bg-gray-100 dark:hover:bg-gray-800',
+                            day: 'h-8 w-8 p-0 font-normal dark:text-gray-50',
+                            root: 'text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 rounded-lg p-3',
+                            selected: 'bg-emerald-400 text-gray-900 ',
+                            today: 'border border-emerald-400 rounded-md text-emerald-500 dark:text-emerald-300',
+                            outside: 'text-gray-400 dark:text-gray-500',
+                            disabled: 'text-gray-300 dark:text-gray-600',
+                            chevron: ` fill-emerald-500 `,
 
-                    }}
-                />
+                        }}
+                    />
+                }
             </div>
         </FilterPanelWrapper>
     );

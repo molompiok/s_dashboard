@@ -100,7 +100,7 @@ function Topbar({
                 </button>
             )}
 
-            <div className='left flex flex-col flex-grow min-w-0 mr-4'>
+            <div className='left overflow-hidden flex flex-col flex-grow min-w-0'>
                 {displayTitle ? (
                     <>
                         <h3 className='text-sm text-gray-500 dark:text-gray-400 truncate'>{displayTitle}</h3>
@@ -144,7 +144,7 @@ function Topbar({
             </div>
 
             {/* Section Droite: Recherche, Notifications (commenté) & Avatar */}
-            <div className='right flex h-16 bg-white/60 dark:bg-gray-900/60 rounded-tl-md backdrop-blur-md pr-4 sm:pr-6 rounded-tb-md items-center gap-3 flex-shrink-0'>
+            <div className='right flex h-16  items-center gap-3 flex-shrink-0 pr-2 sx:p-4'>
                 {search && (
                     <button
                         onClick={handleSearchClick}

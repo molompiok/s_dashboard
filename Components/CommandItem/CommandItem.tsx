@@ -4,7 +4,7 @@ import { getMedia } from "../Utils/StringFormater";
 import { OrderStatusElement } from "../Status/Satus";
 
 // --- Composant CommandItem (avec mode nuit) ---
-export function CommandItem({ command }: { command: CommandInterface }) {
+export function CommandItem({ command, onClick }: {onClick?:()=>void, command: CommandInterface }) {
     const { t } = useTranslation();
     return (
         // 🎨 Conteneur principal avec effet verre dépoli en mode nuit

@@ -86,6 +86,8 @@ export const buttonNavStyle = `
     cursor-pointer select-none
 `;
 
+export const  cardStyle = ' bg-white/80 dark:bg-white/5 backdrop-blur-lg rounded-lg shadow-sm border border-gray-200/80 dark:border-white/10 p-2 mob:p-4 sm:p-6 ' 
+
 // Classes utilitaires pour les états des boutons
 export const buttonStateClasses = {
     disabled: 'opacity-50 cursor-not-allowed pointer-events-none',
