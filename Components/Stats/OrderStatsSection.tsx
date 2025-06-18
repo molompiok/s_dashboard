@@ -43,12 +43,12 @@ const OrderStatsSkeleton: React.FC = () => (
 
 const OrderStatsSection: React.FC<OrderStatsSectionProps> = ({ data, period, includes, isLoading }) => {
     const { t } = useTranslation();
-    const [isDarkMode, setIsDarkMode] = useState(false);
+    const [isDarkMode, setThemeMode] = useState(false);
 
     useEffect(() => {
         const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-        setIsDarkMode(mediaQuery.matches);
-        const handler = (e: MediaQueryListEvent) => setIsDarkMode(e.matches);
+        setThemeMode(mediaQuery.matches);
+        const handler = (e: MediaQueryListEvent) => setThemeMode(e.matches);
         mediaQuery.addEventListener('change', handler);
         return () => mediaQuery.removeEventListener('change', handler);
     }, []);
@@ -57,7 +57,7 @@ const OrderStatsSection: React.FC<OrderStatsSectionProps> = ({ data, period, inc
         if (!data || data.length === 0) return { labels: [], datasets: [] };
 
         const labels = data.map(item => item.date).sort();
-        const datasets:any[] = [];
+        const datasets: any[] = [];
         //@ts-ignore
         const currency = (data[0])?.currency ?? 'cfa'; // Get currency from first item
 
@@ -88,7 +88,7 @@ const OrderStatsSection: React.FC<OrderStatsSectionProps> = ({ data, period, inc
         addDataset('total_price', 'total_price');
         addDataset('orders_count', 'orders_count');
         addDataset('items_count', 'items_count');
-        
+
         return { labels, datasets };
     }, [data, isDarkMode, t]);
 
@@ -102,7 +102,7 @@ const OrderStatsSection: React.FC<OrderStatsSectionProps> = ({ data, period, inc
         if (dates.length === 0) return { actualStartDate: undefined, actualEndDate: undefined };
         return { actualStartDate: DateTime.min(...dates), actualEndDate: DateTime.max(...dates) };
     }, [data]);
-    
+
     const navigationDateRange = useMemo(() => ({
         min_date: actualStartDate?.startOf(period).toISO(),
         max_date: actualEndDate?.endOf(period).endOf('day').toISO(),
@@ -112,7 +112,7 @@ const OrderStatsSection: React.FC<OrderStatsSectionProps> = ({ data, period, inc
         const aggregation: Record<string, Record<string, number>> = {};
         if (!data) return aggregation;
         const dimensionsToCheck = Object.keys(includes).filter(key => includes[key as keyof typeof includes]);
-        
+
         dimensionsToCheck.forEach(dimKey => {
             if (!data.some(item => item[dimKey as keyof OrderStatsResultItem])) return;
             aggregation[dimKey] = {};
@@ -127,7 +127,7 @@ const OrderStatsSection: React.FC<OrderStatsSectionProps> = ({ data, period, inc
         });
         return aggregation;
     }, [data, includes]);
-    
+
     const [selectedDimensionKey, setSelectedDimensionKey] = useState<string | null>(null);
 
     useEffect(() => {
@@ -159,7 +159,7 @@ const OrderStatsSection: React.FC<OrderStatsSectionProps> = ({ data, period, inc
 
                     <div className="mt-6 border-t border-gray-200/80 dark:border-white/10 pt-4">
                         {noDimensionData ? (
-                             <div className="text-center text-gray-500 dark:text-gray-400">{t('stats.noDetailedData')}</div>
+                            <div className="text-center text-gray-500 dark:text-gray-400">{t('stats.noDetailedData')}</div>
                         ) : (
                             <>
                                 <div className="flex flex-wrap gap-2 mb-4">

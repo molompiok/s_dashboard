@@ -1,12 +1,13 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
   content: [
+    './src/**/*.{js,ts,jsx,tsx,html}',
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",        // Scanne tes pages Vike
     "./renderer/**/*.{js,ts,jsx,tsx}",      // Scanne tes composants de rendu
     "./components/**/*.{js,ts,jsx,tsx,mdx}",  // Scanne tes composants UI
     // Ajoute d'autres chemins si nécessaire
   ],
-  darkMode: 'class', // Permet le dark mode basé sur une classe sur l'élément <html>
+  darkMode: 'class',
   theme: {
     extend: {
       colors: { // Tu peux définir tes couleurs personnalisées ici (ex: teal)

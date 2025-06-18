@@ -23,10 +23,15 @@ import {
 import { Toaster } from 'react-hot-toast';
 import { useMyLocation } from '../Hooks/useRepalceState';
 import { useAuthStore } from '../api/stores/AuthStore';
-import { useAppZust } from './AppStore/appZust';
+import {  useAppZust } from './AppStore/appZust';
 
 const urlHideSideBar = ['/auth', '/profile', '/setting', '/themes', '/settings']
 
+const setTheme = function (theme: 'light' | 'dark') {
+  ClientCall(function () { return localStorage.setItem })?.('theme', theme);
+  ClientCall(function () { return document.documentElement.classList.remove })?.('light', 'dark');
+  ClientCall(function () { return document.documentElement.classList.add })?.(theme);
+};
 // Hook pour le mode sombre
 const useDarkMode = () => {
   const [isDark, setIsDark] = useState(() => {
@@ -55,7 +60,6 @@ function Layout({ children, pageContext }: { children: React.ReactNode; pageCont
   const { nextPage } = useMyLocation();
   const { token, user, getToken, getUser, setUser } = useAuthStore();
   const { getCurrentStore } = useGlobalStore();
-  const [isDark, setIsDark] = useDarkMode();
   const { sideLeft, setSideLeft } = useAppZust()
 
   useEffect(() => {
@@ -75,38 +79,49 @@ function Layout({ children, pageContext }: { children: React.ReactNode; pageCont
     }
   }, [token, user]);
 
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const { themeMode, initDarkMode, setThemeMode } = useAppZust();
 
-    useEffect(() => {
-        // Fonction pour vérifier la préférence initiale du thème
-        const checkTheme = () => {
-            const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-            setIsDarkMode(prefersDark);
-        };
+  // initDarkMode();
 
-        // Vérifier le thème au montage du composant
-        checkTheme();
+  useEffect(() => {
+    // Fonction pour vérifier la préférence initiale du thème
+    const checkTheme = () => {
+      
+      const savedTheme = initDarkMode()
 
-        // Créer un listener pour les changements de thème
-        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-        const handleThemeChange = (e:any) => {
-            setIsDarkMode(e.matches); 
-            console.log('--- mode ----->>>>>',e.matches);
-            e.matches ? document.body.classList.add('dark') : document.body.classList.remove('dark')
-        };
+      if (savedTheme === 'light' || savedTheme === 'dark') {
+        document.documentElement.classList.add(savedTheme);
+        document.body.classList.add(savedTheme);
+      } else {
+        const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+        document.documentElement.classList.add(prefersDark ? 'dark' : 'light');
+        document.body.classList.add(prefersDark ? 'dark' : 'light');
+      }
+    };
 
-        // Ajouter l'écouteur d'événements
-        mediaQuery.addEventListener('change', handleThemeChange);
+    // Vérifier le thème au montage du composant
+    checkTheme();
 
-        // Nettoyer l'écouteur lors du démontage du composant
-        return () => {
-            mediaQuery.removeEventListener('change', handleThemeChange);
-        };
-    }, []);
+    // Créer un listener pour les changements de thème
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleThemeChange = (e: any) => {
+      setThemeMode(e.matches);
+      console.log('--- mode ----->>>>>', e.matches);
+      e.matches ? document.body.classList.add('dark') : document.body.classList.remove('dark')
+    };
 
-  const toggleSidebar = () => {
-    setSideLeft(!sideLeft);
-  };
+    // Ajouter l'écouteur d'événements
+    mediaQuery.addEventListener('change', handleThemeChange);
+
+    // Nettoyer l'écouteur lors du démontage du composant
+    return () => {
+      mediaQuery.removeEventListener('change', handleThemeChange);
+    };
+  }, []);
+
+  // const toggleSidebar = () => {
+  //   setSideLeft(!sideLeft);
+  // };
 
 
   return (
@@ -146,12 +161,12 @@ function Layout({ children, pageContext }: { children: React.ReactNode; pageCont
             {/* Dark Mode Toggle Desktop */}
             <div className="hidden md:block px-4 py-2 border-t border-gray-200 dark:border-gray-700">
               <button
-                onClick={() => setIsDark(!isDark)}
+                onClick={() => setThemeMode(themeMode=='dark'?'light':'dark')}
                 className="flex items-center w-full px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
               >
-                {isDark ? <IoSunny className="w-5 h-5" /> : <IoMoon className="w-5 h-5" />}
-                <span className="ml-3">
-                  {isDark ? 'Mode Clair' : 'Mode Sombre'}
+                {themeMode ? <IoSunny className="w-5 h-5" /> : <IoMoon className="w-5 h-5" />}
+                <span className="ml-3 hidden lg:inline">
+                  {themeMode ? 'Mode Clair' : 'Mode Sombre'}
                 </span>
               </button>
             </div>
@@ -167,10 +182,10 @@ function Layout({ children, pageContext }: { children: React.ReactNode; pageCont
               className: '',
               duration: 4000,
               style: {
-                background: isDark ? '#374151' : '#ffffff',
-                color: isDark ? '#ffffff' : '#374151',
+                background: themeMode =='dark' ? '#374151' : '#ffffff',
+                color: themeMode =='dark' ? '#ffffff' : '#374151',
                 fontSize: '14px',
-                border: isDark ? '1px solid #4B5563' : '1px solid #E5E7EB',
+                border: themeMode =='dark' ? '1px solid #4B5563' : '1px solid #E5E7EB',
                 borderRadius: '12px',
                 boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
               },

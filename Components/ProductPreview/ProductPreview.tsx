@@ -8,6 +8,7 @@ import { IoPeopleSharp, IoPricetag, IoStarHalf } from "react-icons/io5"
 import { useState } from "react"
 import { NO_PICTURE } from "../Utils/constants"
 import { useTranslation } from "react-i18next"
+import { cardStyle } from "../Button/Style"
 
 export function ProductPreview({ product }: { product: Partial<ProductInterface> }) {
   const { t } = useTranslation()
@@ -22,16 +23,9 @@ export function ProductPreview({ product }: { product: Partial<ProductInterface>
   return (
     <a
       href={`/products/${product.id}`}
-      className="
-      sx2:flex
-        group relative block rounded-xl overflow-hidden
-        bg-white/70 dark:bg-neutral-700/20 backdrop-blur-md
-        shadow-md hover:shadow-xl transition gap-2
-        p-3
-        sm:p-4
-      "
+      className={" sx2:flex group relative block rounded-xl overflow-hidden transition gap-2 p-3 sm:p-4 "+cardStyle}
     >
-      <div className="w-full min-w-[220px] max-w-[420px]  h-auto aspect-video rounded-lg overflow-hidden">
+      <div className="w-full min-w-[220px] max-w-[420px] flex justify-center  items-center  h-auto max-h-[160px] aspect-video rounded-lg overflow-hidden">
         {!imgError ? (
           isVideo ? (
             <video

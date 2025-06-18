@@ -22,6 +22,8 @@ import VisitStatsSection from '../../Components/Stats/VisitStatsSection'; // Sta
 import OrderStatsSection from '../../Components/Stats/OrderStatsSection'; // Stats Commandes
 import { useMyLocation } from '../../Hooks/useRepalceState';
 import { SlidersHorizontal } from 'lucide-react';
+import { Topbar } from '../../Components/TopBar/TopBar';
+import { cardStyle } from '../../Components/Button/Style';
 // Modal (useChildViewer est souvent dans un contexte global, pas besoin d'importer ici)
 // import { useChildViewer } from '../../components/ChildViewer/useChildViewer';
 
@@ -211,102 +213,107 @@ export function Page() {
     />
     // --- Rendu ---
     return (
-        <div className="page-stats  pb-[200px]  flex  flex-col lg:flex-row min-h-screen">
-
-            <aside className="hidden lg:block lg:w-60 min-w-60 lg:sticky lg:top-0 lg:h-screen lg:overflow-y-auto  shadow">
-                <div className="">
-                    {filter}
+        <div className="page-stats  pb-[200px] min-h-screen">
+            <Topbar />
+            <div className='flex gap-6 items-center'>
+                <div className="lg:hidden p-4">
+                    <button
+                        onClick={() => setIsMobileOpen(true)}
+                        className="flex items-center gap-2 px-3 py-2 text-gray-800 dark:text-white/80 rounded cursor-pointer shadow-sm  hover:shadow-md bg-white dark:bg-white/20"
+                    >
+                        <SlidersHorizontal className="w-5 h-5" />
+                        Filtres
+                    </button>
                 </div>
-            </aside>
+                <h1 style={{fontSize:'24px!important'}} className="font-bold text-gray-800 dark:text-white/80">{t('stats.pageTitle')}</h1>
 
-
-            {/* Mobile toggle button */}
-            <div className="lg:hidden p-4">
-                <button
-                    onClick={() => setIsMobileOpen(true)}
-                    className="flex items-center gap-2 px-3 py-2  rounded cursor-pointer shadow-sm  hover:shadow-md bg-white"
-                >
-                    <SlidersHorizontal className="w-5 h-5" />
-                    Filtres
-                </button>
             </div>
 
-            <div
-                className={`fixed inset-0 z-50 transition-opacity duration-300 ${isMobileOpen ? "bg-black/40 pointer-events-auto opacity-100" : "opacity-0 pointer-events-none"
-                    } lg:hidden`}
-                onClick={() => setIsMobileOpen(false)}
-            >
-                <div
-                    className={`absolute top-0 left-0 h-full w-80 bg-white shadow transition-transform duration-300 transform ${isMobileOpen ? "translate-x-0" : "-translate-x-full"
-                        }`}
-                    onClick={(e) => e.stopPropagation()}
-                >
-                    <div className="flex justify-between items-center p-4 border-b">
-                        <h2 className="text-lg font-semibold">Filtres</h2>
-                        <button onClick={() => setIsMobileOpen(false)} className="text-gray-500 hover:text-black">
-                            ✕
-                        </button>
-                    </div>
-                    <div className="p-4">
+            <div className='flex  flex-col lg:flex-row '>
+                <aside className={"hidden lg:block lg:w-60 min-w-60 lg:sticky lg:top-0 lg:h-screen lg:overflow-y-auto  shadow"}>
+                    <div className="">
                         {filter}
                     </div>
-                </div>
-            </div>
-            <div className="relative p-2   min-h-screen">
-                <h1 className="text-2xl md:text-3xl font-bold text-gray-800 dark:text-white/80 mb-6">{t('stats.pageTitle')}</h1>
-                {/* Sidebar desktop */}
+                </aside>
 
 
-                {/* Affichage principal (KPIs ou Preview) */}
-                <div className="mt-6 w-full"> {/* Espacement après les filtres */}
+                {/* Mobile toggle button */}
 
-                    {/* Condition pour afficher Client Preview OU Product Preview OU KPIs */}
-                    {userId ? (
-                        // Afficher Client Preview si un client est sélectionné
-                        <ClientPreview isLoading={isLoading} client={selectedClient} />
-                    ) : productId ? (
-                        // Afficher Product Preview si un produit est sélectionné (et pas de client)
-                        selectedProduct && <ProductPreview isLoading={isLoading} product={selectedProduct} />
-                    ) : (
-                        // Afficher KPIs si aucun client/produit n'est sélectionné
-                        <KpiCards isLoading={isLoading} kpis={kpiData} />
-                    )}
-                </div>
-
-                <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6"> {/* Grille pour les sections Visites/Commandes */}
-
-                    {/* Section Visites (conditionnelle) */}
-                    {/* Ne pas afficher si on filtre par produit OU si loading/erreur */}
-                    {!productId && !isError && (
-                        <VisitStatsSection
-                        isLoading={isLoading}
-                            data={visitDetailsData}
-                            period={period}
-                            includes={visitIncludes}
-                        />
-                    )}
-                    {/* Placeholder si section cachée par filtre produit mais pas de client */}
-                    {productId && !userId && (
-                        <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 h-full flex items-center justify-center text-gray-400 italic">
-                            {t('stats.visitStatsHiddenForProduct')}
+                <div
+                    className={`fixed inset-0 z-50 transition-opacity duration-300 ${isMobileOpen ? "bg-black/40 pointer-events-auto opacity-100" : "opacity-0 pointer-events-none"
+                        } lg:hidden`}
+                    onClick={() => setIsMobileOpen(false)}
+                >
+                    <div
+                        className={`absolute top-0 left-0 h-full w-80  shadow transition-transform duration-300 transform ${isMobileOpen ? "translate-x-0" : "-translate-x-full"} ${'bg-white/80 backdrop-blur-lg rounded-lg shadow-sm border border-gray-200/80 dark:border-white/10 dark:bg-gray-800'} dark:bg-gray-800 mob:p-1 sm:p-1`}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="flex justify-between items-center p-4 border-b">
+                            <h2 className="text-lg font-semibold dark:text-white">Filtres</h2>
+                            <button onClick={() => setIsMobileOpen(false)} className="text-gray-500 hover:text-black dark:hover:text-white">
+                                ✕
+                            </button>
                         </div>
-                    )}
-
-                    {/* Section Commandes (toujours affichée sauf si erreur/loading) */}
-                    { !isError && (
-                        <OrderStatsSection
-                            isLoading={isLoading}
-                            data={orderDetailsData}
-                            period={period}
-                            includes={orderIncludes}
-                        />
-                    )}
-
-                    {/* Gérer le cas où la grille n'a qu'un seul enfant à cause du filtre productId */}
-                    {/* Pourrait nécessiter d'ajuster les classes de la grille parente si nécessaire */}
-
+                        <div className="p-1">
+                            {filter}
+                        </div>
+                    </div>
                 </div>
-                {/* ChildViewer est global via son propre provider/hook, pas besoin de le rendre ici */}
+                <div className="relative p-2   min-h-screen">
+                    {/* Sidebar desktop */}
+
+
+                    {/* Affichage principal (KPIs ou Preview) */}
+                    <div className="mt-6 w-full"> {/* Espacement après les filtres */}
+
+                        {/* Condition pour afficher Client Preview OU Product Preview OU KPIs */}
+                        {userId ? (
+                            // Afficher Client Preview si un client est sélectionné
+                            <ClientPreview isLoading={isLoading} client={selectedClient} />
+                        ) : productId ? (
+                            // Afficher Product Preview si un produit est sélectionné (et pas de client)
+                            selectedProduct && <ProductPreview isLoading={isLoading} product={selectedProduct} />
+                        ) : (
+                            // Afficher KPIs si aucun client/produit n'est sélectionné
+                            <KpiCards isLoading={isLoading} kpis={kpiData} />
+                        )}
+                    </div>
+
+                    <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6"> {/* Grille pour les sections Visites/Commandes */}
+
+                        {/* Section Visites (conditionnelle) */}
+                        {/* Ne pas afficher si on filtre par produit OU si loading/erreur */}
+                        {!productId && !isError && (
+                            <VisitStatsSection
+                                isLoading={isLoading}
+                                data={visitDetailsData}
+                                period={period}
+                                includes={visitIncludes}
+                            />
+                        )}
+                        {/* Placeholder si section cachée par filtre produit mais pas de client */}
+                        {productId && !userId && (
+                            <div className="bg-white p-4 rounded-lg shadow-sm border border-gray-200 h-full flex items-center justify-center text-gray-400 italic">
+                                {t('stats.visitStatsHiddenForProduct')}
+                            </div>
+                        )}
+
+                        {/* Section Commandes (toujours affichée sauf si erreur/loading) */}
+                        {!isError && (
+                            <OrderStatsSection
+                                isLoading={isLoading}
+                                data={orderDetailsData}
+                                period={period}
+                                includes={orderIncludes}
+                            />
+                        )}
+
+                        {/* Gérer le cas où la grille n'a qu'un seul enfant à cause du filtre productId */}
+                        {/* Pourrait nécessiter d'ajuster les classes de la grille parente si nécessaire */}
+
+                    </div>
+                    {/* ChildViewer est global via son propre provider/hook, pas besoin de le rendre ici */}
+                </div>
             </div>
         </div>
     );

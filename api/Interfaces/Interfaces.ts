@@ -1,5 +1,84 @@
 
 // api/Interfaces/Interfaces.ts
+
+export interface ReorderProductFaqItem {
+  id: string; // ID de la FAQ
+  index: number; // Nouvel index souhaité
+}
+
+export interface ReorderProductFaqsParams {
+  product_id: string;
+  faqs: ReorderProductFaqItem[];
+  group?: string | null; // Optionnel: pour réordonner au sein d'un groupe
+}
+
+// La réponse pourrait être la liste réordonnée ou juste un message
+export type ReorderProductFaqsResponse = { message: string; faqs: ListType<ProductFaqInterface> }; 
+
+export type ProductFaqData = Omit<ProductFaqInterface, 'id' | 'created_at' | 'updated_at' | 'product'>; // Pour la création
+
+export interface CreateProductFaqParams {
+  data: ProductFaqData;
+}
+export type CreateProductFaqResponse = { message: string; faq: ProductFaqInterface };
+
+export interface ListProductFaqsParams {
+  product_id: string;
+  group?: string;
+  page?: number;
+  limit?: number;
+}
+export type ListProductFaqsResponse = ListType<ProductFaqInterface>;
+
+export interface GetProductFaqParams {
+  faqId: string;
+}
+export type GetProductFaqResponse = ProductFaqInterface | null;
+
+export interface UpdateProductFaqParams {
+  faqId: string;
+  data: Partial<ProductFaqData>; // Tous les champs sont optionnels pour la mise à jour
+}
+export type UpdateProductFaqResponse = { message: string; faq: ProductFaqInterface };
+
+export interface DeleteProductFaqParams {
+  faqId: string;
+}
+export type DeleteProductFaqResponse = { message: string; isDeleted?: boolean };
+
+
+// --- Types pour ProductCharacteristic ---
+export type ProductCharacteristicData = Omit<ProductCharacteristicInterface, 'id' | 'created_at' | 'updated_at' | 'product'>;
+
+export interface CreateProductCharacteristicParams {
+  data: ProductCharacteristicData;
+}
+export type CreateProductCharacteristicResponse = { message: string; characteristic: ProductCharacteristicInterface };
+
+export interface ListProductCharacteristicsParams {
+  product_id: string;
+  key?: string;
+  page?: number;
+  limit?: number;
+}
+export type ListProductCharacteristicsResponse = ListType<ProductCharacteristicInterface>;
+
+export interface GetProductCharacteristicParams {
+  characteristicId: string;
+}
+export type GetProductCharacteristicResponse = ProductCharacteristicInterface | null;
+
+export interface UpdateProductCharacteristicParams {
+  characteristicId: string;
+  data: Partial<ProductCharacteristicData>;
+}
+export type UpdateProductCharacteristicResponse = { message: string; characteristic: ProductCharacteristicInterface };
+
+export interface DeleteProductCharacteristicParams {
+  characteristicId: string;
+}
+export type DeleteProductCharacteristicResponse = { message: string; isDeleted?: boolean };
+
 export type ThemeSettingsValues = Record<string, any>;
 
 
@@ -610,8 +689,46 @@ export interface ProductInterface {
   updated_at: Date;
   features?: FeatureInterface[]
   categories?: CategoryInterface[]
+  faqs?:ProductFaqInterface[]
+  characteristics?:ProductCharacteristicInterface[]
 };
 
+// api/Interfaces/Interfaces.ts
+
+export interface ProductCharacteristicInterface {
+  id: string;
+  product_id: string;
+  name: string;
+  icon: string | null;
+  description: string | null;
+  key: string | null;
+  value_text: string | null; 
+  quantity: number | null;
+  unity: string | null;
+  level: number | null;
+  index: number;
+  created_at: string;
+  updated_at: string;
+  product?: ProductInterface;
+}
+
+export interface FaqSourceInterface {
+  label: string;
+  url: string;
+}
+
+export interface ProductFaqInterface {
+  id: string;
+  product_id: string;
+  title: string;
+  content: string;
+  sources: FaqSourceInterface[] | null;
+  group: string | null;
+  index: number;
+  created_at: string; // Ou DateTime si tu ne sérialises pas
+  updated_at: string; // Ou DateTime
+  product?: ProductInterface; // Optionnel si préchargé
+}
 
 export interface ValueInterface {
   id: string;

@@ -702,6 +702,49 @@
             "currentPasswordRequired": "Le mot de pass actuel est requis"
         }
     },
+    "faq": {
+        "searchPlaceholder": "Rechercher une question...",
+        "allGroups": "Tous les groupes",
+        "sort": {
+            "manual": "Tri manuel",
+            "alphabetical": "Ordre alphabétique",
+            "date": "Plus récentes",
+            "group": "Par groupe"
+        },
+        "collapseAll": "Tout réduire",
+        "expandAll": "Tout développer",
+        "reorderMode": "Réorganiser",
+        "exitReorder": "Terminer le tri",
+        "searchActive": "Recherche",
+        "groupFilter": "Groupe",
+        "noResults": "Aucun résultat",
+        "noResultsDesc": "Aucune FAQ ne correspond à votre recherche.",
+        "emptyTitle": "Aucune question pour le moment",
+        "pageTitle": "FAQ du produit",
+        "breadcrumb": "FAQ",
+        "listTitle": "Questions Fréquemment Posées",
+        "addButton": "Ajouter une FAQ",
+        "createTitle": "Ajouter une Question",
+        "editTitle": "Modifier la Question",
+        "questionLabel": "Question",
+        "questionPlaceholder": "Ex: Quelle est la durée de la garantie ?",
+        "answerLabel": "Réponse",
+        "groupLabel": "Groupe (optionnel)",
+        "groupPlaceholder": "Ex: Livraison, Garantie...",
+        "sourcesTitle": "Sources / Liens utiles",
+        "sourceLabelPlaceholder": "Label du lien",
+        "sourceUrlPlaceholder": "https://...",
+        "addSourceButton": "Ajouter une source",
+        "validation": {
+            "allFieldsRequired": "La question et la réponse sont requises."
+        },
+        "confirmDelete": "Voulez-vous vraiment supprimer la question \"{{title}}\" ?",
+        "createSuccess": "FAQ ajoutée avec succès.",
+        "updateSuccess": "FAQ mise à jour avec succès.",
+        "deleteSuccess": "FAQ supprimée.",
+        "emptyDesc": "Aidez vos clients en ajoutant les questions les plus courantes et leurs réponses.",
+        "addFirstButton": "Ajouter la première FAQ"
+    },
     "product": {
         "step": {
             "info": "Infos de Base",
@@ -709,7 +752,7 @@
             "stock": "Stocks & Prix",
             "publish": "Publication"
         },
-        "seeProduct":" Voir le produit",
+        "seeProduct": " Voir le produit",
         "noVariantsForStock": "Aucune variante à configurer",
         "noVariantsForStockDesc": "Ajoutez des variantes (comme la taille ou la couleur) à l'étape précédente pour gérer les stocks de chaque combinaison.",
         "viewOnStore": "Voir en boutique",

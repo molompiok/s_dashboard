@@ -42,20 +42,20 @@ const VisitStatsSkeleton: React.FC = () => (
 
 const VisitStatsSection: React.FC<VisitStatsSectionProps> = ({ data, period, includes, isLoading }) => {
     const { t } = useTranslation();
-    const [isDarkMode, setIsDarkMode] = useState(false); // State to track dark mode
+    const [isDarkMode, setThemeMode] = useState(false); // State to track dark mode
 
     useEffect(() => {
         // Check for dark mode on mount and when it changes
         const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
-        setIsDarkMode(mediaQuery.matches);
-        const handler = (e: MediaQueryListEvent) => setIsDarkMode(e.matches);
+        setThemeMode(mediaQuery.matches);
+        const handler = (e: MediaQueryListEvent) => setThemeMode(e.matches);
         mediaQuery.addEventListener('change', handler);
         return () => mediaQuery.removeEventListener('change', handler);
     }, []);
 
     const chartData = useMemo<ChartData<'line'>>(() => {
         if (!data || data.length === 0) return { labels: [], datasets: [] };
-        
+
         const labels = data.map(item => item.date).sort();
         const datasets = [];
 
@@ -90,7 +90,7 @@ const VisitStatsSection: React.FC<VisitStatsSectionProps> = ({ data, period, inc
         if (dates.length === 0) return { actualStartDate: undefined, actualEndDate: undefined };
         return { actualStartDate: DateTime.min(...dates), actualEndDate: DateTime.max(...dates) };
     }, [data]);
-    
+
     const navigationDateRange = useMemo(() => ({
         min_date: actualStartDate?.startOf(period).toISO(),
         max_date: actualEndDate?.endOf(period).endOf('day').toISO(),
@@ -100,7 +100,7 @@ const VisitStatsSection: React.FC<VisitStatsSectionProps> = ({ data, period, inc
         const aggregation: Record<string, Record<string, number>> = {};
         if (!data) return aggregation;
         const dimensionsToCheck = Object.keys(includes).filter(key => includes[key as keyof typeof includes]);
-        
+
         dimensionsToCheck.forEach(dimKey => {
             if (!data.some(item => item[dimKey as keyof VisitStatsResultItem])) return;
             aggregation[dimKey] = {};

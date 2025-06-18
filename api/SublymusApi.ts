@@ -20,7 +20,21 @@ import type {
     VisitStatsIncludeOptions,
     OrderStatsIncludeOptions,
     VisitStatsResponse,
-    OrderStatsResponse
+    OrderStatsResponse,
+    ProductFaqInterface, ProductCharacteristicInterface, // S'ils sont dans Interfaces.ts
+    // Nouveaux types Params/Response que nous venons de définir (ou importer si dans Interfaces.ts)
+    CreateProductFaqParams, CreateProductFaqResponse,
+    ListProductFaqsParams, ListProductFaqsResponse,
+    GetProductFaqParams, GetProductFaqResponse,
+    UpdateProductFaqParams, UpdateProductFaqResponse,
+    DeleteProductFaqParams, DeleteProductFaqResponse,
+    CreateProductCharacteristicParams, CreateProductCharacteristicResponse,
+    ListProductCharacteristicsParams, ListProductCharacteristicsResponse,
+    GetProductCharacteristicParams, GetProductCharacteristicResponse,
+    UpdateProductCharacteristicParams, UpdateProductCharacteristicResponse,
+    DeleteProductCharacteristicParams, DeleteProductCharacteristicResponse,
+    ReorderProductFaqsParams,
+    ReorderProductFaqsResponse
 } from './Interfaces/Interfaces'; // Adapter le chemin
 
 export { StatParamType, UserFilterType, CommandFilterType, Inventory }
@@ -58,7 +72,7 @@ export type BuildFormDataForFeaturesValuesParam = { product_id: string, currentF
 // Catégories
 export type GetCategoriesParams = {
     categories_id?: string[];
-    is_visible?:boolean,
+    is_visible?: boolean,
     search?: string;
     slug?: string;
     order_by?: string; // Utiliser CategorySortOptions si défini
@@ -234,7 +248,7 @@ export type UpdateUserResponse = { message?: string; user: UserInterface };
 // Products
 export type GetProductListParams = FilterType; // Type pour getList
 export type GetProductListResponse = ListType<ProductInterface>;
-export type GetProductParams = { product_id?: string; slug?: string,with_all?:boolean, with_categories?:boolean, with_feature?: boolean }; // Type pour getOne
+export type GetProductParams = { product_id?: string; slug?: string, with_all?: boolean, with_categories?: boolean, with_feature?: boolean }; // Type pour getOne
 export type GetProductResponse = ProductInterface | null;
 export type CreateProductParams = { product: Partial<ProductInterface>, views?: (string | Blob)[] }; // Adapté pour _buildFormData
 export type CreateProductResponse = { message?: string, product: ProductInterface };
@@ -340,8 +354,8 @@ type PrepareMultipleFeaturesValuesParams = {
 
 // --- Classe Principale SublymusApi ---
 export class SublymusApi {
-    public readonly storeApiUrl: string|undefined;
-    public readonly getAuthToken: () =>string | undefined| null;
+    public readonly storeApiUrl: string | undefined;
+    public readonly getAuthToken: () => string | undefined | null;
     public readonly handleUnauthorized: ((action: 'api' | 'server', token?: string) => void) | undefined
     public readonly serverUrl: string;
     public readonly t: (key: string, params?: any) => string; // Ajouter params optionnel
@@ -354,6 +368,8 @@ export class SublymusApi {
     public features: FeaturesApiNamespace;
     public values: ValuesApiNamespace; // Ajouté
     public details: DetailsApiNamespace;
+    public productFaqs: ProductFaqsApiNamespace;
+    public productCharacteristics: ProductCharacteristicsApiNamespace;
     public orders: OrdersApiNamespace;
     public cart: CartApiNamespace;
     public comments: CommentsApiNamespace;
@@ -368,11 +384,11 @@ export class SublymusApi {
     public store: StoreNamespace;
     public readonly theme: ThemeNamespace;
 
-    constructor({ getAuthToken, serverUrl, storeApiUrl, t, handleUnauthorized }: { handleUnauthorized?: (action: 'api' | 'server', token?: string) => void, storeApiUrl?: string, serverUrl?: string, getAuthToken: () => string | undefined| null, t: (key: string, params?: any) => string }) {
-        
+    constructor({ getAuthToken, serverUrl, storeApiUrl, t, handleUnauthorized }: { handleUnauthorized?: (action: 'api' | 'server', token?: string) => void, storeApiUrl?: string, serverUrl?: string, getAuthToken: () => string | undefined | null, t: (key: string, params?: any) => string }) {
+
         this.t = t;
-        console.log('------------>>>>>>>>>>>>>>>',serverUrl);
-        
+        console.log('------------>>>>>>>>>>>>>>>', serverUrl);
+
         // Server URL est requis
         if (!serverUrl) {
             throw new Error("SublymusApi: serverUrl is required.");
@@ -393,6 +409,8 @@ export class SublymusApi {
         this.features = new FeaturesApiNamespace(this);
         this.values = new ValuesApiNamespace(this); // Initialiser
         this.details = new DetailsApiNamespace(this);
+        this.productFaqs = new ProductFaqsApiNamespace(this);
+        this.productCharacteristics = new ProductCharacteristicsApiNamespace(this);
         this.orders = new OrdersApiNamespace(this);
         this.cart = new CartApiNamespace(this);
         this.comments = new CommentsApiNamespace(this);
@@ -414,13 +432,13 @@ export class SublymusApi {
         console.log({ endpoint });
         let token = this.getAuthToken();
         let action: 'api' | 'server' = 'api';
-        let baseUrl: string='';
+        let baseUrl: string = '';
         if (endpoint.startsWith('/{{main_server}}')) {
             endpoint = endpoint.replace('/{{main_server}}', '');
-            baseUrl = this.serverUrl||'https://server.sublymus.com';
+            baseUrl = this.serverUrl || 'https://server.sublymus.com';
             action = 'server'
         } else if (this.storeApiUrl) {
-            baseUrl = this.storeApiUrl||'http://not-foud-api.sublymus.com';
+            baseUrl = this.storeApiUrl || 'http://not-foud-api.sublymus.com';
         } else {
             logger.error({ endpoint }, "Attempted to call store-specific API endpoint without a configured storeApiUrl.");
             // throw new ApiError(this.t('api.contextError.noStoreUrl'), 500); // Ou une erreur 400?
@@ -843,47 +861,47 @@ class StoreNamespace {
 // ==================================
 class AuthApiNamespace {
     private _api: SublymusApi;
-    private isServer ?: boolean = false;
-    constructor(apiInstance: SublymusApi, isServer?:boolean) { this._api = apiInstance; this.isServer = isServer}
+    private isServer?: boolean = false;
+    constructor(apiInstance: SublymusApi, isServer?: boolean) { this._api = apiInstance; this.isServer = isServer }
 
     // 1 - Adapter les URLs
     login(params: LoginParams): Promise<LoginResponse> {
-        return this._api._request(`${this.isServer?'/{{main_server}}':'/v1'}/auth/login`, { method: 'POST', body: params });
+        return this._api._request(`${this.isServer ? '/{{main_server}}' : '/v1'}/auth/login`, { method: 'POST', body: params });
     }
     register(params: RegisterParams): Promise<RegisterResponse> {
-        return this._api._request(`${this.isServer?'/{{main_server}}':'/v1'}/auth/register`, { method: 'POST', body: params });
+        return this._api._request(`${this.isServer ? '/{{main_server}}' : '/v1'}/auth/register`, { method: 'POST', body: params });
     }
     verifyEmail(params: VerifyEmailParams): Promise<MessageResponse> {
-        return this._api._request(`${this.isServer?'/{{main_server}}':'/v1'}/auth/verify-email`, { method: 'GET', params });
+        return this._api._request(`${this.isServer ? '/{{main_server}}' : '/v1'}/auth/verify-email`, { method: 'GET', params });
     }
     resendVerificationEmail(params: ResendVerificationParams): Promise<MessageResponse> {
-        return this._api._request(`${this.isServer?'/{{main_server}}':'/v1'}/auth/resend-verification`, { method: 'POST', body: params });
+        return this._api._request(`${this.isServer ? '/{{main_server}}' : '/v1'}/auth/resend-verification`, { method: 'POST', body: params });
     }
     logout(): Promise<MessageResponse> {
-        return this._api._request(`${this.isServer?'/{{main_server}}':'/v1'}/auth/logout`, { method: 'POST' });
+        return this._api._request(`${this.isServer ? '/{{main_server}}' : '/v1'}/auth/logout`, { method: 'POST' });
     }
-    
+
     logoutAllDevices(): Promise<MessageResponse> {
         // Garder l'ancien nom de méthode mais appeler la nouvelle route
-        return this._api._request(`${this.isServer?'/{{main_server}}':'/v1'}/auth/logout-all`, { method: 'POST' });
+        return this._api._request(`${this.isServer ? '/{{main_server}}' : '/v1'}/auth/logout-all`, { method: 'POST' });
     }
     getMe(): Promise<GetMeResponse> {
-        return this._api._request(`${this.isServer?'/{{main_server}}':'/v1'}/auth/me`, { method: 'GET' });
+        return this._api._request(`${this.isServer ? '/{{main_server}}' : '/v1'}/auth/me`, { method: 'GET' });
     }
 
     async update({ data }: UpdateUserParams): Promise<UpdateUserResponse> { // 2 - Type Params modifié
         const formData = await this._api._buildFormData({ data, dataFilesFelds: ['photo'] })
-        return this._api._request(`${this.isServer?'/{{main_server}}':'/v1'}/auth/me`, { method: 'PUT', body: formData, isFormData: true });
+        return this._api._request(`${this.isServer ? '/{{main_server}}' : '/v1'}/auth/me`, { method: 'PUT', body: formData, isFormData: true });
     }
 
     deleteAccount(): Promise<MessageResponse> {
         // Utiliser la méthode DELETE sur /me
-        return this._api._request(`${this.isServer?'/{{main_server}}':'/v1'}/auth/me`, { method: 'DELETE' });
+        return this._api._request(`${this.isServer ? '/{{main_server}}' : '/v1'}/auth/me`, { method: 'DELETE' });
     }
     // handleSocialCallbackInternal reste non exposé publiquement
 
     forgotPassword(params: ForgotPasswordParams): Promise<MessageResponse> {
-        return this._api._request(`${this.isServer?'/{{main_server}}':'/v1'}/auth/forgot-password`, {
+        return this._api._request(`${this.isServer ? '/{{main_server}}' : '/v1'}/auth/forgot-password`, {
             method: 'POST',
             body: { email: params.email, callback_url: params.callback_url }
         });
@@ -891,7 +909,7 @@ class AuthApiNamespace {
 
     resetPassword(params: ResetPasswordParams): Promise<MessageResponse> {
         // Validation faite par le backend + schéma Vine
-        return this._api._request(`${this.isServer?'/{{main_server}}':'/v1'}/auth/reset-password`, { method: 'POST', body: params });
+        return this._api._request(`${this.isServer ? '/{{main_server}}' : '/v1'}/auth/reset-password`, { method: 'POST', body: params });
     }
 
     // --- NOUVELLE MÉTHODE ACCOUNT SETUP ---
@@ -900,18 +918,18 @@ class AuthApiNamespace {
      */
     setupAccount(params: SetupAccountParams): Promise<SetupAccountResponse> { // Utiliser type retour spécifique
         // La validation (longueur mdp, confirmation) est faite par le backend via Vine
-        return this._api._request(`${this.isServer?'/{{main_server}}':'/v1'}/auth/setup-account`, { method: 'POST', body: params });
+        return this._api._request(`${this.isServer ? '/{{main_server}}' : '/v1'}/auth/setup-account`, { method: 'POST', body: params });
     }
 
-    socialAuthBackendSource(params?: {provider:string,redirectSuccess?:string,redirectError?:string,storeId?:string}): string { // Utiliser type retour spécifique
-        const success =  params?.redirectSuccess &&`client_success=${encodeURIComponent(params?.redirectSuccess)}`;
+    socialAuthBackendSource(params?: { provider: string, redirectSuccess?: string, redirectError?: string, storeId?: string }): string { // Utiliser type retour spécifique
+        const success = params?.redirectSuccess && `client_success=${encodeURIComponent(params?.redirectSuccess)}`;
         const error = params?.redirectError && `client_error=${encodeURIComponent(params?.redirectError)}`;
-        return `${this._api.serverUrl}/auth/${this.isServer?'':'store/'}${params?.provider||'google'}/redirect?${[success,error].filter(Boolean).join('&') }`;
+        return `${this._api.serverUrl}/auth/${this.isServer ? '' : 'store/'}${params?.provider || 'google'}/redirect?${[success, error].filter(Boolean).join('&')}`;
     }
-    socialAuthFrontEndSource(params?: {provider:string,redirectSuccess?:string,redirectError?:string,storeId?:string}): string { // Utiliser type retour spécifique
-        const success =  params?.redirectSuccess &&`client_success=${encodeURIComponent(params?.redirectSuccess)}`;
+    socialAuthFrontEndSource(params?: { provider: string, redirectSuccess?: string, redirectError?: string, storeId?: string }): string { // Utiliser type retour spécifique
+        const success = params?.redirectSuccess && `client_success=${encodeURIComponent(params?.redirectSuccess)}`;
         const error = params?.redirectError && `client_error=${encodeURIComponent(params?.redirectError)}`;
-        return `${this._api.serverUrl}/auth/${this.isServer?'':'store/'}${params?.provider||'google'}/from-user?${[success,error].filter(Boolean).join('&') }`;
+        return `${this._api.serverUrl}/auth/${this.isServer ? '' : 'store/'}${params?.provider || 'google'}/from-user?${[success, error].filter(Boolean).join('&')}`;
     }
 }
 
@@ -1143,6 +1161,113 @@ class DetailsApiNamespace {
     async delete(params: DeleteDetailParams): Promise<DeleteDetailResponse> { // 2 - Type Params modifié
         const { detail_id } = params;
         return this._api._request(`/v1/details/${detail_id}`, { method: 'DELETE' });
+    }
+}
+
+// ==================================
+// == Namespace pour ProductFaq    ==
+// ==================================
+class ProductFaqsApiNamespace {
+    private _api: SublymusApi;
+    constructor(apiInstance: SublymusApi) { this._api = apiInstance; }
+
+    /**
+     * Create a new FAQ for a product.
+     * POST /v1/product-faqs
+     */
+    create(params: CreateProductFaqParams): Promise<CreateProductFaqResponse> {
+        return this._api._request('/v1/product-faqs', { method: 'POST', body: params.data });
+    }
+
+    /**
+     * List FAQs for a specific product.
+     * GET /v1/products/{productId}/faqs  (ou /v1/product-faqs?product_id=...)
+     */
+    listForProduct(params: ListProductFaqsParams): Promise<ListProductFaqsResponse> {
+        return this._api._request('/v1/product-faqs', { method: 'GET', params });
+    }
+
+    /**
+     * Get a specific FAQ by its ID.
+     * GET /v1/product-faqs/{faqId}
+     */
+    getOne({ faqId }: GetProductFaqParams): Promise<GetProductFaqResponse> {
+        return this._api._request(`/v1/product-faqs/${faqId}`, { method: 'GET' });
+    }
+
+    /**
+     * Update an existing FAQ.
+     * PUT /v1/product-faqs/{faqId}
+     */
+    update({ faqId, data }: UpdateProductFaqParams): Promise<UpdateProductFaqResponse> {
+        return this._api._request(`/v1/product-faqs/${faqId}`, { method: 'PUT', body: data });
+    }
+
+    reorder(params: ReorderProductFaqsParams): Promise<ReorderProductFaqsResponse> {
+        return this._api._request('/v1/product-faqs/reorder', { method: 'POST', body: params });
+    }
+
+    /**
+     * Delete a FAQ.
+     * DELETE /v1/product-faqs/{faqId}
+     */
+    delete({ faqId }: DeleteProductFaqParams): Promise<DeleteProductFaqResponse> {
+        return this._api._request(`/v1/product-faqs/${faqId}`, { method: 'DELETE' });
+    }
+}
+
+
+// ==================================
+// == Namespace pour ProductCharacteristic ==
+// ==================================
+class ProductCharacteristicsApiNamespace {
+    private _api: SublymusApi;
+    constructor(apiInstance: SublymusApi) { this._api = apiInstance; }
+
+    /**
+     * Create a new characteristic for a product.
+     * POST /v1/product-characteristics
+     */
+    async create(params: CreateProductCharacteristicParams): Promise<CreateProductCharacteristicResponse> {
+        const formData = await this._api._buildFormData({ data: params.data, dataFilesFelds: ['icon'] });
+        return await this._api._request('/v1/product-characteristics', { method: 'POST', body: formData, isFormData: true });
+    }
+
+    /**
+     * List characteristics for a specific product.
+     * GET /v1/products/{productId}/characteristics (ou /v1/product-characteristics?product_id=...)
+     */
+    listForProduct(params: ListProductCharacteristicsParams): Promise<ListProductCharacteristicsResponse> {
+        // Option 1: si /v1/product-characteristics?product_id=...
+        return this._api._request('/v1/product-characteristics', { method: 'GET', params });
+        // Option 2: si /v1/products/{productId}/characteristics
+        // const { product_id, ...queryParams } = params;
+        // return this._api._request(`/v1/products/${product_id}/characteristics`, { method: 'GET', params: queryParams });
+    }
+
+    /**
+     * Get a specific characteristic by its ID.
+     * GET /v1/product-characteristics/{characteristicId}
+     */
+    getOne({ characteristicId }: GetProductCharacteristicParams): Promise<GetProductCharacteristicResponse> {
+        return this._api._request(`/v1/product-characteristics/${characteristicId}`, { method: 'GET' });
+    }
+
+    /**
+     * Update an existing characteristic.
+     * PUT /v1/product-characteristics/{characteristicId}
+     */
+    async update({ characteristicId, data }: UpdateProductCharacteristicParams): Promise<UpdateProductCharacteristicResponse> {
+        const formData = await this._api._buildFormData({ data, dataFilesFelds: ['icon'] });
+        return this._api._request(`/v1/product-characteristics/${characteristicId}`, { method: 'PUT', body: formData, isFormData: true });
+    }
+
+    /**
+     * Delete a characteristic.
+     * DELETE /v1/product-characteristics/{characteristicId}
+     */
+    delete({ characteristicId }: DeleteProductCharacteristicParams): Promise<DeleteProductCharacteristicResponse> {
+        return this._api._request(`/v1/product-characteristics/${characteristicId}`, { method: 'DELETE' });
     }
 }
 

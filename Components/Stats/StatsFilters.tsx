@@ -92,7 +92,7 @@ const StatsFilters: React.FC<StatsFiltersProps> = ({
     return (
         // 🎨 Conteneur principal avec effet verre dépoli pour le mode nuit
         <div className="bg-white/80 dark:bg-white/5 backdrop-blur-lg p-4 rounded-lg shadow-sm border border-gray-200/80 dark:border-white/10 mb-6">
-            <h2 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-4">{t('stats.filtersTitle')}</h2>
+            <h2 className="text-xl font-semibold text-gray-800 dark:white mb-4">{t('stats.filtersTitle')}</h2>
             <div className="flex flex-col gap-6">
 
                 {/* --- Groupe Période et Nombre --- */}

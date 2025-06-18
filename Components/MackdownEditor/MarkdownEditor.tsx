@@ -1,5 +1,6 @@
 import { JSX, useEffect, useRef, useState } from "react";
 import './MarkdownEditor.css'
+import '../MarkdownViewer/_.css'
 
 export function MarkdownEditor({ value, setValue }: { value: any, setValue: (value: string) => void }) {
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
@@ -69,7 +70,7 @@ export function MarkdownEditor({ value, setValue }: { value: any, setValue: (val
 
 
 
-export function MarkdownEditor2({ value, setValue, error }: { value: string, setValue: (value: string) => void, error?: boolean }) {
+export function MarkdownEditor2({ value, setValue, error, onBlur }: { onBlur?: (text?:string) => void, value: string, setValue: (value: string) => void, error?: boolean }) {
   const editorRef = useRef<any>(null);
   const containerRef = useRef<HTMLDivElement>(null); // ✅ Référence pour ajuster la hauteur
   const [editor, setEditor] = useState<JSX.Element>()
@@ -96,9 +97,9 @@ export function MarkdownEditor2({ value, setValue, error }: { value: string, set
             if (!ref || typeof window === 'undefined') return
             const i = ref.getInstance()
             i.setMarkdown(value || "");
-            // console.log({ value });
-
+            adjustHeight();
           }}
+          onBlur={()=>onBlur?.(editorRef.current.getInstance().getMarkdown().substring(0, 1000) || " ")}
           onKeyup={() => {
             handleChange()
           }}
@@ -122,16 +123,16 @@ export function MarkdownEditor2({ value, setValue, error }: { value: string, set
   }, []);
 
   useEffect(() => {
-   const updateValue = () => {
+    const updateValue = () => {
       if (!editorRef.current) {
         if (tryCount < 100) {
           setCount((prev) => prev + 1);
           setTimeout(() => {
             // console.log({tryCount});
-            
+
             updateValue();
           }, 700);
-        }else{
+        } else {
           return
         }
       }
@@ -143,25 +144,28 @@ export function MarkdownEditor2({ value, setValue, error }: { value: string, set
         editor.setMarkdown(value || "");
         adjustHeight(); // 🔥 Ajuster la hauteur au chargement
       }
+      adjustHeight();
     }
-    updateValue()
-
+    updateValue();
+    
   }, [value, editorRef]);
 
   // 📏 Fonction pour ajuster la hauteur de l'éditeur
   const adjustHeight = () => {
     if (!containerRef.current) return;
-
-    // 🏗 Récupérer la hauteur du contenu et ajuster
-    const contentHeight = containerRef.current.scrollHeight;
-    const newHeight = Math.min(Math.max(contentHeight, 150), 300); // Min: 15``0px, Max: 300px
-    containerRef.current.style.height = `${newHeight}px`;
+    if (containerRef.current.dataset.init) return
+    
+    containerRef.current.dataset.init = 'init'
+    const scroller = containerRef.current.querySelector('.toastui-editor.ww-mode') as HTMLDivElement
+    if (scroller) {
+      scroller.style.minHeight = '60px'
+    }
   };
 
   if (!editor) return <p>Chargement de l'éditeur...</p>;
 
   return (
-    <div className={'editor ' + (error ? "error" : '')} ref={containerRef} style={{ minHeight: '150px', maxHeight: '300px', overflowY: 'auto' }}>
+    <div className={'editor ' + (error ? "error" : '')} ref={containerRef} >
       {editor}
     </div>
   );

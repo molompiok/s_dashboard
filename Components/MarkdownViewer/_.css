@@ -1,0 +1,46 @@
+[class^="toastui-editor"] {
+    background: none!important;
+    backdrop-filter: blur(3px)!important;
+    border-radius: 8px;
+}
+.dark [class^="toastui-editor"] .tab-item.active {
+    background: none!important;
+    color:#fffd!important;
+}
+.dark [class^="toastui-editor"] .tab-item {
+    background: none!important;
+}
+
+.dark [class^="toastui-editor"] {
+    background: none!important;
+    backdrop-filter: blur(3px)!important;
+    /* padding: 0px 12px; */
+    border-radius: 8px;
+    border-color: rgba(138, 131, 131, 0.575);
+}
+
+.toastui-editor-contents {
+    background: #fff1!important;
+    backdrop-filter: blur(3px)!important;
+    padding: 0px 12px;
+    border-radius: 8px;
+    color: #345!important;
+}
+.toastui-editor-contents *{
+    color: #345!important;
+}
+
+.dark .toastui-editor.md-mode *,
+.dark .toastui-editor-contents *,
+.toastui-editor-contents.dark  *{
+    color:#fffd!important;
+}
+
+.dark .toastui-editor-contents strong{
+    color:#fff!important;
+    font-weight: bold;
+}
+.toastui-editor-contents strong{
+    color:black!important;
+    font-weight: bold;
+}

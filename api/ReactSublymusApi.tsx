@@ -69,9 +69,24 @@ import {
 import { useAuthStore } from './stores/AuthStore'; // Pour le token
 import { useGlobalStore } from './stores/StoreStore'; // Pour l'URL du store
 import logger from './Logger';
-import { BaseStatsParams, CommentInterface, FeatureInterface, ForgotPasswordParams, KpiStatsResponse, OrderStatsIncludeOptions, OrderStatsResponse, ResetPasswordParams, SetupAccountParams, SetupAccountResponse, VisitStatsIncludeOptions, VisitStatsResponse } from './Interfaces/Interfaces';
+import { BaseStatsParams, CommentInterface, FeatureInterface, ForgotPasswordParams, KpiStatsResponse, OrderStatsIncludeOptions, OrderStatsResponse, ReorderProductFaqsParams, ReorderProductFaqsResponse, ResetPasswordParams, SetupAccountParams, SetupAccountResponse, VisitStatsIncludeOptions, VisitStatsResponse } from './Interfaces/Interfaces';
 import { useTranslation } from 'react-i18next';
 import { usePageContext } from '../renderer/usePageContext';
+import {
+    CreateProductFaqParams, CreateProductFaqResponse,
+    ListProductFaqsParams, ListProductFaqsResponse,
+    GetProductFaqParams, GetProductFaqResponse,
+    UpdateProductFaqParams, UpdateProductFaqResponse,
+    DeleteProductFaqParams, DeleteProductFaqResponse,
+    ProductFaqInterface, 
+
+    CreateProductCharacteristicParams, CreateProductCharacteristicResponse,
+    ListProductCharacteristicsParams, ListProductCharacteristicsResponse,
+    GetProductCharacteristicParams, GetProductCharacteristicResponse,
+    UpdateProductCharacteristicParams, UpdateProductCharacteristicResponse,
+    DeleteProductCharacteristicParams, DeleteProductCharacteristicResponse,
+    ProductCharacteristicInterface 
+} from  './Interfaces/Interfaces'
 
 async function waitHere(millis: number) {
     await new Promise((rev) => setTimeout(() => rev(0), millis))
@@ -1051,9 +1066,248 @@ export const useDeleteDetail = (): UseMutationResult<DeleteDetailResponse, ApiEr
 };
 
 
-// --- Fin Partie 2/3 ---
-// src/api/ReactSublymusApi.tsx
-// ... (Imports, Setup, Auth, Produits, Catégories, Features, Values, Détails Hooks inchangés) ...
+// ==================================
+// == Hooks pour ProductFaqs       ==
+// ==================================
+
+// Clés de Query communes pour ProductFaqs
+const PRODUCT_FAQS_QUERY_KEYS = {
+    all: (productId: string) => ['productFaqs', productId] as const, // Toutes les FAQs pour un produit
+    lists: (params: ListProductFaqsParams) => [...PRODUCT_FAQS_QUERY_KEYS.all(params.product_id), 'list', params] as const,
+    details: (faqId: string) => ['productFaqDetails', faqId] as const, // Détail d'une FAQ spécifique
+};
+
+/**
+ * Hook pour créer une FAQ pour un produit.
+ */
+export const useCreateProductFaq = (): UseMutationResult<CreateProductFaqResponse, ApiError, CreateProductFaqParams> => {
+    const api = useApi();
+    return useMutation<CreateProductFaqResponse, ApiError, CreateProductFaqParams>({
+        mutationFn: (params) => api.productFaqs.create(params),
+        onSuccess: (data, variables) => {
+            logger.info("ProductFaq created via mutation", data.faq);
+            // Invalider la liste des FAQs pour ce produit
+            queryClient.invalidateQueries({ queryKey: PRODUCT_FAQS_QUERY_KEYS.lists({ product_id: variables.data.product_id }) } as InvalidateQueryFilters);
+            // Potentiellement invalider le cache du produit si le produit contient une liste de ses FAQs
+            queryClient.invalidateQueries({ queryKey: ['productDetails', variables.data.product_id] } as InvalidateQueryFilters); // Ou PRODUCTS_QUERY_KEYS.details
+        },
+        onError: (error) => { logger.error({ error }, "Failed to create ProductFaq via mutation"); }
+    });
+};
+
+/**
+ * Hook pour récupérer la liste des FAQs d'un produit.
+ */
+export const useListProductFaqs = (
+    params: ListProductFaqsParams,
+    options: { enabled?: boolean } = {}
+): UseQueryResult<ListProductFaqsResponse, ApiError> => {
+    const api = useApi();
+    return useQuery<ListProductFaqsResponse, ApiError>({
+        queryKey: PRODUCT_FAQS_QUERY_KEYS.lists(params),
+        queryFn: () => api.productFaqs.listForProduct(params),
+        enabled: !!params.product_id && (options.enabled !== undefined ? options.enabled : true),
+    });
+};
+
+/**
+ * Hook pour récupérer les détails d'une FAQ spécifique.
+ */
+export const useGetProductFaq = (
+    params: GetProductFaqParams,
+    options: { enabled?: boolean } = {}
+): UseQueryResult<GetProductFaqResponse, ApiError> => {
+    const api = useApi();
+    return useQuery<GetProductFaqResponse, ApiError>({
+        queryKey: PRODUCT_FAQS_QUERY_KEYS.details(params.faqId),
+        queryFn: () => api.productFaqs.getOne(params),
+        enabled: !!params.faqId && (options.enabled !== undefined ? options.enabled : true),
+        staleTime: 5 * 60 * 1000, // Cache un peu plus long pour les détails
+    });
+};
+
+/**
+ * Hook pour mettre à jour une FAQ.
+ */
+export const useUpdateProductFaq = (): UseMutationResult<UpdateProductFaqResponse, ApiError, UpdateProductFaqParams> => {
+    const api = useApi();
+    return useMutation<UpdateProductFaqResponse, ApiError, UpdateProductFaqParams>({
+        mutationFn: (params) => api.productFaqs.update(params),
+        onSuccess: (data, variables) => {
+            logger.info("ProductFaq updated via mutation", data.faq);
+            // Invalider la liste des FAQs pour ce produit et le détail de cette FAQ
+            queryClient.invalidateQueries({ queryKey: PRODUCT_FAQS_QUERY_KEYS.lists({ product_id: data.faq.product_id }) } as InvalidateQueryFilters);
+            queryClient.setQueryData<GetProductFaqResponse>(PRODUCT_FAQS_QUERY_KEYS.details(variables.faqId), data.faq);
+             // Potentiellement invalider le cache du produit
+            queryClient.invalidateQueries({ queryKey: ['productDetails', data.faq.product_id] } as InvalidateQueryFilters);
+        },
+        onError: (error) => { logger.error({ error }, "Failed to update ProductFaq via mutation"); }
+    });
+};
+export const useReorderProductFaqs = (): UseMutationResult<ReorderProductFaqsResponse, ApiError, ReorderProductFaqsParams> => {
+    const api = useApi();
+    return useMutation<ReorderProductFaqsResponse, ApiError, ReorderProductFaqsParams>({
+        mutationFn: (params) => api.productFaqs.reorder(params),
+        onSuccess: (data, variables) => {
+            logger.info("ProductFaqs reordered via mutation", { productId: variables.product_id, group: variables.group });
+            // Invalider la liste des FAQs pour ce produit (et ce groupe si applicable)
+            // pour s'assurer que le frontend récupère le nouvel ordre.
+            const listParams: ListProductFaqsParams = { product_id: variables.product_id };
+            if (variables.group) {
+                listParams.group = variables.group;
+            }
+            queryClient.invalidateQueries({ queryKey: PRODUCT_FAQS_QUERY_KEYS.lists(listParams) } as InvalidateQueryFilters);
+            
+            // Optionnellement, mettre à jour directement le cache avec la liste retournée si la réponse la contient.
+            // Cela peut éviter un re-fetch immédiat si la réponse de 'reorder' est la liste complète et ordonnée.
+            // if (data.faqs && data.faqs.list) {
+            //   queryClient.setQueryData(PRODUCT_FAQS_QUERY_KEYS.lists(listParams), data.faqs);
+            // }
+
+            // Invalider aussi le cache du produit si le produit est censé connaître l'ordre de ses FAQs
+            queryClient.invalidateQueries({ queryKey: ['productDetails', variables.product_id] } as InvalidateQueryFilters);
+        },
+        onError: (error, variables) => {
+            logger.error({ error, productId: variables.product_id, group: variables.group }, "Failed to reorder ProductFaqs via mutation");
+        }
+    });
+};
+/**
+ * Hook pour supprimer une FAQ.
+ */
+export const useDeleteProductFaq = (): UseMutationResult<DeleteProductFaqResponse, ApiError, DeleteProductFaqParams> => {
+    const api = useApi();
+    // Pour récupérer le product_id afin d'invalider la bonne liste
+    let productIdForInvalidation: string | undefined;
+    return useMutation<DeleteProductFaqResponse, ApiError, DeleteProductFaqParams>({
+        onMutate: async (variables) => {
+            // Optionnel: annuler les requêtes en cours pour ce détail
+            await queryClient.cancelQueries({ queryKey: PRODUCT_FAQS_QUERY_KEYS.details(variables.faqId) });
+            // Snapshot de la valeur précédente
+            const previousFaq = queryClient.getQueryData<ProductFaqInterface>(PRODUCT_FAQS_QUERY_KEYS.details(variables.faqId));
+            productIdForInvalidation = previousFaq?.product_id;
+            return { previousFaq };
+        },
+        mutationFn: (params) => api.productFaqs.delete(params),
+        onSuccess: (data, variables) => {
+            logger.info("ProductFaq deleted via mutation", { faqId: variables.faqId });
+            if (productIdForInvalidation) {
+                queryClient.invalidateQueries({ queryKey: PRODUCT_FAQS_QUERY_KEYS.lists({ product_id: productIdForInvalidation }) } as InvalidateQueryFilters);
+            } else {
+                 // Fallback: invalider toutes les listes de FAQ si product_id n'a pas pu être déterminé
+                queryClient.invalidateQueries({ queryKey: ['productFaqs'] } as InvalidateQueryFilters);
+            }
+            queryClient.removeQueries({ queryKey: PRODUCT_FAQS_QUERY_KEYS.details(variables.faqId) });
+             // Potentiellement invalider le cache du produit
+             if (productIdForInvalidation) {
+                queryClient.invalidateQueries({ queryKey: ['productDetails', productIdForInvalidation] } as InvalidateQueryFilters);
+             }
+        },
+    });
+};
+
+
+// ==================================
+// == Hooks pour ProductCharacteristics ==
+// ==================================
+
+// Clés de Query communes pour ProductCharacteristics
+const PRODUCT_CHARACTERISTICS_QUERY_KEYS = {
+    all: (productId: string) => ['productCharacteristics', productId] as const,
+    lists: (params: ListProductCharacteristicsParams) => [...PRODUCT_CHARACTERISTICS_QUERY_KEYS.all(params.product_id), 'list', params] as const,
+    details: (characteristicId: string) => ['productCharacteristicDetails', characteristicId] as const,
+};
+
+/**
+ * Hook pour créer une caractéristique pour un produit.
+ */
+export const useCreateProductCharacteristic = (): UseMutationResult<CreateProductCharacteristicResponse, ApiError, CreateProductCharacteristicParams> => {
+    const api = useApi();
+    return useMutation<CreateProductCharacteristicResponse, ApiError, CreateProductCharacteristicParams>({
+        mutationFn: (params) => api.productCharacteristics.create(params),
+        onSuccess: (data, variables) => {
+            logger.info("ProductCharacteristic created via mutation", data.characteristic);
+            queryClient.invalidateQueries({ queryKey: PRODUCT_CHARACTERISTICS_QUERY_KEYS.lists({ product_id: variables.data.product_id }) } as InvalidateQueryFilters);
+            queryClient.invalidateQueries({ queryKey: ['productDetails', variables.data.product_id] } as InvalidateQueryFilters);
+        },
+        onError: (error) => { logger.error({ error }, "Failed to create ProductCharacteristic via mutation"); }
+    });
+};
+
+/**
+ * Hook pour récupérer la liste des caractéristiques d'un produit.
+ */
+export const useListProductCharacteristics = (
+    params: ListProductCharacteristicsParams,
+    options: { enabled?: boolean } = {}
+): UseQueryResult<ListProductCharacteristicsResponse, ApiError> => {
+    const api = useApi();
+    return useQuery<ListProductCharacteristicsResponse, ApiError>({
+        queryKey: PRODUCT_CHARACTERISTICS_QUERY_KEYS.lists(params),
+        queryFn: () => api.productCharacteristics.listForProduct(params),
+        enabled: !!params.product_id && (options.enabled !== undefined ? options.enabled : true),
+    });
+};
+
+/**
+ * Hook pour récupérer les détails d'une caractéristique spécifique.
+ */
+export const useGetProductCharacteristic = (
+    params: GetProductCharacteristicParams,
+    options: { enabled?: boolean } = {}
+): UseQueryResult<GetProductCharacteristicResponse, ApiError> => {
+    const api = useApi();
+    return useQuery<GetProductCharacteristicResponse, ApiError>({
+        queryKey: PRODUCT_CHARACTERISTICS_QUERY_KEYS.details(params.characteristicId),
+        queryFn: () => api.productCharacteristics.getOne(params),
+        enabled: !!params.characteristicId && (options.enabled !== undefined ? options.enabled : true),
+        staleTime: 5 * 60 * 1000,
+    });
+};
+
+/**
+ * Hook pour mettre à jour une caractéristique.
+ */
+export const useUpdateProductCharacteristic = (): UseMutationResult<UpdateProductCharacteristicResponse, ApiError, UpdateProductCharacteristicParams> => {
+    const api = useApi();
+    return useMutation<UpdateProductCharacteristicResponse, ApiError, UpdateProductCharacteristicParams>({
+        mutationFn: (params) => api.productCharacteristics.update(params),
+        onSuccess: (data, variables) => {
+            logger.info("ProductCharacteristic updated via mutation", data.characteristic);
+            queryClient.invalidateQueries({ queryKey: PRODUCT_CHARACTERISTICS_QUERY_KEYS.lists({ product_id: data.characteristic.product_id }) } as InvalidateQueryFilters);
+            queryClient.setQueryData<GetProductCharacteristicResponse>(PRODUCT_CHARACTERISTICS_QUERY_KEYS.details(variables.characteristicId), data.characteristic);
+            queryClient.invalidateQueries({ queryKey: ['productDetails', data.characteristic.product_id] } as InvalidateQueryFilters);
+        },
+        onError: (error) => { logger.error({ error }, "Failed to update ProductCharacteristic via mutation"); }
+    });
+};
+
+/**
+ * Hook pour supprimer une caractéristique.
+ */
+export const useDeleteProductCharacteristic = (): UseMutationResult<DeleteProductCharacteristicResponse, ApiError, DeleteProductCharacteristicParams> => {
+    const api = useApi();
+    let productIdForInvalidation: string | undefined;
+    return useMutation<DeleteProductCharacteristicResponse, ApiError, DeleteProductCharacteristicParams>({
+        onMutate: async (variables) => {
+            await queryClient.cancelQueries({ queryKey: PRODUCT_CHARACTERISTICS_QUERY_KEYS.details(variables.characteristicId) });
+            const previousCharacteristic = queryClient.getQueryData<ProductCharacteristicInterface>(PRODUCT_CHARACTERISTICS_QUERY_KEYS.details(variables.characteristicId));
+            productIdForInvalidation = previousCharacteristic?.product_id;
+            return { previousCharacteristic };
+        },
+        mutationFn: (params) => api.productCharacteristics.delete(params),
+        onSuccess: (data, variables) => {
+            logger.info("ProductCharacteristic deleted via mutation", { characteristicId: variables.characteristicId });
+            if (productIdForInvalidation) {
+                queryClient.invalidateQueries({ queryKey: PRODUCT_CHARACTERISTICS_QUERY_KEYS.lists({ product_id: productIdForInvalidation }) } as InvalidateQueryFilters);
+                queryClient.invalidateQueries({ queryKey: ['productDetails', productIdForInvalidation] } as InvalidateQueryFilters);
+            } else {
+                queryClient.invalidateQueries({ queryKey: ['productCharacteristics'] } as InvalidateQueryFilters); // Fallback
+            }
+            queryClient.removeQueries({ queryKey: PRODUCT_CHARACTERISTICS_QUERY_KEYS.details(variables.characteristicId) });
+        }
+    });
+};
 
 // --- Hooks Personnalisés par Namespace ---
 

@@ -1,17 +1,30 @@
 import '@toast-ui/editor/dist/toastui-editor-viewer.css';
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useAppZust } from '../../renderer/AppStore/appZust';
+import './_.css'
+export { markdownToPlainText, MarkdownViewer }
 
-export {markdownToPlainText,MarkdownViewer }
- function MarkdownViewer({ markdown }: { markdown: string }) {
+function MarkdownViewer({ markdown }: { markdown: string }) {
+    const { themeMode } = useAppZust()
     const [Viewer, setViewer] = useState<any>()
-    useEffect(()=>{
-        (async()=>{
-            const {Viewer} = await import('@toast-ui/react-editor')  
-            const v = <Viewer initialValue={markdown || "Aucun contenu"} />
+    const ref = useRef<HTMLDivElement>(null)
+    useEffect(() => {
+        (async () => {
+            const { Viewer } = await import('@toast-ui/react-editor')
+            const v = <div ref={ref} className={'markdown-viewer ' + themeMode }>
+                <Viewer initialValue={markdown || "Aucun contenu"} />
+            </div>
             setViewer(v);
         })()
-    },[markdown])
-    return Viewer??'..';
+    }, [markdown]);
+
+    useEffect(() => {
+        if(!ref.current) return
+        themeMode == 'dark'
+        ? ref.current.classList.add('dark')
+        : ref.current.classList.remove('dark')
+    }, [ref, themeMode])
+    return Viewer ?? '..';
 }
 
 function markdownToPlainText(markdown: string): string {
