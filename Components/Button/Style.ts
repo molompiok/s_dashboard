@@ -14,6 +14,19 @@ export const buttonStyle = `
     focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:focus:ring-emerald-400 focus:ring-offset-2 dark:focus:ring-offset-gray-900
     cursor-pointer select-none
 `;
+export const buttonStyleSimple = `
+    group relative inline-flex items-center gap-2 px-2 py-1 flex-nowrap white-space-nowrap
+    bg-gradient-to-r from-emerald-500 to-teal-500 
+    hover:from-emerald-600 hover:to-teal-600
+    dark:from-emerald-600 dark:to-teal-600
+    dark:hover:from-emerald-500 dark:hover:to-teal-500
+    text-white font-semibold rounded-xl shadow-lg 
+    hover:shadow-xl hover:shadow-emerald-500/25 dark:hover:shadow-emerald-400/25
+    transform hover:scale-[1.02] active:scale-[0.98]
+    transition-all duration-200 ease-in-out
+    focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:focus:ring-emerald-400 focus:ring-offset-2 dark:focus:ring-offset-gray-900
+    cursor-pointer select-none
+`;
 
 // Style secondaire pour les boutons moins importants
 export const buttonSecondaryStyle = `
@@ -86,6 +99,7 @@ export const buttonNavStyle = `
     cursor-pointer select-none
 `;
 
+export const  cardStyleSimple = ' bg-white/80 dark:bg-white/5 backdrop-blur-lg rounded-lg shadow-sm border border-gray-200/80 dark:border-white/10' 
 export const  cardStyle = ' bg-white/80 dark:bg-white/5 backdrop-blur-lg rounded-lg shadow-sm border border-gray-200/80 dark:border-white/10 p-2 mob:p-4 sm:p-6 ' 
 
 // Classes utilitaires pour les états des boutons

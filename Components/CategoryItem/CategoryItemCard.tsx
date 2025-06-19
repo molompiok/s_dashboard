@@ -33,6 +33,10 @@ function CategoryItemCard({ category }: CategoryItemCardProps) {
     const [isVisible, setIsVisible] = useState(category.is_visible ?? true);
     const menuRef = useRef<HTMLDivElement>(null); // Référence pour le popup
 
+    
+    const [s] = useState({
+        closedByDocument: false,
+    })
     // Synchroniser isVisible si la prop category change
     useEffect(() => {
         setIsVisible(category.is_visible ?? true);
@@ -42,6 +46,10 @@ function CategoryItemCard({ category }: CategoryItemCardProps) {
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (isMenuOpen && menuRef.current && !menuRef.current.contains(event.target as Node)) {
+                s.closedByDocument = true;
+                setTimeout(() => {
+                    s.closedByDocument = false
+                }, 300);
                 setIsMenuOpen(false);
             }
         };
@@ -119,11 +127,11 @@ function CategoryItemCard({ category }: CategoryItemCardProps) {
 
     return (
         // Appliquer les styles Tailwind pour la carte
-        <div className="category-item-card relative group bg-white  rounded-lg shadow-sm border border-gray-200 flex flex-col transition duration-150 hover:shadow-md hover:border-blue-300 dark:bg-white/5 dark:border-white/10">
+        <div onClick={() => {
+            navigate(`/categories/${category.id}`)
+        }} className="category-item-card relative group bg-white  rounded-lg shadow-sm border border-gray-200 flex flex-col transition duration-150 hover:shadow-md hover:border-blue-300 dark:bg-white/5 dark:border-white/10">
             {/* Image Cliquable */}
-            <span onClick={() => {
-                navigate(`/categories/${category.id}`)
-            }} className="block aspect-[4/3] w-full bg-gray-100 relative rounded-t-lg overflow-hidden">
+            <span className="block aspect-[4/3] w-full bg-gray-100 relative rounded-t-lg overflow-hidden">
                 {/* Gestion Erreur Image */}
                 {!imgError ? (
                     <img
@@ -151,17 +159,22 @@ function CategoryItemCard({ category }: CategoryItemCardProps) {
             <div className="p-3 flex flex-col flex-grow" role="menu" aria-orientation="vertical">
                 {/* Nom & Menu Actions */}
                 <div className="flex justify-between items-start gap-2 mb-1">
-                    {/* Lien Nom */}
-                    <a href={`/categories/${category.id}`} className="flex-grow min-w-0">
-                        <h3 className='font-semibold text-base text-gray-800 dark:text-white/90 group-hover:text-blue-600 dark:group-hover:text-blue-500 truncate' title={category.name}>
-                            {category.name}
-                        </h3>
-                    </a>
+                    <h3 className='font-semibold text-base text-gray-800 dark:text-white/90 group-hover:text-blue-600 dark:group-hover:text-blue-500 truncate' title={category.name}>
+                        {category.name}
+                    </h3>
                     {/* Menu Actions */}
                     <div className="relative flex-shrink-0">
                         <button
-                            onClick={(e) => { e.stopPropagation(); setIsMenuOpen(!isMenuOpen); }}
-                            className="p-1 -m-1 rounded-full text-gray-400 dark:text-white/80 hover:bg-gray-100 dark:hover:text-white hover:text-gray-600 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                            onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                if (s.closedByDocument) {
+                                    s.closedByDocument = false;
+                                    return
+                                }
+                                setIsMenuOpen(!isMenuOpen);
+                            }}
+                            className="p-1 -m-1 rounded-full text-gray-400 dark:text-white/80 hover:bg-gray-100 dark:hover:bg-gray-100 dark:hover:text-white hover:text-gray-600 focus:outline-none focus:ring-1 focus:ring-blue-500"
                             aria-haspopup="true"
                             aria-expanded={isMenuOpen}
                             title={t('common.actions')}
@@ -171,10 +184,15 @@ function CategoryItemCard({ category }: CategoryItemCardProps) {
                         </button>
                         {/* Menu déroulant */}
                         {isMenuOpen && (
-                            <div ref={menuRef} className={`absolute right-0 mt-1 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-20 py-1 ${ isMenuOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none' }`} 
-                            role="menu">
+                            <div onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation()
+                            }} ref={menuRef} className={`absolute right-0 mt-1 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-20 py-1 ${isMenuOpen ? 'opacity-100 scale-100' : 'opacity-0 scale-95 pointer-events-none'}`}
+                                role="menu">
                                 {/* Lien Voir */}
-                                <a href={`/categories/${category.id}`} role="menuitem" className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 dark:text-white/80 dark:hover:texte-white hover:bg-gray-100 hover:text-gray-900 w-full text-left">
+                                <a onClick={() => {
+                                    navigate(`/categories/${category.id}`);
+                                }} role="menuitem" className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 dark:text-white/80 dark:hover:texte-white hover:bg-gray-100 hover:text-gray-900 w-full text-left">
                                     <IoChevronForward className="w-4 h-4" /> {t('common.view')}
                                 </a>
                                 {/* Action Visibilité */}

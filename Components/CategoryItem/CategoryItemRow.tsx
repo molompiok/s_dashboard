@@ -32,25 +32,33 @@ function CategoryItemRow({ category /*, onDeleteSuccess, onVisibilityChangeSucce
     const [imgError, setImgError] = useState(false);
     // Utiliser l'état local pour refléter immédiatement le changement de visibilité
     const [isVisible, setIsVisible] = useState(category.is_visible ?? true);
-     const menuRef = useRef<HTMLDivElement>(null);
-     // Fermer au clic extérieur
-        useEffect(() => {
-            const handleClickOutside = (event: MouseEvent) => {
-                if (isMenuOpen && menuRef.current && !menuRef.current.contains(event.target as Node)) {
-                    setIsMenuOpen(false);
-                }
-            };
-            // Ajouter l'écouteur seulement si le popup est actif
-            if (isMenuOpen) {
-                document.addEventListener('mousedown', handleClickOutside);
-            } else {
-                document.removeEventListener('mousedown', handleClickOutside);
+    const [s] = useState({
+        closedByDocument: false,
+    })
+
+    const menuRef = useRef<HTMLDivElement>(null);
+    // Fermer au clic extérieur
+    useEffect(() => {
+        const handleClickOutside = (event: MouseEvent) => {
+            if (isMenuOpen && menuRef.current && !menuRef.current.contains(event.target as Node)) {
+                s.closedByDocument = true;
+                setTimeout(() => {
+                    s.closedByDocument = false
+                }, 300);
+                setIsMenuOpen(false);
             }
-            // Nettoyer l'écouteur
-            return () => {
-                document.removeEventListener('mousedown', handleClickOutside);
-            };
-        }, [isMenuOpen]);
+        };
+        // Ajouter l'écouteur seulement si le popup est actif
+        if (isMenuOpen) {
+            document.addEventListener('mousedown', handleClickOutside);
+        } else {
+            document.removeEventListener('mousedown', handleClickOutside);
+        }
+        // Nettoyer l'écouteur
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [isMenuOpen]);
     // Synchroniser isVisible si la prop category change de l'extérieur
     useEffect(() => {
         setIsVisible(category.is_visible ?? true);
@@ -121,13 +129,13 @@ function CategoryItemRow({ category /*, onDeleteSuccess, onVisibilityChangeSucce
 
     return (
         // Appliquer les styles Tailwind comme précédemment
-        <div className="category-item-row flex items-center gap-3 sm:gap-4 p-2.5 dark:text-white rounded-lg shadow-sm border w-full group relative hover:border-blue-200 hover:shadow-md transition duration-200 bg-white dark:bg-white/5  border-transparent dark:border-white/10"> {/* Ajouter relative */}
+        <div onClick={() => {
+            navigate(`/categories/${category.id}`);
+        }} className="category-item-row flex items-center gap-3 sm:gap-4 p-2.5 dark:text-white rounded-lg shadow-sm border w-full group relative hover:border-blue-200 hover:shadow-md transition duration-200 bg-white dark:bg-white/5  border-transparent dark:border-white/10"> {/* Ajouter relative */}
 
             {/* Image/Icône */}
             {/* Utiliser un lien pour l'image et le nom */}
-            <a onClick={() => {
-                navigate(`/categories/${category.id}`);
-            }} className="flex-shrink-0 block w-12 h-12 sm:w-16 sm:h-16 rounded-md overflow-hidden bg-gray-100 border border-gray-200">
+            <a className="flex-shrink-0 block w-12 h-12 sm:w-16 sm:h-16 rounded-md overflow-hidden bg-gray-100 border border-gray-200">
                 {/* Gestion Erreur Image */}
                 {!imgError ? (
                     <img
@@ -148,11 +156,9 @@ function CategoryItemRow({ category /*, onDeleteSuccess, onVisibilityChangeSucce
 
             {/* Nom & Description */}
             <div className="flex-grow min-w-0 flex flex-col">
-                <a href={`/categories/${category.id}`} className="group/link">
-                    <h3 className='font-medium text-sm sm:text-base text-gray-800 dark:text-white group-hover/link:text-blue-600 truncate' title={category.name}>
-                        {category.name}
-                    </h3>
-                </a>
+                <h3 className='font-medium text-sm sm:text-base text-gray-800 dark:text-white group-hover/link:text-blue-600 truncate' title={category.name}>
+                    {category.name}
+                </h3>
                 {category.description && (
                     <p className=' text-xs text-gray-500 dark:text-white/80 mt-0.5 truncate' title={category.description}>
                         {limit(category.description, 60)}
@@ -169,7 +175,11 @@ function CategoryItemRow({ category /*, onDeleteSuccess, onVisibilityChangeSucce
             {/* Visibilité */}
             <div className="hidden mob:flex items-center justify-center flex-shrink-0 w-16">
                 {/* Utiliser un bouton pour l'action de toggle */}
-                <button onClick={handleToggleVisibility} title={isVisible ? t('productList.setHidden') : t('productList.setVisible')} className="p-1 rounded-full hover:bg-gray-100">
+                <button onClick={(e)=>{
+                    e.preventDefault();
+                    e.stopPropagation();
+                    handleToggleVisibility();
+                }} title={isVisible ? t('productList.setHidden') : t('productList.setVisible')} className="p-1 rounded-full hover:bg-gray-100">
                     {isVisible ? <IoEyeOutline className="w-4 h-4 text-green-500" /> : <IoEyeOffOutline className="w-4 h-4 text-gray-400" />}
                 </button>
             </div>
@@ -183,7 +193,15 @@ function CategoryItemRow({ category /*, onDeleteSuccess, onVisibilityChangeSucce
             <div className="relative flex-shrink-0 ml-auto sm:ml-0">
                 {/* Bouton Kebab */}
                 <button
-                    onClick={(e) => { e.stopPropagation();e.preventDefault() ;setIsMenuOpen(!isMenuOpen); }}
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        e.preventDefault();
+                        if (s.closedByDocument) {
+                            s.closedByDocument = false;
+                            return
+                        }
+                        setIsMenuOpen(!isMenuOpen);
+                    }}
                     className="p-1.5 rounded-full text-gray-400 dark:text-white/80 hover:bg-gray-100 dark:hover:bg-gray-600 hover:text-gray-600 dark:hover:text-white focus:outline-none focus:ring-1 focus:ring-blue-500"
                     aria-haspopup="true" aria-expanded={isMenuOpen} title={t('common.actions')}
                     disabled={deleteCategoryMutation.isPending || updateCategoryMutation.isPending} // Désactiver si action en cours
@@ -195,8 +213,8 @@ function CategoryItemRow({ category /*, onDeleteSuccess, onVisibilityChangeSucce
                     <div ref={menuRef}
                         className="absolute right-0 mt-1 w-48 bg-white dark:bg-gray-800 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-20 py-1" // Augmenter z-index
                         role="menu" aria-orientation="vertical"
-                    // Ajouter un listener pour fermer le menu au clic extérieur
-                    onClick={(e) => e.stopPropagation()} // Garder, mais il faut un listener global
+                        // Ajouter un listener pour fermer le menu au clic extérieur
+                        onClick={(e) => e.stopPropagation()} // Garder, mais il faut un listener global
                     >
                         {/* Lien Voir (garder <a>) */}
                         <a href={`/categories/${category.id}`} role="menuitem" className="flex items-center gap-2 px-3 py-1.5 text-sm dark:text-white text-gray-700 hover:bg-gray-100 hover:text-gray-900 w-full text-left">

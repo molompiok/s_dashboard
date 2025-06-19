@@ -260,6 +260,9 @@ function Page() {
             <ThemeManager store={undefined} />
           </>
         )}
+        {
+          !isLoadingList && storesList.length == 0 && <ThemeManager store={undefined} />
+        }
       </main>
     </div>
   );

@@ -84,7 +84,7 @@ function CategoryItemMini({
     return (
         <ContainerElement
             {...containerProps}
-            className={`relative w-20 h-20 p-1.5 rounded-xl transition duration-200 ease-in-out flex flex-col items-center justify-center text-center cursor-pointer bg-white shadow-sm  hover:border-blue-200 hover:shadow-md dark:bg-white/5 border border-gray-100  dark:border-white/10 ${hoverEffect ? 'hover:scale-105 hover:shadow-md hover:border-blue-200 group' : ''}`}
+            className={`relative w-20 h-23 p-0.5 rounded-xl transition duration-200 ease-in-out flex flex-col items-center justify-center text-center cursor-pointer bg-white shadow-sm  hover:border-blue-200 hover:shadow-md dark:bg-white/5 border border-gray-100  dark:border-white/10 ${hoverEffect ? 'hover:scale-105 hover:shadow-md hover:border-blue-200 group' : ''}`}
         >
             {/* Bouton/Compteur */}
             <div
@@ -102,12 +102,12 @@ function CategoryItemMini({
 
             {/* Image (avec style dynamique) */}
             <div
-                className="w-full aspect-square rounded bg-contain bg-center bg-no-repeat mb-1 -gray-100" // bg-gray-100 comme fallback
+                className="w-18 aspect-square rounded bg-contain bg-center bg-no-repeat mb-1 -gray-100" // bg-gray-100 comme fallback
                 style={imageStyle} // Appliquer le style backgroundImage
             ></div>
 
             {/* Nom */}
-            <span className="w-full text-xs font-medium text-gray-700 truncate leading-tight" title={category.name}>
+            <span className="inline-block w-full min-h-4 text-xs mb-1 font-medium text-gray-700 dark:text-white truncate leading-tight" title={category.name}>
                 {category.name}
             </span>
         </ContainerElement>

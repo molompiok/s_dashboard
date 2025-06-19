@@ -58,6 +58,8 @@ function toNameString(name: string) {
   return _n
 }
 function getFileType(file: string | Blob | undefined) {
+  console.log('------------- file', file);
+  
   if (typeof file == 'string') {
     const ext = file.substring(file.lastIndexOf('.') + 1, file.length);
     if (['webp', 'jpg', 'jpeg', 'png', 'avif', 'gif', 'tif', 'tiff', 'ico', 'svg'].includes(ext)) {

@@ -118,14 +118,14 @@ function Page() {
     const handleRemoveParent = () => {
         updateLocalCategory(() => ({ parent_category_id: 'null' }));
     };
-    
+
     const handleVisibility = (is_visible: boolean) => {
         setIsVisibilityUpdating(true);
         updateLocalCategory(() => ({ is_visible }));
     };
 
     const handleDelete = () => { /* ... (logique inchangée, déjà bonne) ... */ };
-    
+
     const validateForm = (showErrors: boolean = true) => {
         const errors: { [key: string]: string } = {};
         if (!categoryFormState.name || categoryFormState.name.trim().length < 3) errors.name = t('category.validation.nameRequired');
@@ -149,10 +149,10 @@ function Page() {
     const saveRequired = () => {
         if (isLoadingMutation || !validateForm(false)) return;
         if (isNewCategory) return;
-        
+
         const dataToUpdate = { ...s.collected };
         s.collected = {};
-        
+
         if (Object.keys(dataToUpdate).length === 0) {
             setIsVisibilityUpdating(false);
             return;
@@ -184,7 +184,7 @@ function Page() {
         }
     }, [categoryFormState, isNewCategory, s]);
 
-    const breadcrumbs: BreadcrumbItem[] = useMemo(() => { /* ... (logique inchangée) ... */ return [];}, []);
+    const breadcrumbs: BreadcrumbItem[] = useMemo(() => { /* ... (logique inchangée) ... */ return []; }, []);
 
     // 🎨 --- GESTION DES ÉTATS D'INTERRUPTION ---
     if (isLoadingCategory || !currentStore) {
@@ -222,9 +222,9 @@ function Page() {
             <Topbar back={true} breadcrumbs={breadcrumbs} />
             <main className="w-full max-w-4xl mx-auto p-4 md:p-6 lg:p-8 flex flex-col gap-6">
                 <div className="flex justify-between items-center">
-                    <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
                         {isNewCategory ? t('category.createTitle') : t('category.editTitle', { name: originalCategoryData?.name || '...' })}
-                    </h1>
+                    </h2>
                     {/* Auto-save indicator */}
                     {!isNewCategory && <div className={`text-xs transition-opacity duration-300 ${autoSaveState !== 'idle' ? 'opacity-100' : 'opacity-0'}`}>
                         {autoSaveState === 'saving' && <span className="text-amber-600 dark:text-amber-400">{t('common.saving')}...</span>}
@@ -236,7 +236,7 @@ function Page() {
                     <div>
                         <label className={labelStyle} htmlFor="chose-category-view">{t('category.coverImageLabel')} <Indicator className="ml-2" title={t('category.coverImageTooltipTitle')} description={t('category.coverImageTooltipDesc')} /></label>
                         <label htmlFor="chose-category-view" className={`${imagePickerStyle(!!fieldErrors.view)} w-full aspect-[3/1]`}>
-                            <div className="absolute inset-0 bg-cover bg-center" style={{ background: viewUrl ? `url(${viewUrl})` : 'none' }}></div>
+                            <div className="absolute inset-0 bg-cover bg-center" style={{ background: viewUrl }}></div>
                             {showViewPlaceholder && <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-400 group-hover:text-teal-500"><IoCloudUploadOutline size={40} /><span className="mt-1 text-xs">{t('category.selectImagePrompt')}</span></div>}
                             {!showViewPlaceholder && <div className="absolute bottom-2 right-2 p-1.5 bg-white/80 dark:bg-black/50 backdrop-blur-sm rounded-full shadow text-gray-700 dark:text-gray-300 group-hover:text-teal-600 opacity-0 group-hover:opacity-100 transition-opacity"><RiImageEditFill size={18} /></div>}
                             <input id="chose-category-view" type="file" accept="image/*" className="sr-only" onChange={(e) => handleFileChange(e, 'view')} />
@@ -248,14 +248,14 @@ function Page() {
                         <div className="flex-shrink-0 w-full sm:w-auto">
                             <label className={labelStyle} htmlFor="chose-category-icon">{t('category.iconLabel')} <Indicator className="ml-2" title={t('category.iconTooltipTitle')} description={t('category.iconTooltipDesc')} /></label>
                             <label htmlFor="chose-category-icon" className={`${imagePickerStyle(!!fieldErrors.icon)} w-36 h-36`}>
-                                <div className="absolute inset-0 bg-contain bg-center bg-no-repeat" style={{ background: iconUrl ? `url(${iconUrl})` : 'none' }}></div>
+                                <div className="absolute inset-0 bg-contain bg-center bg-no-repeat" style={{ background: iconUrl }}></div>
                                 {showIconPlaceholder && <div className="absolute inset-0 flex flex-col items-center justify-center text-gray-400 group-hover:text-teal-500 p-2 text-center"><IoCloudUploadOutline size={32} /><span className="mt-1 text-xs">{t('category.selectIconPrompt')}</span></div>}
                                 {!showIconPlaceholder && <div className="absolute bottom-1 right-1 p-1.5 bg-white/80 dark:bg-black/50 backdrop-blur-sm rounded-full shadow text-gray-700 dark:text-gray-300 group-hover:text-teal-600 opacity-0 group-hover:opacity-100 transition-opacity"><RiImageEditFill size={16} /></div>}
                                 <input id="chose-category-icon" type="file" accept="image/*" className="sr-only" onChange={(e) => handleFileChange(e, 'icon')} />
                             </label>
                             {fieldErrors.icon && <p className="mt-1 text-xs text-red-500 dark:text-red-400">{fieldErrors.icon}</p>}
                         </div>
-                        {!isNewCategory && <div className="stats flex-grow sm:pt-7"><h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">{t('category.performanceData')}</h3><div className="flex flex-col gap-1.5"><h2 className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300"><IoBagHandle className="w-4 h-4 text-gray-400" />{t('dashboard.products')}: <span className="font-semibold text-gray-900 dark:text-white">{categoryFormState.product_count ?? 0}</span></h2></div></div>}
+                        {!isNewCategory && <div className="stats flex-grow sm:pt-6"><h3 className="font-medium text-gray-500 dark:text-gray-400 mb-2">{t('category.performanceData')}</h3><div className="flex flex-col gap-1.5"><h2 className="flex items-center gap-2 text-gray-700 dark:text-gray-300"><IoBagHandle className="w-4 h-4 text-gray-400" />{t('dashboard.products')}: <span className="font-semibold text-gray-900 dark:text-white">{categoryFormState.product_count ?? 0}</span></h2></div></div>}
                     </div>
 
                     <div>
@@ -284,14 +284,21 @@ function Page() {
 
                 {!isNewCategory && (
                     <div className={sectionStyle}>
-                        <VisibilityControl title='' isVisible={!!originalCategoryData?.is_visible} onSetVisibility={handleVisibility} onDeleteRequired={handleDelete} isLoading={isVisibilityUpdating} t={t} />
+                        <VisibilityControl
+                            title={t('product.visibilityTitle')}
+                            isVisible={!!originalCategoryData?.is_visible}
+                            onSetVisibility={handleVisibility}
+                            onDeleteRequired={handleDelete}
+                            isLoading={isVisibilityUpdating}
+                            t={t}
+                        />
                     </div>
                 )}
                 {isNewCategory && <CreateControl onCancel={() => history.back()} onCreate={createCategory} canCreate={validateForm(false)} t={t} title={t('category.createTitle')} isLoading={isLoadingMutation} />}
-                
+
                 {!isNewCategory && categoryFormState.id && (
                     <div className={sectionStyle}>
-                        <ProductList title={t('category.categoryProducts')} addTo={{ category_id: categoryFormState.id, text: t('category.addProductToCategory') }} baseFilter={{ categories_id: [categoryFormState.id] }} />
+                        <ProductList title={t('category.categoryProducts')} addTo={{ category_id: categoryFormState.id, text: t('category.addNewProductToCategory') }} baseFilter={{ categories_id: [categoryFormState.id] }} />
                     </div>
                 )}
             </main>

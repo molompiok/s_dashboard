@@ -61,12 +61,19 @@ const Stepper = ({ currentStep, setStep, isNewProduct }: { currentStep: WizardSt
 
     return (
         <nav className={`flex items-center justify-center  rounded-xl ${cardStyle}`} aria-label="Progress">
+            <input ref={(ref) => {
+                if (!ref) return;
+                ref.autofocus = true;
+                setTimeout(() => {
+                    ref.autofocus = true;
+                }, 700);
+            }} type="text" autoFocus style={{ all: 'unset', visibility: 'hidden', width: '0px', maxWidth: '0px', height: '0px', maxHeight: '0px' }} />
             <ol role="list" className="flex items-center space-x-2 sm:space-x-4">
                 {steps.map((step, stepIdx) => (
                     <li key={step.name} className="flex items-center">
                         <button onClick={() => setStep(step.id)} disabled={isNewProduct && stepIdx > 0} className="flex flex-col items-center text-center disabled:cursor-not-allowed group">
-                            <div className={`relative flex h-10 w-10 items-center justify-center rounded-full transition-all duration-300 ${stepIdx == currentStepIndex ? 'bg-teal-600' : isNewProduct? 'bg-gray-200 dark:bg-gray-700 group-hover:bg-gray-300 dark:group-hover:bg-gray-600':'bg-teal-600/10 dark:bg-teal-600/20'}`}>
-                                <step.icon className={`h-6 w-6 ${stepIdx == currentStepIndex ? 'text-white' : isNewProduct? 'text-gray-500 dark:text-gray-400':'text-teal-700'}`} />
+                            <div className={`relative flex h-10 w-10 items-center justify-center rounded-full transition-all duration-300 ${stepIdx == currentStepIndex ? 'bg-teal-600' : isNewProduct ? 'bg-gray-200 dark:bg-gray-700 group-hover:bg-gray-300 dark:group-hover:bg-gray-600' : 'bg-teal-600/10 dark:bg-teal-600/20'}`}>
+                                <step.icon className={`h-6 w-6 ${stepIdx == currentStepIndex ? 'text-white' : isNewProduct ? 'text-gray-500 dark:text-gray-400' : 'text-teal-700'}`} />
                             </div>
                             <p className={`mt-2 text-xs font-medium transition-colors ${step.id === currentStep ? 'text-teal-600 dark:text-teal-400' : 'text-gray-500 dark:text-gray-400'}`}>{step.name}</p>
                         </button>
@@ -263,7 +270,7 @@ function Page() {
                     {isNewProduct && !originalProduct ? (
                         <button onClick={handleSaveAndContinue} disabled={createProductMutation.isPending} className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-white bg-teal-600 hover:bg-teal-700 disabled:opacity-50 transition-colors">
                             {
-                                createProductMutation.isPending && <SpinnerIcon/>
+                                createProductMutation.isPending && <SpinnerIcon />
                             }
                             {t('product.saveAndContinue')} <IoArrowForward />
                         </button>
@@ -381,8 +388,8 @@ const ProductVariantsStep = ({ product, onUpdate }: { product: ProductInterface,
 
     const handleFeatureChange = (updatedFeature: FeatureInterface) => {
 
-        if(!updatedFeature) return
-        
+        if (!updatedFeature) return
+
         const newFeatures = product.features?.map(f => f.id === updatedFeature.id ? updatedFeature : f);
 
         onUpdate(newFeatures || []);
@@ -410,7 +417,7 @@ const ProductVariantsStep = ({ product, onUpdate }: { product: ProductInterface,
             return v
         })
 
-        const newIndex =  direction === 'up' ? (feature.index || 0) - 1 : (feature.index || 0) + 1;
+        const newIndex = direction === 'up' ? (feature.index || 0) - 1 : (feature.index || 0) + 1;
         const neighbor = product.features?.find(d => d.index === newIndex);
 
         if (!neighbor) return;
@@ -515,7 +522,7 @@ const ProductPublishStep = ({ product, onUpdate }: { product: ProductInterface, 
                 onDeleteRequired={() => {
 
                 }}
-                title={t('product.visibilityTitle')} 
+                title={t('product.visibilityTitle')}
                 isLoading={false}
 
                 isVisible={!!product.is_visible}

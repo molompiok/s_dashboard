@@ -819,6 +819,7 @@
     "productSettings": {
         "priceStock": "Prix & Stock",
         "details": "Détails Add.",
+        "faq": "Questions fréquentes",
         "promo": "Promotions",
         "inventory": "Points Vente",
         "affiliation": "Affiliation",
@@ -880,7 +881,8 @@
         "noChangesButton": "Aucune modification",
         "productCountTooltip": "Nombre de produits dans cette catégorie",
         "categoryProducts": "Les produits de la catégorie",
-        "addProductToCategory": "Ajouter un produit a cette catégorie",
+        "addNewProductToCategory": "Ajouter un nouveau produit a cette catégorie",
+        "addProductToCategory": "Ajouter un produit deja existant a cette catégorie",
         "sortOptions": {
             "name_asc": "Nom (A-Z)",
             "name_desc": "Nom (Z-A)",
@@ -977,6 +979,7 @@
         "unlimitedStockShort": "Illimité"
     },
     "detail": {
+        "addFirstButton":"Ajouter le première detail",
         "pageTitle": "Détails - {{name}}",
         "sectionTitle": "Détails du Produit",
         "addTooltipTitle": "Ajouter un Détail",

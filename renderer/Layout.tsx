@@ -27,33 +27,6 @@ import {  useAppZust } from './AppStore/appZust';
 
 const urlHideSideBar = ['/auth', '/profile', '/setting', '/themes', '/settings']
 
-const setTheme = function (theme: 'light' | 'dark') {
-  ClientCall(function () { return localStorage.setItem })?.('theme', theme);
-  ClientCall(function () { return document.documentElement.classList.remove })?.('light', 'dark');
-  ClientCall(function () { return document.documentElement.classList.add })?.(theme);
-};
-// Hook pour le mode sombre
-const useDarkMode = () => {
-  const [isDark, setIsDark] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return localStorage.getItem('theme') === 'dark' ||
-        (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches);
-    }
-    return false;
-  });
-
-  useEffect(() => {
-    if (isDark) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-    }
-  }, [isDark]);
-
-  return [isDark, setIsDark] as const;
-};
 
 function Layout({ children, pageContext }: { children: React.ReactNode; pageContext: PageContext }) {
   const { t } = useTranslation();
@@ -87,12 +60,14 @@ function Layout({ children, pageContext }: { children: React.ReactNode; pageCont
     // Fonction pour vérifier la préférence initiale du thème
     const checkTheme = () => {
       
-      const savedTheme = initDarkMode()
+      // const savedTheme = initDarkMode()
 
-      if (savedTheme === 'light' || savedTheme === 'dark') {
-        document.documentElement.classList.add(savedTheme);
-        document.body.classList.add(savedTheme);
-      } else {
+      // if (savedTheme === 'light' || savedTheme === 'dark') {
+      //   document.documentElement.classList.add(savedTheme);
+      //   document.body.classList.add(savedTheme);
+      // } 
+      // else
+       {
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
         document.documentElement.classList.add(prefersDark ? 'dark' : 'light');
         document.body.classList.add(prefersDark ? 'dark' : 'light');
@@ -306,7 +281,8 @@ function OpenChild() {
       {/* Ajouter `relative` pour que le contenu soit au-dessus du fond */}
       <div className={`relative w-full h-full flex ${flexAlignment}`}>
         {/* Animer l'apparition du contenu */}
-        <div className={`transition-transform  w-full h-full duration-300 ease-out ${currentChild && hash === '#openChild' ? 'scale-100 opacity-100' : 'scale-95 opacity-0'}`}>
+        <div  onClick={(e) => { if (e.currentTarget === e.target) openChild(null) }} 
+        className={`flex transition-transform  w-full h-full duration-300 ease-out ${currentChild && hash === '#openChild' ? 'scale-100 opacity-100' : 'scale-95 opacity-0'}`}>
           {currentChild}
         </div>
       </div>

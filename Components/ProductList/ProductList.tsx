@@ -21,7 +21,7 @@ export { ProductList };
 
 type ProductViewType = 'card' | 'row';
 
-function ProductList({ baseFilter, title, addTo }: { title?: string, addTo?: { category_id: string, text: string } | null, baseFilter?: FilterType }) {
+function ProductList({ baseFilter, title, addTo, addExisting }: { title?: string,addExisting?:{ onclick: ()=>void, text: string } | null, addTo?: { category_id: string, text: string } | null, baseFilter?: FilterType }) {
     const { t } = useTranslation();
     const [filter, setFilter] = useState<FilterType>(baseFilter || {});
     const [viewType, setViewType] = useState<ProductViewType>(ClientCall(function () { return localStorage.getItem('product:view_type') }) as any || 'card');

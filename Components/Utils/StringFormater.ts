@@ -7,11 +7,11 @@ const MediaCache: Record<string, any> = {}
 
 
 export const getMedia = ({ size = 'cover', host, from, isBackground, source }: {
-    source?: string | Blob,
+    source?: string | Blob|null,
     size?: 'cover' | 'contain',
     host?: string | null | undefined,
     from?: 'server' | 'api' | 'local' | null,
-    isBackground?: true
+    isBackground?: boolean
 }) => {
     const _source = typeof source == 'string'
         ? source :

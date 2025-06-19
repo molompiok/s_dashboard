@@ -14,6 +14,7 @@ import { useChildViewer } from '../ChildViewer/useChildViewer'; // Pour confirma
 import { ConfirmDelete } from '../Confirm/ConfirmDelete'; // Pour confirmation delete
 import { ChildViewer } from '../ChildViewer/ChildViewer'; // Pour confirmation delete
 import { showErrorToast, showToast } from '../Utils/toastNotifications';
+import { navigate } from 'vike/client/router';
 
 export { ProductRowItem };
 
@@ -31,12 +32,20 @@ function ProductRowItem({ product, categoriesMap }: ProductRowItemProps) {
     const [imgError, setImgError] = useState(false);
     // Utiliser l'état local pour la visibilité
     const [isVisible, setIsVisible] = useState(product.is_visible ?? true);
+    const [s] = useState({
+        closedByDocument:false,
+    })
 
     const menuRef = useRef<HTMLDivElement>(null);
     // Fermer au clic extérieur
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (isMenuOpen && menuRef.current && !menuRef.current.contains(event.target as Node)) {
+                console.log('document - close ');
+                s.closedByDocument = true
+                setTimeout(() => {
+                    s.closedByDocument = false;
+                }, 300);
                 setIsMenuOpen(false);
             }
         };
@@ -140,10 +149,12 @@ function ProductRowItem({ product, categoriesMap }: ProductRowItemProps) {
 
     return (
         // Appliquer les styles Tailwind comme précédemment
-        <div className="product-row-item flex items-center gap-3 sm:gap-4 p-2.5 dark:text-white rounded-lg shadow-sm border w-full group relative hover:border-blue-200 hover:shadow-md transition duration-200 bg-white dark:bg-white/5  border-transparent dark:border-white/10"> {/* Ajouter relative */}
+        <div onClick={() => {
+            navigate(`/products/${product.id}`);
+        }} className="product-row-item flex items-center gap-3 sm:gap-4 p-2.5 dark:text-white rounded-lg shadow-sm border w-full group relative hover:border-blue-200 hover:shadow-md transition duration-200 bg-white dark:bg-white/5  border-transparent dark:border-white/10"> {/* Ajouter relative */}
 
             {/* Image */}
-            <a href={`/products/${product.id}`} className="flex-shrink-0 block w-12 h-12 sm:w-16 sm:h-16 rounded-md overflow-hidden bg-gray-100 border border-gray-200">
+            <a className="flex-shrink-0 block w-12 h-12 sm:w-16 sm:h-16 rounded-md overflow-hidden bg-gray-100 border border-gray-200">
                 {/* Gestion Erreur Image */}
                 {!imgError ? (
                     fileType === 'image' ? (<img src={src || NO_PICTURE} alt={product.name} loading="lazy" className="w-full h-full object-cover block" onError={() => setImgError(true)} />)
@@ -161,15 +172,15 @@ function ProductRowItem({ product, categoriesMap }: ProductRowItemProps) {
                         {product.name}
                     </h3>
                 </a>
-                <p className='text-xs text-gray-400 dark:text-white/60 mt-0.5 flex items-center gap-1 group cursor-pointer w-fit' title={t('common.copyId')} onClick={() => handleCopy(getId(product.id))}>
+                <p className='text-xs text-gray-400 dark:text-white/60 mt-0.5 flex items-center gap-1 group cursor-pointer w-fit' title={t('common.copyId')} onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleCopy(getId(product.id)) }}>
                     ID: {getId(product.id)}
-                    <IoCopyOutline className={`w-3 h-3 transition-all ${copiedId ? 'text-green-500 scale-110' : 'text-gray-400 dark:text-white/80 opacity-0 group-hover:opacity-60'}`} />
+                    <IoCopyOutline strokeWidth={2} className={`w-4 h-4 dark:text-white/80 transition-all ${copiedId ? 'text-green-500 scale-110' : 'text-gray-400 dark:text-white/80 opacity-0 group-hover:opacity-60'}`} />
                 </p>
                 {/* Rating (peut être mis ici sur petit écran) */}
                 <div className="flex min-[500px]:hidden w-auto flex-wrap gap-x-3 gap-y-1 mt-1 text-xs text-gray-600">
                     <span className="inline-flex gap-1 items-center"><IoStarHalf className="text-amber-500" />{(product.rating || 0).toFixed(1)}</span>
                     <span className="inline-flex gap-1 items-center"><IoPeopleSharp />{shortNumber(product.comment_count || 0)}</span>
-                    <button onClick={handleToggleVisibility} title={isVisible ? t('productList.setHidden') : t('productList.setVisible')} className="p-1 sx:hidden rounded-full hover:bg-gray-100">
+                    <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleToggleVisibility() }} title={isVisible ? t('productList.setHidden') : t('productList.setVisible')} className="p-1 sx:hidden rounded-full hover:bg-gray-100">
                         {isVisible ? <IoEyeOutline className="w-4 h-4 text-green-500 dark:text-green-300" /> : <IoEyeOffOutline className="w-4 h-4 text-gray-400 dark:text-white" />}
                     </button>
                 </div>
@@ -208,31 +219,42 @@ function ProductRowItem({ product, categoriesMap }: ProductRowItemProps) {
                 </span>
             </div>
             {/* Visibilité */}
-            <button onClick={handleToggleVisibility} title={isVisible ? t('productList.setHidden') : t('productList.setVisible')} className="p-1 rounded-full hidden sx:flex hover:bg-gray-100 dark:hover:bg-gray-400/50">
+            <button onClick={(e) => { e.preventDefault(); e.stopPropagation(); handleToggleVisibility() }} title={isVisible ? t('productList.setHidden') : t('productList.setVisible')} className="p-1 rounded-full hidden sx:flex hover:bg-gray-100 dark:hover:bg-gray-400/50">
                 {isVisible ? <IoEyeOutline className="w-4 h-4 text-green-500 dark:text-green-300" /> : <IoEyeOffOutline className="w-4 h-4 text-gray-400 dark:text-white" />}
             </button>
 
             {/* Actions Menu */}
             <div className="relative flex-shrink-0 ml-auto sm:ml-0">
-                <button onClick={(e) => { e.stopPropagation(); !isMenuOpen && setIsMenuOpen(true); }} className="p-1.5 rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-600 focus:outline-none focus:ring-1 focus:ring-blue-500" aria-haspopup="true" aria-expanded={isMenuOpen} title={t('common.actions')} disabled={deleteProductMutation.isPending || updateProductMutation.isPending}>
+                <button onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    if(s.closedByDocument) {
+                        s.closedByDocument = false
+                        return
+                    }
+                    console.log(' bt - click , openValue =  ', isMenuOpen);
+                    !isMenuOpen && setIsMenuOpen(true);
+                }} className="p-1.5 rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-600 focus:outline-none focus:ring-1 focus:ring-blue-500" aria-haspopup="true" aria-expanded={isMenuOpen} title={t('common.actions')} disabled={deleteProductMutation.isPending || updateProductMutation.isPending}>
                     <IoEllipsisVertical />
                 </button>
                 {isMenuOpen && (
                     <div className="absolute right-0 mt-1 w-48 bg-white rounded-md shadow-lg ring-1 ring-black ring-opacity-5 z-20 py-1"
                         role="menu"
                         ref={menuRef}
-                        onClick={(e) => e.stopPropagation()}>
+                        onClick={(e) => { e.preventDefault(); e.stopPropagation() }}>
                         {/* Lien Modifier */}
-                        <a href={`/products/${product.id}`} role="menuitem" className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 w-full text-left">
+                        <a onClick={() => {
+                            navigate(`/products/${product.id}`);
+                        }} role="menuitem" className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 w-full text-left">
                             <IoPencil className="w-4 h-4" /> {t('common.edit')}
                         </a>
                         {/* Action Visibilité */}
-                        <button onClick={handleToggleVisibility} role="menuitem" className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 w-full text-left disabled:opacity-50" disabled={updateProductMutation.isPending}>
+                        <button onClick={(e) => { handleToggleVisibility() }} role="menuitem" className="flex items-center gap-2 px-3 py-1.5 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900 w-full text-left disabled:opacity-50" disabled={updateProductMutation.isPending}>
                             {isVisible ? <IoEyeOffOutline className="w-4 h-4" /> : <IoEyeOutline className="w-4 h-4" />}
                             {isVisible ? t('productList.setHidden') : t('productList.setVisible')}
                         </button>
                         {/* Action Supprimer */}
-                        <button onClick={handleDelete} role="menuitem" className="flex items-center gap-2 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 w-full text-left disabled:opacity-50" disabled={deleteProductMutation.isPending}>
+                        <button onClick={(e) => { handleDelete() }} role="menuitem" className="flex items-center gap-2 px-3 py-1.5 text-sm text-red-600 hover:bg-red-50 hover:text-red-700 w-full text-left disabled:opacity-50" disabled={deleteProductMutation.isPending}>
                             <IoTrash className="w-4 h-4" /> {t('common.delete')}
                         </button>
                     </div>

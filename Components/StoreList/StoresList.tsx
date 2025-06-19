@@ -50,7 +50,7 @@ export function StoresList({isFilterActive,maxVisible=5.8, maxSize=1200,stores, 
         window.open(host+store.default_domain, '_blank', 'noopener,noreferrer');
     }
     return (
-        isFilterActive && stores.length==0 ? (
+        !isLoading && isFilterActive && stores.length==0 ? (
             <div className="flex items-center justify-center h-full p-4">
                 <NoResultCard
                     title="Aucune boutique trouvée"

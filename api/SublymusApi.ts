@@ -530,9 +530,13 @@ export class SublymusApi {
                     let i = 0
                     const l: string[] = []
                     for (const v of value) {
-                        const d = distinct ? `${_distinct}:${key}_${i++}` : `${key}_${i++}`;
-                        l.push(d);
-                        (v ?? undefined) !== undefined && formData.append(d, v);
+                        if(v instanceof Blob){
+                            const d = distinct ? `${_distinct}:${key}_${i++}` : `${key}_${i++}`;
+                            l.push(d);
+                            (v ?? undefined) !== undefined && formData.append(d, v);
+                        }else{
+                            l.push(v);
+                        }
                     }
                     formData.append(key, JSON.stringify(l));
                 } else {
@@ -561,9 +565,13 @@ export class SublymusApi {
                     let i = 0
                     const l: string[] = []
                     for (const v of value) {
-                        const d = distinct ? `${_distinct}:${key}_${i++}` : `${key}_${i++}`;
-                        l.push(d);
-                        (v ?? undefined) !== undefined && formData.append(d, v);
+                        if(v instanceof Blob){
+                            const d = distinct ? `${_distinct}:${key}_${i++}` : `${key}_${i++}`;
+                            l.push(d);
+                            (v ?? undefined) !== undefined && formData.append(d, v);
+                        }else{
+                            l.push(v)
+                        }
                     }
                     formData.append(key, JSON.stringify(l));
                 }

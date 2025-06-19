@@ -20,7 +20,7 @@ const useAppZust = create(combine({
     initDarkMode() {
         if (typeof window !== 'undefined') {
             const mode = localStorage.getItem(DARK_MODE_KEY);
-            const themeMode = mode=='light'?'light':'dark'
+            const themeMode = mode=='dark'?'dark':'light'
             set(() => ({ themeMode}))
             return themeMode
         }

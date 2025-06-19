@@ -4,6 +4,9 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { getMedia } from '../Utils/StringFormater';
 import { ClientCall, getFileType } from '../Utils/functions';
 import { NO_PICTURE } from '../Utils/constants';
+import { useChildViewer } from '../ChildViewer/useChildViewer';
+import Gallery from '../Gallery/Gallery';
+import { image } from 'html2canvas-pro/dist/types/css/types/image';
 
 export type ImageItem = { id: string; source: string | File };
 
@@ -18,6 +21,8 @@ const MAX_IMAGES = 6;
 export const ImageManager: React.FC<ImageManagerProps> = ({ images, onImagesChange, className = '' }) => {
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const containerRef = React.useRef<HTMLDivElement>(null);
+
+  const { openChild } = useChildViewer()
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
@@ -91,7 +96,18 @@ export const ImageManager: React.FC<ImageManagerProps> = ({ images, onImagesChan
     onImagesChange(updated);
   };
 
-
+  const openGallery = (index: number) => {
+    openChild(<Gallery defaultIndex={index} onClose={() => {
+      openChild(null)
+    }} media={images.map(img =>
+    ({
+      src: getMedia({ source: img.source, from: 'api' }),
+      type: getFileType(img.source) || 'image'
+    })
+    )} />, {
+      blur: 3
+    })
+  }
 
   return (
     <div
@@ -134,7 +150,13 @@ export const ImageManager: React.FC<ImageManagerProps> = ({ images, onImagesChan
                     <img src={NO_PICTURE} alt="Product" loading="lazy" className="w-full h-full object-cover block bg-gray-100 dark:bg-gray-800" />
                   )
                 }
-                <div className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
+                <div onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  console.log('%%%%%%%');
+
+                  openGallery(index);
+                }} className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
                   <button
                     type="button"
                     onClick={() => removeImage(image.id)}

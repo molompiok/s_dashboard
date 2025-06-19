@@ -13,7 +13,7 @@ export interface ReorderProductFaqsParams {
 }
 
 // La réponse pourrait être la liste réordonnée ou juste un message
-export type ReorderProductFaqsResponse = { message: string; faqs: ListType<ProductFaqInterface> }; 
+export type ReorderProductFaqsResponse = { message: string; faqs: ListType<ProductFaqInterface> };
 
 export type ProductFaqData = Omit<ProductFaqInterface, 'id' | 'created_at' | 'updated_at' | 'product'>; // Pour la création
 
@@ -87,69 +87,69 @@ export type StatsPeriod = 'day' | 'week' | 'month'; // Utiliser celui de StatsUt
 
 // Paramètres communs pour les requêtes stats
 export interface BaseStatsParams {
-    period?: StatsPeriod;
-    start_at?: string; // ISO Date string
-    count?: number;
-    end_at?:string,
-    user_id?: string; // Filtre client
-    product_id?: string; // Filtre produit
+  period?: StatsPeriod;
+  start_at?: string; // ISO Date string
+  count?: number;
+  end_at?: string,
+  user_id?: string; // Filtre client
+  product_id?: string; // Filtre produit
 }
 
 // Options Include pour Visites
 export interface VisitStatsIncludeOptions {
-    browser?: boolean;
-    os?: boolean;
-    device?: boolean;
-    landing_page?: boolean;
-    referrer?: boolean;
+  browser?: boolean;
+  os?: boolean;
+  device?: boolean;
+  landing_page?: boolean;
+  referrer?: boolean;
 }
 
 // Options Include pour Commandes
 export interface OrderStatsIncludeOptions {
-    status?: boolean;
-    payment_status?: boolean;
-    payment_method?: boolean;
-    with_delivery?: boolean;
+  status?: boolean;
+  payment_status?: boolean;
+  payment_method?: boolean;
+  with_delivery?: boolean;
 }
 
 // Réponse pour KPIs
 export interface KpiStatsResponse {
-    totalRevenue: number;
-    totalOrders: number;
-    totalVisits: number;
-    uniqueVisitors: number; // Clarifier la définition exacte (total période?)
-    conversionRate: number; // En % (ex: 1.23 pour 1.23%)
-    averageOrderValue: number;
-    // Ajouter d'autres KPIs si besoin
+  totalRevenue: number;
+  totalOrders: number;
+  totalVisits: number;
+  uniqueVisitors: number; // Clarifier la définition exacte (total période?)
+  conversionRate: number; // En % (ex: 1.23 pour 1.23%)
+  averageOrderValue: number;
+  // Ajouter d'autres KPIs si besoin
 }
 
 // Réponse pour Visites Détaillées
 export interface VisitStatsResultItem {
-    date: string; // Format YYYY-MM-DD ou YYYY-MM
-    visits: number;
-    users_count: number;
-    // Champs optionnels basés sur 'include'
-    browser?: Record<string, number>;
-    os?: Record<string, number>;
-    device?: Record<string, number>;
-    pageUrl?: Record<string, number>;
-    referrer?: Record<string, number>;
+  date: string; // Format YYYY-MM-DD ou YYYY-MM
+  visits: number;
+  users_count: number;
+  // Champs optionnels basés sur 'include'
+  browser?: Record<string, number>;
+  os?: Record<string, number>;
+  device?: Record<string, number>;
+  pageUrl?: Record<string, number>;
+  referrer?: Record<string, number>;
 }
 export type VisitStatsResponse = VisitStatsResultItem[]; // Directement le tableau
 
 // Réponse pour Commandes Détaillées
 export interface OrderStatsResultItem {
-    date: string;
-    users_count: number;
-    orders_count: number;
-    total_price: number;
-    items_count: number;
-    return_delivery_price: number;
-    // Champs optionnels basés sur 'include'
-    status?: Record<string, number>;
-    payment_status?: Record<string, number>;
-    payment_method?: Record<string, number>;
-    with_delivery?: Record<string, number>; // Clés 'true'/'false'?
+  date: string;
+  users_count: number;
+  orders_count: number;
+  total_price: number;
+  items_count: number;
+  return_delivery_price: number;
+  // Champs optionnels basés sur 'include'
+  status?: Record<string, number>;
+  payment_status?: Record<string, number>;
+  payment_method?: Record<string, number>;
+  with_delivery?: Record<string, number>; // Clés 'true'/'false'?
 }
 export type OrderStatsResponse = OrderStatsResultItem[]; // Directement le tableau
 
@@ -270,8 +270,8 @@ export type StoreInterface = Partial<{
   created_at: string;
   updated_at: string;
   url?: string;
-  default_domain:string;
-  api_url:string;
+  default_domain: string;
+  api_url: string;
   timezone?: string,
   currency?: string,
   currentApi?: ApiInterface; // Définir ApiInterface
@@ -313,11 +313,11 @@ export interface ApiInterface {
 
 }
 
-export interface ThemeFilterType{
-  search?: string;            
+export interface ThemeFilterType {
+  search?: string;
   page?: number;
   limit?: number;
-  order_by?: 'name_asc' | 'name_desc' | 'created_at_asc' | 'created_at_desc' ; // Options de tri possibles
+  order_by?: 'name_asc' | 'name_desc' | 'created_at_asc' | 'created_at_desc'; // Options de tri possibles
 }
 
 export interface ThemeInterface { // Ajout interface Theme basée sur modèle
@@ -538,10 +538,10 @@ export interface ResetPasswordParams {
 
 export interface ForgotPasswordParams {
   email: string;
-  callback_url: string; 
+  callback_url: string;
 }
 
-export type MessageResponse = { message: string }; 
+export type MessageResponse = { message: string };
 
 export interface VisiteInterface {
   user_id: string
@@ -557,8 +557,8 @@ export interface UserInterface {
   user_phones?: UserPhoneInterface[],
   user_addresses?: UserAddressInterface[]
   password: string,
-  photo?: (string|Blob)[] | null,
-  locale:string
+  photo?: (string | Blob)[] | null,
+  locale: string
   roles?: Role[],
   token: string;
   created_at: string,
@@ -689,8 +689,8 @@ export interface ProductInterface {
   updated_at: Date;
   features?: FeatureInterface[]
   categories?: CategoryInterface[]
-  faqs?:ProductFaqInterface[]
-  characteristics?:ProductCharacteristicInterface[]
+  faqs?: ProductFaqInterface[]
+  characteristics?: ProductCharacteristicInterface[]
 };
 
 // api/Interfaces/Interfaces.ts
@@ -702,7 +702,7 @@ export interface ProductCharacteristicInterface {
   icon: string | null;
   description: string | null;
   key: string | null;
-  value_text: string | null; 
+  value_text: string | null;
   quantity: number | null;
   unity: string | null;
   level: number | null;
@@ -788,7 +788,7 @@ export interface FavoriteInteraface {
 export interface Inventory {
   id: string;
   address_name: string; // Nom du point de vente/stock
-  views: (string|Blob)[];       // URLs des images (retournées par l'API après upload)
+  views: (string | Blob)[];       // URLs des images (retournées par l'API après upload)
   email: string | null;  // Email de contact (peut être null)
   latitude: number;      // Coordonnée géographique
   longitude: number;     // Coordonnée géographique
@@ -830,5 +830,10 @@ export interface GlobalSearchType {
   products: ProductInterface[];
   categories: CategoryInterface[];
   clients: UserInterface[];       // Résultats de recherche pour les utilisateurs (clients)
-  commands: CommandInterface[];   // Résultats de recherche pour les commandes
+  commands: CommandInterface[]; meta: {
+    products: number
+    clients: number
+    commands: number
+    categories: number
+  }
 }

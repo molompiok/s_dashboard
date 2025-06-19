@@ -126,7 +126,7 @@ export function ClientItem({ client }: { client: UserInterface }) {
             <div className="flex items-center gap-4 flex-1 min-w-0">
                 {/* Avatar */}
                 <div
-                    className="w-12 h-12 rounded-full bg-cover bg-center bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 font-semibold text-sm flex items-center justify-center shrink-0"
+                    className="w-12 h-12 rounded-full bg-cover bg-center  border-2 border-gray-300/40 bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 font-semibold text-sm flex items-center justify-center shrink-0"
                     style={{ background: getMedia({ isBackground: true, source: client?.photo?.[0] }) }}
                 >
                     {!client.photo?.[0] && (client.full_name?.substring(0, 2).toUpperCase() || '?')}
@@ -151,9 +151,9 @@ export function ClientItem({ client }: { client: UserInterface }) {
                 {displayPhone}
             </p>
 
-            <div className='ml-auto flex items-center gap-6'>
+            <div className='ml-auto flex  items-center gap-6'>
                 {/* Date d'inscription */}
-                <p className="hidden sm:block text-xs text-gray-400 dark:text-gray-500 w-24 text-right shrink-0">
+                <p className="sm:block text-xs text-gray-400 dark:text-gray-500 w-24 text-right shrink-0">
                     {DateTime.fromISO(client.created_at).setLocale(t('common.locale')).toFormat('dd MMM yy')}
                 </p>
 
@@ -211,7 +211,7 @@ function ClientsFilters({ filter, setFilter }: { filter: UserFilterType, setFilt
 
             {/* 🎨 Conteneur des options avec fond et effet de flou */}
             <div className={`filter-options-container mt-2 rounded-lg transition-all duration-300 ease-in-out ${currentFilter ? 'visible' : 'invisible'}`}>
-                 <div className={`content bg-gray-50/50 dark:bg-black/10 backdrop-blur-sm border border-gray-200 dark:border-gray-800 rounded-lg overflow-hidden transition-all duration-300 ${currentFilter ? 'max-h-96' : 'max-h-0'}`}>
+                 <div className={`content bg-gray-50/50 dark:bg-black/10 backdrop-blur-sm border border-gray-200 dark:border-gray-800 rounded-lg overflow-hidden transition-all duration-300 ${currentFilter ? 'max-h-auto' : 'max-h-0'}`}>
                     <ClientStatusFilterComponent
                         active={currentFilter === 'status'}
                         status={filter.status}

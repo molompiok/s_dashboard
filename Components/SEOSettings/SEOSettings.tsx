@@ -13,6 +13,7 @@ interface SEOSettingsProps {
 const SettingsConfig = [
     { name: 'price-stock', showKey: 'productSettings.priceStock', icon: <IoPricetagsOutline className="min-w-5 h-5 dark:text-white/80"/>, colorClasses: 'text-green-600 border-green-200 hover:bg-green-50 hover:shadow-green-100' },
     { name: 'details', showKey: 'productSettings.details', icon: <IoDocumentTextOutline className="min-w-5 h-5 dark:text-white/80"/>, colorClasses: 'text-gray-600 border-gray-200 hover:bg-gray-50 hover:shadow-gray-100' },
+    { name: 'faq', showKey: 'productSettings.faq', icon: <IoChatbubbleEllipsesOutline className="min-w-5 h-5 dark:text-white/80"/>, colorClasses: 'text-orange-600 border-orange-200 hover:bg-orange-50 hover:shadow-orange-100' },
     // { name: 'promo', showKey: 'productSettings.promo', icon: <IoMegaphoneOutline className="min-w-5 h-5 dark:text-white/80"/>, colorClasses: 'text-orange-600 border-orange-200 hover:bg-orange-50 hover:shadow-orange-100' },
     // { name: 'inventory', showKey: 'productSettings.inventory', icon: <IoStorefrontOutline className="min-w-5 h-5 dark:text-white/80"/>, colorClasses: 'text-indigo-600 border-indigo-200 hover:bg-indigo-50 hover:shadow-indigo-100' },
     // { name: 'affiliation', showKey: 'productSettings.affiliation', icon: <IoGitNetworkOutline className="min-w-5 h-5 dark:text-white/80"/>, colorClasses: 'text-purple-600 border-purple-200 hover:bg-purple-50 hover:shadow-purple-100' },

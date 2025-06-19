@@ -99,9 +99,15 @@ const FaqPageSkeleton = () => {
     return (
         <div className="w-full min-h-screen flex flex-col animate-pulse">
             <Topbar back title="..." />
-            <main className="w-full max-w-4xl mx-auto p-4 md:p-6 lg:p-8 flex flex-col gap-6">
-                <div className="h-44 bg-gray-200 dark:bg-white/5 rounded-lg"></div>
+            <main className="w-full max-w-4xl mx-auto p-4 md:p-6 flex flex-col gap-4">
+                <div className="h-22 bg-gray-200 dark:bg-white/5 rounded-lg"></div>
                 <div className="flex justify-between items-center">
+                    <div className="h-7 w-1/3 bg-gray-300 dark:bg-gray-600 rounded-lg"></div>
+                    <div className="h-10 w-32 bg-gray-300 dark:bg-gray-600 rounded-lg"></div>
+                </div>
+                <div className="flex justify-between items-center gap-4">
+                    <div className="h-7 w-1/3 bg-gray-300 dark:bg-gray-600 rounded-lg"></div>
+                    <div className="h-7 w-1/3 bg-gray-300 dark:bg-gray-600 rounded-lg"></div>
                     <div className="h-7 w-1/3 bg-gray-300 dark:bg-gray-600 rounded-lg"></div>
                     <div className="h-10 w-32 bg-gray-300 dark:bg-gray-600 rounded-lg"></div>
                 </div>
@@ -285,7 +291,7 @@ function Page() {
     return (
         <div className="w-full min-h-screen flex flex-col pb-24">
             <Topbar back title={t('faq.pageTitle')} breadcrumbs={breadcrumbs} />
-            <main className="w-full max-w-4xl mx-auto p-4 md:p-6 lg:p-8 flex flex-col gap-6">
+            <main className="w-full max-w-5xl mx-auto p-4 md:p-6 lg:p-8 flex flex-col gap-6">
                 <ProductPreview product={product} />
 
                 {/* Contrôles améliorés */}
@@ -564,7 +570,7 @@ const FaqItem = ({
                             className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                             title={t('faq.moveUp')}
                         >
-                            <IoChevronUp />
+                            <IoChevronUp className="min-w-4 h-4"/>
                         </button>
                         <button
                             onClick={onMoveDown}
@@ -572,21 +578,21 @@ const FaqItem = ({
                             className="p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors"
                             title={t('faq.moveDown')}
                         >
-                            <IoChevronDown />
+                            <IoChevronDown className="min-w-4 h-4"/>
                         </button>
                         <button
                             onClick={onEdit}
                             className="p-1.5 rounded-full hover:bg-blue-100/50 dark:hover:bg-blue-900/40 hover:text-blue-500 transition-colors"
                             title={t('common.edit')}
                         >
-                            <IoPencil />
+                            <IoPencil className="min-w-4 h-4"/>
                         </button>
                         <button
                             onClick={onDelete}
                             className="p-1.5 rounded-full hover:bg-red-100/50 dark:hover:bg-red-900/40 hover:text-red-500 transition-colors"
                             title={t('common.delete')}
                         >
-                            <IoTrash />
+                            <IoTrash className="min-w-4 h-4"/>
                         </button>
                     </div>
                 )}

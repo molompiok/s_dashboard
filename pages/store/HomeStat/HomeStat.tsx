@@ -7,6 +7,7 @@ import { PeriodType, StatsData } from "../../../api/Interfaces/Interfaces";
 import { useGlobalStore } from "../../../api/stores/StoreStore";
 import { useTranslation } from "react-i18next";
 import { ClientCall } from "../../../Components/Utils/functions";
+import { navigate } from "vike/client/router";
 
 // Types pour une meilleure type safety
 interface StatCard {
@@ -310,7 +311,9 @@ function StatCard({
     const { t } = useTranslation();
 
     return (
-        <div className="relative bg-white/95 dark:bg-white/5 shadow-md dark:shadow-none rounded-xl p-5 transition-all duration-200 ease-in-out hover:shadow-lg dark:hover:shadow-xl group border border-transparent dark:border-white/10">
+        <div onClick={()=>{
+            navigate(href);
+        }} className="relative bg-white/95 dark:bg-white/5 shadow-md dark:shadow-none rounded-xl p-5 transition-all duration-200 ease-in-out hover:shadow-lg dark:hover:shadow-xl group border border-transparent dark:border-white/10">
             <div className="flex justify-between items-center mb-4">
                 <h3 className="text-slate-600 dark:text-gray-200 text-sm font-semibold flex items-center gap-2">
                     <Icon className="w-5 h-5 text-slate-500 dark:text-gray-400" />
@@ -354,8 +357,7 @@ function StatCard({
                 </div>
             </div>
 
-            <a
-                href={href}
+            <a 
                 className="absolute bottom-1 left-4 text-sm text-blue-600 dark:text-emerald-400 hover:text-blue-800 dark:hover:text-emerald-300 hover:underline transition-colors duration-150 opacity-0 group-hover:opacity-100 focus:opacity-100 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-emerald-500 focus:ring-offset-1 rounded px-1"
             >
                 {t('common.seeMore')}

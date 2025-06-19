@@ -100,7 +100,8 @@ export function MarkdownEditor2({ value, setValue, error, onBlur }: { onBlur?: (
             adjustHeight();
           }}
           onBlur={()=>onBlur?.(editorRef.current.getInstance().getMarkdown().substring(0, 1000) || " ")}
-          onKeyup={() => {
+          onKeyup={(e:any) => {
+            console.log('-----------------------------',e);
             handleChange()
           }}
 
@@ -108,6 +109,7 @@ export function MarkdownEditor2({ value, setValue, error, onBlur }: { onBlur?: (
           previewStyle="vertical"
           initialEditType="wysiwyg"
           useCommandShortcut={true}
+
           height="auto" // 🔥 Hauteur auto (sera gérée par CSS & JS)
           // onChange={}
           toolbarItems={[
@@ -153,9 +155,16 @@ export function MarkdownEditor2({ value, setValue, error, onBlur }: { onBlur?: (
   // 📏 Fonction pour ajuster la hauteur de l'éditeur
   const adjustHeight = () => {
     if (!containerRef.current) return;
-    if (containerRef.current.dataset.init) return
+    if (containerRef.current.dataset.init){
+      const content = containerRef.current.querySelector('.ProseMirror.toastui-editor-contents') as HTMLDivElement
+      content.blur();
+      setTimeout(() => {
+        content.blur();
+      }, 300);
+      containerRef.current.dataset.init = 'init'
+      return
+    } 
     
-    containerRef.current.dataset.init = 'init'
     const scroller = containerRef.current.querySelector('.toastui-editor.ww-mode') as HTMLDivElement
     if (scroller) {
       scroller.style.minHeight = '60px'

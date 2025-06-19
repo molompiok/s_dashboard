@@ -33,13 +33,19 @@ function ProductItemCard({ product, onClick }: ProductItemCardProps) {
     const [isMenuOpen, setIsMenuOpen] = useState(false);
     // Utiliser l'état local pour la visibilité
     const [isVisible, setIsVisible] = useState(product.is_visible ?? true);
-
+    const [s] = useState({
+        closedByDocument: false,
+    })
 
     const menuRef = useRef<HTMLDivElement>(null);
     // Fermer au clic extérieur
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (isMenuOpen && menuRef.current && !menuRef.current.contains(event.target as Node)) {
+                s.closedByDocument = true;
+                setTimeout(() => {
+                    s.closedByDocument = false
+                }, 300);
                 setIsMenuOpen(false);
             }
         };
@@ -130,10 +136,10 @@ function ProductItemCard({ product, onClick }: ProductItemCardProps) {
     return (
         // Rendre comme un div cliquable globalement, mais les actions sont dans le menu
         <div onClick={() => {
-                onClick ? onClick() : navigate(`/products/${product.id}`);
-            }}className="product-item-card relative group aspect-[65/100] rounded-xl overflow-visible shadow-sm  hover:border-blue-200 hover:shadow-md transition duration-200 flex flex-col bg-white dark:bg-white/5 border border-transparent dark:border-white/10">
+            onClick ? onClick() : navigate(`/products/${product.id}`);
+        }} className="product-item-card relative group aspect-[65/100] rounded-xl overflow-visible shadow-sm  hover:border-blue-200 hover:shadow-md transition duration-200 flex flex-col bg-white dark:bg-white/5 border border-transparent dark:border-white/10">
             {/* Conteneur Image (lien vers détail produit) */}
-            <span  className="block w-full overflow-hidden rounded-tr-xl  rounded-tl-xl  aspect-square relative flex-shrink-0 bg-gray-100">
+            <span className="block w-full overflow-hidden rounded-tr-xl  rounded-tl-xl  aspect-square relative flex-shrink-0 bg-gray-100">
                 {/* Gestion Erreur Image */}
                 {!imgError ? (
                     fileType === 'image' ? (
@@ -170,7 +176,15 @@ function ProductItemCard({ product, onClick }: ProductItemCardProps) {
                         {/* Menu Kebab (apparaît au survol de la carte) */}
                         <div className="absolute top-0 right-0 z-10 ">
                             <button
-                                onClick={(e) => { e.preventDefault(); e.stopPropagation(); setIsMenuOpen(!isMenuOpen); }} // Empêcher le clic sur le lien parent
+                                onClick={(e) => { 
+                                    e.preventDefault(); 
+                                    e.stopPropagation(); 
+                                    if(s.closedByDocument){
+                                        s.closedByDocument = false;
+                                        return
+                                    }
+                                    setIsMenuOpen(!isMenuOpen);
+                                 }} // Empêcher le clic sur le lien parent
                                 className="p-1.5 rounded-full text-gray-600 dark:text-white bg-white/70 dark:bg-gray-800/70 hover:bg-gray-100 dark:hover:bg-gray-700 focus:outline-none focus:ring-1 focus:ring-blue-500"
                                 aria-haspopup="true" aria-expanded={isMenuOpen} title={t('common.actions')}
                                 disabled={deleteProductMutation.isPending || updateProductMutation.isPending}
@@ -179,11 +193,11 @@ function ProductItemCard({ product, onClick }: ProductItemCardProps) {
                             </button>
                             {/* Menu déroulant */}
                             {isMenuOpen && (
-                                <div className="absolute right-0 mt-1 w-40 bg-white dark:bg-gray-800 dark:text-white rounded-md shadow-lg ring-1 ring-black/10 dark:ring-white/10 py-1 z-20" 
-                                role="menu"
-                                ref={menuRef} 
-                                onClick={(e) => {e.preventDefault();e.stopPropagation()}}>
-                                    <a onClick={()=>navigate(`/products/${product.id}`)} role="menuitem" className="flex items-center gap-2 px-3 py-1.5 text-sm dark:text-white text-gray-700 hover:bg-gray-100 hover:text-gray-900 w-full text-left">
+                                <div className="absolute right-0 mt-1 w-40 bg-white dark:bg-gray-800 dark:text-white rounded-md shadow-lg ring-1 ring-black/10 dark:ring-white/10 py-1 z-20"
+                                    role="menu"
+                                    ref={menuRef}
+                                    onClick={(e) => { e.preventDefault(); e.stopPropagation() }}>
+                                    <a onClick={() => navigate(`/products/${product.id}`)} role="menuitem" className="flex items-center gap-2 px-3 py-1.5 text-sm dark:text-white text-gray-700 hover:bg-gray-100 hover:text-gray-900 w-full text-left">
                                         <IoPencil className="w-4 h-4" /> {t('common.edit')}
                                     </a>
                                     <button onClick={(e) => {
