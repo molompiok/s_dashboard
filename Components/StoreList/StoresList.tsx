@@ -38,7 +38,7 @@ export function StoresList({isFilterActive,maxVisible=5.8, maxSize=1200,stores, 
     const {setCurrentStore} = useGlobalStore()
     const { openChild } = useChildViewer()
 
-    const n = size.width< maxSize ? ((size.width - 260) / maxSize) * (maxVisible-1.1) + 1.1  :maxVisible
+    const n = size.width< maxSize ? ((size.width - 260) / maxSize) * (maxVisible-1.1) + 1.6  :maxVisible
     const onManage = (store:StoreInterface)=>{
         openChild(<BigSpinner text='Chargement des informations..' />,{background:'#3455'})
         setCurrentStore(store)
@@ -46,7 +46,6 @@ export function StoresList({isFilterActive,maxVisible=5.8, maxSize=1200,stores, 
         
     }
     const onVisit = (store:StoreInterface)=>{
-        
         window.open(host+store.default_domain, '_blank', 'noopener,noreferrer');
     }
     return (

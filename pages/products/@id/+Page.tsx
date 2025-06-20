@@ -341,7 +341,7 @@ const ProductInfoStep = ({ product, onUpdate }: { product: Partial<ProductInterf
             </div>
             <div>
                 <label className={labelStyle}>Images principales</label>
-                <ImageManager images={imageItems} onImagesChange={handleImagesChange} />
+                <ImageManager canOpenGallery images={imageItems} onImagesChange={handleImagesChange} />
             </div>
             <div>
                 <label className={labelStyle}>{t('product.descriptionLabel')}</label>

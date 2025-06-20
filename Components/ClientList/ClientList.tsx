@@ -127,7 +127,7 @@ export function ClientItem({ client }: { client: UserInterface }) {
                 {/* Avatar */}
                 <div
                     className="w-12 h-12 rounded-full bg-cover bg-center  border-2 border-gray-300/40 bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 font-semibold text-sm flex items-center justify-center shrink-0"
-                    style={{ background: getMedia({ isBackground: true, source: client?.photo?.[0] }) }}
+                    style={{ background: getMedia({ isBackground: true, source: client?.photo?.[0], from:'api' }) }}
                 >
                     {!client.photo?.[0] && (client.full_name?.substring(0, 2).toUpperCase() || '?')}
                 </div>

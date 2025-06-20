@@ -383,7 +383,7 @@ function Page() {
 
                         {/* Indicateurs de filtrage actif */}
                         {(searchQuery || selectedGroup) && (
-                            <div className="flex items-center gap-2">
+                            <div className="flex items-center flex-wrap gap-2">
                                 {searchQuery && (
                                     <span className="px-2 py-1 text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-full">
                                         {t('faq.searchActive')}: "{searchQuery}"
@@ -401,7 +401,7 @@ function Page() {
                                     }}
                                     className="text-xs text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
                                 >
-                                    {t('common.clearFilters')}
+                                    {t('dashboard.reset')}
                                 </button>
                             </div>
                         )}

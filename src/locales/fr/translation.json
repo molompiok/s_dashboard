@@ -52,7 +52,12 @@
         "active": "Active",
         "previous": "Précédent",
         "finish": "Terminer",
-        "infoMissing": "Certaines informations sont manquantes"
+        "infoMissing": "Certaines informations sont manquantes",
+        "errorGeneric": {
+            "title": "Une erreur est survenue",
+            "genericDesc": "Veuillez réessayer plus tard ou contacter le support si le problème persiste."
+        },
+        "clearFilters":""
     },
     "loginPage": {
         "title": "Connectez-vous à votre compte",
@@ -345,6 +350,9 @@
         }
     },
     "clientDetail": {
+        "notFoundTitle": "Client introuvable",
+        "notFoundDesc": "Le client que vous recherchez n'existe pas ou a été supprimé.",
+        "backToList": "Retour à la liste des clients",
         "statusLabel": "Statut Client",
         "memberSinceLabel": "Membre Depuis",
         "activityChartTitle": "Activité Récente",
@@ -357,6 +365,8 @@
         "banned": "Banni"
     },
     "userComments": {
+        "errorLoadingComments": "Impossible de charger les commentaires pour cet utilisateur.",
+        "backToClientDetail": "Retour au profil du client",
         "pageTitle": "Commentaires de {{name}}",
         "listTitle": "Commentaires de l'utilisateur",
         "noCommentsTitle": "Aucun commentaire pour le moment",
@@ -979,7 +989,7 @@
         "unlimitedStockShort": "Illimité"
     },
     "detail": {
-        "addFirstButton":"Ajouter le première detail",
+        "addFirstButton": "Ajouter le première detail",
         "pageTitle": "Détails - {{name}}",
         "sectionTitle": "Détails du Produit",
         "addTooltipTitle": "Ajouter un Détail",

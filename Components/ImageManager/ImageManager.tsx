@@ -14,11 +14,12 @@ interface ImageManagerProps {
   images: ImageItem[];
   onImagesChange: (images: ImageItem[]) => void;
   className?: string;
+  canOpenGallery?:boolean
 }
 
 const MAX_IMAGES = 6;
 
-export const ImageManager: React.FC<ImageManagerProps> = ({ images, onImagesChange, className = '' }) => {
+export const ImageManager: React.FC<ImageManagerProps> = ({canOpenGallery, images, onImagesChange, className = '' }) => {
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const containerRef = React.useRef<HTMLDivElement>(null);
 
@@ -151,11 +152,10 @@ export const ImageManager: React.FC<ImageManagerProps> = ({ images, onImagesChan
                   )
                 }
                 <div onClick={(e) => {
-                  e.preventDefault();
-                  e.stopPropagation();
+                  
                   console.log('%%%%%%%');
 
-                  openGallery(index);
+                  canOpenGallery && openGallery(index);
                 }} className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
                   <button
                     type="button"

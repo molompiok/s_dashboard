@@ -9,12 +9,12 @@ import { usePageContext } from "../../../../../renderer/usePageContext";
 import { useChildViewer } from "../../../../../Components/ChildViewer/useChildViewer"; // ✅ Hook popup
 // import { useCommentStore } from "../../../../products/@id/comments/CommentStore"; // Remplacé par hook API
 import { useGetUsers, useGetComments, useDeleteComment } from '../../../../../api/ReactSublymusApi'; // ✅ Importer hooks API
-import { Topbar } from "../../../../../Components/TopBar/TopBar";
+import { BreadcrumbItem, Topbar } from "../../../../../Components/TopBar/TopBar";
 import { ChildViewer } from "../../../../../Components/ChildViewer/ChildViewer";
 import { ConfirmDelete } from "../../../../../Components/Confirm/ConfirmDelete";
 import { PageNotFound } from "../../../../../Components/PageNotFound/PageNotFound";
 import { AnimatePresence, motion } from "framer-motion"; // Garder pour animation
-import { IoChevronForward, IoStar, IoTrash } from "react-icons/io5";
+import { IoChatbubbleEllipsesOutline, IoChevronForward, IoStar, IoTrash, IoWarningOutline } from "react-icons/io5";
 import { limit } from "../../../../../Components/Utils/functions"; // Garder utilitaire
 import { getMedia } from "../../../../../Components/Utils/StringFormater";
 import UserPreview from "../../../../../Components/userPreview/userPreview"; // Garder composant preview
@@ -26,6 +26,7 @@ import { queryClient } from "../../../../../api/ReactSublymusApi"; // Pour inval
 import { NO_PICTURE } from "../../../../../Components/Utils/constants";
 import { DateTime } from "luxon";
 import { UseMutationResult } from "@tanstack/react-query";
+import { StateDisplay } from "../../../../../Components/StateDisplay/StateDisplay";
 
 export default function Page() {
     const { t } = useTranslation(); // ✅ i18n
@@ -112,49 +113,90 @@ export default function Page() {
         </ChildViewer>, { background: '#3455' });
     };
 
-    // --- Rendu ---
-    if (isLoadingUser || isLoadingComments) return <div className="p-6 text-center text-gray-500">{t('common.loading')}</div>;
-    if (isUserError) return <div className="p-6 text-center text-red-500">{userError?.message || t('error_occurred')}</div>;
-    if (!user) return <PageNotFound title={t('user.notFound')} />; // Page not found si user non trouvé
-    // Afficher erreur commentaires mais continuer si user trouvé
-    if (isCommentsError) logger.error({ userId, error: commentsError }, "Failed to load user comments");
+     const breadcrumbs: BreadcrumbItem[] = useMemo(() => {
+        const crumbs: BreadcrumbItem[] = [
+            { name: '..', url: '/users/clients' },
+        ];
 
+        // 3. Lien vers le détail du client actuel (si l'utilisateur est chargé)
+        if (user) {
+            crumbs.push({ 
+                name: limit(user.full_name || t('common.anonymous'), 20), // Nom du client, tronqué
+                url: `/users/clients/${userId}` // Lien vers sa page de détail
+            });
+             // 4. Page actuelle (sans lien)
+            crumbs.push({ name: t('usersPage.stats.rated') });
+        } else if (isLoadingUser) {
+            // Afficher "Chargement..." pendant que les données arrivent
+            crumbs.push({ name: t('common.loading') });
+        } else {
+             // Afficher "Erreur" si l'utilisateur n'a pas pu être chargé
+            crumbs.push({ name: t('common.error.title') });
+        }
+
+        return crumbs;
+    }, [t, user, userId, isLoadingUser]);
+
+
+    // 1. État de Chargement : On attend que l'utilisateur soit chargé.
+    if (isLoadingUser || !currentStore) {
+        return <UserCommentsPageSkeleton />;
+    }
+
+    // 2. État d'Erreur sur l'utilisateur : C'est une erreur bloquante.
+    if (isUserError || !user) {
+        const isNotFound = userError?.status === 404 || !user;
+        const title = isNotFound ? t('clientDetail.notFoundTitle') : t('common.error.title');
+        const description = isNotFound ? t('clientDetail.notFoundDesc') : (userError?.message || t('common.error.genericDesc'));
+
+        return (
+            <div className="w-full min-h-screen flex flex-col">
+                <Topbar back title={title} breadcrumbs={breadcrumbs}/>
+                <main className="flex-grow flex items-center justify-center p-4">
+                    <StateDisplay variant="danger" icon={IoWarningOutline} title={title} description={description}>
+                        <a href={`/users/clients`} className="...">{t('clientDetail.backToList')}</a>
+                    </StateDisplay>
+                </main>
+            </div>
+        );
+    }
+
+    // Si on arrive ici, on a un utilisateur valide. On peut maintenant gérer les commentaires.
     return (
-        // Utiliser flex flex-col
-        <div className="user-comments-detail w-full  pb-[200px]  flex flex-col min-h-screen ">
-            <Topbar back title={t('userComments.pageTitle', { name: user.full_name || '' })} />
-            {/* Conteneur principal */}
+        <div className="user-comments-detail w-full pb-[200px] flex flex-col min-h-screen">
+            <Topbar back title={t('userComments.pageTitle', { name: user.full_name || '' })} breadcrumbs={breadcrumbs}/>
             <main className="w-full max-w-6xl mx-auto p-4 md:p-6 lg:p-8 flex flex-col gap-6">
-                {/* Aperçu Utilisateur */}
-                {/* Ajouter mb-6 */}
-                <div className="mb-6">
-                    <UserPreview user={user || {}} />
-                </div>
+                <UserPreview user={user} />
 
-                {/* Titre Section Commentaires */}
-                <h1 className="text-xl font-semibold text-gray-800">{t('userComments.listTitle')}</h1>
+                <h1 className="text-xl font-semibold text-gray-800 dark:text-gray-100">{t('userComments.listTitle')}</h1>
 
-                {/* Grille de Commentaires */}
-                <CommentsDashboard
-                    deleteCommentMutation={deleteCommentMutation}
-                    comments={comments}
-                    currentStore={currentStore || {}}
-                    onDelete={handleDelete}
-                />
-                {/* Message si aucun commentaire */}
-                {!isLoadingComments && comments.length === 0 && (
-                    <PageNotFound
-                        url='/res/font.png' // Image plus pertinente
-                        description={t('userComments.noCommentsDesc')}
-                        title={t('userComments.noCommentsTitle')}
-                        back={true} // Pas de bouton retour ici
+                {/* On gère l'erreur et l'état vide des commentaires ici */}
+                {isLoadingComments ? (
+                    // On peut afficher un spinner ou un mini-skeleton pour la grille de commentaires
+                    <div className="grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] gap-4 animate-pulse">
+                        {Array.from({ length: 4 }).map((_, i) => (
+                            <div key={i} className="h-48 bg-gray-200 dark:bg-white/5 rounded-lg"></div>
+                        ))}
+                    </div>
+                ) : isCommentsError ? (
+                    // Erreur sur les commentaires, mais on affiche quand même les infos utilisateur
+                    <StateDisplay variant="warning" icon={IoWarningOutline} title={t('common.error.title')} description={t('userComments.errorLoadingComments')} />
+                ) : comments.length === 0 ? (
+                    // Aucun commentaire trouvé
+                    <StateDisplay variant="info" icon={IoChatbubbleEllipsesOutline} title={t('userComments.noCommentsTitle')} description={t('userComments.noCommentsDesc')} />
+                ) : (
+                    // Affichage normal des commentaires
+                    <CommentsDashboard
+                        deleteCommentMutation={deleteCommentMutation}
+                        comments={comments}
+                        currentStore={currentStore || {}}
+                        onDelete={handleDelete}
                     />
                 )}
             </main>
         </div>
     );
 }
-
 // --- Composant CommentsDashboard (Bentō Layout) ---
 type Props = {
     comments: CommentInterface[];
@@ -306,3 +348,40 @@ const CommentsDashboard: React.FC<Props> = ({ deleteCommentMutation, comments, c
         </div>
     );
 };
+
+
+const SkeletonCard = ({ children, className = '' }: { children: React.ReactNode; className?: string }) => (
+    <div className={`bg-gray-100/80 dark:bg-white/5 rounded-xl border border-gray-200/50 dark:border-white/10 p-4 sm:p-6 ${className}`}>
+        {children}
+    </div>
+);
+
+export function UserCommentsPageSkeleton() {
+    return (
+        <div className="w-full min-h-screen flex flex-col animate-pulse">
+            <Topbar back title="..." />
+
+            <main className="w-full max-w-6xl mx-auto p-4 md:p-6 lg:p-8 flex flex-col gap-6">
+                {/* Squelette de UserPreview */}
+                <SkeletonCard className="flex flex-col md:flex-row items-center md:items-start gap-6">
+                    <div className="w-24 h-24 rounded-full bg-gray-200 dark:bg-gray-700 shrink-0"></div>
+                    <div className="flex-grow w-full space-y-3">
+                        <div className="h-7 w-1/2 bg-gray-300 dark:bg-gray-600 rounded-lg"></div>
+                        <div className="h-4 w-3/4 bg-gray-300 dark:bg-gray-600 rounded-md"></div>
+                        <div className="h-4 w-2/3 bg-gray-300 dark:bg-gray-600 rounded-md"></div>
+                    </div>
+                </SkeletonCard>
+
+                {/* Titre Section */}
+                <div className="h-7 w-1/3 bg-gray-300 dark:bg-gray-600 rounded-lg mt-2"></div>
+
+                {/* Squelette de la grille de commentaires */}
+                <div className="grid grid-cols-[repeat(auto-fit,minmax(300px,1fr))] gap-4">
+                    {Array.from({ length: 4 }).map((_, i) => (
+                        <div key={i} className="h-48 bg-gray-200 dark:bg-white/5 rounded-lg"></div>
+                    ))}
+                </div>
+            </main>
+        </div>
+    );
+}

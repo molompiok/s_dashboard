@@ -282,7 +282,7 @@ function OpenChild() {
       <div className={`relative w-full h-full flex ${flexAlignment}`}>
         {/* Animer l'apparition du contenu */}
         <div  onClick={(e) => { if (e.currentTarget === e.target) openChild(null) }} 
-        className={`flex transition-transform  w-full h-full duration-300 ease-out ${currentChild && hash === '#openChild' ? 'scale-100 opacity-100' : 'scale-95 opacity-0'}`}>
+        className={`flex items-stretch transition-transform  min-w-full h-full duration-300 ease-out ${currentChild && hash === '#openChild' ? 'scale-100 opacity-100' : 'scale-95 opacity-0'}`}>
           {currentChild}
         </div>
       </div>

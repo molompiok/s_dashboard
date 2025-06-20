@@ -6,7 +6,7 @@ export const SpinnerIcon = ({className}:{className?:string}) => (
 );
 
 export const BigSpinner = ({text}:{text:string}) => (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
+    <div className="w-full h-full min-w-screen min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
         <div className="text-center p-8">
             {/* Tu peux utiliser une icône de spinner SVG ici */}
             <svg className="animate-spin h-12 w-12 text-teal-600 mx-auto mb-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
