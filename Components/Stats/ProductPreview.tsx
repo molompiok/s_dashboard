@@ -6,6 +6,7 @@ import { getMedia } from '../Utils/StringFormater';
 import { Star, Tag, Eye, DollarSign } from 'lucide-react';
 import { getDefaultValues } from '../Utils/parseData';
 import { NO_PICTURE } from '../Utils/constants';
+import { buttonStyle } from '../Button/Style';
 
 interface ProductPreviewProps {
     product: ProductInterface | undefined; // Can be undefined
@@ -21,11 +22,11 @@ const StatItem: React.FC<{ icon: React.ElementType; children: React.ReactNode; c
 );
 
 // 🎨 Skeleton pour la prévisualisation du produit
-const ProductPreviewSkeleton: React.FC = () => (
-    <div className="bg-white/80 dark:bg-white/5 backdrop-blur-lg p-6 rounded-lg shadow-sm border border-gray-200/80 dark:border-white/10 mb-6 animate-pulse">
-        <div className="flex flex-col lg:flex-row items-center lg:items-start gap-6">
+export const ProductPreviewSkeleton: React.FC = () => (
+    <div className="bg-white/80 dark:bg-white/5 backdrop-blur-lg p-4 rounded-lg shadow-sm border border-gray-200/80 dark:border-white/10 mb-6 animate-pulse">
+        <div className="flex flex-col sx:flex-row items-center lg:items-start gap-6">
             <div className="w-28 h-28 rounded-lg bg-gray-300 dark:bg-gray-700 flex-shrink-0"></div>
-            <div className="flex flex-col gap-4 flex-grow min-w-0 w-full">
+            <div className="flex mob:flex-col gap-4 flex-grow min-w-0 w-full">
                 <div className="h-7 w-3/4 bg-gray-300 dark:bg-gray-700 rounded-md"></div>
                 <div className="h-4 w-1/2 bg-gray-200 dark:bg-gray-800 rounded-md"></div>
                 <div className="h-10 w-1/3 bg-gray-200 dark:bg-gray-800 rounded-md mt-2"></div>
@@ -62,8 +63,8 @@ const ProductPreview: React.FC<ProductPreviewProps> = ({ product, isLoading }) =
 
     return (
         // 🎨 Conteneur principal avec effet verre dépoli
-        <div className="bg-white/80 dark:bg-white/5 backdrop-blur-lg p-6 rounded-lg shadow-sm border border-gray-200/80 dark:border-white/10 mb-6">
-            <div className="flex flex-col lg:flex-row items-center lg:items-start gap-6">
+        <div className="bg-white/80 dark:bg-white/5 backdrop-blur-lg p-4 rounded-lg shadow-sm border border-gray-200/80 dark:border-white/10 mb-6">
+            <div className="flex flex-col sx:flex-row  items-center lg:items-start gap-6">
                 {/* Image Produit */}
                 <div className="flex-shrink-0">
                     <div
@@ -73,13 +74,19 @@ const ProductPreview: React.FC<ProductPreviewProps> = ({ product, isLoading }) =
                 </div>
 
                 {/* Infos Produit */}
-                <div className="flex flex-col gap-3 flex-grow min-w-0 text-center lg:text-left w-full">
+                <div className="flex flex-col flex-wrap tab:flex-nowrap  mob:flex-row gap-3 flex-grow min-w-0 text-center lg:text-left w-full">
+                    
+                    {/* Catégories & Stats */}
+                    <div className="flex flex-col justify-center lg:justify-start items-center gap-x-4 gap-y-2">
                     <h2 className="text-xl font-bold text-gray-900 dark:text-gray-100 truncate" title={product.name}>
                         {product.name || t('common.unknownProduct')}
                     </h2>
-
-                    {/* Catégories & Stats */}
-                    <div className="flex flex-wrap justify-center lg:justify-start items-center gap-x-4 gap-y-2">
+                        {/* Description courte */}
+                        {product.description && (
+                            <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 line-clamp-3">
+                                {product.description}
+                            </p>
+                        )}
                         {product.categories && product.categories.length > 0 && (
                             <StatItem icon={Tag}>
                                 {product.categories.map(cat => cat.name).join(', ')}
@@ -90,13 +97,13 @@ const ProductPreview: React.FC<ProductPreviewProps> = ({ product, isLoading }) =
                         </StatItem>
                         {product.is_visible !== undefined && (
                             <StatItem icon={Eye} colorClass={product.is_visible ? 'text-green-500 dark:text-green-400' : 'text-red-500 dark:text-red-400'}>
-                                {product.is_visible ? t('common.visible') : t('product.hidden')}
+                                {product.is_visible ? t('common.visible') : t('common.hidden')}
                             </StatItem>
                         )}
                     </div>
-                    
+
                     {/* Prix */}
-                    <div className="flex items-baseline justify-center lg:justify-start gap-2 mt-1">
+                    <div className="flex flex-col m-auto  items-center justify-center lg:justify-start gap-2 mt-1">
                         <span className="text-2xl font-extrabold text-teal-600 dark:text-teal-400">
                             {formatCurrency(product.price, product.currency)}
                         </span>
@@ -105,21 +112,15 @@ const ProductPreview: React.FC<ProductPreviewProps> = ({ product, isLoading }) =
                                 {formatCurrency(product.barred_price, product.currency)}
                             </span>
                         )}
+                        
+                        {/* Lien vers la page détail produit */}
+                        <div className="mt-4 text-center lg:text-left">
+                            <a href={`/products/${product.id}`} className={'text-xl font-bold bg-gradient-to-r from-emerald-500 to-teal-500  hover:from-emerald-600 hover:to-teal-600 dark:from-emerald-600 dark:to-teal-600 dark:hover:from-emerald-500 dark:hover:to-teal-500 bg-clip-text text-transparent'}>
+                                {t('product.viewDetails')}
+                            </a>
+                        </div>
                     </div>
 
-                    {/* Description courte */}
-                    {product.description && (
-                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 line-clamp-3">
-                            {product.description}
-                        </p>
-                    )}
-
-                    {/* Lien vers la page détail produit */}
-                    <div className="mt-4 text-center lg:text-left">
-                        <a href={`/products/${product.id}`} className="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-lg shadow-sm text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 dark:focus:ring-offset-gray-900 focus:ring-teal-500 transition-colors">
-                            {t('product.viewDetails')}
-                        </a>
-                    </div>
                 </div>
             </div>
         </div>

@@ -23,7 +23,7 @@ import OrderStatsSection from '../../Components/Stats/OrderStatsSection'; // Sta
 import { useMyLocation } from '../../Hooks/useRepalceState';
 import { SlidersHorizontal } from 'lucide-react';
 import { Topbar } from '../../Components/TopBar/TopBar';
-import { cardStyle } from '../../Components/Button/Style';
+import { buttonStyle, cardStyle, optionActiveStyle } from '../../Components/Button/Style';
 // Modal (useChildViewer est souvent dans un contexte global, pas besoin d'importer ici)
 // import { useChildViewer } from '../../components/ChildViewer/useChildViewer';
 
@@ -215,11 +215,11 @@ export function Page() {
     return (
         <div className="page-stats  pb-[200px] min-h-screen">
             <Topbar />
-            <div className='flex gap-6 items-center'>
-                <div className="lg:hidden p-4">
+            <div className='flex mt-2 mb-6 pl-4 gap-6 items-center'>
+                <div className="lg:hidden">
                     <button
                         onClick={() => setIsMobileOpen(true)}
-                        className="flex items-center gap-2 px-3 py-2 text-gray-800 dark:text-white/80 rounded cursor-pointer shadow-sm  hover:shadow-md bg-white dark:bg-white/20"
+                        className={buttonStyle +' whitespace-nowrap'}
                     >
                         <SlidersHorizontal className="w-5 h-5" />
                         Filtres
@@ -264,7 +264,7 @@ export function Page() {
 
 
                     {/* Affichage principal (KPIs ou Preview) */}
-                    <div className="mt-6 w-full"> {/* Espacement après les filtres */}
+                    <div className="w-full"> {/* Espacement après les filtres */}
 
                         {/* Condition pour afficher Client Preview OU Product Preview OU KPIs */}
                         {userId ? (

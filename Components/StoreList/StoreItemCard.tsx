@@ -5,8 +5,9 @@ import { getMedia } from "../../Components/Utils/StringFormater";
 import { IoCheckmarkCircle, IoEyeOff, IoEyeSharp, IoPauseCircle } from "react-icons/io5";
 import { useTranslation } from "react-i18next";
 import { NO_PICTURE } from "../../Components/Utils/constants";
-import { useState } from "react";
-import { Globe, Settings } from "lucide-react";
+import { useEffect, useState } from "react";
+import { CheckCircle, Globe, PauseCircle, Settings, Users2Icon } from "lucide-react";
+import { useAuthStore } from "../../api/stores/AuthStore";
 interface StoreItemCardProps {
     store: StoreInterface;
     isSelected: boolean;
@@ -20,6 +21,11 @@ export function StoreItemCard({ onManage, onVisit, store, isSelected, onClick }:
     const [logoError, setLogoError] = useState(false);
     const [coverError, setCoverError] = useState(false);
 
+    const { user , getUser } = useAuthStore()
+
+    useEffect(()=>{
+        getUser()
+    },[])
     const logoSrc = getMedia({ source: store.logo?.[0], from: 'server' });
     const coverSrc = store.cover_image?.[0] && getMedia({ isBackground: true, source: store.cover_image[0], from: 'server' })
 
@@ -28,12 +34,20 @@ export function StoreItemCard({ onManage, onVisit, store, isSelected, onClick }:
         <button
             type="button"
             onClick={onClick}
-            className={`store-item-card w-full min-h-[220px] flex flex-col rounded-xl overflow-hidden shadow-md border-2 transition-all duration-200 ease-in-out transform hover:-translate-y-1 cursor-pointer focus:outline-none 
+            className={`relaitve store-item-card w-full min-h-[220px] flex flex-col rounded-xl overflow-hidden shadow-md border-2 transition-all duration-200 ease-in-out transform hover:-translate-y-1 cursor-pointer focus:outline-none 
         ${isSelected
                     ? 'border-sky-300 shadow-blue-300/50 dark:shadow-blue-900/50 scale-100 dark:border-gray-800'
                     : 'border-gray-200 hover:border-gray-300 hover:shadow-lg dark:border-gray-800 dark:hover:border-gray-500 dark:hover:shadow-xl'
                 }`}
         >
+            {
+                store.user_id !== user?.id && <span className={`absolute z-1 right-0  inline-flex items-center gap-1 sx:gap-1.5 px-2 sx:px-3 py-1 rounded-full text-xs sx:text-sm font-medium backdrop-blur-sm ${store.is_active
+                    ? 'bg-purple-500/20 dark:bg-purple-400/20 text-purple-700 dark:text-purple-300 border border-purple-300/30'
+                    : 'bg-gray-500/20 dark:bg-gray-400/20 text-gray-600 dark:text-gray-400 border border-gray-300/30'
+                    }`}>
+                    <Users2Icon className="w-4 h-4 sx:w-4 sx:h-4" /> Collaboration
+                </span>
+            }
             {/* Image de Couverture */}
             <div
                 className="w-full h-24 sm:h-28 flex-shrink-0 bg-cover bg-center bg-gray-200 dark:bg-gray-800 relative"

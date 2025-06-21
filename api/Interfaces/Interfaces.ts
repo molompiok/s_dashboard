@@ -181,6 +181,7 @@ export interface CreateCollaboratorParams {
   full_name?: string; // Nom optionnel pour création
 }
 
+
 export const JsonRole = {
   filter_client: '',
   ban_client: '',
@@ -195,7 +196,7 @@ export const JsonRole = {
   chat_client: '',
   filter_command: '',
   manage_command: '',
-} as const
+} as const 
 
 
 export type TypeJsonRole = {
@@ -595,9 +596,11 @@ interface UserStats {
   lastVisit?: string | null
 }
 
-export interface Role {
+export type Role = TypeJsonRole & {
   id: string,
-  //...
+  user_id:string, 
+  created_at:string, 
+  updated_at:string,
 }
 
 export interface CommandItemInterface {
@@ -699,7 +702,7 @@ export interface ProductCharacteristicInterface {
   id: string;
   product_id: string;
   name: string;
-  icon: string | null;
+  icon: (string|Blob)[] | null;
   description: string | null;
   key: string | null;
   value_text: string | null;

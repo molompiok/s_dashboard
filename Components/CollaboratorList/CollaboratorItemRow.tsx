@@ -10,6 +10,7 @@ import { ConfirmDelete } from "../Confirm/ConfirmDelete";
 import { ChildViewer } from "../ChildViewer/ChildViewer";
 import logger from "../../api/Logger";
 import { showErrorToast, showToast } from "../Utils/toastNotifications";
+import { navigate } from "vike/client/router";
 
 interface CollaboratorItemRowProps {
     collaboratorRole: RoleInterface & { user: UserInterface };
@@ -51,7 +52,9 @@ export function CollaboratorItemRow({ collaboratorRole, onEditPermissions }: Col
 
     return (
         // 🎨 Style de la ligne avec adaptation au mode nuit
-        <div className="collaborator-item-row flex items-center gap-3 sm:gap-4 px-4 py-3 border-b border-gray-100 dark:border-white/10 last:border-b-0 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors duration-150">
+        <div onClick={()=>{
+            navigate(`/users/collaborators/${user.id}`)
+        }} className="collaborator-item-row flex items-center gap-3 sm:gap-4 px-4 py-3 border-b border-gray-100 dark:border-white/10 last:border-b-0 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors duration-150">
 
             {/* Avatar/Initiales */}
             <div className="flex-shrink-0 w-10 h-10 rounded-full bg-cover bg-center bg-gray-200 dark:bg-gray-700 text-gray-500 dark:text-gray-400 font-medium text-sm flex items-center justify-center"
@@ -73,7 +76,7 @@ export function CollaboratorItemRow({ collaboratorRole, onEditPermissions }: Col
             </div>
 
             {/* Nombre de Permissions */}
-            <div className="hidden sm:flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 flex-shrink-0 w-28" title={t('collaborator.activePermissionsTooltip')}>
+            <div className="hidden mob:flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 flex-shrink-0 w-28" title={t('collaborator.activePermissionsTooltip')}>
                 <IoShieldCheckmarkOutline className="w-4 h-4 text-gray-400 dark:text-gray-500" />
                 <span>{t('collaborator.permissionsCount', { count: activePermissionsCount })}</span>
             </div>
@@ -82,7 +85,11 @@ export function CollaboratorItemRow({ collaboratorRole, onEditPermissions }: Col
             <div className="flex items-center gap-1 flex-shrink-0 ml-auto sm:ml-0">
                 {/* 🎨 Bouton Modifier avec couleur `teal` au survol */}
                 <button
-                    onClick={onEditPermissions}
+                    onClick={(e)=>{
+                        e.preventDefault();
+                        e.stopPropagation();
+                        onEditPermissions()
+                    }}
                     className="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 hover:text-teal-600 dark:hover:text-teal-400 focus:outline-none focus:ring-2 focus:ring-teal-500 transition-all"
                     title={t('collaborator.editPermissionsButton')}
                 >
@@ -90,7 +97,11 @@ export function CollaboratorItemRow({ collaboratorRole, onEditPermissions }: Col
                 </button>
                 {/* Bouton Supprimer */}
                 <button
-                    onClick={handleDelete}
+                    onClick={(e)=>{
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleDelete()
+                    }}
                     disabled={deleteCollaboratorMutation.isPending}
                     className="p-2 rounded-full text-gray-500 dark:text-gray-400 hover:bg-red-100/50 dark:hover:bg-red-900/40 hover:text-red-600 dark:hover:text-red-500 focus:outline-none focus:ring-2 focus:ring-red-500 disabled:opacity-50 transition-all"
                     title={t('common.delete')}

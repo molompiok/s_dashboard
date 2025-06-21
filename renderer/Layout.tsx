@@ -23,7 +23,8 @@ import {
 import { Toaster } from 'react-hot-toast';
 import { useMyLocation } from '../Hooks/useRepalceState';
 import { useAuthStore } from '../api/stores/AuthStore';
-import {  useAppZust } from './AppStore/appZust';
+import { useAppZust } from './AppStore/appZust';
+import { useGetMe } from '../api/ReactSublymusApi';
 
 const urlHideSideBar = ['/auth', '/profile', '/setting', '/themes', '/settings']
 
@@ -34,9 +35,9 @@ function Layout({ children, pageContext }: { children: React.ReactNode; pageCont
   const { token, user, getToken, getUser, setUser } = useAuthStore();
   const { getCurrentStore } = useGlobalStore();
   const { sideLeft, setSideLeft } = useAppZust()
-
+  const { data: userFetched, refetch } = useGetMe();
   useEffect(() => {
-    getCurrentStore();
+    getCurrentStore()
   }, [getCurrentStore]);
 
   useEffect(() => {
@@ -52,6 +53,10 @@ function Layout({ children, pageContext }: { children: React.ReactNode; pageCont
     }
   }, [token, user]);
 
+  useEffect(() => {
+    setUser({ ...(user || {}), ...(userFetched?.user || {}) });
+  }, [userFetched]);
+
   const { themeMode, initDarkMode, setThemeMode } = useAppZust();
 
   // initDarkMode();
@@ -59,7 +64,7 @@ function Layout({ children, pageContext }: { children: React.ReactNode; pageCont
   useEffect(() => {
     // Fonction pour vérifier la préférence initiale du thème
     const checkTheme = () => {
-      
+
       // const savedTheme = initDarkMode()
 
       // if (savedTheme === 'light' || savedTheme === 'dark') {
@@ -67,7 +72,7 @@ function Layout({ children, pageContext }: { children: React.ReactNode; pageCont
       //   document.body.classList.add(savedTheme);
       // } 
       // else
-       {
+      {
         const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
         document.documentElement.classList.add(prefersDark ? 'dark' : 'light');
         document.body.classList.add(prefersDark ? 'dark' : 'light');
@@ -136,7 +141,7 @@ function Layout({ children, pageContext }: { children: React.ReactNode; pageCont
             {/* Dark Mode Toggle Desktop */}
             <div className="hidden md:block px-4 py-2 border-t border-gray-200 dark:border-gray-700">
               <button
-                onClick={() => setThemeMode(themeMode=='dark'?'light':'dark')}
+                onClick={() => setThemeMode(themeMode == 'dark' ? 'light' : 'dark')}
                 className="flex items-center w-full px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
               >
                 {themeMode ? <IoSunny className="w-5 h-5" /> : <IoMoon className="w-5 h-5" />}
@@ -157,10 +162,10 @@ function Layout({ children, pageContext }: { children: React.ReactNode; pageCont
               className: '',
               duration: 4000,
               style: {
-                background: themeMode =='dark' ? '#374151' : '#ffffff',
-                color: themeMode =='dark' ? '#ffffff' : '#374151',
+                background: themeMode == 'dark' ? '#374151' : '#ffffff',
+                color: themeMode == 'dark' ? '#ffffff' : '#374151',
                 fontSize: '14px',
-                border: themeMode =='dark' ? '1px solid #4B5563' : '1px solid #E5E7EB',
+                border: themeMode == 'dark' ? '1px solid #4B5563' : '1px solid #E5E7EB',
                 borderRadius: '12px',
                 boxShadow: '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
               },
@@ -237,7 +242,6 @@ function MobileHeader({ onToggleSidebar, isDark, onToggleDark }: {
 }
 
 // --- OpenChild Component ---
-// --- Composant OpenChild (Popup/Modal Global) ---
 function OpenChild() {
   const { currentChild, alignItems, background, className, justifyContent, openChild, blur } = useChildViewer();
   const hash = useHashWatcher();
@@ -281,8 +285,8 @@ function OpenChild() {
       {/* Ajouter `relative` pour que le contenu soit au-dessus du fond */}
       <div className={`relative w-full h-full flex ${flexAlignment}`}>
         {/* Animer l'apparition du contenu */}
-        <div  onClick={(e) => { if (e.currentTarget === e.target) openChild(null) }} 
-        className={`flex items-stretch transition-transform  min-w-full h-full duration-300 ease-out ${currentChild && hash === '#openChild' ? 'scale-100 opacity-100' : 'scale-95 opacity-0'}`}>
+        <div onClick={(e) => { if (e.currentTarget === e.target) openChild(null) }}
+          className={`flex items-stretch transition-transform  min-w-full h-full duration-300 ease-out ${currentChild && hash === '#openChild' ? 'scale-100 opacity-100' : 'scale-95 opacity-0'}`}>
           {currentChild}
         </div>
       </div>

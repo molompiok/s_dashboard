@@ -312,6 +312,7 @@ const ProductInfoStep = ({ product, onUpdate }: { product: Partial<ProductInterf
                 feature_id: '',
                 index: 0,
                 text: '',
+                _request_mode:'new'
             }
             if (!defaultFeature) {
                 product.features = [getNewFeature()]
@@ -322,8 +323,9 @@ const ProductInfoStep = ({ product, onUpdate }: { product: Partial<ProductInterf
             }
         }
         value.views = newImages.map(i => i.source);
-        value._request_mode = 'new'
-
+        value._request_mode = value._request_mode || 'edited';
+        console.log('--------->>',value);
+        
         onUpdate('features', product.features);
     };
 

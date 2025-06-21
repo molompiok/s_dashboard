@@ -29,7 +29,6 @@
         "add": "Ajouter",
         "actions": "Actions",
         "createdAt": "Créé le",
-        "dangerZone": "Zone de danger",
         "optionalField": "Optionnel",
         "required": "Requis",
         "ok": "OK",
@@ -48,16 +47,19 @@
         "select": "Sélectionner...",
         "noOptions": "Aucune option",
         "deleting": "Suppression...",
+        "noChangesToSave": "Aucune modification",
         "details": "Details",
         "active": "Active",
         "previous": "Précédent",
         "finish": "Terminer",
+        "dangerZone": "Zone de Danger",
+        "comingSoon": "Bientôt disponible",
         "infoMissing": "Certaines informations sont manquantes",
         "errorGeneric": {
             "title": "Une erreur est survenue",
             "genericDesc": "Veuillez réessayer plus tard ou contacter le support si le problème persiste."
         },
-        "clearFilters":""
+        "clearFilters": ""
     },
     "loginPage": {
         "title": "Connectez-vous à votre compte",
@@ -82,7 +84,40 @@
         "commandsTitle": "Commandes",
         "noResultsFound": "Aucun résultat trouvé pour \"{{term}}\"."
     },
+    "characteristic": {
+        "pageTitle": "Caractéristiques du Produit",
+        "breadcrumb": "Caractéristiques",
+        "listTitle": "Fiche Technique",
+        "addButton": "Ajouter une Caractéristique",
+        "createTitle": "Nouvelle Caractéristique",
+        "editTitle": "Modifier la Caractéristique",
+        "iconLabel": "Icône (optionnel)",
+        "nameLabel": "Nom de la caractéristique",
+        "namePlaceholder": "Ex: Poids, Matériau, Dimensions...",
+        "valueLabel": "Valeur textuelle",
+        "valuePlaceholder": "Ex: Acier inoxydable, 120cm x 60cm...",
+        "quantityLabel": "Quantité",
+        "unityLabel": "Unité",
+        "descriptionLabel": "Description détaillée (optionnel)",
+        "validation": {
+            "nameRequired": "Le nom de la caractéristique est requis."
+        },
+        "confirmDelete": "Voulez-vous vraiment supprimer la caractéristique \"{{name}}\" ?",
+        "createSuccess": "Caractéristique ajoutée avec succès.",
+        "updateSuccess": "Caractéristique mise à jour avec succès.",
+        "deleteSuccess": "Caractéristique supprimée.",
+        "emptyTitle": "Aucune caractéristique définie",
+        "emptyDesc": "Ajoutez des informations techniques pour aider vos clients à mieux comprendre votre produit.",
+        "addFirstButton": "Ajouter la première caractéristique"
+    },
     "collaborator": {
+        "activity": {
+            "title": "Activité Récente",
+            "comingSoonDesc": "L'historique des actions de ce collaborateur sera bientôt disponible ici."
+        },
+        "deleteSuccess": "Collaborateur révoqué avec succès.",
+        "removeDesc": "Révoquer l'accès de ce collaborateur l'empêchera de se connecter à ce tableau de bord. Cette action est réversible.",
+        "removeButton": "Révoquer l'accès",
         "pageTitle": "Gestion des Collaborateurs",
         "listTitle": "Membres de l'équipe",
         "addButton": "Ajouter un membre",
@@ -196,19 +231,68 @@
         }
     },
     "permissions": {
-        "filter_client": "Voir les clients",
-        "ban_client": "Bannir des clients",
-        "filter_collaborator": "Voir les collaborateurs",
-        "ban_collaborator": "Bannir des collaborateurs",
-        "create_delete_collaborator": "Gérer les collaborateurs (ajouter/supprimer/permissions)",
-        "manage_interface": "Gérer l'apparence/thème",
-        "filter_product": "Voir les produits/catégories",
-        "edit_product": "Modifier les produits/catégories",
-        "create_delete_product": "Ajouter/Supprimer produits/catégories",
-        "manage_scene_product": "Gérer la 3D/AR des produits",
-        "chat_client": "Discuter avec les clients",
-        "filter_command": "Voir les commandes",
-        "manage_command": "Gérer les commandes (statuts, etc.)"
+        "title": "Permissions du Collaborateur",
+        "updateSuccess": "Permissions mises à jour avec succès.",
+        "group": {
+            "clients": "Gestion des Clients",
+            "collaborators": "Gestion des Collaborateurs",
+            "products": "Gestion des Produits & Catégories",
+            "orders": "Gestion des Commandes",
+            "appearance": "Apparence & Interface",
+            "communication": "Communication"
+        },
+        "filter_client": {
+            "label": "Voir les clients",
+            "desc": "Peut accéder à la liste des clients et consulter leurs détails."
+        },
+        "ban_client": {
+            "label": "Bannir/Débannir un client",
+            "desc": "Peut changer le statut d'un client (ex: le passer en 'Banni')."
+        },
+        "filter_collaborator": {
+            "label": "Voir les collaborateurs",
+            "desc": "Peut voir la liste des autres membres de l'équipe."
+        },
+        "ban_collaborator": {
+            "label": "Bannir un collaborateur",
+            "desc": "Peut suspendre l'accès d'un autre collaborateur (sauf le propriétaire)."
+        },
+        "create_delete_collaborator": {
+            "label": "Gérer les collaborateurs",
+            "desc": "Peut inviter, supprimer et modifier les permissions des autres."
+        },
+        "manage_interface": {
+            "label": "Gérer l'apparence",
+            "desc": "Peut changer le thème de la boutique et personnaliser l'interface."
+        },
+        "filter_product": {
+            "label": "Voir les produits",
+            "desc": "Peut accéder à la liste des produits et des catégories."
+        },
+        "edit_product": {
+            "label": "Modifier un produit",
+            "desc": "Peut éditer les informations, prix, et variantes des produits."
+        },
+        "create_delete_product": {
+            "label": "Créer/Supprimer un produit",
+            "desc": "Peut ajouter de nouveaux produits et catégories, et en supprimer."
+        },
+        "manage_scene_product": {
+            "label": "Gérer la 3D/AR",
+            "desc": "Peut modifier les scènes 3D et les expériences de réalité augmentée."
+        },
+        "chat_client": {
+            "label": "Discuter avec les clients",
+            "desc": "Peut accéder au chat et répondre aux messages des clients."
+        },
+        "filter_command": {
+            "label": "Voir les commandes",
+            "desc": "Peut accéder à la liste des commandes et voir leurs détails."
+        },
+        "manage_command": {
+            "label": "Gérer les commandes",
+            "desc": "Peut changer le statut d'une commande (confirmer, expédier, etc.)."
+        }
     },
     "settingsRegional": {
         "description": "Configurez la langue et la devise par défaut de votre boutique.",
@@ -331,6 +415,10 @@
         "stats": {
             "clientsTitle": "Clients",
             "collaboratorsTitle": "Collaborateurs",
+            "confirmDelete": "Révoquer l'accès de {{name}} ?",
+            "deleteSuccess": "Collaborateur révoqué avec succès.",
+            "removeDesc": "Révoquer l'accès de ce collaborateur l'empêchera de se connecter à ce tableau de bord. Cette action est réversible.",
+            "removeButton": "Révoquer l'accès",
             "rated": "Commentaires",
             "active": "Actifs",
             "online": "En ligne",
@@ -373,13 +461,15 @@
         "noCommentsDesc": "Les commentaires laissés par cet utilisateur sur vos produits seront listés ici."
     },
     "storesPage": {
-        "notFound": "Boutique non trouvée.",
+        "noStoresDescription": "Commencer a vendre et automation les action.",
         "title": "Mes Boutiques",
         "addStoreButton": "Créer une boutique",
         "addStore": "Ajouter une boutique",
         "searchPlaceholder": "Rechercher par nom...",
         "openStoreStats": "Voire toutes les statistiques",
         "usageTitle": "",
+        "subtitle": "Espace admin",
+        "createFirstStore": "Créer une boutique",
         "statusFilter": {
             "all": "Toutes",
             "active": "Actives",
@@ -395,6 +485,10 @@
         "limits": {
             "disk": "Disque SSD",
             "collaborators": "Collaborateurs",
+            "confirmDelete": "Révoquer l'accès de {{name}} ?",
+            "deleteSuccess": "Collaborateur révoqué avec succès.",
+            "removeDesc": "Révoquer l'accès de ce collaborateur l'empêchera de se connecter à ce tableau de bord. Cette action est réversible.",
+            "removeButton": "Révoquer l'accès",
             "products": "Produits",
             "salesPoints": "Points de Vente",
             "countries": "Pays"
@@ -434,6 +528,10 @@
         "users": "Utilisateurs",
         "clients": "Clients",
         "collaborators": "Collaborateurs",
+        "confirmDelete": "Révoquer l'accès de {{name}} ?",
+        "deleteSuccess": "Collaborateur révoqué avec succès.",
+        "removeDesc": "Révoquer l'accès de ce collaborateur l'empêchera de se connecter à ce tableau de bord. Cette action est réversible.",
+        "removeButton": "Révoquer l'accès",
         "orders": "Commandes",
         "inventory": "Inventaire",
         "stores": "Boutiques",
@@ -509,6 +607,10 @@
     "roles": {
         "client": "Client",
         "collaborator": "Collaborateur",
+        "confirmDelete": "Révoquer l'accès de {{name}} ?",
+        "deleteSuccess": "Collaborateur révoqué avec succès.",
+        "removeDesc": "Révoquer l'accès de ce collaborateur l'empêchera de se connecter à ce tableau de bord. Cette action est réversible.",
+        "removeButton": "Révoquer l'accès",
         "owner": "Propriétaire"
     },
     "profilePage": {
@@ -1626,6 +1728,10 @@
         "orders": "Commandes",
         "customers": "Clients",
         "collaborators": "Collaborateurs",
+        "confirmDelete": "Révoquer l'accès de {{name}} ?",
+        "deleteSuccess": "Collaborateur révoqué avec succès.",
+        "removeDesc": "Révoquer l'accès de ce collaborateur l'empêchera de se connecter à ce tableau de bord. Cette action est réversible.",
+        "removeButton": "Révoquer l'accès",
         "inventory": "Inventaire",
         "statistics": "Statistiques",
         "settings": "Paramètres",

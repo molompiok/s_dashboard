@@ -8,6 +8,7 @@ import UserSearchAndSelect from './StatsPopup/UserSearchAndSelect';
 import ProductSearchAndSelect from './StatsPopup/ProductSearchAndSelect';
 import { IoCloseSharp, IoChevronUp, IoChevronDown } from 'react-icons/io5';
 import { useTranslation } from 'react-i18next';
+import { optionActiveStyle, optionStyle } from '../Button/Style';
 
 // Constants
 const defaultCounts: Record<StatsPeriod, number> = { day: 7, week: 4, month: 3 };
@@ -92,11 +93,11 @@ const StatsFilters: React.FC<StatsFiltersProps> = ({
     return (
         // 🎨 Conteneur principal avec effet verre dépoli pour le mode nuit
         <div className="bg-white/80 dark:bg-white/5 backdrop-blur-lg p-4 rounded-lg shadow-sm border border-gray-200/80 dark:border-white/10 mb-6">
-            <h2 className="text-xl font-semibold text-gray-800 dark:white mb-4">{t('stats.filtersTitle')}</h2>
             <div className="flex flex-col gap-6">
+                <h2 className="text-lg font-semibold dark:text-white">Filtres</h2>
 
                 {/* --- Groupe Période et Nombre --- */}
-                <div className="flex flex-wrap gap-x-6 gap-y-4 items-end">
+                <div className="hidden lg:flex flex-wrap gap-x-6 gap-y-4 items-end">
                     {/* Filtre Période */}
                     <div>
                         <label className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">{t('stats.periodLabel')}</label>
@@ -105,11 +106,8 @@ const StatsFilters: React.FC<StatsFiltersProps> = ({
                                 <button
                                     key={p} onClick={() => handlePeriodChange(p)}
                                     // 🎨 Styles des boutons avec `teal` comme couleur d'accentuation
-                                    className={`px-3 py-1 border rounded-md text-sm font-medium transition-all duration-200
-                                         ${p === period 
-                                            ? 'bg-teal-600 text-white border-transparent shadow-md' 
-                                            : 'text-gray-600 dark:text-gray-300 border-transparent hover:bg-white/80 dark:hover:bg-white/10'}`}
-                                >
+                                    className={p === period
+                                        ? optionActiveStyle : optionStyle}>
                                     {t(`stats.periods.${p}`)}
                                 </button>
                             ))}
@@ -140,7 +138,7 @@ const StatsFilters: React.FC<StatsFiltersProps> = ({
                         <label htmlFor="select-client-filter" className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">{t('stats.clientLabel')}</label>
                         {/* 🎨 Bouton de sélection avec style d'input */}
                         <div id="select-client-filter" onClick={handleOpenUserSelect}
-                             className="flex items-center justify-between w-full px-3 py-2 bg-white dark:bg-gray-800/50 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm cursor-pointer hover:border-teal-400 dark:hover:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm transition-colors">
+                            className="flex items-center justify-between w-full px-3 py-2 bg-white dark:bg-gray-800/50 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm cursor-pointer hover:border-teal-400 dark:hover:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm transition-colors">
                             <span className="truncate text-gray-800 dark:text-gray-200">
                                 {userId && selectedUserName ? selectedUserName : t('stats.selectClientPlaceholder')}
                             </span>
@@ -156,7 +154,7 @@ const StatsFilters: React.FC<StatsFiltersProps> = ({
                     <div className="relative w-full sm:w-52">
                         <label htmlFor="select-product-filter" className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">{t('stats.productLabel')}</label>
                         <div id="select-product-filter" onClick={handleOpenProductSelect}
-                             className="flex items-center justify-between w-full px-3 py-2 bg-white dark:bg-gray-800/50 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm cursor-pointer hover:border-teal-400 dark:hover:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm transition-colors">
+                            className="flex items-center justify-between w-full px-3 py-2 bg-white dark:bg-gray-800/50 border border-gray-300 dark:border-gray-600 rounded-lg shadow-sm cursor-pointer hover:border-teal-400 dark:hover:border-teal-500 focus:outline-none focus:ring-2 focus:ring-teal-500 text-sm transition-colors">
                             <span className="truncate text-gray-800 dark:text-gray-200">
                                 {productId && selectedProductName ? selectedProductName : t('stats.selectProductPlaceholder')}
                             </span>
@@ -171,7 +169,7 @@ const StatsFilters: React.FC<StatsFiltersProps> = ({
 
                 {/* --- Groupe Options et Date --- */}
                 <div className="flex flex-col gap-6">
-                     {/* 🎨 Input date avec le bon color-scheme pour le mode nuit */}
+                    {/* 🎨 Input date avec le bon color-scheme pour le mode nuit */}
                     <div>
                         <label htmlFor="customEndDate" className="block text-sm font-medium text-gray-600 dark:text-gray-400 mb-2">{t('stats.endDateLabel')}</label>
                         <input

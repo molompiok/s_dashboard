@@ -92,16 +92,16 @@ export function AddCollaboratorPopup({ onSuccess, onCancel }: AddCollaboratorPop
 
     return (
         // Conteneur Popup : padding, gap
-        <div className="add-collaborator-popup p-4 w-full sm:p-6 flex flex-col gap-4 bg-white rounded-lg shadow-xl">
+        <div className="add-collaborator-popup p-4 w-full sm:p-6 flex flex-col gap-6 ">
 
               {/* Name Input */}
               <div>
-                <label htmlFor="collaborator-name" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="collaborator-name" className="block text-sm font-medium text-gray-700 dark:text-white mb-1">
                     {t('collaborator.nameLabel')}
                 </label>
                 <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <IoMailOutline className="h-5 w-5 text-gray-400" />
+                        <IoMailOutline className="h-5 w-5 text-gray-400 dark:text-white/60" />
                     </div>
                     <input
                         type="name"
@@ -119,17 +119,17 @@ export function AddCollaboratorPopup({ onSuccess, onCancel }: AddCollaboratorPop
                 </div>
                 {nameError && <p className="mt-1 text-xs text-red-600">{nameError}</p>}
                 {/* Message d'aide pour S0 */}
-                <p className="mt-1 text-xs text-gray-500">{t('collaborator.addNameHelper')}</p>
+                <p className="mt-3 text-xs text-gray-500">{t('collaborator.addNameHelper')}</p>
             </div>
             
             {/* Email Input */}
             <div>
-                <label htmlFor="collaborator-email" className="block text-sm font-medium text-gray-700 mb-1">
+                <label htmlFor="collaborator-email" className="block text-sm font-medium dark:text-white text-gray-700 mb-1">
                     {t('collaborator.emailLabel')}
                 </label>
                 <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                        <IoMailOutline className="h-5 w-5 text-gray-400" />
+                        <IoMailOutline className="h-5 w-5 text-gray-400 dark:text-white/60" />
                     </div>
                     <input
                         type="email"
@@ -147,7 +147,7 @@ export function AddCollaboratorPopup({ onSuccess, onCancel }: AddCollaboratorPop
                 </div>
                 {emailError && <p className="mt-1 text-xs text-red-600">{emailError}</p>}
                 {/* Message d'aide pour S0 */}
-                <p className="mt-1 text-xs text-gray-500">{t('collaborator.addEmailHelper')}</p>
+                <p className="mt-3 text-xs text-gray-500 dark:text-white/80">{t('collaborator.addEmailHelper')}</p>
             </div>
 
             {/* Boutons Confirmation */}

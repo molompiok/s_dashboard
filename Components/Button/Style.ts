@@ -1,6 +1,9 @@
 // Components/Button/Style.ts
 
 // Style principal pour les boutons d'action
+export const optionActiveStyle = `relative cursor-pointer  px-2 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 ease-in-out bg-white dark:bg-gray-700 text-emerald-600 dark:text-emerald-400 shadow-md ring-1 ring-emerald-200 dark:ring-emerald-800 transform scale-[1.02]`
+export const optionStyle = `relative cursor-pointer  px-2 py-1.5 text-sm font-medium rounded-lg transition-all duration-200 ease-in-out text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-700` 
+
 export const buttonStyle = `
     group relative inline-flex items-center gap-2 px-6 py-2.5
     bg-gradient-to-r from-emerald-500 to-teal-500 

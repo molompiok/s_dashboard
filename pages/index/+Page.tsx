@@ -228,7 +228,7 @@ function Page() {
               {
                 isStoreChanging
                   ? <ThemeManagerSkeleton />
-                  : !filterHide && <ThemeManager store={currentStore} />
+                  : filterHide && <ThemeManager store={currentStore} />
               }
             </div>
           </div>
@@ -260,9 +260,6 @@ function Page() {
             <ThemeManager store={undefined} />
           </>
         )}
-        {
-          !isLoadingList && storesList.length == 0 && <ThemeManager store={undefined} />
-        }
       </main>
     </div>
   );

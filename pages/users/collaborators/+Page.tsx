@@ -10,18 +10,19 @@ import { CollaboratorItemRow, CollaboratorListSkeleton } from '../../../Componen
 import { AddCollaboratorPopup } from '../../../Components/CollaboratorList/AddCollaboratorPopup';
 import { PermissionsPopup } from '../../../Components/CollaboratorList/PermissionsPopup';
 import { useChildViewer } from '../../../Components/ChildViewer/useChildViewer';
-import { IoAddSharp } from 'react-icons/io5';
+import { IoAddSharp, IoCloudOfflineOutline, IoPeopleOutline, IoWarningOutline } from 'react-icons/io5';
 import { PageNotFound } from '../../../Components/PageNotFound/PageNotFound';
 import { ChildViewer } from '../../../Components/ChildViewer/ChildViewer';
 import { Pagination } from '../../../Components/Pagination/Pagination';
+import { buttonStyle, buttonStyleSimple } from '../../../Components/Button/Style';
+import { useGlobalStore } from '../../../api/stores/StoreStore';
+import { StateDisplay } from '../../../Components/StateDisplay/StateDisplay';
 
 export { Page };
 
-// 🎨 Définition du style du bouton principal pour utiliser `teal`
-const primaryButtonStyle = "inline-flex items-center justify-center gap-2 px-4 py-2 text-sm font-medium text-white bg-teal-600 border border-transparent rounded-lg shadow-sm hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 transition-colors dark:focus:ring-offset-gray-900";
-
 function Page() {
     const { t } = useTranslation();
+    const {currentStore} = useGlobalStore()
     const { openChild } = useChildViewer();
     const [filter, setFilter] = useState<{ page?: number, limit?: number }>({ page: 1, limit: 20 });
     const { data: collaboratorsData, isLoading, isError, error } = useGetCollaborators(filter);
@@ -31,7 +32,7 @@ function Page() {
     const handleOpenAddPopup = () => {
         openChild(
             <ChildViewer title={t('collaborator.addPopupTitle')}>
-                <AddCollaboratorPopup onSuccess={() => openChild(null)} onCancel={() => openChild(null)} />
+                <AddCollaboratorPopup onSuccess={() => ''} onCancel={() => ''} />
             </ChildViewer>,
             // 🎨 Le fond du ChildViewer est déjà parfait pour un effet de flou
             { background: 'rgba(30, 41, 59, 0.7)', blur: 4 }
@@ -48,17 +49,75 @@ function Page() {
     };
 
     const breadcrumbs: BreadcrumbItem[] = [
-        { name: t('navigation.home'), url: '/' },
+        { name: '..', url: '/' },
         { name: t('navigation.users'), url: '/users' },
         { name: t('navigation.collaborators') },
     ];
 
-    if (isError && error?.status === 403) {
-        return <PageNotFound title={t('unauthorized_action')} description={t('collaborator.ownerOnly')} />;
-    }
-    if (isError) {
-        return <div className="p-6 text-center text-red-500">{error?.message || t('error_occurred')}</div>;
-    }
+    const renderContent = () => {
+        // 1. GESTION DU CHARGEMENT (avec skeleton d'items)
+        if (isLoading || !currentStore) {
+            return Array.from({ length: 4 }).map((_, i) => <CollaboratorListSkeleton key={`skel-${i}`} />);
+        }
+
+        // 2. GESTION DES ERREURS
+        if (isError) {
+            // Cas spécifique : Accès Interdit (403)
+            if (error.status === 403) {
+                return (
+                    <div className="p-8">
+                        <StateDisplay
+                            variant="danger"
+                            icon={IoWarningOutline}
+                            title={t('unauthorized_action')}
+                            description={t('collaborator.ownerOnly')}
+                        />
+                    </div>
+                );
+            }
+            // Cas d'erreur générique
+            return (
+                <div className="p-8">
+                    <StateDisplay
+                        variant="danger"
+                        icon={IoCloudOfflineOutline}
+                        title={t('common.error.title')}
+                        description={error.message || t('common.error.genericDesc')}
+                    >
+                        {/* On pourrait ajouter un bouton "Réessayer" ici */}
+                    </StateDisplay>
+                </div>
+            );
+        }
+
+        // 3. GESTION DE L'ÉTAT VIDE
+        if (collaborators.length === 0) {
+            return (
+                <div className="p-8">
+                    <StateDisplay
+                        variant="info"
+                        icon={IoPeopleOutline}
+                        title={t('collaborator.noCollaboratorsTitle')}
+                        description={t('collaborator.noCollaboratorsDesc')}
+                    >
+                        <button onClick={undefined} className={buttonStyle}>
+                            <IoAddSharp size={20} />
+                            {t('collaborator.addFirstButton')}
+                        </button>
+                    </StateDisplay>
+                </div>
+            );
+        }
+
+        // 4. AFFICHAGE NORMAL DE LA LISTE
+        return collaborators.map((collabRole) => (
+            <CollaboratorItemRow
+                key={collabRole.id}
+                collaboratorRole={collabRole}
+                onEditPermissions={() => ''}
+            />
+        ));
+    };
 
     return (
         // 🎨 Fond global géré par root, on s'assure que le contenu textuel s'adapte
@@ -69,7 +128,7 @@ function Page() {
                 {/* En-tête: Titre et Bouton Ajouter */}
                 <div className="flex justify-between items-center">
                     <h1 className="text-2xl font-semibold text-gray-900 dark:text-gray-100">{t('collaborator.listTitle')}</h1>
-                    <button onClick={handleOpenAddPopup} className={primaryButtonStyle}>
+                    <button onClick={handleOpenAddPopup} className={buttonStyleSimple}>
                         <IoAddSharp size={20} />
                         <span className="hidden sm:inline">{t('collaborator.addButton')}</span>
                     </button>
@@ -78,19 +137,7 @@ function Page() {
                 {/* 🎨 Liste des Collaborateurs avec effet verre dépoli en mode nuit */}
                 <div className="bg-white/80 dark:bg-white/5 backdrop-blur-md rounded-lg shadow-sm border border-gray-200/80 dark:border-white/10 overflow-hidden">
                     <div className="flex flex-col">
-                        {isLoading && (
-                            Array.from({ length: 3 }).map((_, i) => <CollaboratorListSkeleton key={`skel-${i}`} />)
-                        )}
-                        {!isLoading && collaborators.length === 0 && (
-                            <p className="text-sm text-gray-500 dark:text-gray-400 text-center p-8">{t('collaborator.noCollaborators')}</p>
-                        )}
-                        {!isLoading && collaborators.map((collabRole) => (
-                            <CollaboratorItemRow
-                                key={collabRole.id}
-                                collaboratorRole={collabRole}
-                                onEditPermissions={() => handleOpenPermissionsPopup(collabRole)}
-                            />
-                        ))}
+                         {renderContent()}
                     </div>
                 </div>
 

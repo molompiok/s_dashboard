@@ -40,9 +40,7 @@ export const ImageManager: React.FC<ImageManagerProps> = ({canOpenGallery, image
       id: ClientCall(function () { return Math.random() }, 0),
       source: file,
     }));
-    console.log('filesToAdd', filesToAdd);
-
-
+   
     onImagesChange([...images, ...filesToAdd]);
     e.target.value = ''; // reset input
   };
