@@ -90,8 +90,6 @@ export function StoreCreationEditionWizard({
     useEffect(() => {
         if (isEditing && collected.name === initialStoreData?.name) {
             setIsNameValid(true);
-            console.log('@@@@@@@@@@', collected.name);
-
             setNameCheck({ type: 'checking', message: t('storeCreate.validation.currentStoreName') });
             // setDebouncedName('');
             return;
@@ -152,18 +150,15 @@ export function StoreCreationEditionWizard({
     }, [isNameValid, collected])
     // --- Validation locale des étapes ---
     const validateStep = (indexToValidate: number, validate = true): boolean => {
-        console.log('=======> VALIDATION START index:', indexToValidate, 'validate:', validate);
-
+        
         if (!isNameValid && (validate || indexToValidate == 0)) {
             validate && setIndexError(0);
-            console.log('=======> VALIDATION END index:', indexToValidate, 'isValid:', false, 'error index:', 0);
             return false
         }
         const logoOk = collected.logo?.length > 0;
         tryInvalid && !logoOk && !logoError && setLogoError(logoOk ? '' : t('storeCreate.validation.logoRequired'));
         if (!logoOk && (validate || indexToValidate == 1)) {
             validate && setIndexError(1);
-            console.log('=======> VALIDATION END index:', indexToValidate, 'isValid:', false, 'error index:', 1);
             return false
         }
         const coverOk = collected.cover_image?.length > 0;
@@ -171,7 +166,6 @@ export function StoreCreationEditionWizard({
         if (!coverOk && (validate || indexToValidate == 2)) {
             validate && setIndexError(2);
 
-            console.log('=======> VALIDATION END index:', indexToValidate, 'isValid:', false, 'error index:', 2);
             return false
         }
         const titleOk = collected.title.trim().length > 0;
@@ -180,11 +174,9 @@ export function StoreCreationEditionWizard({
         tryInvalid && !descOk && !descriptionError && setDescriptionError(descOk ? '' : t('storeCreate.validation.descriptionRequired'));
         if (!(titleOk && descOk) && (validate || indexToValidate == 3)) {
             validate && setIndexError(3)
-            console.log('=======> VALIDATION END index:', indexToValidate, 'isValid:', false, 'error index:', 3);
             return false
         }
         validate && setIndexError(3)
-        console.log('=======> VALIDATION END index:', indexToValidate, 'validate:', validate, 'isValid:', true, 'error index:', -1);
         return true
 
     };
@@ -240,10 +232,7 @@ export function StoreCreationEditionWizard({
 
         const endTime = Date.now() + 4 * 1000
         if (isEditing && initialStoreData?.id) {
-
-            console.log('Update', collected);
             setLoadingState('saving');
-            // --- Mise à jour ---
             updateStoreMutation.mutate(
                 { store_id: initialStoreData.id, data: s.collected },
                 {
@@ -265,9 +254,6 @@ export function StoreCreationEditionWizard({
                 }
             );
         } else {
-            // --- Création ---
-            console.log('Create', collected);
-
             setLoadingState('saving');
             createStoreMutation.mutate(collected as any, {
                 onSuccess: (data) => {
@@ -309,12 +295,6 @@ export function StoreCreationEditionWizard({
 
     const logoPreview = useMemo(() => getPreviewUrl(collected.logo[0]), [collected.logo]);
     const coverPreview = useMemo(() => getPreviewUrl(collected.cover_image[0]), [collected.cover_image]);
-
-
-
-    console.log({ activeIndex, maxReachedIndex });
-
-
 
 
     if (loadingState === 'saving') return <FeedbackOverlay

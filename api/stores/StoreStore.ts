@@ -15,8 +15,7 @@ function getTransmit(url: string): Transmit | null {
     transmit?.close();
     baseUrl = url;
     if (!url) return null
-    console.log(url);
-
+    
     const host = (process.env.NODE_ENV == 'production' ? 'https://' : 'http://');
     url = (!url.startsWith('http') ? host : '') + url
     transmit = new Transmit({
@@ -39,7 +38,6 @@ const useGlobalStore = create(combine({
 }, (set, get) => ({
     async testSSE() {
         if (!useGlobalStore.getState().currentStore?.url) {
-            console.log('-------useGlobalStore .getState().currentStore?.url----', useGlobalStore.getState().currentStore);
             return
         }
         const response = await fetch(`${useGlobalStore.getState().currentStore?.url}/test_sse`)
@@ -61,7 +59,6 @@ const useGlobalStore = create(combine({
         try {
             const a = localStorage.getItem('current_store');
             c = a && JSON.parse(a);
-           console.log(c);
             set(() => ({ currentStore: c }));
             return c
         } catch (error) { }

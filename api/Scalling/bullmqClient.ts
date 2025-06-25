@@ -63,5 +63,4 @@ export function getServerQueue(): Queue {
 export async function closeQueue() {
     await serverQueue?.close();
     await redisConnection?.quit();
-    console.log('[Theme BullMQ Client] Queue and connection closed.');
 }

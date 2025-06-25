@@ -40,8 +40,6 @@ const options = {
 };
 
 function MyChart({color,height,width,datasets}:{datasets?:number[],color?: keyof typeof CHART_COLORS, width?: number, height?: number}) {
-  // data = data || [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-  // console.log('data',datasets);
   
   return datasets && <Line  ref={(ref)=>{
     ref?.canvas && setTimeout(() => {

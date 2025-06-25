@@ -35,8 +35,6 @@ export const useAuthStore = create(
           if (get().token) return get().token;
           if (typeof window !== "undefined") {
             const t = localStorage.getItem(TOKEN_KEY) ?? undefined;
-            console.log('22222222',t);
-            
             t && set({ token: t || undefined });
             return t
           }
@@ -90,10 +88,8 @@ export const useAuthStore = create(
 
 // Fonctions d'accès direct
 export function getToken(): string | undefined {
-  const eeeeeeeeeeeeeeeee = useAuthStore.getState().getToken();
-  console.log({ eeeeeeeeeeeeeeeee });
-
-  return eeeeeeeeeeeeeeeee
+  const token = useAuthStore.getState().getToken();
+  return token
 }
 
 export function getUser(): Partial<UserInterface> | undefined {
@@ -105,7 +101,13 @@ export function logoutUserGlobally() {
 }
 
 export function handleUnauthorized() {
-  console.log("Global 401 handler triggered. Logging out.");
   logoutUserGlobally();
   navigate('/auth/login?sessionExpired=true');
 }
+
+/*
+
+on tombe directement sur la page detail product (le 1 erer produit de la categorie si definie par le owner dans les config  ou le 1erer produit du store (sans categories_id))  on peut aussi definir un produit par defaut il faudra doonc tester la condition.
+
+
+*/

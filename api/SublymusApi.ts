@@ -1,7 +1,5 @@
 ///api/SublymusApi.ts
 
-import { error } from 'console';
-import { OrderStatus } from '../Components/Utils/constants'; // Ajuster chemin si besoin
 import type {
     ListType, ProductInterface, CategoryInterface, UserInterface, StoreInterface,
     CommandInterface, CommentInterface, DetailInterface, Inventory, Role, FavoriteInteraface,
@@ -46,6 +44,21 @@ type RequestOptions = {
     params?: Record<string, any>; // Pour les query parameters
     isFormData?: boolean;
 };
+
+enum OrderStatus {
+  PENDING = 'pending',
+  CONFIRMED = 'confirmed',
+  PROCESSING = 'processing',
+  SHIPPED = 'shipped',
+  READY_FOR_PICKUP = 'ready_for_pickup',
+  PICKED_UP = 'picked_up',
+  NOT_PICKED_UP = 'not_picked_up',
+  DELIVERED = 'delivered',
+  NOT_DELIVERED = 'not_delivered',
+  RETURNED = 'returned',
+  CANCELED = 'canceled',
+  FAILED = 'failed'
+}
 // --- Types Génériques & Erreur (Inchangés) ---
 export type ApiSuccessResponse<T, Key extends string = 'data'> = {
     message?: string;
@@ -387,7 +400,7 @@ export class SublymusApi {
     constructor({ getAuthToken, serverUrl, storeApiUrl, t, handleUnauthorized }: { handleUnauthorized?: (action: 'api' | 'server', token?: string) => void, storeApiUrl?: string, serverUrl?: string, getAuthToken: () => string | undefined | null, t: (key: string, params?: any) => string }) {
 
         this.t = t;
-        console.log('------------>>>>>>>>>>>>>>>', serverUrl);
+        console.log('-->>', serverUrl);
 
         // Server URL est requis
         if (!serverUrl) {
@@ -429,7 +442,6 @@ export class SublymusApi {
     public async _request<T>(endpoint: string, options: RequestOptions = {}): Promise<T> {
         // ... (code de _request inchangé, utilise this.t pour les erreurs génériques) ...
 
-        console.log({ endpoint });
         let token = this.getAuthToken();
         let action: 'api' | 'server' = 'api';
         let baseUrl: string = '';
@@ -450,12 +462,11 @@ export class SublymusApi {
 
         const requestHeaders = new Headers(headers);
 
-        console.log('----url---', url);
-
         if (token) requestHeaders.set('Authorization', `Bearer ${token}`);
         if (!isFormData && body) requestHeaders.set('Content-Type', 'application/json');
         requestHeaders.set('Accept', 'application/json');
-
+        requestHeaders.set('Access-Control-Allow-Credentials','true');
+        requestHeaders.set('Access-Control-Allow-Origin','*');
         if (params) {
             const searchParams = new URLSearchParams();
             Object.entries(params).forEach(([key, value]) => {
@@ -472,7 +483,12 @@ export class SublymusApi {
         console.log(`API Request: ${method} ${url}`, requestBody);
 
         try {
-            const response = await fetch(url, { method, headers: requestHeaders, body: requestBody });
+            const response = await fetch(url, { 
+                method, 
+                headers: requestHeaders, 
+                body: requestBody,
+                credentials: 'include'
+            });
             if (response.status === 204) {
                 console.log(`API Response: 204 No Content`);
                 return null as T;
@@ -553,7 +569,7 @@ export class SublymusApi {
                 (value ?? undefined) !== undefined && formData.append(key, value);
             }
         }
-        console.log('----------->', formData);
+        // console.log('----------->', formData);
         for (const pair of formData.entries()) {
             console.log('FormData entry:', pair[0], pair[1]);
         }
@@ -659,8 +675,6 @@ export class SublymusApi {
             return multiple_update_features;
 
         } catch (error) {
-            //  console.log('>>>>>>>2>>>>>>>', error);
-
             return null
         }
     }
@@ -669,9 +683,6 @@ export class SublymusApi {
     // Méthode pour construire le FormData pour multipleUpdateFeaturesValues
     async _buildFormDataForFeaturesValues(params: PrepareMultipleFeaturesValuesParams): Promise<FormData | null> {
         const multipleUpdateData = await this._prepareMultipleFeaturesValuesData(params);
-
-        console.log('>>>>>>>>>>>>>>', multipleUpdateData);
-
 
         if (!multipleUpdateData) return null;
 

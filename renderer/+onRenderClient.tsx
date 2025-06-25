@@ -30,12 +30,7 @@ const onRenderClient: OnRenderClientAsync = async (pageContext): ReturnType<OnRe
   const serverUrl = ClientCall(function(){return window.location.origin.replace('dash','server')},'') ;
   Data.serverUrl = pageContext.serverUrl ? (host + 'server.' + pageContext.serverUrl ) : serverUrl
   Data.apiUrl = currentStore?.api_url && (host+ currentStore.api_url); 
-  console.log({
-    baseUrl: pageContext.baseUrl,
-    serverUrl: pageContext.serverUrl = Data.serverUrl||'',
-    // apiUrl:  pageContext.apiUrl = Data.apiUrl 
-  });
-
+ 
 
   
   const page = (

@@ -24,7 +24,6 @@ const SettingsConfig = [
 
 
 export const SEOSettings: React.FC<SEOSettingsProps> = ({ product }) => {
-  console.log('SEOSettings -- product', product);
 
   const { currentStore } = useGlobalStore()
   const previewImage = getDefaultValues(product)?.[0]?.views?.[0];

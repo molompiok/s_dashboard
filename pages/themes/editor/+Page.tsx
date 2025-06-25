@@ -528,7 +528,6 @@ function Page() {
     const [saveThemeSettingsMutation, setS] = useState({
         isPending: false,
         mutate: (data: any, options: any) => {
-            console.log("Saving settings:", data);
             setS({ ...saveThemeSettingsMutation, isPending: true });
             setTimeout(() => {
                 if (Math.random() > 0.1) {
@@ -573,8 +572,7 @@ function Page() {
     // --- Handler pour les changements de la Sidebar (INCHANGÉ) ---
     const handleSettingChange = useCallback((key: string, value: any) => {
         setDraftSettings(prev => ({ ...prev, [key]: value }));
-        console.log({ key, value }, '⛔⛔⛔⛔⛔⛔');
-
+       
         debounce(() => {
             saveThemeSettingsMutation.mutate({
                 store_id: storeId,
@@ -610,8 +608,6 @@ function Page() {
     if (isLoadingInitialData) return <div className="p-6 text-center text-gray-500">{t('common.loading')}</div>;
     if (fetchError) return <div className="p-6 text-center text-red-500">{fetchError}</div>;
     if (!themeOptions) return <PageNotFound title={t('themeEditor.error.optionsNotFound')} />;
-
-    console.log(isSidebarOverlayVisible);
 
     return (
         <div className="page-theme w-full h-screen flex flex-col">

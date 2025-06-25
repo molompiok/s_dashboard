@@ -119,8 +119,6 @@ function Page() {
         if (fetchedProduct && !s.product && isLoadingMutation) {
             setProduct(fetchedProduct);
             setOriginalProduct(fetchedProduct);
-            console.log(fetchedProduct.features?.map(f => ({ name: f.name, index: f.index })));
-
         }
     }, [fetchedProduct]);
 
@@ -162,16 +160,9 @@ function Page() {
                             setOriginalProduct(data.product);
                             showToast("Fonctionnalités mises à jour avec succès"); // ✅ Toast succès
                         } catch (error) {
-                            console.log(error);
-
                         }
                     },
                     onError: (error: ApiError) => {
-                        console.log
-                            ({ error }, "Product update failed (simple)");
-                        if (error.status === 422 && error.body?.errors) {
-                            console.log(error.body.errors);
-                        }
                         showErrorToast(error); // ❌ Toast erreur
                     },
                 }
@@ -185,8 +176,6 @@ function Page() {
 
             if (Array.isArray(value)) {
                 s.features = value;
-                console.log('---333333->>>', value);
-
                 isNewProduct
                     ? setProduct(prev => ({ ...prev, features: value }))
                     : debounce(() => {
@@ -241,9 +230,6 @@ function Page() {
         { name: t('navigation.products'), url: '/products' },
         { name: isNewProduct ? t('product.createBreadcrumb') : limit(originalProduct?.name || '...', 30) },
     ];
-
-
-    console.log({ product, originalProduct });
 
 
     return (
@@ -324,8 +310,7 @@ const ProductInfoStep = ({ product, onUpdate }: { product: Partial<ProductInterf
         }
         value.views = newImages.map(i => i.source);
         value._request_mode = value._request_mode || 'edited';
-        console.log('--------->>',value);
-        
+
         onUpdate('features', product.features);
     };
 

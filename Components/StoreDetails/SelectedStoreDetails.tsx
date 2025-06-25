@@ -194,8 +194,6 @@ export function SelectedStoreDetails({ store, onEditRequired }: SelectedStoreDet
         ],
     };
 
-    console.log(chartData);
-
     const chartOptions = {
         responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
         scales: { y: { beginAtZero: true, ticks: { precision: 0 } } } // Pas de décimales pour commandes/visites

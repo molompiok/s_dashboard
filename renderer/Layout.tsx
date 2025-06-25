@@ -43,7 +43,6 @@ function Layout({ children, pageContext }: { children: React.ReactNode; pageCont
   useEffect(() => {
     const token = getToken();
     const user = getUser();
-    console.log({ user });
 
     if (!token) {
       if (window.location.pathname.startsWith('/auth')) return;
@@ -86,7 +85,6 @@ function Layout({ children, pageContext }: { children: React.ReactNode; pageCont
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     const handleThemeChange = (e: any) => {
       setThemeMode(e.matches);
-      console.log('--- mode ----->>>>>', e.matches);
       e.matches ? document.body.classList.add('dark') : document.body.classList.remove('dark')
     };
 

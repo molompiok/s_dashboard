@@ -52,8 +52,6 @@ async function startServer() {
   // catch-all middleware superseding any middleware placed after it).
   app.get("/res/*", async (req, res) => {
     const url = localDir + "/public" + req.originalUrl;
-    console.log({ url });
-
     return res.sendFile(url);
   });
   app.get('*', async (req, res) => {
@@ -74,10 +72,7 @@ async function startServer() {
 
   const port = process.env.PORT || 3005
   const server = app.listen(port)
-  console.log(`Server running at http://localhost:${port}`)
-
-
-
+  
   const loadMonitoring = new LoadMonitorService({
     bullmqQueue: getServerQueue(),
     logger: logger,
@@ -87,9 +82,7 @@ async function startServer() {
 
   loadMonitoring.startMonitoring()
   const shutdown = async () => {
-    console.log(`[Theme Server ${SERVICE_ID}] Arrêt demandé...`);
     server.close(async () => {
-      console.log(`[Theme Server ${SERVICE_ID}] Serveur HTTP fermé.`);
       await closeQueue(); // Fermer la connexion BullMQ/Redis
       process.exit(0);
     });

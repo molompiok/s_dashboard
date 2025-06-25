@@ -14,14 +14,12 @@ function Nuage({ color, density, height, speed, width }: { width: number, height
                 if(i > p.l){
                     p.a += ((ClientCall(Math.random,0)*2 - 1)*0.5)*Math.PI;
                     p.l = i+p.i
-                    // console.log(p,i,p.l);
                 } 
                 p.x += p.v* Math.cos(p.a);
                 p.y += p.v* Math.sin(p.a);
                 p.x = p.x > width ? 0 : (p.x <0 ? width : p.x);
                 p.y = p.y > height ? 0 : (p.y <0 ? height : p.y);
                 p.ref.style.transform = `translate(${p.x}px,${p.y}px)`
-                // console.log(p.l,i, p.i,p.a);
             })
             i++;
             

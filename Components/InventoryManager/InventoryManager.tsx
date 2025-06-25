@@ -59,9 +59,6 @@ export function InventoryManager({ store }: InventoryManagerProps) {
     );
   };
 
-  console.log(inventoriesData);
-
-
   return (
     <div className="inventory-manager bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 flex flex-col gap-6 md:gap-8">
 

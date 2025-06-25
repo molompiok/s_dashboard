@@ -101,7 +101,6 @@ export function MarkdownEditor2({ value, setValue, error, onBlur }: { onBlur?: (
           }}
           onBlur={()=>onBlur?.(editorRef.current.getInstance().getMarkdown().substring(0, 1000) || " ")}
           onKeyup={(e:any) => {
-            console.log('-----------------------------',e);
             handleChange()
           }}
 
@@ -130,8 +129,6 @@ export function MarkdownEditor2({ value, setValue, error, onBlur }: { onBlur?: (
         if (tryCount < 100) {
           setCount((prev) => prev + 1);
           setTimeout(() => {
-            // console.log({tryCount});
-
             updateValue();
           }, 700);
         } else {
@@ -140,8 +137,6 @@ export function MarkdownEditor2({ value, setValue, error, onBlur }: { onBlur?: (
       }
       if (!editorRef.current) return
       const editor = editorRef.current.getInstance();
-      // console.log(editor.getMarkdown() !== value, editor.getMarkdown(), value);
-
       if (editor && editor.getMarkdown() !== value) {
         editor.setMarkdown(value || "");
         adjustHeight(); // 🔥 Ajuster la hauteur au chargement

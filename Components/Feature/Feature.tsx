@@ -162,8 +162,6 @@ function Feature({ feature: initailFeature, setFeature, onDelete, onUp, onDown, 
                 _request_mode: 'edited' as const,
             }));
 
-            finalValues.forEach(v => console.log(v.text, v.index));
-            console.log({ fromIndex, toIndex });
             setFeatureLocal({ ...feature, values: finalValues });
             return {
                 ...current,

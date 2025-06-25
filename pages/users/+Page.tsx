@@ -151,8 +151,6 @@ interface StatCardProps {
   // Choisir les bons avatars à afficher
   const usersToDisplay = stat.id === 'client' ? clientPreviews : (collabPreviews as GetCollaboratorsResponse['list']).map(u => u.user);
 
-  console.log({ stat, collabPreviews });
-
   return (
     // Utiliser p-5, rounded-2xl, shadow, text-gray-800, transition avec mode sombre
     <div className={`stat-card p-5 rounded-2xl shadow-md dark:shadow-gray-900/30 text-gray-800 dark:text-gray-100 transition-all duration-200 transform hover:-translate-y-1 hover:shadow-lg dark:hover:shadow-gray-900/40 bg-gradient-to-br ${stat.gradient} dark:brightness-90 dark:bg-opacity-50`}>

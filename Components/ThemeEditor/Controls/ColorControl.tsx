@@ -24,8 +24,7 @@ export function ColorControl({ option, value, onChange }: ColorControlProps) {
     // Mettre à jour l'état local et déclencher onChange avec debounce
     const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newColor = e.target.value;
-        console.log({ newColor }, 'la couleir chNGE');
-
+     
         setLocalColor(newColor);
         // Appeler onChange seulement après un délai pour éviter trop d'updates pendant la sélection
         debounce(() => onChange(option.key, newColor), `color-${option.key}`, 200);

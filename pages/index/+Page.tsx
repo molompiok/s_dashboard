@@ -27,13 +27,15 @@ function Page() {
   const [isStoreChanging, setIsStoreChanging] = useState(false);
   const { openChild } = useChildViewer();
 
-  const { data: storesData, isLoading: isLoadingList, isError, error } = useGetStoreList(filter);
+  const { data: storesData, isLoading: isLoadingList, isError, error } = useGetStoreList({
+    ...filter
+  });
   const storesList = storesData?.list ?? [];
 
   // Logique de sélection du store initial (inchangée)
   useEffect(() => {
     if (isLoadingList || !storesList || storesList.length === 0) {
-      setIsLoadingInitialStore(false);
+      setIsLoadingInitialStore(true);
       return;
     }
 
@@ -75,7 +77,6 @@ function Page() {
     openChild(
       <StoreCreationEditionWizard
         onSaveSuccess={(collected, mode) => {
-          console.log('collected', mode, collected);
           openChild(null);
         }}
         onCancel={() => openChild(null)}
@@ -91,7 +92,7 @@ function Page() {
 
   // const storeName = currentStore?.name;
   const isFilterActive=!!Object.keys(filter).length;
-  const filterHide = storesList.length == 0 && isFilterActive
+  const filterNotFound = storesList.length == 0 && isFilterActive
   return (
     <div className="min-h-screen pb-[200px]">
       <Topbar key={'acceuil-admin'} search={false} />
@@ -195,7 +196,7 @@ function Page() {
           newStoreRequire={handleStoreCreateEdit}
         />
         {/* Contenu Principal - Grille moderne */}
-        {isLoadingInitialStore ? (
+        {isLoadingInitialStore && !filterNotFound ? (
           <div className="flex items-center justify-center py-20">
             <div className="text-center">
               <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-emerald-500 to-teal-500 rounded-2xl shadow-lg mb-4 animate-pulse">
@@ -215,21 +216,17 @@ function Page() {
                   ? (
                     <StoreSkeleton />
                   )
-                  : !filterHide && <SelectedStoreDetails
+                  : !filterNotFound && <SelectedStoreDetails
                     store={currentStore}
                     onEditRequired={handleStoreCreateEdit}
                   />
               }
-
+              {filterNotFound && <ThemeManager store={undefined} />}
             </div>
 
             {/* Colonne secondaire - Inventaire et autres */}
             <div className="xl:col-span-4">
-              {
-                isStoreChanging
-                  ? <ThemeManagerSkeleton />
-                  : filterHide && <ThemeManager store={currentStore} />
-              }
+              {!filterNotFound && <ThemeManager store={currentStore} />}
             </div>
           </div>
         ) : (

@@ -39,7 +39,6 @@ function getSearch(myLocation:Location) {
             const originalReplaceState = history.replaceState;
         
             function handleUrlChange(method:string, ...args:(string | URL | null | undefined)[]) {
-                // console.log(`URL changée via ${method}:`, args[2]); // args[2] = nouvelle URL
                 window.dispatchEvent(new Event("urlChange")); // Déclenche un événement personnalisé
             }
         
@@ -55,7 +54,6 @@ function getSearch(myLocation:Location) {
         })();
         // Écouter l'événement personnalisé
     window.addEventListener("urlChange", () => {
-        // console.log("Détection d'un changement d'URL :", window.location.pathname);
         setMyLocation({...location})
     });
     },[])

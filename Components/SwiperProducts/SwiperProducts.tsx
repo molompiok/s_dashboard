@@ -61,11 +61,8 @@ function SwiperProducts({ views, setViews }: { views: (string | Blob)[], setView
   function handleDragOver(e: React.DragEvent<HTMLDivElement>) {
     e.preventDefault();
     e.stopPropagation();
-    // console.log('DragOver');
     setHover(true)
   }
-
-  // console.log({ views });
 
 
   return (

@@ -58,7 +58,6 @@ function toNameString(name: string) {
   return _n
 }
 function getFileType(file: string | Blob | undefined) {
-  console.log('------------- file', file);
   
   if (typeof file == 'string') {
     const ext = file.substring(file.lastIndexOf('.') + 1, file.length);
@@ -177,8 +176,7 @@ function getOptions(bind: Record<string, string>, product: Partial<ProductInterf
 
 function getAllCombinations(product: Partial<ProductInterface>) {
   const features = product.features;
-  console.log({ features });
-
+  
   if (!features) return [];
 
   // Récupérer toutes les valeurs possibles par feature (filtrer les features sans valeurs)
@@ -189,8 +187,7 @@ function getAllCombinations(product: Partial<ProductInterface>) {
     })) || [])
     .filter(values => values.length > 0); // 🔥 Supprime les features sans valeurs
 
-  console.log({ featureValues });
-
+  
   // Fonction pour générer les combinaisons cartésiennes
   function cartesianProduct(arr: any) {
     if (arr.length === 0) return []; // 🔥 Si aucune feature avec valeurs, retourner []
@@ -201,8 +198,7 @@ function getAllCombinations(product: Partial<ProductInterface>) {
 
   // Générer toutes les combinaisons possibles
   const combinations = cartesianProduct(featureValues);
-  console.log({ combinations });
-
+  
   // Transformer chaque combinaison en objet bind { feature_id: value_id, ... }
   const allBinds = combinations.map((comb: any) => {
     return comb.reduce((obj: any, item: any) => {
@@ -211,8 +207,7 @@ function getAllCombinations(product: Partial<ProductInterface>) {
     }, {});
   });
 
-  console.log({ allBinds });
-
+  
   // Générer tous les group_products
   return allBinds.map((bind: any) => getOptions(bind, product)) as (ReturnType<typeof getOptions>)[];
 }
@@ -230,13 +225,11 @@ function debounce(fn: () => void, id: string, out = 300) {
     MapCallId[id].out = out
   } else {
     MapCallId[id].isRuning = true;
-    console.log('isRuning', true);
-
+    
     fn()
 
     setTimeout(() => {
       MapCallId[id].isRuning = false;
-      console.log('isRuning', false);
       MapCallId[id].next && debounce(MapCallId[id].next, id, MapCallId[id].out);
       MapCallId[id].next = null;
     }, out);
@@ -249,7 +242,6 @@ async function copyToClipboard(text: string, onSuccess?: () => void, onError?: (
       throw new Error('Clipboard API not supported');
     }
     await navigator.clipboard.writeText(text);
-    console.log('Texte copié dans le presse-papiers avec succès !');
     onSuccess?.();
   } catch (err) {
     console.error('Erreur lors de la copie dans le presse-papiers :', err);
@@ -260,7 +252,6 @@ async function copyToClipboard(text: string, onSuccess?: () => void, onError?: (
       textarea.select();
       document.execCommand('copy');
       document.body.removeChild(textarea);
-      console.log('Texte copié via la méthode de secours !');
       onSuccess?.();
     } catch (fallbackErr) {
       console.error('Échec de la méthode de secours :', fallbackErr);

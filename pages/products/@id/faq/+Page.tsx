@@ -722,7 +722,6 @@ const FaqForm = ({
     const handleBlur = (field: string, value: string) => {
         setTouched({ ...touched, [field]: true });
         validateField(field, value);
-        console.log('handleBlur',{field,value});
         
     };
 
@@ -817,8 +816,6 @@ const FaqForm = ({
     };
 
     const canSave = title.trim() && content.trim() && Object.keys(errors).length === 0 && validateSources();
-
-    console.log({content});
     
     return (
         <div className="max-w-4xl mx-auto">

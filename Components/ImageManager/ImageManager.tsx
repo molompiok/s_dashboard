@@ -27,8 +27,7 @@ export const ImageManager: React.FC<ImageManagerProps> = ({canOpenGallery, image
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(e.target.files || []);
-    console.log('files--', files);
-
+   
     if (files.length === 0) return;
 
     const availableSlots = MAX_IMAGES - images.length;
@@ -48,7 +47,6 @@ export const ImageManager: React.FC<ImageManagerProps> = ({canOpenGallery, image
   const handleDrop = (e: React.DragEvent) => {
     e.preventDefault();
     const files = Array.from(e.dataTransfer.files || []);
-    console.log('files--', files);
     if (files.length === 0) return;
     files.forEach((f, i) => Object.defineProperty(f, 'name', {
       value: f.name + i,
@@ -151,8 +149,7 @@ export const ImageManager: React.FC<ImageManagerProps> = ({canOpenGallery, image
                 }
                 <div onClick={(e) => {
                   
-                  console.log('%%%%%%%');
-
+           
                   canOpenGallery && openGallery(index);
                 }} className="absolute inset-0 bg-black/40 opacity-0 hover:opacity-100 transition-opacity flex items-center justify-center">
                   <button

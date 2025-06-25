@@ -175,9 +175,6 @@ function Page() {
         { icon: CalendarClock, labelKey: "usersPage.details.lastVisit", value: user.stats?.lastVisit ? DateTime.fromISO(user.stats.lastVisit).setLocale(i18n.language).toRelative() : '-', colorClass: "text-rose-500" }, // Afficher en relatif
         { icon: CreditCard, labelKey: "usersPage.details.totalSpent", value: `${Number(user.stats?.totalSpent ?? 0).toLocaleString()} ${currentStore?.currency || 'FCFA'}`, colorClass: "text-emerald-500" },
     ];
-
-    console.log(user.stats, statCardsData);
-
  const sectionCardStyle = "bg-white/80 dark:bg-white/5 backdrop-blur-md rounded-xl shadow-sm border border-gray-200/80 dark:border-white/10";
 
     return (

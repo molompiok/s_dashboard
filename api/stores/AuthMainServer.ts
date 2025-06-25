@@ -84,8 +84,7 @@ export const useAuthMainZust = create(
 // Fonctions d'accès direct
 export function getMainServerToken(): string | undefined {
   const getMainServerToken = useAuthMainZust.getState().getMainServerToken();
-  console.log({ getMainServerToken });
-
+  
   return getMainServerToken
 }
 
@@ -98,7 +97,6 @@ export function logoutMainServerUserGlobally() {
 }
 
 export function handleUnauthorized() {
-  console.log("Global 401 handler triggered. Logging out.");
   logoutMainServerUserGlobally();
   navigate('/auth/login?sessionExpired=true');
 }

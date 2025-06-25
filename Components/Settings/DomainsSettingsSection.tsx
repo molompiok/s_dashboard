@@ -24,7 +24,7 @@ export function DomainsSettingsSection({ store }: DomainsSettingsSectionProps) {
     const { t } = useTranslation();
     const addDomainMutation = useAddStoreDomain();
     // const removeDomainMutation = useRemoveStoreDomain(); // Assumer que ce hook existe
-    const removeDomainMutation = { isPending: false, variables: {} as StoreInterface | undefined, mutate: (data: any, options: any) => { console.log("Update settings mutation:", data); options.onSuccess?.(); } }; // Placeholder; // Assumer que ce hook existe
+    const removeDomainMutation = { isPending: false, variables: {} as StoreInterface | undefined, mutate: (data: any, options: any) => {  options.onSuccess?.(); } }; // Placeholder; // Assumer que ce hook existe
 
     // --- État Local ---
     const [newDomain, setNewDomain] = useState('');

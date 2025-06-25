@@ -41,7 +41,6 @@ function ProductRowItem({ product, categoriesMap }: ProductRowItemProps) {
     useEffect(() => {
         const handleClickOutside = (event: MouseEvent) => {
             if (isMenuOpen && menuRef.current && !menuRef.current.contains(event.target as Node)) {
-                console.log('document - close ');
                 s.closedByDocument = true
                 setTimeout(() => {
                     s.closedByDocument = false;
@@ -232,7 +231,6 @@ function ProductRowItem({ product, categoriesMap }: ProductRowItemProps) {
                         s.closedByDocument = false
                         return
                     }
-                    console.log(' bt - click , openValue =  ', isMenuOpen);
                     !isMenuOpen && setIsMenuOpen(true);
                 }} className="p-1.5 rounded-full text-gray-400 hover:bg-gray-100 hover:text-gray-600 focus:outline-none focus:ring-1 focus:ring-blue-500" aria-haspopup="true" aria-expanded={isMenuOpen} title={t('common.actions')} disabled={deleteProductMutation.isPending || updateProductMutation.isPending}>
                     <IoEllipsisVertical />

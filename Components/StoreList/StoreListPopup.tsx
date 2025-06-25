@@ -33,7 +33,6 @@ export function StoreListPopup({ onSelectStore }: StoreListPopupProps) {
             onSelectStore={onSelectStore} 
             newStoreRequire={()=>{
                openChild(<StoreCreationEditionWizard onSaveSuccess={(collected, mode) => {
-                     console.log('collected', mode, collected);
                      openChild(null)
                    }} onCancel={() => {
                      openChild(null)

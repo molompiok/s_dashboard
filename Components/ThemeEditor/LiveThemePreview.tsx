@@ -10,9 +10,12 @@ import { Check, Download, HardDrive, Save } from 'lucide-react';
 import { SpinnerIcon } from '../Confirm/Spinner';
 import { buttonStyle } from '../Button/Style';
 import { http, isProd } from '../Utils/functions';
+import { usePageContext } from '../../renderer/usePageContext';
+import { useAuthStore } from '../../api/stores/AuthStore';
 
 type PreviewDevice = 'mobile' | 'tablet' | 'desktop';
 
+const MapCache: Record<string/*dtotre_id-theme_id*/, string | undefined/*server_preview_url*/> = {};
 interface LiveThemePreviewProps {
     store: StoreInterface; // Store pour l'URL de base et contexte
     theme: ThemeInterface; // Thème pour info et ID potentiel
@@ -27,6 +30,7 @@ interface LiveThemePreviewProps {
 
 export function LiveThemePreview({ onSave, mode, isSaving, store, theme, settings, avalaibleWidth, onInstall, isInstalling }: LiveThemePreviewProps) {
     const { t } = useTranslation();
+    const { serverUrl } = usePageContext()
     const iframeRef = useRef<HTMLIFrameElement>(null);
     const [isLoadingIframe, setIsLoadingIframe] = useState(true);
     const [deviceView, setDeviceView] = useState<PreviewDevice>('mobile');
@@ -35,17 +39,41 @@ export function LiveThemePreview({ onSave, mode, isSaving, store, theme, setting
     // Clé pour forcer le re-rendu de l'iframe si postMessage n'est pas fiable
     const [iframeKey, setIframeKey] = useState(Date.now());
 
-    // --- URL de Preview ---
-    // Pointe vers la page preview dédiée OU l'URL réelle du store en mode spécial
-    // Pour S0/développement, pointer vers la page preview est plus simple
-    const previewUrl = useMemo(() => {
-        // Option 1: Page preview dédiée (plus simple pour démarrer)
-        // Ajouter un timestamp ou une clé changeante si on recharge l'iframe à chaque update
-        // return `${'http://piou2.sublymus-server.com/'}?storeId=${store.id}&themeId=${theme.id}&previewKey=${iframeKey}`;
-        // Option 2: URL réelle du store + paramètres
-        const baseUrl =`${http}${isProd?store.slug:'piou1'}.${isProd?'sublymus':'sublymus-server'}.com`;
-        return baseUrl;
-    }, [store.id, theme.id, iframeKey]); // iframeKey pour forcer le rechargement si postMessage échoue
+    const {getToken} = useAuthStore()
+    const [previewUrl, setPreviewUrl] = useState('');
+
+    console.log('-----------serverUrl-------->>>', serverUrl);
+    
+    useEffect(() => {
+        let server_preview_url = MapCache[`${store.id}-${theme.id}`]
+        if (!server_preview_url) {
+            (async () => {
+                try {
+                    const requestHeaders = new Headers({});
+                    const token = getToken()
+                    if (token) requestHeaders.set('Authorization', `Bearer ${token}`);
+                    requestHeaders.set('Content-Type', 'application/json');
+                    requestHeaders.set('Accept', 'application/json');
+
+                    const response = await fetch(`${http}server.${serverUrl}/v1/me/stores/${store.id}/theme-preview-sessions`, {
+                        method: 'POST',
+                        body: JSON.stringify({ theme_id: theme.id }),
+                        headers:requestHeaders
+                    })
+                    const res = await response.json()
+                    setPreviewUrl(res.preview_url||`${http}server.${serverUrl}`)
+                } catch (error) {
+                    setPreviewUrl(`${http}server.${serverUrl}`)
+                }
+            })()
+            return
+        }
+        setPreviewUrl(server_preview_url)
+    }, [store.id, theme.id])
+
+
+
+
 
     // --- Communication PostMessage ---
     // Fonction pour envoyer les settings à l'iframe
@@ -90,9 +118,6 @@ export function LiveThemePreview({ onSave, mode, isSaving, store, theme, setting
         setIsIframeReady(false);
     }, [previewUrl]);
 
-    console.log('previewUrl--->>>',previewUrl);
-    
-
     // --- Classes Tailwind pour l'iframe ---
     const iframeWidthClass = useMemo((): string => {
         switch (deviceView) {
@@ -111,9 +136,6 @@ export function LiveThemePreview({ onSave, mode, isSaving, store, theme, setting
             default: return 'h-full'; // Prend la hauteur dispo
         }
     }, [deviceView]);
-
-    console.log(avalaibleWidth);
-
 
     return (
         // Conteneur principal: flex flex-col h-full
@@ -202,7 +224,7 @@ export function LiveThemePreview({ onSave, mode, isSaving, store, theme, setting
                     className={`bg-white overflow-hidden transition-all duration-300 ease-in-out border-gray-400 ${iframeWidthClass} ${iframeHeightClass} ${isLoadingIframe ? 'opacity-0 scale-95' : 'opacity-100 scale-100'}`}
                     onLoad={handleIframeLoad}
                     onError={handleIframeError}
-                    sandbox="allow-scripts allow-same-origin" // Permissions Sandbox
+                    sandbox="allow-scripts allow-same-origin allow-forms allow-top-navigation-by-user-activation"
                 ></iframe>
             </div>
         </div >

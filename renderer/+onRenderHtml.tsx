@@ -25,13 +25,6 @@ const onRenderHtml: OnRenderHtmlAsync = async (pageContext): ReturnType<OnRender
   const serverUrlFromHeader = headersOriginal['x-server-url'] ;
   const serverApiFromHeader = headersOriginal['x-server-api-url'] || 'server.sublymus-server.com'
 
-
-  console.log({
-    serverUrl: (process.env.NODE_ENV == 'production' ? 'https://' : 'http://') + serverApiFromHeader,
-    apiUrl: apiUrlFromHeader,
-    server: serverUrlFromHeader,
-    serverApiFromHeader
-  });
   Data.serverUrl = serverApiFromHeader;
 
   // Alternatively, we can use an HTML stream, see https://vike.dev/streaming
@@ -49,8 +42,7 @@ const onRenderHtml: OnRenderHtmlAsync = async (pageContext): ReturnType<OnRender
   const desc = pageContext.data?.description || pageContext.config.description || 'Demo of using Vike'
   const lang = pageContext.headers?.['accept-language']?.includes('fr') ? 'fr' : 'en';
   await i18n.changeLanguage(lang);
-  console.log(pageContext.urlOriginal);
-
+ 
   // const logo = (pageContext.data as any)?.logoUrl || logoUrl
   const documentHtml = escapeInject`<!DOCTYPE html>
     <html lang="fr">

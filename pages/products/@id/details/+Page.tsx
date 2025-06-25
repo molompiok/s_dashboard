@@ -225,10 +225,7 @@ const DetailInfo = ({ detail, onSave, onCancel }: { detail: Partial<DetailInterf
   const fileType = getFileType(formState.view?.[0]);
   const viewUrl = localPreview ? getMedia({ isBackground: fileType == 'image', source: localPreview, from: 'local' }) : getMedia({ isBackground: fileType == 'image', source: formState.view?.[0], from: 'api' })
 
-
-  console.log({ formState, viewUrl, detail, fileType });
-
-
+  
   const showPlaceholder = !viewUrl
   const hasTitle = !!formState.title?.trim()
   const inputStyle = `
