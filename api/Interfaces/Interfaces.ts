@@ -1,6 +1,52 @@
 
 // api/Interfaces/Interfaces.ts
 
+import { UserBrowserSubscriptionInterface, UserNotificationContextSubscriptionInterface } from "../stores/NotificationManager";
+
+
+
+// ... (types existants pour les notifications) ...
+
+// Pour lister les appareils de l'utilisateur
+// Pas de params spécifiques, l'user_id vient du token
+export type ListUserDevicesResponse = UserBrowserSubscriptionInterface[]; // Directement un tableau
+
+// Pour mettre à jour le statut d'un appareil
+export interface UpdateDeviceStatusParams {
+  deviceId: string;
+  data: {
+    is_active: boolean;
+  };
+}
+export type UpdateDeviceStatusResponse = { message: string; device: UserBrowserSubscriptionInterface };
+
+// Pour supprimer un appareil
+export interface RemoveDeviceParams {
+  deviceId: string;
+}
+export type RemoveDeviceResponse = { message: string; isDeleted?: boolean };
+
+
+// Pour lister les contextes d'abonnement
+export interface ListContextSubscriptionsParams {
+  context_name?: string;
+  context_id?: string;
+  is_active?: boolean;
+  user_browser_subscription_id?: string;
+}
+export type ListContextSubscriptionsResponse = UserNotificationContextSubscriptionInterface[];
+
+// Pour se désabonner d'un contexte (on utilise l'ID de la souscription au contexte)
+export interface UnsubscribeFromContextParams {
+  subscriptionId: string;
+}
+export type UnsubscribeFromContextResponse = { message: string; isDeleted?: boolean };
+
+// Le type RegisterDevicePayload est déjà bien. On peut créer une réponse type.
+export type RegisterDeviceResponse = { message: string; device: UserBrowserSubscriptionInterface };
+
+// Le type SubscribeToContextPayload est déjà bien. On peut créer une réponse type.
+export type SubscribeToContextResponse = { message: string; subscription: UserNotificationContextSubscriptionInterface };
 export interface ReorderProductFaqItem {
   id: string; // ID de la FAQ
   index: number; // Nouvel index souhaité

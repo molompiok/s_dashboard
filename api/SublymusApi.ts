@@ -32,11 +32,23 @@ import type {
     UpdateProductCharacteristicParams, UpdateProductCharacteristicResponse,
     DeleteProductCharacteristicParams, DeleteProductCharacteristicResponse,
     ReorderProductFaqsParams,
-    ReorderProductFaqsResponse
+    ReorderProductFaqsResponse,
+    UnsubscribeFromContextParams,
+    UnsubscribeFromContextResponse,
+    ListContextSubscriptionsResponse,
+    ListContextSubscriptionsParams,
+    SubscribeToContextResponse,
+    RemoveDeviceResponse,
+    RemoveDeviceParams,
+    UpdateDeviceStatusParams,
+    UpdateDeviceStatusResponse,
+    ListUserDevicesResponse,
+    RegisterDeviceResponse
 } from './Interfaces/Interfaces'; // Adapter le chemin
 
 export { StatParamType, UserFilterType, CommandFilterType, Inventory }
 import logger from './Logger';
+import { PingNotificationParams, PingNotificationResponse, RegisterDevicePayload, SubscribeToContextPayload } from './stores/NotificationManager';
 type RequestOptions = {
     method?: 'GET' | 'POST' | 'PUT' | 'DELETE';
     headers?: HeadersInit;
@@ -396,6 +408,7 @@ export class SublymusApi {
     public debug: DebugApiNamespace;
     public store: StoreNamespace;
     public readonly theme: ThemeNamespace;
+    public notifications: NotificationsApiNamespace;
 
     constructor({ getAuthToken, serverUrl, storeApiUrl, t, handleUnauthorized }: { handleUnauthorized?: (action: 'api' | 'server', token?: string) => void, storeApiUrl?: string, serverUrl?: string, getAuthToken: () => string | undefined | null, t: (key: string, params?: any) => string }) {
 
@@ -413,6 +426,7 @@ export class SublymusApi {
         logger.info(`SublymusApi initialized with URL: ${this.storeApiUrl}`);
 
         // Initialiser les namespaces
+        
         this.store = new StoreNamespace(this)
         this.theme = new ThemeNamespace(this);
         this.authApi = new AuthApiNamespace(this);
@@ -435,6 +449,7 @@ export class SublymusApi {
         this.stats = new StatsApiNamespace(this);
         this.general = new GeneralApiNamespace(this);
         this.debug = new DebugApiNamespace(this);
+        this.notifications = new NotificationsApiNamespace(this);
     }
 
     // --- Méthodes Privées/Utilitaires ---
@@ -1661,5 +1676,83 @@ class DebugApiNamespace {
         return this._api._request('/v1/debug/scale-down', { method: 'GET' });
     }
 }
+
+
+// ==================================
+// == Namespace pour Notifications ==
+// ==================================
+class NotificationsApiNamespace {
+    private _api: SublymusApi;
+    constructor(apiInstance: SublymusApi) { this._api = apiInstance; }
+
+    /**
+     * Registers or updates a device/browser for push notifications.
+     * PUT /api/v1/notifications/device
+     */
+    registerDevice(payload: RegisterDevicePayload): Promise<RegisterDeviceResponse> {
+        
+        return this._api._request('/api/v1/notifications/device', { 
+            method: 'PUT', 
+            body: { subscription: payload } // Encapsuler dans un objet { subscription: ... }
+        });
+    }
+
+    /**
+     * Lists all registered devices for the authenticated user.
+     * GET /api/v1/notifications/devices
+     */
+    listDevices(): Promise<ListUserDevicesResponse> {
+        return this._api._request('/api/v1/notifications/devices', { method: 'GET' });
+    }
+
+    /**
+     * Updates the active status of a specific device for notifications.
+     * PUT /api/v1/notifications/devices/{deviceId}
+     */
+    updateDeviceStatus({ deviceId, data }: UpdateDeviceStatusParams): Promise<UpdateDeviceStatusResponse> {
+        return this._api._request(`/api/v1/notifications/devices/${deviceId}`, { method: 'PUT', body: data });
+    }
+
+    /**
+     * Removes a registered device for notifications.
+     * DELETE /api/v1/notifications/devices/{deviceId}
+     */
+    removeDevice({ deviceId }: RemoveDeviceParams): Promise<RemoveDeviceResponse> {
+        return this._api._request(`/api/v1/notifications/devices/${deviceId}`, { method: 'DELETE' });
+    }
+
+    /**
+     * Subscribes the user to notifications for a specific context.
+     * POST /api/v1/notifications/contexts
+     */
+    subscribeToContext(payload: SubscribeToContextPayload): Promise<SubscribeToContextResponse> {
+        return this._api._request('/api/v1/notifications/contexts', { method: 'POST', body: payload });
+    }
+
+    /**
+     * Lists context subscriptions for the authenticated user.
+     * GET /api/v1/notifications/contexts
+     */
+    listContextSubscriptions(params?: ListContextSubscriptionsParams): Promise<ListContextSubscriptionsResponse> {
+        return this._api._request('/api/v1/notifications/contexts', { method: 'GET', params });
+    }
+
+    /**
+     * Unsubscribes the user from a specific notification context subscription.
+     * DELETE /api/v1/notifications/contexts/{subscriptionId}
+     */
+    unsubscribeFromContext({ subscriptionId }: UnsubscribeFromContextParams): Promise<UnsubscribeFromContextResponse> {
+        return this._api._request(`/api/v1/notifications/contexts/${subscriptionId}`, { method: 'DELETE' });
+    }
+    
+    /**
+     * Sends a test push notification. (Admin only)
+     * POST /api/v1/notifications/ping-test
+     */
+    pingTest(params: PingNotificationParams): Promise<PingNotificationResponse> {
+        return this._api._request('/api/v1/notifications/ping-test', { method: 'POST', body: params });
+    }
+}
+
 
 // --- Fin de la classe et des namespaces --- 

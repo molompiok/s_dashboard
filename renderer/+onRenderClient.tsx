@@ -27,16 +27,15 @@ const onRenderClient: OnRenderClientAsync = async (pageContext): ReturnType<OnRe
   if (!container) throw new Error('DOM element #root not found')
   const currentStore = useGlobalStore.getState().getCurrentStore();
   
-  const serverUrl = ClientCall(function(){return window.location.origin.replace('dash','server')},'') ;
-  Data.serverUrl = pageContext.serverUrl ? (host + 'server.' + pageContext.serverUrl ) : serverUrl
-  Data.apiUrl = currentStore?.api_url && (host+ currentStore.api_url); 
+  Data.serverUrl = pageContext.serverUrl;
+  Data.serverApiUrl = pageContext.serverApiUrl ;
+  Data.apiUrl = currentStore?.default_domain ; 
  
-
   
   const page = (
     <SublymusApiProvider
       storeApiUrl={Data.apiUrl}
-      mainServerUrl={Data.serverUrl}
+      mainServerUrl={Data.serverApiUrl}
       getAuthToken={getToken}
       handleUnauthorized={(action) => {
         console.warn('handleUnauthorized', action);

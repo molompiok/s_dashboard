@@ -9,13 +9,13 @@ import ClipLoader from 'react-spinners/ClipLoader';
 import { Check, Download, HardDrive, Save } from 'lucide-react';
 import { SpinnerIcon } from '../Confirm/Spinner';
 import { buttonStyle } from '../Button/Style';
-import { http, isProd } from '../Utils/functions';
+import { http, isProd, prefixServerUrl } from '../Utils/functions';
 import { usePageContext } from '../../renderer/usePageContext';
 import { useAuthStore } from '../../api/stores/AuthStore';
 
 type PreviewDevice = 'mobile' | 'tablet' | 'desktop';
 
-const MapCache: Record<string/*dtotre_id-theme_id*/, string | undefined/*server_preview_url*/> = {};
+const MapCache: Record<string/*dtotre_id-theme_id*/, { expire: number, server_preview_url: string | undefined }> = {};
 interface LiveThemePreviewProps {
     store: StoreInterface; // Store pour l'URL de base et contexte
     theme: ThemeInterface; // Thème pour info et ID potentiel
@@ -30,7 +30,7 @@ interface LiveThemePreviewProps {
 
 export function LiveThemePreview({ onSave, mode, isSaving, store, theme, settings, avalaibleWidth, onInstall, isInstalling }: LiveThemePreviewProps) {
     const { t } = useTranslation();
-    const { serverUrl } = usePageContext()
+    let { serverUrl,serverApiUrl } = usePageContext()
     const iframeRef = useRef<HTMLIFrameElement>(null);
     const [isLoadingIframe, setIsLoadingIframe] = useState(true);
     const [deviceView, setDeviceView] = useState<PreviewDevice>('mobile');
@@ -39,14 +39,21 @@ export function LiveThemePreview({ onSave, mode, isSaving, store, theme, setting
     // Clé pour forcer le re-rendu de l'iframe si postMessage n'est pas fiable
     const [iframeKey, setIframeKey] = useState(Date.now());
 
-    const {getToken} = useAuthStore()
+    const { getToken } = useAuthStore()
     const [previewUrl, setPreviewUrl] = useState('');
 
-    console.log('-----------serverUrl-------->>>', serverUrl);
     
     useEffect(() => {
-        let server_preview_url = MapCache[`${store.id}-${theme.id}`]
-        if (!server_preview_url) {
+        if (!serverUrl) {
+            serverUrl = localStorage.getItem('server-url') || '';
+        } else {
+            localStorage.setItem('server-url', serverUrl)
+        }
+
+        let previewCaheData = MapCache[`${store.id}-${theme.id}`]
+        const prefixedPreview = prefixServerUrl('preview')||'no-server-found';
+
+        if (!previewCaheData || previewCaheData.expire < Date.now()) {
             (async () => {
                 try {
                     const requestHeaders = new Headers({});
@@ -55,24 +62,27 @@ export function LiveThemePreview({ onSave, mode, isSaving, store, theme, setting
                     requestHeaders.set('Content-Type', 'application/json');
                     requestHeaders.set('Accept', 'application/json');
 
-                    const response = await fetch(`${http}server.${serverUrl}/v1/me/stores/${store.id}/theme-preview-sessions`, {
+                    const response = await fetch(`${serverApiUrl}/v1/me/stores/${store.id}/theme-preview-sessions`, {
                         method: 'POST',
                         body: JSON.stringify({ theme_id: theme.id }),
-                        headers:requestHeaders
+                        headers: requestHeaders,
+                        credentials: 'include'
                     })
                     const res = await response.json()
-                    setPreviewUrl(res.preview_url||`${http}server.${serverUrl}`)
+                    const url = res.preview_url || prefixedPreview;
+                    MapCache[`${store.id}-${theme.id}`] = {
+                        expire: Date.now() + 10 * 60 * 60 * 1000, // 10 min
+                        server_preview_url: url
+                    }
+                    setPreviewUrl(url)
                 } catch (error) {
-                    setPreviewUrl(`${http}server.${serverUrl}`)
+                    setPreviewUrl(prefixedPreview)
                 }
             })()
             return
         }
-        setPreviewUrl(server_preview_url)
+        setPreviewUrl(previewCaheData.server_preview_url || prefixedPreview)
     }, [store.id, theme.id])
-
-
-
 
 
     // --- Communication PostMessage ---

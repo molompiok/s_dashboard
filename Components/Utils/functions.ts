@@ -1,5 +1,6 @@
 //Components/Utils/functions.ts
 import { ProductInterface, ValueInterface } from "../../api/Interfaces/Interfaces";
+import { Data } from "../../renderer/AppStore/Data";
 
 export {
   ClientCall,
@@ -16,6 +17,10 @@ export {
 
 export const isProd = process.env.NODE_ENV === 'production';
 export const http = isProd ? 'https://' : 'http://' 
+
+ export const prefixServerUrl = (prefix:string)=>{
+   return Data.serverUrl?.replace('://', `://${prefix}.`);
+}
 
 function getId(id: string | undefined = '') {
   return '#' + id.substring(0, id.indexOf('-'))

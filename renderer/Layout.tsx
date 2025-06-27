@@ -24,8 +24,8 @@ import { Toaster } from 'react-hot-toast';
 import { useMyLocation } from '../Hooks/useRepalceState';
 import { useAuthStore } from '../api/stores/AuthStore';
 import { useAppZust } from './AppStore/appZust';
-import { useGetMe } from '../api/ReactSublymusApi';
-
+import { useApi, useGetMe } from '../api/ReactSublymusApi';
+import { notificationManager } from '../api/stores/NotificationManager';
 const urlHideSideBar = ['/auth', '/profile', '/setting', '/themes', '/settings']
 
 
@@ -100,6 +100,18 @@ function Layout({ children, pageContext }: { children: React.ReactNode; pageCont
   // const toggleSidebar = () => {
   //   setSideLeft(!sideLeft);
   // };
+
+
+  const api = useApi(); // Obtient l'instance de SublymusApi du provider
+
+  // Initialiser le NotificationManager avec l'instance API
+  useEffect(() => {
+    if (api) {
+      notificationManager.setApi(api);
+      // Tu pourrais aussi appeler notificationManagerInstance.initialize() ici
+      // si tu veux t'assurer que le SW est prêt plus tôt, mais il s'auto-initialise.
+    }
+  }, [api]);
 
 
   return (

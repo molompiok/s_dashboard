@@ -129,6 +129,7 @@ function Page() {
         setContentWidth(rect?.width || contentWidth);
     }, [size.width, isSidebarOverlayVisible])
 
+    
     return (
         <div className="w-full min-h-screen flex flex-col ">
             <Topbar back={true} breadcrumbs={breadcrumbs} title={t('themesMarket.pageTitle')} />

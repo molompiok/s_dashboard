@@ -55,11 +55,13 @@ const useGlobalStore = create(combine({
     },
     getCurrentStore() {
         let c = get().currentStore;
+        c && (Data.apiUrl =  c?.api_url)
         if (c) return c
         try {
             const a = localStorage.getItem('current_store');
             c = a && JSON.parse(a);
-            set(() => ({ currentStore: c }));
+            c && set(() => ({ currentStore: c }));
+            c && (Data.apiUrl =  c?.api_url)
             return c
         } catch (error) { }
         return 

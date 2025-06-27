@@ -69,7 +69,7 @@ import {
 import { useAuthStore } from './stores/AuthStore'; // Pour le token
 import { useGlobalStore } from './stores/StoreStore'; // Pour l'URL du store
 import logger from './Logger';
-import { BaseStatsParams, CommentInterface, FeatureInterface, ForgotPasswordParams, KpiStatsResponse, OrderStatsIncludeOptions, OrderStatsResponse, ReorderProductFaqsParams, ReorderProductFaqsResponse, ResetPasswordParams, SetupAccountParams, SetupAccountResponse, VisitStatsIncludeOptions, VisitStatsResponse } from './Interfaces/Interfaces';
+import { BaseStatsParams, CommentInterface, FeatureInterface, ForgotPasswordParams, KpiStatsResponse, ListContextSubscriptionsParams, ListContextSubscriptionsResponse, ListUserDevicesResponse, OrderStatsIncludeOptions, OrderStatsResponse, RegisterDeviceResponse, RemoveDeviceParams, RemoveDeviceResponse, ReorderProductFaqsParams, ReorderProductFaqsResponse, ResetPasswordParams, SetupAccountParams, SetupAccountResponse, SubscribeToContextResponse, UnsubscribeFromContextParams, UnsubscribeFromContextResponse, UpdateDeviceStatusParams, UpdateDeviceStatusResponse, VisitStatsIncludeOptions, VisitStatsResponse } from './Interfaces/Interfaces';
 import { useTranslation } from 'react-i18next';
 import { usePageContext } from '../renderer/usePageContext';
 import {
@@ -87,6 +87,7 @@ import {
     DeleteProductCharacteristicParams, DeleteProductCharacteristicResponse,
     ProductCharacteristicInterface 
 } from  './Interfaces/Interfaces'
+import { RegisterDevicePayload, SubscribeToContextPayload, UserBrowserSubscriptionInterface, UserNotificationContextSubscriptionInterface } from './stores/NotificationManager';
 
 async function waitHere(millis: number) {
     await new Promise((rev) => setTimeout(() => rev(0), millis))
@@ -2029,6 +2030,144 @@ export const useGlobalSearch = (
         queryFn: () => api.general.globalSearch(params),
         enabled: !!params.text && (options.enabled !== undefined ? options.enabled : true), // Activer seulement si texte
         staleTime: 1 * 60 * 1000, // Cache court
+    });
+};
+
+
+// ==================================
+// == Hooks pour Notifications     ==
+// ==================================
+
+const NOTIFICATIONS_QUERY_KEYS = {
+    devices: ['notificationDevices'] as const, // Liste des appareils de l'utilisateur
+    deviceDetails: (deviceId: string) => [...NOTIFICATIONS_QUERY_KEYS.devices, deviceId] as const,
+    contextSubscriptions: (params?: ListContextSubscriptionsParams) => ['notificationContextSubscriptions', params || {}] as const,
+    contextSubscriptionDetails: (subId: string) => [...NOTIFICATIONS_QUERY_KEYS.contextSubscriptions(), subId] as const,
+};
+
+/**
+ * Hook pour enregistrer ou mettre à jour un appareil pour les notifications.
+ */
+export const useRegisterDevice = (): UseMutationResult<RegisterDeviceResponse, ApiError, RegisterDevicePayload> => {
+    const api = useApi();
+    return useMutation<RegisterDeviceResponse, ApiError, RegisterDevicePayload>({
+        mutationFn: (payload) => api.notifications.registerDevice(payload),
+        onSuccess: (data) => {
+            logger.info("Device registered/updated for notifications successfully", data.device);
+            // Invalider la liste des appareils pour la rafraîchir
+            queryClient.invalidateQueries({ queryKey: NOTIFICATIONS_QUERY_KEYS.devices } as InvalidateQueryFilters);
+        },
+        onError: (error) => {
+            logger.error({ error }, "Failed to register/update device for notifications");
+        }
+    });
+};
+
+/**
+ * Hook pour lister les appareils enregistrés de l'utilisateur.
+ */
+export const useListUserDevices = (
+    options: { enabled?: boolean } = {}
+): UseQueryResult<ListUserDevicesResponse, ApiError> => {
+    const api = useApi();
+    return useQuery<ListUserDevicesResponse, ApiError>({
+        queryKey: NOTIFICATIONS_QUERY_KEYS.devices,
+        queryFn: () => api.notifications.listDevices(),
+        enabled: options.enabled !== undefined ? options.enabled : true,
+        staleTime: 5 * 60 * 1000, // Les appareils changent moins fréquemment
+    });
+};
+
+/**
+ * Hook pour mettre à jour le statut (actif/inactif) d'un appareil.
+ */
+export const useUpdateDeviceStatus = (): UseMutationResult<UpdateDeviceStatusResponse, ApiError, UpdateDeviceStatusParams> => {
+    const api = useApi();
+    return useMutation<UpdateDeviceStatusResponse, ApiError, UpdateDeviceStatusParams>({
+        mutationFn: (params) => api.notifications.updateDeviceStatus(params),
+        onSuccess: (data, variables) => {
+            logger.info("Device notification status updated", data.device);
+            // Mettre à jour le cache de la liste des appareils
+            queryClient.setQueryData<UserBrowserSubscriptionInterface[]>(NOTIFICATIONS_QUERY_KEYS.devices, (oldData) =>
+                oldData?.map(device => device.id === variables.deviceId ? data.device : device) || []
+            );
+        },
+        onError: (error) => {
+            logger.error({ error }, "Failed to update device status");
+        }
+    });
+};
+
+/**
+ * Hook pour supprimer un appareil enregistré.
+ */
+export const useRemoveDevice = (): UseMutationResult<RemoveDeviceResponse, ApiError, RemoveDeviceParams> => {
+    const api = useApi();
+    return useMutation<RemoveDeviceResponse, ApiError, RemoveDeviceParams>({
+        mutationFn: (params) => api.notifications.removeDevice(params),
+        onSuccess: (data, variables) => {
+            logger.info("Device removed from notifications", { deviceId: variables.deviceId });
+            // Mettre à jour le cache de la liste des appareils
+            queryClient.setQueryData<UserBrowserSubscriptionInterface[]>(NOTIFICATIONS_QUERY_KEYS.devices, (oldData) =>
+                oldData?.filter(device => device.id !== variables.deviceId) || []
+            );
+        },
+        onError: (error) => {
+            logger.error({ error }, "Failed to remove device");
+        }
+    });
+};
+
+/**
+ * Hook pour s'abonner à un contexte de notification.
+ */
+export const useSubscribeToContext = (): UseMutationResult<SubscribeToContextResponse, ApiError, SubscribeToContextPayload> => {
+    const api = useApi();
+    return useMutation<SubscribeToContextResponse, ApiError, SubscribeToContextPayload>({
+        mutationFn: (payload) => api.notifications.subscribeToContext(payload),
+        onSuccess: (data) => {
+            logger.info("Subscribed to notification context", data.subscription);
+            queryClient.invalidateQueries({ queryKey: NOTIFICATIONS_QUERY_KEYS.contextSubscriptions() }as InvalidateQueryFilters);
+        },
+        onError: (error) => {
+            logger.error({ error }, "Failed to subscribe to notification context");
+        }
+    });
+};
+
+/**
+ * Hook pour lister les abonnements aux contextes de l'utilisateur.
+ */
+export const useListContextSubscriptions = (
+    params: ListContextSubscriptionsParams = {},
+    options: { enabled?: boolean } = {}
+): UseQueryResult<ListContextSubscriptionsResponse, ApiError> => {
+    const api = useApi();
+    return useQuery<ListContextSubscriptionsResponse, ApiError>({
+        queryKey: NOTIFICATIONS_QUERY_KEYS.contextSubscriptions(params),
+        queryFn: () => api.notifications.listContextSubscriptions(params),
+        enabled: options.enabled !== undefined ? options.enabled : true,
+    });
+};
+
+/**
+ * Hook pour se désabonner d'un contexte de notification.
+ */
+export const useUnsubscribeFromContext = (): UseMutationResult<UnsubscribeFromContextResponse, ApiError, UnsubscribeFromContextParams> => {
+    const api = useApi();
+    return useMutation<UnsubscribeFromContextResponse, ApiError, UnsubscribeFromContextParams>({
+        mutationFn: (params) => api.notifications.unsubscribeFromContext(params),
+        onSuccess: (data, variables) => {
+            logger.info("Unsubscribed from notification context", { subscriptionId: variables.subscriptionId });
+            // Mettre à jour le cache de la liste des contextes
+            queryClient.setQueryData<UserNotificationContextSubscriptionInterface[]>(
+                NOTIFICATIONS_QUERY_KEYS.contextSubscriptions(), // Clé de base de la liste
+                (oldData) => oldData?.filter(sub => sub.id !== variables.subscriptionId) || []
+            );
+        },
+        onError: (error) => {
+            logger.error({ error }, "Failed to unsubscribe from notification context");
+        }
     });
 };
 

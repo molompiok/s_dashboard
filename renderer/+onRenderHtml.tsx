@@ -23,9 +23,10 @@ const onRenderHtml: OnRenderHtmlAsync = async (pageContext): ReturnType<OnRender
   const baseUrlFromHeader = headersOriginal['x-base-url'];
   const apiUrlFromHeader = headersOriginal['x-target-api-service'];
   const serverUrlFromHeader = headersOriginal['x-server-url'] ;
-  const serverApiFromHeader = headersOriginal['x-server-api-url'] || 'server.sublymus-server.com'
+  const serverApiFromHeader = headersOriginal['x-server-api-url'] || 'http://server.sublymus-server.com'
 
-  Data.serverUrl = serverApiFromHeader;
+  Data.serverApiUrl = serverApiFromHeader;
+  Data.serverUrl = serverUrlFromHeader;
 
   // Alternatively, we can use an HTML stream, see https://vike.dev/streaming
   const pageHtml = ReactDOMServer.renderToString(
@@ -66,6 +67,7 @@ const onRenderHtml: OnRenderHtmlAsync = async (pageContext): ReturnType<OnRender
       lang,
       baseUrl: baseUrlFromHeader,
       serverUrl: serverUrlFromHeader,
+      serverApiUrl: serverApiFromHeader,
       apiUrl: apiUrlFromHeader,
     }
   }

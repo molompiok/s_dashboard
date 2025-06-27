@@ -1,8 +1,9 @@
 import { ClientCall } from "../../Components/Utils/functions";
 
 export const Data = {
-    serverUrl: ClientCall(function(){return window.location.origin.replace('dash','server')}) as string |undefined,
+    serverUrl: '',
     baseUrl:'' as string |undefined,
+    serverApiUrl:'' as string |undefined,
     apiUrl:'' as string |undefined,
 }
 export const host = (process.env.NODE_ENV == 'production' ? 'https://' : 'http://') ;

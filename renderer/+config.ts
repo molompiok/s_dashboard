@@ -5,7 +5,13 @@ export default {
   // https://vike.dev/clientRouting
   clientRouting: true,
 
-  passToClient: ['pageProps', 'baseUrl', 'lang', 'apiUrl', 'serverUrl','server'],
+  passToClient: [
+    'pageProps', 
+    'baseUrl', 
+    'lang', 
+    'apiUrl', 
+    'serverUrl',
+    'serverApiUrl'],
  
   // https://vike.dev/meta
   meta: {

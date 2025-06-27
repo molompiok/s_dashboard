@@ -67,7 +67,7 @@ function Page() {
     useEffect(() => {
         if (!currentStore?.api_url || !command_id) return;
         const transmit = getTransmit(currentStore.api_url);
-        const channel = `store/${Data.apiUrl}/update_command`;
+        const channel = `store/${currentStore.api_url}/update_command`;
         const subscription = transmit?.subscription(channel);
         async function subscribe() {
             if (!subscription) return;

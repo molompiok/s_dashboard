@@ -43,6 +43,7 @@ declare global {
 
       // App urls
       serverUrl: string,
+      serverApiUrl:string,
       apiUrl: string,
       baseUrl:string
     }

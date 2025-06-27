@@ -20,7 +20,7 @@ export const getMedia = ({ size = 'cover', host, from, isBackground, source }: {
 
     const _host = from == 'api' ?
         Data.apiUrl :
-        from == 'server' ? `${Data.serverUrl}` : ''
+        from == 'server' ? `${Data.serverApiUrl}` : ''
     const url = `${(
         _source?.startsWith('/') ? (host || _host || ''):''
     )
