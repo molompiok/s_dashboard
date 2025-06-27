@@ -47,6 +47,9 @@ export type RegisterDeviceResponse = { message: string; device: UserBrowserSubsc
 
 // Le type SubscribeToContextPayload est déjà bien. On peut créer une réponse type.
 export type SubscribeToContextResponse = { message: string; subscription: UserNotificationContextSubscriptionInterface };
+
+// -----------------------------------------------------
+
 export interface ReorderProductFaqItem {
   id: string; // ID de la FAQ
   index: number; // Nouvel index souhaité

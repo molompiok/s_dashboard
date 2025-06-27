@@ -87,7 +87,7 @@ import {
     DeleteProductCharacteristicParams, DeleteProductCharacteristicResponse,
     ProductCharacteristicInterface 
 } from  './Interfaces/Interfaces'
-import { RegisterDevicePayload, SubscribeToContextPayload, UserBrowserSubscriptionInterface, UserNotificationContextSubscriptionInterface } from './stores/NotificationManager';
+import { PingNotificationParams, PingNotificationResponse, RegisterDevicePayload, SubscribeToContextPayload, UserBrowserSubscriptionInterface, UserNotificationContextSubscriptionInterface } from './stores/NotificationManager';
 
 async function waitHere(millis: number) {
     await new Promise((rev) => setTimeout(() => rev(0), millis))
@@ -2171,6 +2171,18 @@ export const useUnsubscribeFromContext = (): UseMutationResult<UnsubscribeFromCo
     });
 };
 
+export const usePingTestNotification = (): UseMutationResult<PingNotificationResponse, ApiError, PingNotificationParams> => {
+    const api = useApi();
+    return useMutation<PingNotificationResponse, ApiError, PingNotificationParams>({
+        mutationFn: (params) => api.notifications.pingTest(params),
+        onSuccess: (data) => {
+            console.log("Ping notification sent successfully:", data.message);
+        },
+        onError: (error) => {
+            console.error("Failed to send ping notification:", error);
+        }
+    });
+};
 
 // ======================
 // == Namespace Debug  ==

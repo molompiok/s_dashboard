@@ -18,6 +18,7 @@ import { showErrorToast, showToast } from '../../Components/Utils/toastNotificat
 import { useAuthStore } from '../../api/stores/AuthStore';
 import { navigate } from 'vike/client/router';
 import { StateDisplay } from '../../Components/StateDisplay/StateDisplay';
+import { buttonStyle } from '../../Components/Button/Style';
 
 export { Page };
 
@@ -28,14 +29,12 @@ type PasswordFormState = { current_password?: string; password?: string; passwor
 const labelStyle = "block text-sm font-medium text-gray-700 dark:text-gray-300";
 const inputStyle = "pl-4 block w-full rounded-lg shadow-sm border-gray-300 focus:border-teal-500 focus:ring-teal-500 dark:bg-gray-800/50 dark:border-gray-600 dark:text-gray-200 dark:placeholder-gray-500 sm:text-sm h-10 transition-colors";
 const inputErrorStyle = "border-red-500 ring-red-500 focus:border-red-500 focus:ring-red-500";
-const primaryButtonStyle = "inline-flex justify-center rounded-lg border border-transparent bg-teal-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:ring-offset-2 dark:focus:ring-offset-gray-900 disabled:opacity-50 disabled:cursor-not-allowed transition-colors";
-
+const primaryButtonStyle = buttonStyle
 function Page() {
     const { t, i18n } = useTranslation();
     const { openChild } = useChildViewer();
     const { setUser, setToken } = useAuthStore();
-    const { setCurrentStore } = useGlobalStore();
-
+    
     // --- Récupération Données Utilisateur ---
     const { data: meData, isLoading: isLoadingMe, isError: isMeError, error: meError } = useGetMe({
         // Activer seulement si on pense être connecté (vérifier token?)
@@ -289,10 +288,7 @@ function Page() {
     };
 
 
-    if (isLoadingMe || !currentUser) {
-        return <ProfilePageSkeleton />;
-    }
-
+    
     // 2. État d'Erreur Critique (Erreur API ou Utilisateur non trouvé)
     // Si la requête `useGetMe` échoue ou ne renvoie pas d'utilisateur,
     // c'est que la session est probablement invalide. On ne peut pas continuer.
@@ -329,7 +325,7 @@ function Page() {
     // 3. Cas particulier (non géré par l'API mais possible) : Compte Banni/Désactivé
     // Si votre API renvoie un utilisateur avec un statut 'BANNED' ou 'INACTIVE',
     // vous pouvez le gérer ici comme une erreur d'accès.
-    if (currentUser.status === 'BANNED') {
+    if (currentUser?.status === 'BANNED') {
         return (
             <div className="w-full min-h-screen flex flex-col">
                 <Topbar back={true} title={t('profilePage.title')} />
@@ -350,6 +346,9 @@ function Page() {
         )
     }
 
+    if (isLoadingMe || !currentUser) {
+        return <ProfilePageSkeleton />;
+    }
 
     const avatarUrl = avatarPreview ?? (currentUser.photo?.[0] ? getMedia({ source: currentUser.photo[0], from: 'server' }) : null);
 

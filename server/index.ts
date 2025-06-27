@@ -44,7 +44,7 @@ async function startServer() {
   }
 
   app.get('/health', async (_req, res) => {
-    res.status(200).json({ok:true});
+    res.status(200).json({ ok: true });
     return
   });
 
@@ -54,10 +54,26 @@ async function startServer() {
     const url = localDir + "/public" + req.originalUrl;
     return res.sendFile(url);
   });
+  app.get("/worker.js", async (req, res) => {
+    const url = localDir + "/public/worker.js";
+    // res.setHeader('Service-Worker-Allowed', '/');
+    return res.sendFile(url);
+  });
+
   app.get('*', async (req, res) => {
+    const headersOriginal = req.headers as Record<string, string> || {};
+    
+    const baseUrlFromHeader = headersOriginal['x-base-url']
+    const serverUrlFromHeader = headersOriginal['x-server-url']||'http://sublymus-server.com';
+    const serverApiFromHeader = headersOriginal['x-server-api-url'] || 'http://server.sublymus-server.com'
+
     const pageContextInit = {
       urlOriginal: req.originalUrl,
-      headersOriginal: req.headers
+      headersOriginal: req.headers,
+      VITE_PUBLIC_VAPID_KEY: process.env.VITE_PUBLIC_VAPID_KEY,
+      baseUrl: baseUrlFromHeader,
+      serverUrl: serverUrlFromHeader,
+      serverApiUrl: serverApiFromHeader,
     }
     const pageContext = await renderPage(pageContextInit)
     if (pageContext.errorWhileRendering) {
@@ -72,7 +88,7 @@ async function startServer() {
 
   const port = process.env.PORT || 3005
   const server = app.listen(port)
-  
+
   const loadMonitoring = new LoadMonitorService({
     bullmqQueue: getServerQueue(),
     logger: logger,

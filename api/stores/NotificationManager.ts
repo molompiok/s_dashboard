@@ -23,14 +23,6 @@ export interface PushPayloadInterface {
   options: PushPayloadOptionsInterface;
 }
 
-export interface PingNotificationParams {
-  user_id: string;
-  payload: PushPayloadInterface;
-  context?: {
-    name: string;
-    id: string;
-  } | null;
-}
 
 export type PingNotificationResponse = {
   success: boolean;
@@ -85,10 +77,24 @@ export interface SubscribeToContextPayload {
     is_active?: boolean; // Optionnel, défaut à true
 }
 
-// themes/mono/services/Notifi
-// La clé VAPID publique doit être accessible ici
-// Idéalement, la passer via une variable d'environnement du build Vite (VITE_PUBLIC_VAPID_KEY)
-const PUBLIC_VAPID_KEY = import.meta.env.VITE_PUBLIC_VAPID_KEY || 'BDwYyNLBYIyNOBFX3M27uTAUXLrUxgHVyBJPjxJj3aQR7ghxC_MetHpzgTspdk4e4Iq9E0LCzeAtbCPOcdclxCk';
+export interface PingNotificationParams {
+  user_id: string;
+  payload: {
+    title: string;
+    options: {
+      body?: string;
+      icon?: string;
+      image?: string;
+      tag?: string;
+      data?: { url?: string };
+      actions?: { action: string; title: string; url?: string }[];
+    };
+  };
+  context?: {
+    name: string;
+    id: string;
+  } | null;
+}
 
 function urlBase64ToUint8Array(base64String: string) {
   const padding = '='.repeat((4 - base64String.length % 4) % 4);
@@ -111,19 +117,15 @@ class NotificationManager {
   }
 
   public async initialize(): Promise<void> {
-    if (typeof window === 'undefined' || !('serviceWorker' in navigator) || this.isInitializing) {
+    console.log('---- est ce qu\'on rentre ici -1');
+    if (typeof window === 'undefined' || !('serviceWorker' in navigator) ) {
       return;
     }
+    console.log('---- est ce qu\'on rentre ici -2');
     this.isInitializing = true;
-    console.log('[NotificationManager] Initializing...');
+    console.log('[NotificationManager] Initializing...',);
     try {
-      this.serviceWorkerRegistration = await navigator.serviceWorker.ready; // Attend que le SW soit actif
-      if (this.serviceWorkerRegistration) {
-        console.log('[NotificationManager] Service Worker is ready.');
-      } else {
-        // Tenter de l'enregistrer s'il n'est pas prêt (peut arriver au premier chargement)
-        this.serviceWorkerRegistration = await this.registerServiceWorker();
-      }
+      this.serviceWorkerRegistration = await this.registerServiceWorker();
     } catch (error) {
         console.error('[NotificationManager] Error during SW ready/registration:', error);
     } finally {
@@ -140,6 +142,7 @@ class NotificationManager {
       console.warn('[NotificationManager] Service Worker not supported.');
       return null;
     }
+    
     try {
       const registration = await navigator.serviceWorker.register('/worker.js', { scope: '/' });
       console.log('[NotificationManager] Service Worker registered successfully.');
@@ -193,7 +196,7 @@ class NotificationManager {
    * S'abonne (ou se réabonne) et envoie/met à jour l'abonnement sur le serveur.
    * Retourne true en cas de succès, false sinon.
    */
-  public async subscribeAndSync(): Promise<boolean> {
+  public async subscribeAndSync(PUBLIC_VAPID_KEY:string): Promise<boolean> {
     if (!this.api) {
       console.error('[NotificationManager] API not set. Cannot sync subscription.');
       return false;
@@ -224,9 +227,9 @@ class NotificationManager {
       }
       
       // Envoyer l'abonnement (nouveau ou existant) au serveur
-      await this.api.notifications.registerDevice({ 
-        subscription.endpoint,
-       });
+      console.log('########################',subscription.toJSON() as any);
+      
+      await this.api.notifications.registerDevice(subscription.toJSON() as any);
       console.log('[NotificationManager] Push Subscription synced with server.');
       return true;
 

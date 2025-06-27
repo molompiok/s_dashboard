@@ -11,7 +11,9 @@ export default {
     'lang', 
     'apiUrl', 
     'serverUrl',
-    'serverApiUrl'],
+    'serverApiUrl',
+    'VITE_PUBLIC_VAPID_KEY'
+  ],
  
   // https://vike.dev/meta
   meta: {

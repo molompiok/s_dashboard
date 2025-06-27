@@ -45,7 +45,8 @@ declare global {
       serverUrl: string,
       serverApiUrl:string,
       apiUrl: string,
-      baseUrl:string
+      baseUrl:string,
+      VITE_PUBLIC_VAPID_KEY:string
     }
   }
 }

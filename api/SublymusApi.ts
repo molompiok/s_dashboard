@@ -1687,11 +1687,11 @@ class NotificationsApiNamespace {
 
     /**
      * Registers or updates a device/browser for push notifications.
-     * PUT /api/v1/notifications/device
+     * PUT /v1/notifications/device
      */
     registerDevice(payload: RegisterDevicePayload): Promise<RegisterDeviceResponse> {
         
-        return this._api._request('/api/v1/notifications/device', { 
+        return this._api._request('/v1/notifications/device', { 
             method: 'PUT', 
             body: { subscription: payload } // Encapsuler dans un objet { subscription: ... }
         });
@@ -1699,58 +1699,58 @@ class NotificationsApiNamespace {
 
     /**
      * Lists all registered devices for the authenticated user.
-     * GET /api/v1/notifications/devices
+     * GET /v1/notifications/devices
      */
     listDevices(): Promise<ListUserDevicesResponse> {
-        return this._api._request('/api/v1/notifications/devices', { method: 'GET' });
+        return this._api._request('/v1/notifications/devices', { method: 'GET' });
     }
 
     /**
      * Updates the active status of a specific device for notifications.
-     * PUT /api/v1/notifications/devices/{deviceId}
+     * PUT /v1/notifications/devices/{deviceId}
      */
     updateDeviceStatus({ deviceId, data }: UpdateDeviceStatusParams): Promise<UpdateDeviceStatusResponse> {
-        return this._api._request(`/api/v1/notifications/devices/${deviceId}`, { method: 'PUT', body: data });
+        return this._api._request(`/v1/notifications/devices/${deviceId}`, { method: 'PUT', body: data });
     }
 
     /**
      * Removes a registered device for notifications.
-     * DELETE /api/v1/notifications/devices/{deviceId}
+     * DELETE /v1/notifications/devices/{deviceId}
      */
     removeDevice({ deviceId }: RemoveDeviceParams): Promise<RemoveDeviceResponse> {
-        return this._api._request(`/api/v1/notifications/devices/${deviceId}`, { method: 'DELETE' });
+        return this._api._request(`/v1/notifications/devices/${deviceId}`, { method: 'DELETE' });
     }
 
     /**
      * Subscribes the user to notifications for a specific context.
-     * POST /api/v1/notifications/contexts
+     * POST /v1/notifications/contexts
      */
     subscribeToContext(payload: SubscribeToContextPayload): Promise<SubscribeToContextResponse> {
-        return this._api._request('/api/v1/notifications/contexts', { method: 'POST', body: payload });
+        return this._api._request('/v1/notifications/contexts', { method: 'POST', body: payload });
     }
 
     /**
      * Lists context subscriptions for the authenticated user.
-     * GET /api/v1/notifications/contexts
+     * GET /v1/notifications/contexts
      */
     listContextSubscriptions(params?: ListContextSubscriptionsParams): Promise<ListContextSubscriptionsResponse> {
-        return this._api._request('/api/v1/notifications/contexts', { method: 'GET', params });
+        return this._api._request('/v1/notifications/contexts', { method: 'GET', params });
     }
 
     /**
      * Unsubscribes the user from a specific notification context subscription.
-     * DELETE /api/v1/notifications/contexts/{subscriptionId}
+     * DELETE /v1/notifications/contexts/{subscriptionId}
      */
     unsubscribeFromContext({ subscriptionId }: UnsubscribeFromContextParams): Promise<UnsubscribeFromContextResponse> {
-        return this._api._request(`/api/v1/notifications/contexts/${subscriptionId}`, { method: 'DELETE' });
+        return this._api._request(`/v1/notifications/contexts/${subscriptionId}`, { method: 'DELETE' });
     }
     
     /**
      * Sends a test push notification. (Admin only)
-     * POST /api/v1/notifications/ping-test
+     * POST /v1/notifications/ping-test
      */
     pingTest(params: PingNotificationParams): Promise<PingNotificationResponse> {
-        return this._api._request('/api/v1/notifications/ping-test', { method: 'POST', body: params });
+        return this._api._request('/v1/notifications/ping-test', { method: 'POST', body: params });
     }
 }
 

@@ -4,26 +4,28 @@ import { useAuthStore } from '../../api/stores/AuthStore';
 import { BellRing, BellOff, Trash2, Loader2, AlertTriangle, CheckCircle, Smartphone, Layout } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 // Importer les hooks de mutation pour les actions sur les devices
-import { 
-  useListUserDevices, 
-  useUpdateDeviceStatus, 
+import {
+  useListUserDevices,
+  useUpdateDeviceStatus,
   useRemoveDevice,
   // Ajoute ici les hooks pour les contextes si tu les gères depuis cette UI
 } from '../../api/ReactSublymusApi';
 import { notificationManager, UserBrowserSubscriptionInterface } from '../../api/stores/NotificationManager';
 import { Button } from '../../Components/Button/Button';
+import { usePageContext } from '../../renderer/usePageContext';
 
 const NotificationPreferences: React.FC = () => {
   const { t } = useTranslation();
   const { token } = useAuthStore();
+  const { VITE_PUBLIC_VAPID_KEY } = usePageContext()
   const [permission, setPermission] = useState<NotificationPermission>('default');
   const [isSubscribedToServer, setIsSubscribedToServer] = useState(false); // Si l'appareil actuel est enregistré sur le serveur
   const [isProcessing, setIsProcessing] = useState(false); // Pour les actions globales (subscribe/unsubscribe)
 
   // Hooks pour gérer les appareils listés
-  const { data: devicesResponse, isLoading: isLoadingDevices, refetch: refetchDevices, error: devicesError } = 
+  const { data: devicesResponse, isLoading: isLoadingDevices, refetch: refetchDevices, error: devicesError } =
     useListUserDevices({ enabled: !!token });
-  
+
   const updateDeviceStatusMutation = useUpdateDeviceStatus();
   const removeDeviceMutation = useRemoveDevice();
 
@@ -41,7 +43,7 @@ const NotificationPreferences: React.FC = () => {
     notificationManager.getPermissionState().then(setPermission);
     checkCurrentSubscription();
   }, [checkCurrentSubscription]);
-  
+
   useEffect(() => { // Réévaluer quand la liste des devices du serveur change
     checkCurrentSubscription();
   }, [devicesResponse, checkCurrentSubscription]);
@@ -52,7 +54,7 @@ const NotificationPreferences: React.FC = () => {
     const perm = await notificationManager.requestPermission();
     setPermission(perm);
     if (perm === 'granted') {
-      const success = await notificationManager.subscribeAndSync();
+      const success = await notificationManager.subscribeAndSync(VITE_PUBLIC_VAPID_KEY);
       if (success) {
         setIsSubscribedToServer(true);
         refetchDevices(); // Rafraîchir la liste des appareils
@@ -77,24 +79,24 @@ const NotificationPreferences: React.FC = () => {
         setIsSubscribedToServer(false);
         refetchDevices();
       } else {
-         // Juste désabonner localement si non trouvé sur serveur (devrait pas arriver si isSubscribedToServer est vrai)
+        // Juste désabonner localement si non trouvé sur serveur (devrait pas arriver si isSubscribedToServer est vrai)
         await notificationManager.unsubscribeDevice();
         setIsSubscribedToServer(false);
       }
     } else {
-        // Juste désabonner localement si pas d'infos serveur ou de souscription locale
-        await notificationManager.unsubscribeDevice();
-        setIsSubscribedToServer(false);
+      // Juste désabonner localement si pas d'infos serveur ou de souscription locale
+      await notificationManager.unsubscribeDevice();
+      setIsSubscribedToServer(false);
     }
     setIsProcessing(false);
   };
 
   const handleToggleDeviceStatus = async (deviceId: string, currentStatus: boolean) => {
-    await updateDeviceStatusMutation.mutateAsync({ deviceId, data: { is_active: !currentStatus }}, {
+    await updateDeviceStatusMutation.mutateAsync({ deviceId, data: { is_active: !currentStatus } }, {
       onSuccess: () => refetchDevices()
     });
   };
-  
+
   const handleRemoveDevice = async (deviceId: string) => {
     // Confirmer avant suppression
     if (window.confirm(t('notifications.confirmRemoveDevice', 'Voulez-vous vraiment supprimer cet appareil de vos notifications ?'))) {
@@ -114,10 +116,10 @@ const NotificationPreferences: React.FC = () => {
       </div>
     );
   }
-  
+
   const renderDeviceList = () => {
-    if (isLoadingDevices) return <div className="flex justify-center p-4"><Loader2 className="animate-spin"/></div>;
-    if (devicesError) return <div className="p-4 text-red-600 dark:text-red-400"><AlertTriangle className="inline mr-2"/>{t('notifications.errorListDevices', 'Erreur de chargement des appareils.')}</div>;
+    if (isLoadingDevices) return <div className="flex justify-center p-4"><Loader2 className="animate-spin" /></div>;
+    if (devicesError) return <div className="p-4 text-red-600 dark:text-red-400"><AlertTriangle className="inline mr-2" />{t('notifications.errorListDevices', 'Erreur de chargement des appareils.')}</div>;
     if (!devicesResponse || devicesResponse.length === 0) {
       return <p className="text-sm text-slate-500 dark:text-slate-400 italic p-4">{t('notifications.noDevicesRegistered', 'Aucun appareil enregistré pour les notifications.')}</p>;
     }
@@ -130,7 +132,7 @@ const NotificationPreferences: React.FC = () => {
               <Smartphone size={20} className="mr-3 text-slate-500 dark:text-slate-400" />
               <div>
                 <p className="text-sm font-medium text-slate-700 dark:text-slate-200">
-                  {device.browser_name || t('notifications.unknownBrowser', 'Navigateur inconnu')} 
+                  {device.browser_name || t('notifications.unknownBrowser', 'Navigateur inconnu')}
                   {device.os_name && ` (${device.os_name})`}
                 </p>
                 <p className="text-xs text-slate-500 dark:text-slate-400">
@@ -146,9 +148,9 @@ const NotificationPreferences: React.FC = () => {
                 // isLoading={updateDeviceStatusMutation.isPending && updateDeviceStatusMutation.variables?.deviceId === device.id}
                 className={device.is_active ? "border-amber-500 text-amber-600 hover:bg-amber-50 dark:border-amber-400 dark:text-amber-300 dark:hover:bg-amber-700/50" : ""}
               >
-                {device.is_active 
-                  ? <><BellOff size={14} className="mr-1 sm:mr-2"/>{t('common.disable', 'Désactiver')}</> 
-                  : <><BellRing size={14} className="mr-1 sm:mr-2"/>{t('common.enable', 'Activer')}</>
+                {device.is_active
+                  ? <><BellOff size={14} className="mr-1 sm:mr-2" />{t('common.disable', 'Désactiver')}</>
+                  : <><BellRing size={14} className="mr-1 sm:mr-2" />{t('common.enable', 'Activer')}</>
                 }
               </Button>
               <Button
@@ -178,9 +180,9 @@ const NotificationPreferences: React.FC = () => {
         </div>
       )}
       {permission === 'default' && (
-        <Button onClick={handleRequestPermissionAndSubscribe} 
-        // isLoading={isProcessing} 
-        variant="primary">
+        <Button onClick={handleRequestPermissionAndSubscribe}
+          // isLoading={isProcessing} 
+          variant="primary">
           <BellRing size={16} className="mr-2" />
           {t('notifications.enableOnThisDevice', 'Activer les notifications sur cet appareil')}
         </Button>
@@ -189,29 +191,29 @@ const NotificationPreferences: React.FC = () => {
         <>
           {isSubscribedToServer ? (
             <div className="flex items-center p-3 bg-emerald-50 dark:bg-emerald-900/30 border border-emerald-300 dark:border-emerald-500/50 text-emerald-700 dark:text-emerald-300 rounded-md text-sm">
-              <CheckCircle size={18} className="mr-2"/> {t('notifications.subscribedOnThisDevice', 'Notifications activées pour cet appareil.')}
-              <Button onClick={handleUnsubscribeCurrentDevice} 
-            //   isLoading={isProcessing} 
-              size="sm" variant="ghost" className="ml-auto text-sm !p-0">
+              <CheckCircle size={18} className="mr-2" /> {t('notifications.subscribedOnThisDevice', 'Notifications activées pour cet appareil.')}
+              <Button onClick={handleUnsubscribeCurrentDevice}
+                //   isLoading={isProcessing} 
+                size="sm" variant="ghost" className="ml-auto text-sm !p-0">
                 {t('common.disable', 'Désactiver')}
               </Button>
             </div>
           ) : (
-            <Button onClick={handleRequestPermissionAndSubscribe} 
-            // isLoading={isProcessing} 
-            variant="primary">
-               <BellRing size={16} className="mr-2" />
+            <Button onClick={handleRequestPermissionAndSubscribe}
+              // isLoading={isProcessing} 
+              variant="primary">
+              <BellRing size={16} className="mr-2" />
               {t('notifications.enableOnThisDevice', 'Activer les notifications sur cet appareil')}
             </Button>
           )}
         </>
       )}
 
-      <hr className="my-6 dark:border-slate-700"/>
+      <hr className="my-6 dark:border-slate-700" />
 
       <h3 className="text-lg font-medium text-slate-700 dark:text-slate-200 mb-3">{t('notifications.registeredDevicesTitle', 'Appareils enregistrés')}</h3>
       {renderDeviceList()}
-      
+
       {/* TODO: Section pour gérer les abonnements aux contextes de notification */}
       {/* <hr className="my-6 dark:border-slate-700"/>
       <h3 className="text-lg font-medium text-slate-700 dark:text-slate-200 mb-3">{t('notifications.contextSubscriptionsTitle', 'Abonnements aux notifications par contexte')}</h3>

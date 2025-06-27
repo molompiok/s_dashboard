@@ -12,7 +12,7 @@ import { getToken, logoutUserGlobally } from "../api/stores/AuthStore";
 import { SublymusApiProvider } from '../api/ReactSublymusApi';
 import { Data, host } from './AppStore/Data';
 import { useGlobalStore } from '../api/stores/StoreStore';
-import { ClientCall } from '../Components/Utils/functions';
+import { ClientCall, http } from '../Components/Utils/functions';
 
 let root: ReactDOM.Root
 const onRenderClient: OnRenderClientAsync = async (pageContext): ReturnType<OnRenderClientAsync> => {
@@ -29,7 +29,7 @@ const onRenderClient: OnRenderClientAsync = async (pageContext): ReturnType<OnRe
   
   Data.serverUrl = pageContext.serverUrl;
   Data.serverApiUrl = pageContext.serverApiUrl ;
-  Data.apiUrl = currentStore?.default_domain ; 
+  Data.apiUrl = currentStore?.api_url?.startsWith('http') ? currentStore?.api_url : http + currentStore?.api_url ; 
  
   
   const page = (

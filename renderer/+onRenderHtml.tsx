@@ -13,24 +13,23 @@ import { getToken } from "../api/stores/AuthStore";
 import { SublymusApiProvider } from "../api/ReactSublymusApi";
 import { Data } from "./AppStore/Data";
 const onRenderHtml: OnRenderHtmlAsync = async (pageContext): ReturnType<OnRenderHtmlAsync> => {
-  const { Page } = pageContext
+  const { Page, serverApiUrl,serverUrl, VITE_PUBLIC_VAPID_KEY } = pageContext
   const i18n = i18next.cloneInstance();
   // This onRenderHtml() hook only supports SSR, see https://vike.dev/render-modes for how to modify
   // onRenderHtml() to support SPA
   if (!Page) throw new Error('My onRenderHtml() hook expects pageContext.Page to be defined')
 
-  const headersOriginal = pageContext.headers as Record<string, string> || {};
-  const baseUrlFromHeader = headersOriginal['x-base-url'];
-  const apiUrlFromHeader = headersOriginal['x-target-api-service'];
-  const serverUrlFromHeader = headersOriginal['x-server-url'] ;
-  const serverApiFromHeader = headersOriginal['x-server-api-url'] || 'http://server.sublymus-server.com'
+ 
+  Data.apiUrl = '';
+  Data.serverApiUrl = serverApiUrl;
+  Data.serverUrl = serverUrl
 
-  Data.serverApiUrl = serverApiFromHeader;
-  Data.serverUrl = serverUrlFromHeader;
+  console.log({VITE_PUBLIC_VAPID_KEY});
+  
 
   // Alternatively, we can use an HTML stream, see https://vike.dev/streaming
   const pageHtml = ReactDOMServer.renderToString(
-    <SublymusApiProvider storeApiUrl={apiUrlFromHeader} mainServerUrl={serverApiFromHeader} getAuthToken={getToken}>
+    <SublymusApiProvider storeApiUrl={serverApiUrl} mainServerUrl={'http://api.sublymus-server.com'} getAuthToken={getToken}>
       <I18nextProvider i18n={i18n}>
         <Layout pageContext={pageContext}>
           <Page />
@@ -48,7 +47,7 @@ const onRenderHtml: OnRenderHtmlAsync = async (pageContext): ReturnType<OnRender
   const documentHtml = escapeInject`<!DOCTYPE html>
     <html lang="fr">
       <head style="z-index=-10">
-      <!--${baseUrlFromHeader}-->
+      <!--${serverApiUrl}-->
         <meta charset="UTF-8" />
         <link rel="icon" href="${logoUrl}" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -65,10 +64,6 @@ const onRenderHtml: OnRenderHtmlAsync = async (pageContext): ReturnType<OnRender
     documentHtml,
     pageContext: {
       lang,
-      baseUrl: baseUrlFromHeader,
-      serverUrl: serverUrlFromHeader,
-      serverApiUrl: serverApiFromHeader,
-      apiUrl: apiUrlFromHeader,
     }
   }
 }
