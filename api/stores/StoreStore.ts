@@ -5,6 +5,7 @@ import { ListType, StoreInterface } from "../Interfaces/Interfaces";
 
 import { Transmit } from '@adonisjs/transmit-client'
 import { Data } from "../../renderer/AppStore/Data";
+import { http } from "../../Components/Utils/functions";
 
 export { useGlobalStore, getTransmit }
 
@@ -16,8 +17,7 @@ function getTransmit(url: string): Transmit | null {
     baseUrl = url;
     if (!url) return null
     
-    const host = (process.env.NODE_ENV == 'production' ? 'https://' : 'http://');
-    url = (!url.startsWith('http') ? host : '') + url
+    url = (!url.startsWith('http') ? http : '') + url
     transmit = new Transmit({
         baseUrl: url,
         uidGenerator() {

@@ -12,10 +12,14 @@ export {
   debounce,
   getId,
   copyToClipboard,
-  limit
+  limit,
+  cn
 }
 
-export const isProd = process.env.NODE_ENV === 'production';
+
+const cn = (...args:string[])=>args.join(' ');
+
+export const isProd = process.env.NODE_ENV === 'production' && process.env.SERVICE_ID;
 export const http = isProd ? 'https://' : 'http://' 
 
  export const prefixServerUrl = (prefix:string)=>{

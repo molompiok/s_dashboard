@@ -17,7 +17,7 @@ import { usePageContext } from '../../renderer/usePageContext';
 const NotificationPreferences: React.FC = () => {
   const { t } = useTranslation();
   const { token } = useAuthStore();
-  const { VITE_PUBLIC_VAPID_KEY } = usePageContext()
+  const { PUBLIC_VAPID_KEY } = usePageContext()
   const [permission, setPermission] = useState<NotificationPermission>('default');
   const [isSubscribedToServer, setIsSubscribedToServer] = useState(false); // Si l'appareil actuel est enregistré sur le serveur
   const [isProcessing, setIsProcessing] = useState(false); // Pour les actions globales (subscribe/unsubscribe)
@@ -54,7 +54,7 @@ const NotificationPreferences: React.FC = () => {
     const perm = await notificationManager.requestPermission();
     setPermission(perm);
     if (perm === 'granted') {
-      const success = await notificationManager.subscribeAndSync(VITE_PUBLIC_VAPID_KEY);
+      const success = await notificationManager.subscribeAndSync(PUBLIC_VAPID_KEY);
       if (success) {
         setIsSubscribedToServer(true);
         refetchDevices(); // Rafraîchir la liste des appareils

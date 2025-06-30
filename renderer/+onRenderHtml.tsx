@@ -13,7 +13,7 @@ import { getToken } from "../api/stores/AuthStore";
 import { SublymusApiProvider } from "../api/ReactSublymusApi";
 import { Data } from "./AppStore/Data";
 const onRenderHtml: OnRenderHtmlAsync = async (pageContext): ReturnType<OnRenderHtmlAsync> => {
-  const { Page, serverApiUrl,serverUrl, VITE_PUBLIC_VAPID_KEY } = pageContext
+  const { Page, serverApiUrl,serverUrl, PUBLIC_VAPID_KEY } = pageContext
   const i18n = i18next.cloneInstance();
   // This onRenderHtml() hook only supports SSR, see https://vike.dev/render-modes for how to modify
   // onRenderHtml() to support SPA
@@ -24,7 +24,7 @@ const onRenderHtml: OnRenderHtmlAsync = async (pageContext): ReturnType<OnRender
   Data.serverApiUrl = serverApiUrl;
   Data.serverUrl = serverUrl
 
-  console.log({VITE_PUBLIC_VAPID_KEY});
+  console.log({PUBLIC_VAPID_KEY});
   
 
   // Alternatively, we can use an HTML stream, see https://vike.dev/streaming
@@ -48,6 +48,8 @@ const onRenderHtml: OnRenderHtmlAsync = async (pageContext): ReturnType<OnRender
     <html lang="fr">
       <head style="z-index=-10">
       <!--${serverApiUrl}-->
+        <meta name="theme-color" content="#0ac993" /> 
+        <link rel="manifest" href="/manifest.webmanifest" />
         <meta charset="UTF-8" />
         <link rel="icon" href="${logoUrl}" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0">

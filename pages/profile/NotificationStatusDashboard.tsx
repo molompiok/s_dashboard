@@ -52,7 +52,7 @@ const NotificationStatusDashboard: React.FC = () => {
   const { t } = useTranslation();
   const { token } = useAuthStore();
   const { openChild } = useChildViewer();
-    const {VITE_PUBLIC_VAPID_KEY} = usePageContext()
+    const {PUBLIC_VAPID_KEY} = usePageContext()
   // États locaux pour suivre le statut de chaque étape
   const [swStatus, setSwStatus] = useState<'loading' | 'success' | 'error'>('loading');
   const [permissionStatus, setPermissionStatus] = useState<NotificationPermission>('default');
@@ -86,7 +86,7 @@ const NotificationStatusDashboard: React.FC = () => {
 
   const handleEnableNotifications = async () => {
     setSubscriptionStatus('loading');
-    const success = await notificationManager.subscribeAndSync(VITE_PUBLIC_VAPID_KEY);
+    const success = await notificationManager.subscribeAndSync(PUBLIC_VAPID_KEY);
     if (success) {
       toast.success(t('notifications.subscriptionSuccess', 'Notifications activées avec succès !'));
       await refetchDevices(); // Rafraîchir la liste des appareils

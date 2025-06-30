@@ -113,7 +113,7 @@ export function StoreToolbar({ filter, onFilterChange, newStoreRequire }: StoreT
                 "
             >
                 <div className="absolute inset-0 bg-gradient-to-r from-white/20 to-white/0 rounded-xl opacity-0 cursor-pointer hover:opacity-100 transition-opacity duration-200" />
-                <IoAddSharp className="w-5 h-5" />
+                <IoAddSharp className="min-w-5 min-h-5" />
                 <span className="relative">
                     {t('storesPage.addStoreButton')}
                 </span>

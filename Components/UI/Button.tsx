@@ -1,9 +1,9 @@
 // s_dashboard/components/UI/Button.tsx
 import React, { ButtonHTMLAttributes, ReactNode } from 'react';
 import { Loader2 } from 'lucide-react';
+import { cn } from '../Utils/functions';
 
 
-const cn = (...args:string[])=>args.join(' ');
 
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {

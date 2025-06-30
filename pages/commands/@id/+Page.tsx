@@ -33,6 +33,8 @@ import logger from '../../../api/Logger';
 import { navigate } from 'vike/client/router';
 import { Mail, Phone } from 'lucide-react';
 import { StateDisplay } from '../../../Components/StateDisplay/StateDisplay';
+import { NotificationSubscriptionPrompt } from '../../../api/UI/NotificationSubscriptionPrompt';
+import { notificationManager } from '../../../api/stores/NotificationManager';
 
 // Transitions de statut autorisées
 const allowedTransitionsClient: Partial<Record<OrderStatus, OrderStatus[]>> = {
@@ -53,7 +55,6 @@ export { Page, CommandProduct, CommandUser, CommandStatusHistory, CommandTop, Pa
 function Page() {
     const { t } = useTranslation();
     const { currentStore } = useGlobalStore();
-    const { openChild } = useChildViewer();
     const size = useWindowSize();
     const { routeParams } = usePageContext();
     const command_id = routeParams?.['id'];
@@ -61,6 +62,7 @@ function Page() {
     const { data: command, isLoading, isError, error: apiError, refetch } = useGetOrderDetails(
         { order_id: command_id }, { enabled: !!currentStore && !!command_id }
     );
+    const { openChild } = useChildViewer();
 
     const low = useMemo(() => size.width < 380, [size.width]);
 
@@ -84,6 +86,33 @@ function Page() {
         subscribe();
         return () => { subscription?.delete(); };
     }, [currentStore, command_id, refetch]);
+    
+    // Ouvre le prompt automatiquement après un court délai
+    useEffect(() => {
+        const orderNotification = localStorage.getItem('notification:order');
+        if(orderNotification){
+            return
+        }
+        const timer = setTimeout(() => {
+            openChild(
+                <ChildViewer>
+                    <NotificationSubscriptionPrompt
+                        contextName="order_update" 
+                        contextId={command_id}
+                        closePrompt={() => openChild(null)}
+                        onSuccessAndClose={() => {
+                            console.log("Abonnement réussi et modal fermé !");
+                            localStorage.setItem('notification:order','true');
+                            showToast('Notification Activé');
+                        }}
+                    />
+                </ChildViewer>,
+                { background: 'rgba(0,0,0,0.5)', blur: 2 }
+            );
+        }, 2000); // Ouvre après 2 secondes
+
+        return () => clearTimeout(timer);
+    }, [openChild, command_id]);
 
     const handleOpenStatusUpdate = () => {
         if (!command?.id || !command?.status) return;
@@ -133,14 +162,14 @@ function Page() {
             </div>
         );
     }
-    
+
     // 3. Cas où la requête réussit mais ne renvoie rien (sécurité)
     if (!command) {
         return (
             <div className="w-full min-h-screen flex flex-col">
                 <Topbar back breadcrumbs={breadcrumbs} />
                 <main className="flex-grow flex items-center justify-center p-4">
-                     <StateDisplay
+                    <StateDisplay
                         variant="warning"
                         icon={IoWarningOutline}
                         title={t('order.notFoundTitle')}
@@ -291,13 +320,13 @@ function CommandUser({ user, command }: { command: Partial<CommandInterface>, us
                     </div>
                 )}
                 {/* Infos Pied de Carte */}
-                
+
             </div>
             <div className="user-card-foot flex flex-wrap justify-center md:justify-start gap-x-4 gap-y-1 text-xs  dark:text-gray-300 text-gray-500 mt-2">
-                    <p><span>{t('clientDetail.statusLabel')}:</span> <strong className='px-2 py-0.5 rounded-full text-xs' style={{ backgroundColor: `${statusColor}33`, color: statusColor }}>{t(`clientStatus.${user.status?.toLowerCase() || 'client'}`, user.status || 'NEW')}</strong></p>
-                    {/* <p><span>Rôles:</span> {user.roles?.map(r => r.name).join(', ') || 'Aucun'}</p> */}
-                    <p><span>{t('clientDetail.memberSinceLabel')}:</span> {DateTime.fromISO(user.created_at || '').setLocale(i18n.language).toLocaleString(DateTime.DATE_MED)}</p>
-                </div>
+                <p><span>{t('clientDetail.statusLabel')}:</span> <strong className='px-2 py-0.5 rounded-full text-xs' style={{ backgroundColor: `${statusColor}33`, color: statusColor }}>{t(`clientStatus.${user.status?.toLowerCase() || 'client'}`, user.status || 'NEW')}</strong></p>
+                {/* <p><span>Rôles:</span> {user.roles?.map(r => r.name).join(', ') || 'Aucun'}</p> */}
+                <p><span>{t('clientDetail.memberSinceLabel')}:</span> {DateTime.fromISO(user.created_at || '').setLocale(i18n.language).toLocaleString(DateTime.DATE_MED)}</p>
+            </div>
         </div>
     );
 }

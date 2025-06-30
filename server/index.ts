@@ -54,9 +54,12 @@ async function startServer() {
     const url = localDir + "/public" + req.originalUrl;
     return res.sendFile(url);
   });
+  app.get("/manifest.webmanifest", async (req, res) => {
+    const url = localDir + "/public/manifest.webmanifest";
+    return res.sendFile(url);
+  });
   app.get("/worker.js", async (req, res) => {
     const url = localDir + "/public/worker.js";
-    // res.setHeader('Service-Worker-Allowed', '/');
     return res.sendFile(url);
   });
 
@@ -70,7 +73,7 @@ async function startServer() {
     const pageContextInit = {
       urlOriginal: req.originalUrl,
       headersOriginal: req.headers,
-      VITE_PUBLIC_VAPID_KEY: process.env.VITE_PUBLIC_VAPID_KEY,
+      PUBLIC_VAPID_KEY: process.env.PUBLIC_VAPID_KEY,
       baseUrl: baseUrlFromHeader,
       serverUrl: serverUrlFromHeader,
       serverApiUrl: serverApiFromHeader,
