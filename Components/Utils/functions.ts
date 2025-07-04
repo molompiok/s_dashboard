@@ -19,7 +19,7 @@ export {
 
 const cn = (...args:string[])=>args.join(' ');
 
-export const isProd = process.env.NODE_ENV === 'production' && process.env.SERVICE_ID;
+export const isProd = process.env.NODE_ENV === 'production';
 export const http = isProd ? 'https://' : 'http://' 
 
  export const prefixServerUrl = (prefix:string)=>{

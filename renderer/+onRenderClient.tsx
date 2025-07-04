@@ -29,8 +29,7 @@ const onRenderClient: OnRenderClientAsync = async (pageContext): ReturnType<OnRe
   
   Data.serverUrl = pageContext.serverUrl;
   Data.serverApiUrl = pageContext.serverApiUrl ;
-  Data.apiUrl = currentStore?.api_url?.startsWith('http') ? currentStore?.api_url : http + currentStore?.api_url ; 
- 
+  Data.apiUrl = currentStore?.api_url;
   
   const page = (
     <SublymusApiProvider
