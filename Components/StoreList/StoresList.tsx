@@ -36,17 +36,28 @@ export function StoresList({isFilterActive,maxVisible=5.8, maxSize=1200,stores, 
     const { t } = useTranslation();
     const size = useWindowSize()
     const {setCurrentStore} = useGlobalStore()
-    const { openChild } = useChildViewer()
-
+    const {params} = useMyLocation()
+    const [openStoreRequired, setOpenStoreRequired] = useState(false)
     const n = size.width< maxSize ? ((size.width - 260) / maxSize) * (maxVisible-1.1) + 1.6  :maxVisible
     const onManage = (store:StoreInterface)=>{
-        openChild(<BigSpinner text='Chargement des informations..' />,{background:'#3455'})
+        setOpenStoreRequired(true)
         setCurrentStore(store)
-        window.location.href='/store'
-        
+        window.location.href='/store'    
     }
+    
+    useEffect(()=>{
+        setOpenStoreRequired(false);
+    },[params]);
+
     const onVisit = (store:StoreInterface)=>{
         window.open(host+store.default_domain, '_blank', 'noopener,noreferrer');
+    }
+
+    if(openStoreRequired){
+        return <div className='absolute z-100'>
+             <BigSpinner text='Chargement des informations..' />
+        </div>
+                  
     }
     return (
         !isLoading && isFilterActive && stores.length==0 ? (
@@ -125,6 +136,8 @@ export function StoresList({isFilterActive,maxVisible=5.8, maxSize=1200,stores, 
 // components/StateDisplay/NoResultCard.tsx
 
 import { SearchX } from 'lucide-react'; // Importe l'icône de loupe barrée
+import { useEffect, useState } from 'react';
+import { useMyLocation } from '../../Hooks/useRepalceState';
 
 interface NoResultCardProps {
   title?: string;

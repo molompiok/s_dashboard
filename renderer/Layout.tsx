@@ -1,5 +1,4 @@
 //renderer/Layout.tsx
-// vike-js project
 export { Layout };
 
 import './Layout.css'
@@ -26,19 +25,22 @@ import { useAuthStore } from '../api/stores/AuthStore';
 import { useAppZust } from './AppStore/appZust';
 import { useApi, useGetMe } from '../api/ReactSublymusApi';
 import { notificationManager } from '../api/stores/NotificationManager';
+import { BigSpinner } from '../Components/Confirm/Spinner';
 const urlHideSideBar = ['/auth', '/profile', '/setting', '/themes', '/settings']
 
 
 function Layout({ children, pageContext }: { children: React.ReactNode; pageContext: PageContext }) {
   const { t } = useTranslation();
   const { nextPage } = useMyLocation();
-  const { token, user, getToken, getUser, setUser } = useAuthStore();
+  const { token, getToken, getUser, setUser } = useAuthStore();
   const { getCurrentStore } = useGlobalStore();
   const { sideLeft, setSideLeft } = useAppZust()
-  const { data: userFetched, refetch } = useGetMe();
+  const { data: userFetched, error } = useGetMe();
   useEffect(() => {
     getCurrentStore()
   }, [getCurrentStore]);
+
+  const user = getUser();
 
   useEffect(() => {
     const token = getToken();
@@ -47,14 +49,19 @@ function Layout({ children, pageContext }: { children: React.ReactNode; pageCont
     if (!token) {
       if (window.location.pathname.startsWith('/auth')) return;
       nextPage('/auth/login');
+      setUser(undefined)
     } else {
       setUser(user);
     }
   }, [token, user]);
 
   useEffect(() => {
+    if (error?.status == 401) {
+      setUser(undefined)
+      return nextPage('/auth/login');
+    }
     setUser({ ...(user || {}), ...(userFetched?.user || {}) });
-  }, [userFetched]);
+  }, [userFetched, error]);
 
   const { themeMode, initDarkMode, setThemeMode } = useAppZust();
 
@@ -78,20 +85,16 @@ function Layout({ children, pageContext }: { children: React.ReactNode; pageCont
       }
     };
 
-    // Vérifier le thème au montage du composant
     checkTheme();
 
-    // Créer un listener pour les changements de thème
     const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
     const handleThemeChange = (e: any) => {
       setThemeMode(e.matches);
       e.matches ? document.body.classList.add('dark') : document.body.classList.remove('dark')
     };
 
-    // Ajouter l'écouteur d'événements
     mediaQuery.addEventListener('change', handleThemeChange);
 
-    // Nettoyer l'écouteur lors du démontage du composant
     return () => {
       mediaQuery.removeEventListener('change', handleThemeChange);
     };
@@ -101,27 +104,20 @@ function Layout({ children, pageContext }: { children: React.ReactNode; pageCont
   //   setSideLeft(!sideLeft);
   // };
 
+  const api = useApi(); 
 
-  const api = useApi(); // Obtient l'instance de SublymusApi du provider
-
-  // Initialiser le NotificationManager avec l'instance API
   useEffect(() => {
     if (api) {
       notificationManager.setApi(api);
-      // Tu pourrais aussi appeler notificationManagerInstance.initialize() ici
-      // si tu veux t'assurer que le SW est prêt plus tôt, mais il s'auto-initialise.
     }
   }, [api]);
 
+  const display = pageContext.urlPathname.startsWith('/auth') || user ? 'none' : 'block'
 
   return (
     <React.StrictMode>
       <PageContextProvider pageContext={pageContext}>
         <Frame>
-          {/* Mobile Header */}
-          {/* <MobileHeader onToggleSidebar={toggleSidebar} isDark={isDark} onToggleDark={() => setIsDark(!isDark)} /> */}
-
-          {/* Sidebar */}
           <Sidebar isOpen={sideLeft} onClose={() => setSideLeft(false)}>
             <Logo />
             <div className="flex-1 space-y-1 px-2 py-4">
