@@ -12,7 +12,6 @@ import { getToken, logoutUserGlobally } from "../api/stores/AuthStore";
 import { SublymusApiProvider } from '../api/ReactSublymusApi';
 import { Data, host } from './AppStore/Data';
 import { useGlobalStore } from '../api/stores/StoreStore';
-import { ClientCall, http } from '../Components/Utils/functions';
 
 let root: ReactDOM.Root
 const onRenderClient: OnRenderClientAsync = async (pageContext): ReturnType<OnRenderClientAsync> => {
