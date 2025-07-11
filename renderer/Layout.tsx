@@ -25,7 +25,6 @@ import { useAuthStore } from '../api/stores/AuthStore';
 import { useAppZust } from './AppStore/appZust';
 import { useApi, useGetMe } from '../api/ReactSublymusApi';
 import { notificationManager } from '../api/stores/NotificationManager';
-import { BigSpinner } from '../Components/Confirm/Spinner';
 const urlHideSideBar = ['/auth', '/profile', '/setting', '/themes', '/settings']
 
 
@@ -36,6 +35,7 @@ function Layout({ children, pageContext }: { children: React.ReactNode; pageCont
   const { getCurrentStore } = useGlobalStore();
   const { sideLeft, setSideLeft } = useAppZust()
   const { data: userFetched, error } = useGetMe();
+  
   useEffect(() => {
     getCurrentStore()
   }, [getCurrentStore]);
