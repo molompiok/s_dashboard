@@ -7,7 +7,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { OrderStatusElement, statusColors } from '../Status/Satus';
 import { DateRange, DayPicker } from "react-day-picker";
 import "react-day-picker/style.css";
-import { ClientCall, debounce } from '../Utils/functions';
+import { ClientCall, copyToClipboard, debounce, http } from '../Utils/functions';
 import { getMedia } from '../Utils/StringFormater';
 import { useGetAllOrders, queryClient } from '../../api/ReactSublymusApi';
 import { getTransmit, useGlobalStore } from '../../api/stores/StoreStore';
@@ -17,7 +17,7 @@ import Logger from '../../api/Logger';
 import { Pagination } from '../Pagination/Pagination';
 import { Data } from '../../renderer/AppStore/Data';
 import { navigate } from 'vike/client/router';
-import { Calendar, CalendarCheck, CalendarDays, ClipboardList, ListOrdered } from 'lucide-react';
+import { Calendar, CalendarCheck, CalendarDays, ClipboardList, ListOrdered, Share2, ExternalLink } from 'lucide-react';
 
 export { CommandeList };
 
@@ -27,6 +27,7 @@ function CommandeList({ product_id, user_id }: { user_id?: string; product_id?: 
     const { t } = useTranslation();
     const { currentStore } = useGlobalStore();
     const [filter, setFilter] = useState<CommandFilterType>({});
+    const [shareStatus, setShareStatus] = useState<'idle' | 'copied'>('idle');
 
     // --- Data Fetching avec React Query ---
     const d = filter.max_date ? new Date(filter.max_date) : undefined;
@@ -37,6 +38,29 @@ function CommandeList({ product_id, user_id }: { user_id?: string; product_id?: 
     );
     const commands = commandsData?.list ?? [];
     const meta = commandsData?.meta;
+    const storePublicUrl = currentStore ? `${http}${currentStore.default_domain}` : undefined;
+
+    const handleShareStore = () => {
+        if (!storePublicUrl) return;
+        const sharePromise = ClientCall(() => navigator.share?.({
+            title: currentStore?.name ?? t('dashboard.shareStoreTitle', { defaultValue: 'Ma boutique' }),
+            text: t('dashboard.shareStoreText', { defaultValue: 'Découvrez ma boutique en ligne' }),
+            url: storePublicUrl,
+        }), null);
+
+        if (sharePromise && typeof (sharePromise as Promise<void>).then === 'function') {
+            (sharePromise as Promise<void>).catch(() => copyToClipboard(storePublicUrl, () => setShareStatus('copied')));
+            return;
+        }
+
+        copyToClipboard(storePublicUrl, () => setShareStatus('copied'));
+    };
+
+    useEffect(() => {
+        if (shareStatus === 'idle') return;
+        const timer = setTimeout(() => setShareStatus('idle'), 4000);
+        return () => clearTimeout(timer);
+    }, [shareStatus]);
 
     // --- Gestion des mises à jour en temps réel (SSE) ---
     useEffect(() => {
@@ -127,10 +151,39 @@ function CommandeList({ product_id, user_id }: { user_id?: string; product_id?: 
                 )}
 
                 {!isLoading && currentStore && !isError && commands.length === 0 && (
-                    <div className="flex flex-col items-center justify-center p-10 text-center text-gray-500 dark:text-white">
-                        <div className="w-40 h-40 bg-contain bg-center bg-no-repeat mb-4" style={{ background: getMedia({ isBackground: true, source: '/res/empty/search.png' }) }}></div>
-                        <h3 className="font-semibold text-lg">{t('common.noResults')}</h3>
-                        <p className="text-sm">{t('common.noResultsHint')}</p>
+                    <div className="flex flex-col items-center justify-center p-10 text-center text-gray-600 dark:text-white gap-3">
+                        <div className="w-44 h-44 bg-contain bg-center bg-no-repeat" style={{ background: getMedia({ isBackground: true, source: '/res/empty/search.png' }) }}></div>
+                        <h3 className="font-semibold text-xl text-gray-800 dark:text-white">
+                            {t('dashboard.noOrdersYetTitle', { defaultValue: 'Vous n’avez pas encore reçu de commande' })}
+                        </h3>
+                        <p className="text-sm max-w-md text-gray-500 dark:text-gray-300">
+                            {t('dashboard.noOrdersYetHint', { defaultValue: 'Partagez le lien de votre boutique pour recevoir vos premières commandes.' })}
+                        </p>
+                        {storePublicUrl && (
+                            <div className="flex flex-wrap items-center justify-center gap-3 mt-2">
+                                <button
+                                    onClick={handleShareStore}
+                                    className="flex items-center gap-2 px-4 py-2 rounded-full bg-teal-600 text-white text-sm font-semibold shadow-sm hover:bg-teal-700 transition-colors"
+                                >
+                                    <Share2 className="w-4 h-4" />
+                                    {t('dashboard.shareStoreCta', { defaultValue: 'Partager ma boutique' })}
+                                </button>
+                                <a
+                                    href={storePublicUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="flex items-center gap-2 px-4 py-2 rounded-full border border-gray-300 dark:border-gray-600 text-sm font-semibold text-gray-700 dark:text-gray-100 hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
+                                >
+                                    <ExternalLink className="w-4 h-4" />
+                                    {t('dashboard.visitStore', { defaultValue: 'Voir ma boutique' })}
+                                </a>
+                            </div>
+                        )}
+                        {shareStatus === 'copied' && (
+                            <span className="text-xs text-green-600 dark:text-green-400">
+                                {t('dashboard.linkCopied', { defaultValue: 'Lien copié dans le presse-papiers' })}
+                            </span>
+                        )}
                     </div>
                 )}
 

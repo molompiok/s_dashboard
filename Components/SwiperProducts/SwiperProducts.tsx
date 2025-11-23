@@ -17,6 +17,9 @@ import { NEW_VIEW } from '../Utils/constants';
 import { ConfirmDelete } from '../Confirm/ConfirmDelete';
 import { useGlobalStore } from '../../api/stores/StoreStore';
 import { useTranslation } from 'react-i18next';
+import { validateFiles } from '../Utils/fileValidation';
+import { FileSizeErrorPopup } from '../FileSizeErrorPopup/FileSizeErrorPopup';
+import { useChildViewer } from '../ChildViewer/useChildViewer';
 
 export { SwiperProducts }
 //IoArrowBackCircle IoArrowForwardCircle IoChevronBackCircle IoChevronForwardCircle
@@ -29,6 +32,7 @@ function SwiperProducts({ views, setViews }: { views: (string | Blob)[], setView
   const [currentIndex, setCurrentIndex] = useState(0);
   
   const { t } = useTranslation()
+  const { openChild } = useChildViewer()
   useEffect(() => {
     setLocalViews(views.length > 0 ? views : [NEW_VIEW])
   }, [views]);
@@ -43,8 +47,22 @@ function SwiperProducts({ views, setViews }: { views: (string | Blob)[], setView
   function handleDrop(e: React.DragEvent<HTMLDivElement>) {
     e.preventDefault();
     e.stopPropagation();
-    const files = e.dataTransfer.files;
+    const files = Array.from(e.dataTransfer.files);
     if (files.length > 0) {
+      // Valider la taille des fichiers
+      const validation = validateFiles(files);
+      if (!validation.isValid && validation.error) {
+        openChild(
+          <FileSizeErrorPopup
+            fileName={validation.error.fileName}
+            fileSize={validation.error.fileSize}
+            fileType={validation.error.fileType}
+          />,
+          { background: 'rgba(0, 0, 0, 0.7)', blur: 4 }
+        );
+        setHover(false);
+        return;
+      }
       const v = [
         ...localViews.slice(0, currentIndex),
         ...files,
@@ -146,8 +164,22 @@ function SwiperProducts({ views, setViews }: { views: (string | Blob)[], setView
                   >
                   <label htmlFor='chose-product-views' className="center"  >
                     <input id='chose-product-views' multiple type="file" accept={'image/*,video/*'} style={{ display: 'none' }} onChange={(e) => {
-                      const files = e.currentTarget.files;
-                      if (!files) return
+                      const files = Array.from(e.currentTarget.files || []);
+                      if (files.length === 0) return;
+                      // Valider la taille des fichiers
+                      const validation = validateFiles(files);
+                      if (!validation.isValid && validation.error) {
+                        openChild(
+                          <FileSizeErrorPopup
+                            fileName={validation.error.fileName}
+                            fileSize={validation.error.fileSize}
+                            fileType={validation.error.fileType}
+                          />,
+                          { background: 'rgba(0, 0, 0, 0.7)', blur: 4 }
+                        );
+                        e.target.value = '';
+                        return;
+                      }
                       const v = [
                         ...localViews.slice(0, index),
                         ...files,
@@ -193,6 +225,7 @@ function SwiperProducts({ views, setViews }: { views: (string | Blob)[], setView
 
 
 function OptionSlide({ setLocalViews, setViews, localViews, index, swiperRef, onRequiredDelete }: { setViews: (imgs: (string | Blob)[]) => void, onRequiredDelete: (index: number) => void, setLocalViews: (imgs: (string | Blob)[]) => any, localViews: (string | Blob)[], index: number, swiperRef: any }) {
+  const { openChild } = useChildViewer()
 
   const canDelete = !(localViews.length == 1 && localViews[0] == NEW_VIEW);
   return <div className="options">
@@ -210,8 +243,22 @@ function OptionSlide({ setLocalViews, setViews, localViews, index, swiperRef, on
     </span>
     <label htmlFor={'change-product-views-' + index}>
       <input id={'change-product-views-' + index} multiple type="file" style={{ display: 'none' }} onChange={(e) => {
-        const files = e.currentTarget.files;
-        if (!files) return
+        const files = Array.from(e.currentTarget.files || []);
+        if (files.length === 0) return;
+        // Valider la taille des fichiers
+        const validation = validateFiles(files);
+        if (!validation.isValid && validation.error) {
+          openChild(
+            <FileSizeErrorPopup
+              fileName={validation.error.fileName}
+              fileSize={validation.error.fileSize}
+              fileType={validation.error.fileType}
+            />,
+            { background: 'rgba(0, 0, 0, 0.7)', blur: 4 }
+          );
+          e.target.value = '';
+          return;
+        }
         const v = [
           ...localViews.slice(0, index),
           ...files,

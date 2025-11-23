@@ -5,6 +5,9 @@ import { ThemeOptionDefinition } from "../../../pages/themes/editor/+Page";
 import { useState, useEffect, useRef } from 'react';
 import { IoCloudUploadOutline, IoImageOutline, IoPencil, IoTrash } from "react-icons/io5";
 import { useGlobalStore } from "../../../api/stores/StoreStore";
+import { validateFileSize } from '../../Utils/fileValidation';
+import { FileSizeErrorPopup } from '../../FileSizeErrorPopup/FileSizeErrorPopup';
+import { useChildViewer } from '../../ChildViewer/useChildViewer';
 
 interface ImageControlProps {
     option: ThemeOptionDefinition;
@@ -15,6 +18,7 @@ interface ImageControlProps {
 export function ImageControl({ option, value, onChange }: ImageControlProps) {
     const { t } = useTranslation();
     const { currentStore } = useGlobalStore();
+    const { openChild } = useChildViewer();
     const inputRef = useRef<HTMLInputElement>(null);
     const [previewUrl, setPreviewUrl] = useState<string | null>(null);
     const [fileName, setFileName] = useState<string | null>(null);
@@ -52,7 +56,20 @@ export function ImageControl({ option, value, onChange }: ImageControlProps) {
         }
 
         if (file) {
-            // TODO: Validation taille/type
+            // Valider la taille du fichier
+            const validation = validateFileSize(file);
+            if (!validation.isValid && validation.error) {
+                openChild(
+                    <FileSizeErrorPopup
+                        fileName={validation.error.fileName}
+                        fileSize={validation.error.fileSize}
+                        fileType={validation.error.fileType}
+                    />,
+                    { background: 'rgba(0, 0, 0, 0.7)', blur: 4 }
+                );
+                e.target.value = '';
+                return;
+            }
             onChange(option.key, file); // Remonter l'objet File
             setPreviewUrl(URL.createObjectURL(file)); // Mettre à jour preview locale
             setFileName(file.name);

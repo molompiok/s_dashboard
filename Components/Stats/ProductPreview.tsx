@@ -56,9 +56,26 @@ const ProductPreview: React.FC<ProductPreviewProps> = ({ product, isLoading }) =
     const values = getDefaultValues(product)[0];
     const mainImage = values?.views?.[0] ? getMedia({ isBackground: true, source: values.views?.[0], from: 'api' }) : getMedia({ isBackground: true, source: NO_PICTURE });
 
+    // Mapping des devises non-ISO vers codes ISO 4217 valides
+    const normalizeCurrency = (currency: string): string => {
+        const currencyMap: Record<string, string> = {
+            'FCFA': 'XOF', // Franc CFA (Afrique de l'Ouest)
+            'CFA': 'XOF',
+            'XAF': 'XAF', // Franc CFA (Afrique centrale) - déjà ISO
+        };
+        return currencyMap[currency.toUpperCase()] || currency.toUpperCase();
+    };
+
     const formatCurrency = (value: number | null | undefined, currency: string = 'EUR'): string => {
         if (value === undefined || value === null) return '-';
-        return Number(value).toLocaleString(t('common.locale'), { style: 'currency', currency });
+        try {
+            const normalizedCurrency = normalizeCurrency(currency);
+            return Number(value).toLocaleString(t('common.locale'), { style: 'currency', currency: normalizedCurrency });
+        } catch (error) {
+            // Fallback si le code de devise n'est toujours pas valide
+            console.warn(`Invalid currency code: ${currency}, using fallback format`);
+            return `${Number(value).toLocaleString(t('common.locale'))} ${currency}`;
+        }
     };
 
     return (

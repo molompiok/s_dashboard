@@ -13,7 +13,6 @@ import { Topbar, BreadcrumbItem } from '../../../Components/TopBar/TopBar';
 import { ProductFormSkeleton } from '../../../Components/Skeletons/allsKeletons';
 import { StateDisplay } from '../../../Components/StateDisplay/StateDisplay';
 import { ImageManager, ImageItem } from '../../../Components/ImageManager/ImageManager';
-import { StockMatrix } from '../../../Components/StockMatrix/StockMatrix';
 import { SEOSettings } from '../../../Components/SEOSettings/SEOSettings';
 import { Feature } from '../../../Components/Feature/Feature';
 import { MarkdownEditor2 } from '../../../Components/MackdownEditor/MarkdownEditor';
@@ -24,7 +23,7 @@ import { ClientCall, debounce, http, limit, toNameString } from '../../../Compon
 import { useChildViewer } from '../../../Components/ChildViewer/useChildViewer';
 import { ChildViewer } from '../../../Components/ChildViewer/ChildViewer';
 import { showErrorToast, showToast } from '../../../Components/Utils/toastNotifications';
-import { IoAdd, IoArrowBack, IoArrowForward, IoCheckmarkCircleOutline, IoColorPaletteOutline, IoInformationCircleOutline, IoLayersOutline, IoStorefrontOutline, IoWarningOutline } from 'react-icons/io5';
+import { IoAdd, IoArrowBack, IoArrowForward, IoCheckmarkCircleOutline, IoInformationCircleOutline, IoLayersOutline, IoStorefrontOutline, IoWarningOutline } from 'react-icons/io5';
 import { useMyLocation } from '../../../Hooks/useRepalceState';
 import { getNewFeature, getDefaultFeature, getDefaultValues } from '../../../Components/Utils/parseData';
 import { FeatureInfo } from '../../../Components/FeatureInfo/FeatureInfo';
@@ -37,7 +36,7 @@ import { cardStyle } from '../../../Components/Button/Style';
 export { Page };
 
 // --- Constantes et Types ---
-type WizardStep = 'info' | 'variants' | 'stock' | 'publish';
+type WizardStep = 'info' | 'publish';
 const DEBOUNCE_TIME = 3000;
 const initialEmptyProduct: Partial<ProductInterface> = {
     name: '', description: '', price: undefined, barred_price: undefined,
@@ -53,8 +52,6 @@ const Stepper = ({ currentStep, setStep, isNewProduct }: { currentStep: WizardSt
     const { t } = useTranslation();
     const steps: { id: WizardStep, name: string, icon: React.ElementType }[] = [
         { id: 'info', name: t('product.step.info'), icon: IoInformationCircleOutline },
-        { id: 'variants', name: t('product.step.variants'), icon: IoColorPaletteOutline },
-        // { id: 'stock', name: t('product.step.stock'), icon: IoLayersOutline },
         { id: 'publish', name: t('product.step.publish'), icon: IoStorefrontOutline },
     ];
     const currentStepIndex = steps.findIndex(s => s.id === currentStep);
@@ -205,20 +202,20 @@ function Page() {
                 replaceLocation(`/products/${data.product.id}`);
                 setOriginalProduct(data.product);
                 setProduct(data.product);
-                setStep('variants');
+                setStep('publish');
             },
             onError: showErrorToast,
         });
     };
 
     const nextStep = () => {
-        const steps: WizardStep[] = ['info', 'variants',/* 'stock',*/ 'publish'];
+        const steps: WizardStep[] = ['info', 'publish'];
         const currentIndex = steps.indexOf(step);
         if (currentIndex < steps.length - 1) setStep(steps[currentIndex + 1]);
     };
 
     const prevStep = () => {
-        const steps: WizardStep[] = ['info', 'variants', /*'stock',*/ 'publish'];
+        const steps: WizardStep[] = ['info', 'publish'];
         const currentIndex = steps.indexOf(step);
         if (currentIndex > 0) setStep(steps[currentIndex - 1]);
     };
@@ -241,10 +238,6 @@ function Page() {
                 <AnimatePresence mode="wait">
                     <motion.div key={step} initial={{ opacity: 0, y: 15 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -15 }} transition={{ duration: 0.25 }}>
                         {step === 'info' && <ProductInfoStep product={product} onUpdate={handleFieldUpdate} />}
-                        {step === 'variants' && originalProduct && <ProductVariantsStep product={originalProduct} onUpdate={(d) => {
-                            handleFieldUpdate('features', d);
-                        }} />}
-                        {step === 'stock' && originalProduct && <ProductStockStep product={originalProduct} onUpdate={handleFieldUpdate} />}
                         {step === 'publish' && originalProduct && <ProductPublishStep product={originalProduct} onUpdate={handleFieldUpdate} />}
                     </motion.div>
                 </AnimatePresence>
@@ -367,157 +360,26 @@ const ProductInfoStep = ({ product, onUpdate }: { product: Partial<ProductInterf
     );
 };
 
-// ÉTAPE 2
-const ProductVariantsStep = ({ product, onUpdate }: { product: ProductInterface, onUpdate: (features: FeatureInterface[]) => void }) => {
-    const { t } = useTranslation();
-    const { openChild } = useChildViewer();
-    const features = product.features || []
-
-    const handleFeatureChange = (updatedFeature: FeatureInterface) => {
-
-        if (!updatedFeature) return
-
-        const newFeatures = product.features?.map(f => f.id === updatedFeature.id ? updatedFeature : f);
-
-        onUpdate(newFeatures || []);
-    };
-
-    const handleAddFeature = () => openChild(<ChildViewer title={t('feature.createTitle')}><FeatureInfo feature={{ ...getNewFeature(), index: features.length }} onChange={f => {
-        onUpdate([...(product.features || []), f as FeatureInterface]);
-        openChild(null);
-    }} onCancel={() => openChild(null)} /></ChildViewer>);
-
-    const handleMove = async (feature: FeatureInterface, direction: 'up' | 'down') => {
-        product.features?.sort((a, b) => ((a.index || 0) - (b.index || 0))).map((f, i) => {
-            if (f.index !== i) {
-                f.index = i;
-                f._request_mode = 'edited'
-            }
-            return f
-        })
-
-        feature.values?.sort((a, b) => ((a.index || 0) - (b.index || 0))).map((v, i) => {
-            if (v.index !== i) {
-                v.index = i;
-                v._request_mode = 'edited'
-            }
-            return v
-        })
-
-        const newIndex = direction === 'up' ? (feature.index || 0) - 1 : (feature.index || 0) + 1;
-        const neighbor = product.features?.find(d => d.index === newIndex);
-
-        if (!neighbor) return;
-
-        neighbor.index = feature.index;
-        neighbor._request_mode = 'edited'
-        feature.index = newIndex;
-        feature._request_mode = 'edited'
-
-        onUpdate(product.features || []);
-    };
-
-    return (
-        <div className={`${sectionStyle} space-y-6`}>
-            <div className='flex items-center flex-wrap sl:flex-nowrap'>
-                <h2 className="inline text-xl font-bold text-gray-900 dark:text-white">
-                    {t('product.step.variants')}
-                </h2>
-                <div className="flex items-center text-gray-900 dark:text-white flex-wrap w-full">
-                    <span className="ml-2">{product.features?.length || 0} / 5</span>
-                    <button
-                        onClick={handleAddFeature}
-                        className=" ml-auto inline-flex items-center gap-2 px-4 py-2 bg-teal-700/20 hover:bg-teal-700/60  text-teal-600 rounded-lg transition-colors duration-200 font-medium"
-                    >
-                        <Plus size={16} />
-                    </button>
-                </div>
-            </div>
-            <div className="space-y-4">
-                <AnimatePresence initial={false}>
-
-                    {features.sort((a, b) => ((a.index || 0) - (b.index || 0))).map((f, i) =>
-                        <motion.div key={f.id} layout initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, transition: { duration: 0.2 } }} transition={{ duration: 0.3, ease: "easeOut" }}>
-                            <Feature key={f.id}
-                                feature={f}
-                                setFeature={(updater) => handleFeatureChange(updater(f) as FeatureInterface)}
-                                onDelete={() => {
-                                    onUpdate((product.features || []).filter(_f => _f.id !== f.id).sort((a, b) => ((a.index || 0) - (b.index || 0))).map((f, i) => {
-                                        if (f.index !== i) {
-                                            f.index = i;
-                                            f._request_mode = 'edited'
-                                        }
-                                        return f
-                                    })
-                                    )
-                                }}
-                                onDown={() => handleMove(f, 'down')} onUp={() => handleMove(f, 'up')}
-                                canUp={i > 0} canDown={i < features.length - 1}
-                            />
-                        </motion.div>)}
-                </AnimatePresence>
-            </div>
-
-            <button
-                onClick={handleAddFeature}
-                className="add-new w-full h-18 gap-4 flex  group/btn items-center justify-center rounded-xl border-2 border-dashed border-gray-400/50 dark:border-gray-500/50 text-gray-600 dark:text-gray-400 hover:border-teal-500/70 dark:hover:border-teal-400/70 hover:text-teal-600 dark:hover:text-teal-400 hover:bg-blue-50/30 dark:hover:bg-blue-900/20 transition-all duration-200 backdrop-blur-sm "
-            >
-                <Plus size={16} />
-                {t('product.addVariantButton')}
-            </button>
-        </div>
-    );
-};
-
-// ÉTAPE 3
-const ProductStockStep = ({ product, onUpdate }: { product: ProductInterface, onUpdate: (field: keyof ProductInterface, value: any) => void }) => {
-    const { t } = useTranslation();
-    const handleStockUpdate = (updates: { combinationHash: string, stock: number | null }[]) => {
-
-    };
-    return (
-        <div className={`${sectionStyle} space-y-6`}>
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white">{t('product.step.stock')}</h2>
-            {product.features && product.features.length > 1 ? (
-                <>
-                    <div>
-                        <label htmlFor="totalStock" className={labelStyle}>Stock total du produit (laisse vide pour infini)</label>
-                        <input type="number" id="totalStock" value={product.stock ?? ''} onChange={e => onUpdate('stock', e.target.value === '' ? null : parseInt(e.target.value))} placeholder="∞" className={`${inputStyle} w-40`} />
-                    </div>
-                    <StockMatrix product={product} onStockChange={handleStockUpdate} />
-                </>
-            ) : (
-                <StateDisplay
-                    variant='info'
-                    icon={IoColorPaletteOutline}
-                    title={t('product.noVariantsForStock')}
-                    description={t('product.noVariantsForStockDesc')}
-                />
-            )}
-        </div>
-    );
-};
-
-// ÉTAPE 4
+// ÉTAPE 2 - Publication
 const ProductPublishStep = ({ product, onUpdate }: { product: ProductInterface, onUpdate: (field: keyof ProductInterface, value: any) => void }) => {
     const { t } = useTranslation();
+
     return (
-        <div className={`${sectionStyle} space-y-6`}>
-            <h2 className="text-xl font-bold text-gray-900 dark:text-white">{t('product.step.publish')}</h2>
-            <VisibilityControl
-                t={t}
-                onDeleteRequired={() => {
-
-                }}
-                title={t('product.visibilityTitle')}
-                isLoading={false}
-
-                isVisible={!!product.is_visible}
-                onSetVisibility={(v) => onUpdate('is_visible', v)} />
-            <div className="pt-6 border-t dark:border-gray-700">
-                <SEOSettings
-                    product={product}
+        <div className="space-y-6">
+            {/* Section Publication et SEO */}
+            <div className={`${sectionStyle} space-y-6`}>
+                <h2 className="text-xl font-bold text-gray-900 dark:text-white">{t('product.step.publish')}</h2>
+                <VisibilityControl
+                    t={t}
+                    onDeleteRequired={() => {}}
+                    title={t('product.visibilityTitle')}
+                    isLoading={false}
+                    isVisible={!!product.is_visible}
+                    onSetVisibility={(v) => onUpdate('is_visible', v)} 
                 />
+                <div className="pt-6 border-t dark:border-gray-700">
+                    <SEOSettings product={product} />
+                </div>
             </div>
         </div>
     );

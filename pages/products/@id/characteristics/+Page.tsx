@@ -27,6 +27,8 @@ import { IoAdd, IoChevronDown, IoChevronUp, IoPencil, IoTrash, IoWarningOutline,
 import { RiImageEditFill } from 'react-icons/ri';
 import { getMedia } from '../../../../Components/Utils/StringFormater';
 import { buttonStyleSimple } from '../../../../Components/Button/Style';
+import { validateFileSize } from '../../../../Components/Utils/fileValidation';
+import { FileSizeErrorPopup } from '../../../../Components/FileSizeErrorPopup/FileSizeErrorPopup';
 
 export { Page };
 
@@ -182,12 +184,29 @@ const CharacteristicItem = ({ characteristic: c, onDelete, onEdit, onMoveUp, onM
 
 const CharacteristicForm = ({ productId, characteristic, onSave, onCancel }: { productId: string, characteristic?: ProductCharacteristicInterface, onSave: (data: any) => void, onCancel: () => void }) => {
     const { t } = useTranslation();
+    const { openChild } = useChildViewer();
     const [formState, setFormState] = useState<Partial<ProductCharacteristicInterface>>(characteristic || {});
     const [localIconPreview, setLocalIconPreview] = useState<string | null>(null);
 
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0];
         if(!file)  return;
+        
+        // Valider la taille du fichier
+        const validation = validateFileSize(file);
+        if (!validation.isValid && validation.error) {
+            openChild(
+                <FileSizeErrorPopup
+                    fileName={validation.error.fileName}
+                    fileSize={validation.error.fileSize}
+                    fileType={validation.error.fileType}
+                />,
+                { background: 'rgba(0, 0, 0, 0.7)', blur: 4 }
+            );
+            e.target.value = '';
+            return;
+        }
+        
         setLocalIconPreview(prev => { if (prev) URL.revokeObjectURL(prev); return file ? URL.createObjectURL(file) : null; });
         setFormState(prev => ({ ...prev, icon: [file] }));
         e.target.value = '';

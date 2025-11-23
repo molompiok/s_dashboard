@@ -59,7 +59,20 @@ const OrderStatsSection: React.FC<OrderStatsSectionProps> = ({ data, period, inc
         const labels = data.map(item => item.date).sort();
         const datasets: any[] = [];
         //@ts-ignore
-        const currency = (data[0])?.currency ?? 'cfa'; // Get currency from first item
+        const rawCurrency = (data[0])?.currency ?? 'cfa'; // Get currency from first item
+        
+        // Mapping des devises non-ISO vers codes ISO 4217 valides
+        const normalizeCurrency = (currency: string): string => {
+            const currencyMap: Record<string, string> = {
+                'FCFA': 'XOF', // Franc CFA (Afrique de l'Ouest)
+                'CFA': 'XOF',
+                'cfa': 'XOF',
+                'XAF': 'XAF', // Franc CFA (Afrique centrale) - déjà ISO
+            };
+            return currencyMap[currency.toUpperCase()] || currency.toUpperCase();
+        };
+        
+        const currency = normalizeCurrency(rawCurrency);
 
         const addDataset = (key: keyof typeof datasetColors, dataKey: keyof OrderStatsResultItem) => {
             //@ts-ignore
@@ -75,7 +88,12 @@ const OrderStatsSection: React.FC<OrderStatsSectionProps> = ({ data, period, inc
                             label: (context: any) => {
                                 let label = context.dataset.label || '';
                                 if (dataKey === 'total_price') {
-                                    return `${label}: ${context.parsed.y.toLocaleString(t('common.locale'), { style: 'currency', currency, minimumFractionDigits: 0 })}`;
+                                    try {
+                                        return `${label}: ${context.parsed.y.toLocaleString(t('common.locale'), { style: 'currency', currency, minimumFractionDigits: 0 })}`;
+                                    } catch (error) {
+                                        // Fallback si le code de devise n'est toujours pas valide
+                                        return `${label}: ${context.parsed.y.toLocaleString(t('common.locale'))} ${rawCurrency}`;
+                                    }
                                 }
                                 return `${label}: ${context.parsed.y.toLocaleString(t('common.locale'))}`;
                             }

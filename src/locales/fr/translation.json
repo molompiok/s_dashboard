@@ -16,6 +16,7 @@
         "create": "Créer",
         "view": "Voir",
         "close": "Fermer",
+        "understood": "Compris",
         "requiredField": "Champ requis",
         "noResults": "Aucun résultat trouvé.",
         "back": "Retour",
@@ -861,6 +862,7 @@
         "step": {
             "info": "Infos de Base",
             "variants": "Variantes",
+            "options": "Options",
             "stock": "Stocks & Prix",
             "publish": "Publication"
         },
@@ -917,8 +919,15 @@
         "outOfStock": "Épuisé",
         "visibilityTitle": "Visibilité du produit",
         "removeCategory": "Cette action va retirer le produit de la catégorie {{name}}",
+        "otherOptions": "Autres Options",
+        "variantsDescription": "Gérez les variantes et options de votre produit",
+        "detailsDescription": "Ajoutez des détails supplémentaires sur votre produit",
+        "faqDescription": "Gérez les questions fréquentes sur votre produit",
+        "priceStockDescription": "Configurez les prix et stocks avancés",
+        "statsDescription": "Consultez les statistiques de votre produit",
         "validation": {
             "nameRequired": "Le nom du prduit est requis (3 caractères min).",
+            "nameAndPriceRequired": "Le nom et le prix du produit sont requis.",
             "nameMinLength": "Le nom doit contenir au moins {{min}} caractères.",
             "descriptionMinLength": "La description doit contenir au moins {{min}} caractères.",
             "barredPriceHigher": "Le prix barré doit être supérieur au prix.",
@@ -1787,5 +1796,17 @@
             "reset": "Réinitialiser"
         },
         "searchPlaceholder": "Nom, email, #id, réf..."
+    },
+    "fileSizeError": {
+        "imageTitle": "Fichier image trop volumineux",
+        "videoTitle": "Fichier vidéo trop volumineux",
+        "sizeInfo": "Taille du fichier : {{size}} MB (Maximum : {{max}} MB)",
+        "imageRecommendation": "Nous recommandons de compresser votre image avant de l'uploader :",
+        "videoRecommendation": "Pour réduire la taille de votre vidéo, nous recommandons de :",
+        "compressOnline": "Compresser votre image en ligne",
+        "compressVideoOnline": "Compresser votre vidéo en ligne gratuitement",
+        "reduceResolution": "Réduire la résolution (ex: 1920x1080 → 1280x720)",
+        "reduceQuality": "Réduire la qualité à 80%",
+        "convertToWebM": "Convertir en format WebM pour une meilleure compression"
     }
 }

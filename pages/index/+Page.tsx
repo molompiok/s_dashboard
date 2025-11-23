@@ -1,6 +1,6 @@
 // pages/stores/+Page.tsx
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { BreadcrumbItem, Topbar } from '../../Components/TopBar/TopBar';
 import { StoresList } from '../../Components/StoreList/StoresList';
 import StoreSkeleton, { SelectedStoreDetails } from '../../Components/StoreDetails/SelectedStoreDetails';
@@ -25,17 +25,32 @@ function Page() {
   const [filter, setFilter] = useState<StoreFilterType>({});
   const [isLoadingInitialStore, setIsLoadingInitialStore] = useState(true);
   const [isStoreChanging, setIsStoreChanging] = useState(false);
+  const [hasAutoPrompted, setHasAutoPrompted] = useState(false);
   const { openChild } = useChildViewer();
 
-  const { data: storesData, isLoading: isLoadingList, isError, error } = useGetStoreList({
+  const {
+    data: storesData,
+    isLoading: isLoadingList,
+    isError,
+    error,
+    refetch: refetchStores,
+  } = useGetStoreList({
     ...filter
   });
   const storesList = storesData?.list ?? [];
+  const hasStores = storesList.length > 0;
+  const isFilterActive = !!Object.keys(filter).length;
 
   // Logique de sélection du store initial (inchangée)
   useEffect(() => {
-    if (isLoadingList || !storesList || storesList.length === 0) {
+    if (isLoadingList) {
       setIsLoadingInitialStore(true);
+      return;
+    }
+
+    if (!hasStores) {
+      setIsLoadingInitialStore(false);
+      setCurrentStore(undefined);
       return;
     }
 
@@ -71,28 +86,57 @@ function Page() {
       }
     }
     setIsLoadingInitialStore(false);
-  }, [storesList, isLoadingList, currentStore, setCurrentStore]);
+  }, [storesList, hasStores, isLoadingList, currentStore, setCurrentStore]);
 
-  const handleStoreCreateEdit = (store?: StoreInterface | undefined) => {
+  const handleStoreCreateEdit = useCallback((store?: StoreInterface | undefined) => {
     openChild(
       <StoreCreationEditionWizard
-        onSaveSuccess={(collected, mode) => {
+        onSaveSuccess={(createdStore) => {
+          refetchStores()
+            .then((result) => {
+              if (createdStore?.id) {
+                const refreshed = result?.data?.list?.find((s) => s.id === createdStore.id);
+                const storeToSet = (refreshed || createdStore) as StoreInterface;
+                setCurrentStore(storeToSet);
+              }
+            })
+            .catch((err) => {
+              logger.warn("Failed to refetch stores after creation", err);
+              if (createdStore && createdStore.id) {
+                setCurrentStore(createdStore as StoreInterface);
+              }
+            })
+            .finally(() => {
           openChild(null);
+            });
         }}
         onCancel={() => openChild(null)}
         initialStoreData={store}
       />,
       { className: "bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 transition-colors duration-300" }
     );
-  };
+  }, [openChild, refetchStores, setCurrentStore]);
+
+  useEffect(() => {
+    if (isLoadingList) return;
+    if (isFilterActive) return;
+
+    if (!hasStores) {
+      if (!hasAutoPrompted) {
+        handleStoreCreateEdit();
+        setHasAutoPrompted(true);
+      }
+    } else if (hasAutoPrompted) {
+      setHasAutoPrompted(false);
+    }
+  }, [isLoadingList, isFilterActive, hasStores, hasAutoPrompted, handleStoreCreateEdit]);
 
   const handleSelectStore = (store: StoreInterface) => {
     setCurrentStore(store);
   };
 
   // const storeName = currentStore?.name;
-  const isFilterActive=!!Object.keys(filter).length;
-  const filterNotFound = storesList.length == 0 && isFilterActive
+  const filterNotFound = storesList.length == 0 && isFilterActive;
   return (
     <div className="min-h-screen pb-[200px]">
       <Topbar key={'acceuil-admin'} search={false} />

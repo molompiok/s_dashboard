@@ -25,6 +25,8 @@ import { useChildViewer } from '../../../Components/ChildViewer/useChildViewer';
 import { VisibilityControl } from '../../../Components/Controls/VisibilityControl';
 import { CreateControl } from '../../../Components/Controls/CreateControl';
 import { showErrorToast, showToast } from '../../../Components/Utils/toastNotifications';
+import { validateFileSize } from '../../../Components/Utils/fileValidation';
+import { FileSizeErrorPopup } from '../../../Components/FileSizeErrorPopup/FileSizeErrorPopup';
 // 🎨 Imports pour les états
 import { CategoryFormSkeleton } from '../../../Components/Skeletons/allsKeletons';
 import { StateDisplay } from '../../../Components/StateDisplay/StateDisplay';
@@ -101,6 +103,22 @@ function Page() {
     const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>, field: 'view' | 'icon') => {
         const file = e.target.files?.[0];
         if (!file) return;
+        
+        // Valider la taille du fichier
+        const validation = validateFileSize(file);
+        if (!validation.isValid && validation.error) {
+            openChild(
+                <FileSizeErrorPopup
+                    fileName={validation.error.fileName}
+                    fileSize={validation.error.fileSize}
+                    fileType={validation.error.fileType}
+                />,
+                { background: 'rgba(0, 0, 0, 0.7)', blur: 4 }
+            );
+            e.target.value = '';
+            return;
+        }
+        
         const previewUrl = URL.createObjectURL(file);
         updateLocalCategory(() => ({ [field]: [file] }));
         setLocalImagePreviews(prev => {

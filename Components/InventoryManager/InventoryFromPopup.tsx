@@ -12,6 +12,9 @@ import { getMedia } from '../Utils/StringFormater'; // Pour preview
 import { useGlobalStore } from '../../api/stores/StoreStore'; // Pour URL base image
 import { ApiError } from '../../api/SublymusApi';
 import { showErrorToast, showToast } from '../Utils/toastNotifications';
+import { validateFileSize } from '../Utils/fileValidation';
+import { FileSizeErrorPopup } from '../FileSizeErrorPopup/FileSizeErrorPopup';
+import { useChildViewer } from '../ChildViewer/useChildViewer';
 
 interface InventoryFormPopupProps {
     initialData?: Partial<InventoryInterface>; // Données pour l'édition
@@ -29,6 +32,7 @@ type InventoryFormState = Partial<InventoryInterface & {
 export function InventoryFormPopup({ initialData, onSaveSuccess, onCancel }: InventoryFormPopupProps) {
     const { t } = useTranslation();
     const { currentStore } = useGlobalStore(); // Pour URL images existantes
+    const { openChild } = useChildViewer();
 
     // --- État du Formulaire ---
     const [formData, setFormData] = useState<InventoryFormState>(() => {
@@ -101,7 +105,24 @@ export function InventoryFormPopup({ initialData, onSaveSuccess, onCancel }: Inv
             // Si l'utilisateur annule, on ne fait rien ou on reset? Pour l'instant rien.
             return;
         }
-        const newFiles = Array.from(files);
+        const file = files[0]; // multiple={false} donc un seul fichier
+        
+        // Valider la taille du fichier
+        const validation = validateFileSize(file);
+        if (!validation.isValid && validation.error) {
+            openChild(
+                <FileSizeErrorPopup
+                    fileName={validation.error.fileName}
+                    fileSize={validation.error.fileSize}
+                    fileType={validation.error.fileType}
+                />,
+                { background: 'rgba(0, 0, 0, 0.7)', blur: 4 }
+            );
+            e.target.value = '';
+            return;
+        }
+        
+        const newFiles = [file];
         s.collected.views = newFiles
 
         const newPreviews = newFiles.map(file => URL.createObjectURL(file));

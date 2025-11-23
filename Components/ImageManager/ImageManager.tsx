@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { IoCloudUploadOutline, IoTrash } from 'react-icons/io5';
 import { motion, AnimatePresence } from 'framer-motion';
 import { getMedia } from '../Utils/StringFormater';
@@ -7,6 +7,8 @@ import { NO_PICTURE } from '../Utils/constants';
 import { useChildViewer } from '../ChildViewer/useChildViewer';
 import Gallery from '../Gallery/Gallery';
 import { image } from 'html2canvas-pro/dist/types/css/types/image';
+import { validateFiles } from '../Utils/fileValidation';
+import { FileSizeErrorPopup } from '../FileSizeErrorPopup/FileSizeErrorPopup';
 
 export type ImageItem = { id: string; source: string | File };
 
@@ -30,6 +32,21 @@ export const ImageManager: React.FC<ImageManagerProps> = ({canOpenGallery, image
    
     if (files.length === 0) return;
 
+    // Valider la taille des fichiers
+    const validation = validateFiles(files);
+    if (!validation.isValid && validation.error) {
+      openChild(
+        <FileSizeErrorPopup
+          fileName={validation.error.fileName}
+          fileSize={validation.error.fileSize}
+          fileType={validation.error.fileType}
+        />,
+        { background: 'rgba(0, 0, 0, 0.7)', blur: 4 }
+      );
+      e.target.value = ''; // reset input
+      return;
+    }
+
     const availableSlots = MAX_IMAGES - images.length;
     files.forEach((f, i) => Object.defineProperty(f, 'name', {
       value: f.name + i,
@@ -48,6 +65,21 @@ export const ImageManager: React.FC<ImageManagerProps> = ({canOpenGallery, image
     e.preventDefault();
     const files = Array.from(e.dataTransfer.files || []);
     if (files.length === 0) return;
+
+    // Valider la taille des fichiers
+    const validation = validateFiles(files);
+    if (!validation.isValid && validation.error) {
+      openChild(
+        <FileSizeErrorPopup
+          fileName={validation.error.fileName}
+          fileSize={validation.error.fileSize}
+          fileType={validation.error.fileType}
+        />,
+        { background: 'rgba(0, 0, 0, 0.7)', blur: 4 }
+      );
+      return;
+    }
+
     files.forEach((f, i) => Object.defineProperty(f, 'name', {
       value: f.name + i,
       writable: false,
@@ -108,11 +140,11 @@ export const ImageManager: React.FC<ImageManagerProps> = ({canOpenGallery, image
 
   return (
     <div
-      className={`image-manager ${className}`}
-      onDrop={handleDrop}
-      onDragOver={handleDragOver}
-      ref={containerRef}
-    >
+        className={`image-manager ${className}`}
+        onDrop={handleDrop}
+        onDragOver={handleDragOver}
+        ref={containerRef}
+      >
       <div className="grid grid-cols-[repeat(auto-fill,minmax(100px,1fr))] gap-3">
         <AnimatePresence>
           {images.map((image, index) => {

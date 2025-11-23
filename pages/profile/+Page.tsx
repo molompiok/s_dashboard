@@ -19,6 +19,8 @@ import { useAuthStore } from '../../api/stores/AuthStore';
 import { navigate } from 'vike/client/router';
 import { StateDisplay } from '../../Components/StateDisplay/StateDisplay';
 import { buttonStyle } from '../../Components/Button/Style';
+import { validateFileSize } from '../../Components/Utils/fileValidation';
+import { FileSizeErrorPopup } from '../../Components/FileSizeErrorPopup/FileSizeErrorPopup';
 
 export { Page };
 
@@ -92,7 +94,20 @@ function Page() {
         if (avatarPreview) URL.revokeObjectURL(avatarPreview); // Nettoyer ancienne preview locale
 
         if (file) {
-            // TODO: Validation taille/type image avatar
+            // Valider la taille du fichier
+            const validation = validateFileSize(file);
+            if (!validation.isValid && validation.error) {
+                openChild(
+                    <FileSizeErrorPopup
+                        fileName={validation.error.fileName}
+                        fileSize={validation.error.fileSize}
+                        fileType={validation.error.fileType}
+                    />,
+                    { background: 'rgba(0, 0, 0, 0.7)', blur: 4 }
+                );
+                e.target.value = '';
+                return;
+            }
             setProfileForm(prev => ({ ...prev, avatarFile: file }));
             setAvatarPreview(URL.createObjectURL(file));
             setProfileErrors(prev => ({ ...prev, avatarFile: '' }));

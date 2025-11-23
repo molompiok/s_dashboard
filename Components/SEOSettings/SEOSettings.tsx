@@ -1,6 +1,5 @@
-import { IoApertureSharp, IoChatbubbleEllipsesOutline, IoDocumentTextOutline, IoPricetagsOutline, IoStatsChartOutline } from "react-icons/io5";
+import { IoChatbubbleEllipsesOutline, IoColorPaletteOutline, IoDocumentTextOutline, IoPricetagsOutline, IoStatsChartOutline, IoStorefrontOutline } from "react-icons/io5";
 import { ProductInterface } from "../../api/Interfaces/Interfaces";
-import { Button } from "../Button/Button";
 import { http, limit } from "../Utils/functions";
 import { getDefaultValues } from "../Utils/parseData";
 import { getMedia } from "../Utils/StringFormater";
@@ -12,14 +11,69 @@ interface SEOSettingsProps {
   product: ProductInterface;
 }
 const SettingsConfig = [
-  { name: 'price-stock', showKey: 'productSettings.priceStock', icon: <IoPricetagsOutline className="min-w-5 h-5 dark:text-white/80" />, colorClasses: 'text-green-600 border-green-200 hover:bg-green-50 hover:shadow-green-100' },
-  { name: 'details', showKey: 'productSettings.details', icon: <IoDocumentTextOutline className="min-w-5 h-5 dark:text-white/80" />, colorClasses: 'text-gray-600 border-gray-200 hover:bg-gray-50 hover:shadow-gray-100' },
-  { name: 'faq', showKey: 'productSettings.faq', icon: <IoChatbubbleEllipsesOutline className="min-w-5 h-5 dark:text-white/80" />, colorClasses: 'text-orange-600 border-orange-200 hover:bg-orange-50 hover:shadow-orange-100' },
-  // { name: 'promo', showKey: 'productSettings.promo', icon: <IoMegaphoneOutline className="min-w-5 h-5 dark:text-white/80"/>, colorClasses: 'text-orange-600 border-orange-200 hover:bg-orange-50 hover:shadow-orange-100' },
-  // { name: 'inventory', showKey: 'productSettings.inventory', icon: <IoStorefrontOutline className="min-w-5 h-5 dark:text-white/80"/>, colorClasses: 'text-indigo-600 border-indigo-200 hover:bg-indigo-50 hover:shadow-indigo-100' },
-  // { name: 'affiliation', showKey: 'productSettings.affiliation', icon: <IoGitNetworkOutline className="min-w-5 h-5 dark:text-white/80"/>, colorClasses: 'text-purple-600 border-purple-200 hover:bg-purple-50 hover:shadow-purple-100' },
-  { name: 'stats', showKey: 'productSettings.stats', icon: <IoStatsChartOutline className="min-w-5 h-5 dark:text-white/80" />, colorClasses: 'text-sky-600 border-sky-200 hover:bg-sky-50 hover:shadow-sky-100' },
-  { name: 'comments', showKey: 'productSettings.comments', icon: <IoChatbubbleEllipsesOutline className="min-w-5 h-5 dark:text-white/80" />, colorClasses: 'text-amber-600 border-amber-200 hover:bg-amber-50 hover:shadow-amber-100' },
+  { 
+    name: 'variants', 
+    showKey: 'product.step.variants', 
+    icon: IoColorPaletteOutline, 
+    bgColor: '', 
+    borderColor: 'border-cyan-200 dark:border-cyan-800/50',
+    iconBg: 'bg-cyan-100 dark:bg-cyan-900/40',
+    iconColor: 'text-cyan-600 dark:text-cyan-400'
+  },
+  { 
+    name: 'price-stock', 
+    showKey: 'productSettings.priceStock', 
+    icon: IoPricetagsOutline, 
+    bgColor: '', 
+    borderColor: 'border-emerald-200 dark:border-emerald-800/50',
+    iconBg: 'bg-emerald-100 dark:bg-emerald-900/40',
+    iconColor: 'text-emerald-600 dark:text-emerald-400'
+  },
+  { 
+    name: 'details', 
+    showKey: 'productSettings.details', 
+    icon: IoDocumentTextOutline, 
+    bgColor: '', 
+    borderColor: 'border-blue-200 dark:border-blue-800/50',
+    iconBg: 'bg-blue-100 dark:bg-blue-900/40',
+    iconColor: 'text-blue-600 dark:text-blue-400'
+  },
+  { 
+    name: 'faq', 
+    showKey: 'productSettings.faq', 
+    icon: IoChatbubbleEllipsesOutline, 
+    bgColor: '', 
+    borderColor: 'border-green-200 dark:border-green-800/50',
+    iconBg: 'bg-green-100 dark:bg-green-900/40',
+    iconColor: 'text-green-600 dark:text-green-400'
+  },
+  { 
+    name: 'inventory', 
+    showKey: 'productSettings.inventory', 
+    icon: IoStorefrontOutline, 
+    bgColor: '', 
+    borderColor: 'border-indigo-200 dark:border-indigo-800/50',
+    iconBg: 'bg-indigo-100 dark:bg-indigo-900/40',
+    iconColor: 'text-indigo-600 dark:text-indigo-400'
+  },
+  { 
+    name: 'stats', 
+    showKey: 'productSettings.stats', 
+    icon: IoStatsChartOutline, 
+    bgColor: '', 
+    borderColor: 'border-sky-200 dark:border-sky-800/50',
+    iconBg: 'bg-sky-100 dark:bg-sky-900/40',
+    iconColor: 'text-sky-600 dark:text-sky-400'
+  },
+  { 
+    name: 'comments', 
+    showKey: 'productSettings.comments', 
+    icon: IoChatbubbleEllipsesOutline, 
+    bgColor: '', 
+    borderColor: 'border-teal-200 dark:border-teal-800/50',
+    iconBg: 'bg-teal-100 dark:bg-teal-900/40',
+    iconColor: 'text-teal-600 dark:text-teal-400'
+  },
 ];
 
 
@@ -32,21 +86,32 @@ export const SEOSettings: React.FC<SEOSettingsProps> = ({ product }) => {
   const { t } = useTranslation()
 
   return (
-    <div className="grid overflow-hidden md:grid-cols-2 gap-4 items-start">
+    <div className="grid overflow-visible md:grid-cols-2 gap-4 items-start">
 
       {
-        SettingsConfig.map(p => (
-          <Button key={p.name} icon={p.icon} title={t(p.showKey)}
-            className="gap-4 p-4 bg-white/5 hover:bg-white/10 rounded-lg border border-gray-200 shadow-sm py-4  dark:hover:bg-white/10 border-gray/10 dark:border-white/10"
-            onClick={() => {
-              if (p.name == 'stats') {
-                navigate(`/stats?product_id=${product.id}`)
-                return
-              }
-              navigate(`/products/${product.id}/${p.name}`)
-
-            }} />
-        ))
+        SettingsConfig.map(p => {
+          const IconComponent = p.icon;
+          return (
+            <button
+              key={p.name}
+              onClick={() => {
+                if (p.name == 'stats') {
+                  navigate(`/stats?product_id=${product.id}`)
+                  return
+                }
+                navigate(`/products/${product.id}/${p.name}`)
+              }}
+              className={`group flex items-center gap-4 p-4 ${p.bgColor} ${p.borderColor} border rounded-lg shadow-sm hover:shadow-md transition-all duration-200 hover:scale-[1.01]`}
+            >
+              <div className={`flex-shrink-0 w-10 h-10 rounded-full ${p.iconBg} flex items-center justify-center transition-all duration-200 group-hover:scale-110`}>
+                <IconComponent className={`w-5 h-5 ${p.iconColor}`} />
+              </div>
+              <span className="text-sm font-medium text-gray-900 dark:text-white flex-1 text-left">
+                {t(p.showKey)}
+              </span>
+            </button>
+          );
+        })
       }
 
       {/* Aperçu Google */}

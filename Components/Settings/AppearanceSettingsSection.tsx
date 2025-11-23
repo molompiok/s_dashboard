@@ -10,6 +10,9 @@ import { getMedia } from '../Utils/StringFormater'; // Pour preview
 import { useGlobalStore } from '../../api/stores/StoreStore'; // Pour URL base image
 import { NO_PICTURE } from '../Utils/constants'; // Placeholder
 import { ApiError } from '../../api/SublymusApi';
+import { validateFileSize } from '../Utils/fileValidation';
+import { FileSizeErrorPopup } from '../FileSizeErrorPopup/FileSizeErrorPopup';
+import { useChildViewer } from '../ChildViewer/useChildViewer';
 
 interface AppearanceSettingsSectionProps {
     store: StoreInterface;
@@ -28,6 +31,7 @@ interface AppearanceFormState {
 export function AppearanceSettingsSection({ store }: AppearanceSettingsSectionProps) {
     const { t } = useTranslation();
     const { currentStore } = useGlobalStore(); // Pour URL images existantes
+    const { openChild } = useChildViewer();
     const updateStoreMutation = useUpdateStore();
 
     const isLoading = updateStoreMutation.isPending
@@ -78,7 +82,20 @@ export function AppearanceSettingsSection({ store }: AppearanceSettingsSectionPr
         if (typeof oldPreview == 'string') URL.revokeObjectURL(oldPreview);
 
         if (file) {
-            // TODO: Ajouter validation type/taille fichier ici
+            // Valider la taille du fichier
+            const validation = validateFileSize(file);
+            if (!validation.isValid && validation.error) {
+                openChild(
+                    <FileSizeErrorPopup
+                        fileName={validation.error.fileName}
+                        fileSize={validation.error.fileSize}
+                        fileType={validation.error.fileType}
+                    />,
+                    { background: 'rgba(0, 0, 0, 0.7)', blur: 4 }
+                );
+                e.target.value = '';
+                return;
+            }
             setFormState(prev => ({
                 ...prev,
                 [fileStateKey]: file,

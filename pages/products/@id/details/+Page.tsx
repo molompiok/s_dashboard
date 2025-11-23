@@ -28,6 +28,8 @@ import { useChildViewer } from '../../../../Components/ChildViewer/useChildViewe
 import { showErrorToast, showToast } from '../../../../Components/Utils/toastNotifications';
 import { buttonStyleSimple } from '../../../../Components/Button/Style';
 import Gallery from '../../../../Components/Gallery/Gallery';
+import { validateFileSize } from '../../../../Components/Utils/fileValidation';
+import { FileSizeErrorPopup } from '../../../../Components/FileSizeErrorPopup/FileSizeErrorPopup';
 
 export { Page };
 
@@ -194,6 +196,7 @@ const DetailItem = ({ detail, onDelete, onOption, onUp, onDown, canUp, canDown }
 }
 const DetailInfo = ({ detail, onSave, onCancel }: { detail: Partial<DetailInterface>, onSave: (d: Partial<DetailInterface>) => void, onCancel: () => void }) => {
   const { t } = useTranslation()
+  const { openChild } = useChildViewer()
   const [formState, setFormState] = useState(detail)
   const [localPreview, setLocalPreview] = useState<string | null>(null)
   const [isSaving, setIsSaving] = useState(false)
@@ -203,6 +206,23 @@ const DetailInfo = ({ detail, onSave, onCancel }: { detail: Partial<DetailInterf
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0]
+    if (!file) return;
+    
+    // Valider la taille du fichier
+    const validation = validateFileSize(file);
+    if (!validation.isValid && validation.error) {
+      openChild(
+        <FileSizeErrorPopup
+          fileName={validation.error.fileName}
+          fileSize={validation.error.fileSize}
+          fileType={validation.error.fileType}
+        />,
+        { background: 'rgba(0, 0, 0, 0.7)', blur: 4 }
+      );
+      e.target.value = '';
+      return;
+    }
+    
     setLocalPreview(prev => {
       if (prev) URL.revokeObjectURL(prev)
       return file ? URL.createObjectURL(file) : null

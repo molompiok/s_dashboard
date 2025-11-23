@@ -13,6 +13,8 @@ import { ChildViewer } from '../ChildViewer/ChildViewer';
 import { ConfirmDelete } from '../Confirm/ConfirmDelete';
 import { useChildViewer } from '../ChildViewer/useChildViewer';
 import { ImageItem, ImageManager } from '../ImageManager/ImageManager';
+import { validateFileSize } from '../Utils/fileValidation';
+import { FileSizeErrorPopup } from '../FileSizeErrorPopup/FileSizeErrorPopup';
 
 export { FV_IconText_Info, IconTextValue, TextValue };
 
@@ -25,6 +27,7 @@ interface FVInfoProps {
 
 function FV_IconText_Info({ value: initialValue, feature, onChange, onCancel }: FVInfoProps) {
     const { t } = useTranslation(); // ✅ i18n
+    const { openChild } = useChildViewer();
     // État local pour le formulaire de la valeur
     const [v, setValue] = useState<ValueInterface>(initialValue);
     // Preview locale pour l'icône
@@ -78,6 +81,22 @@ function FV_IconText_Info({ value: initialValue, feature, onChange, onCancel }: 
         const files = e.target.files;
         if (!files?.[0]) return;
         const file = files[0];
+        
+        // Valider la taille du fichier
+        const validation = validateFileSize(file);
+        if (!validation.isValid && validation.error) {
+            openChild(
+                <FileSizeErrorPopup
+                    fileName={validation.error.fileName}
+                    fileSize={validation.error.fileSize}
+                    fileType={validation.error.fileType}
+                />,
+                { background: 'rgba(0, 0, 0, 0.7)', blur: 4 }
+            );
+            e.target.value = '';
+            return;
+        }
+        
         const previewUrl = URL.createObjectURL(file);
 
         setValue(prev => ({ ...prev, icon: [file] })); // Stocker File object

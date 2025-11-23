@@ -35,7 +35,7 @@ function Layout({ children, pageContext }: { children: React.ReactNode; pageCont
   const { getCurrentStore } = useGlobalStore();
   const { sideLeft, setSideLeft } = useAppZust()
   const { data: userFetched, error } = useGetMe();
-  
+
   useEffect(() => {
     getCurrentStore()
   }, [getCurrentStore]);

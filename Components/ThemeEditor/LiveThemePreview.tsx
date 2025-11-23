@@ -71,7 +71,7 @@ export function LiveThemePreview({ onSave, mode, isSaving, store, theme, setting
                     const res = await response.json()
                     const url = res.preview_url || prefixedPreview;
                     MapCache[`${store.id}-${theme.id}`] = {
-                        expire: Date.now() + 10 * 60 * 60 * 1000, // 10 min
+                        expire: Date.now() + 12 * 60 * 1000, // 12 minutes
                         server_preview_url: url
                     }
                     setPreviewUrl(url)
