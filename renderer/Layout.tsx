@@ -17,7 +17,8 @@ import {
   IoHome, IoHomeOutline, IoStorefront, IoStorefrontOutline,
   IoPeople, IoPeopleOutline, IoDocumentText, IoDocumentTextOutline,
   IoBagHandle, IoBagHandleOutline, IoLayers, IoLayersOutline, IoBarChart,
-  IoMoon, IoSunny, IoMenu, IoClose
+  IoMoon, IoSunny, IoMenu, IoClose,
+  IoArrowBack
 } from 'react-icons/io5';
 import { Toaster } from 'react-hot-toast';
 import { useMyLocation } from '../Hooks/useRepalceState';
@@ -35,6 +36,44 @@ function Layout({ children, pageContext }: { children: React.ReactNode; pageCont
   const { getCurrentStore } = useGlobalStore();
   const { sideLeft, setSideLeft } = useAppZust()
   const { data: userFetched, error } = useGetMe();
+  const { urlPathname } = pageContext;
+
+  // Liste des pages "option" qui nécessitent de revenir sur "publish"
+  const PRODUCT_OPTION_PAGES = ['variants', 'details', 'price-stock', 'characteristics', 'faq', 'comments'];
+  
+  // Gérer le localStorage "publish-required" selon la page courante
+  useEffect(() => {
+    // Détecter si on est sur une page produit avec option
+    const productPageMatch = urlPathname.match(/^\/products\/([^\/]+)\/(.+)$/);
+    const isProductOptionPage = productPageMatch && PRODUCT_OPTION_PAGES.includes(productPageMatch[2]);
+    
+    // Détecter si on est sur la page principale d'un produit
+    const isMainProductPage = /^\/products\/([^\/]+)$/.test(urlPathname) || /^\/products\/([^\/]+)\/$/.test(urlPathname);
+    
+    if (isProductOptionPage) {
+      // On est sur une page option → sauvegarder le flag
+      const productId = productPageMatch[1];
+      if (productId && productId !== 'new') {
+        localStorage.setItem('publish-required', 'true');
+      }
+    } else if (isMainProductPage) {
+      // On est sur la page principale → vérifier le flag et le retirer
+      const publishRequired = localStorage.getItem('publish-required');
+      if (publishRequired === 'true') {
+        // Le flag sera utilisé par la page pour naviguer vers publish
+        // On le retire après un court délai pour laisser la page le lire
+        setTimeout(() => {
+          localStorage.removeItem('publish-required');
+        }, 100);
+      } else {
+        // Pas de flag → s'assurer qu'il n'existe pas
+        localStorage.removeItem('publish-required');
+      }
+    } else {
+      // On n'est pas sur une page produit → retirer le flag
+      localStorage.removeItem('publish-required');
+    }
+  }, [urlPathname]);
 
   useEffect(() => {
     getCurrentStore()
@@ -139,7 +178,7 @@ function Layout({ children, pageContext }: { children: React.ReactNode; pageCont
               <Link href="/stats" activeIcon={<IoBarChart className='w-5 h-5' />} defaultIcon={<IoBarChart className='w-5 h-5' />}>
                 {t('navigation.stats')}
               </Link>
-              <Link href="/" add={['/themes']} activeIcon={<IoStorefront className='w-5 h-5' />} defaultIcon={<IoStorefrontOutline className='w-5 h-5' />}>
+              <Link href="/" add={['/themes']} activeIcon={<IoStorefront className='w-5 h-5' />} defaultIcon={<IoArrowBack className='w-5 h-5' />}>
                 {t('navigation.stores')}
               </Link>
             </div>

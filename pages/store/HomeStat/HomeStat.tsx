@@ -8,6 +8,7 @@ import { useGlobalStore } from "../../../api/stores/StoreStore";
 import { useTranslation } from "react-i18next";
 import { ClientCall } from "../../../Components/Utils/functions";
 import { navigate } from "vike/client/router";
+import { StatCarousel } from "./StatCarousel";
 
 // Types pour une meilleure type safety
 interface StatCard {
@@ -192,10 +193,11 @@ export function HomeStat() {
         return new Intl.NumberFormat('fr-FR').format(amount) + ' FCFA';
     }, []);
 
-    return (
-        <div className="w-full grid grid-cols-1 dark:text-gray-200 min-[420px]:grid-cols-2 gap-5 p-2 bg-gradient-to-br from-gray-50 to-slate-200/25 dark:from-slate-900/20 dark:to-slate-800/20 rounded-2xl">
+    // Contenu complet pour l'onglet "stat" (Account Total + les 2 cards de stats)
+    const statContent = (
+        <div className="w-full grid grid-cols-1 dark:text-gray-200 min-[420px]:grid-cols-2 gap-5 p-2 bg-gradient-to-br from-gray-50 to-slate-200/25 dark:from-slate-900/20 dark:to-slate-800/20 rounded-2xl h-full">
             {/* Account Total Card */}
-            <div className="relative bg-white/95 dark:bg-white/5 shadow-md rounded-xl p-5 transition-all duration-200 ease-in-out hover:shadow-lg min-[420px]:col-span-2 border border-transparent dark:border-white/10">
+            <div className="relative bg-white/95 dark:bg-white/5 shadow-md rounded-xl p-5 transition-all duration-200 ease-in-out hover:shadow-lg min-[420px]:col-span-2 border border-transparent dark:border-white/10 flex flex-col">
                 <div className="flex justify-between items-center mb-4">
                     <h3 className="text-slate-600 dark:text-slate-300 text-sm font-semibold flex items-center gap-2">
                         <span className="w-2 h-2 bg-indigo-500 rounded-full"></span>
@@ -294,6 +296,17 @@ export function HomeStat() {
         </div>
     );
 
+    return (
+        <div className="w-full">
+            {/* Carousel avec onglets - les boutons sont à l'extérieur */}
+            <StatCarousel
+                statContent={statContent}
+                tutoContent={undefined}
+                pubContent={undefined}
+            />
+        </div>
+    );
+
 }
 
 // Composant StatCard séparé pour une meilleure réutilisabilité
@@ -313,7 +326,7 @@ function StatCard({
     return (
         <div onClick={()=>{
             navigate(href);
-        }} className="relative bg-white/95 dark:bg-white/5 shadow-md dark:shadow-none rounded-xl p-5 transition-all duration-200 ease-in-out hover:shadow-lg dark:hover:shadow-xl group border border-transparent dark:border-white/10">
+        }} className="relative bg-white/95 dark:bg-white/5 shadow-md dark:shadow-none rounded-xl p-5 transition-all duration-200 ease-in-out hover:shadow-lg dark:hover:shadow-xl group border border-transparent dark:border-white/10 flex flex-col h-full">
             <div className="flex justify-between items-center mb-4">
                 <h3 className="text-slate-600 dark:text-gray-200 text-sm font-semibold flex items-center gap-2">
                     <Icon className="w-5 h-5 text-slate-500 dark:text-gray-400" />

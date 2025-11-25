@@ -1,6 +1,6 @@
 // pages/products/@id/characteristics/+Page.tsx
 
-import React, { useState, useMemo } from 'react';
+import React, { useState, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { motion, AnimatePresence } from 'framer-motion';
 import { usePageContext } from '../../../../renderer/usePageContext';

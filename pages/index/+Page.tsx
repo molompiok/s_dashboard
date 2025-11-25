@@ -12,6 +12,7 @@ import { useGetStoreList } from '../../api/ReactSublymusApi';
 import { useTranslation } from 'react-i18next';
 import logger from '../../api/Logger';
 import { useChildViewer } from '../../Components/ChildViewer/useChildViewer';
+import { useAuthStore } from '../../api/stores/AuthStore';
 import { StoreCreationEditionWizard } from './StoreCreationWizard';
 import { InventoryManager } from '../../Components/InventoryManager/InventoryManager';
 import { limit } from '../../Components/Utils/functions';
@@ -22,6 +23,7 @@ export { Page };
 function Page() {
   const { t } = useTranslation();
   const { currentStore, setCurrentStore } = useGlobalStore();
+  const { token, getToken } = useAuthStore();
   const [filter, setFilter] = useState<StoreFilterType>({});
   const [isLoadingInitialStore, setIsLoadingInitialStore] = useState(true);
   const [isStoreChanging, setIsStoreChanging] = useState(false);
@@ -120,6 +122,14 @@ function Page() {
   useEffect(() => {
     if (isLoadingList) return;
     if (isFilterActive) return;
+    
+    // Vérifier l'authentification avant d'afficher le popup de création de store
+    const authToken = token || getToken();
+    if (!authToken) {
+      // L'utilisateur n'est pas authentifié, ne pas afficher le popup
+      // Le Layout.tsx redirigera vers /auth/login
+      return;
+    }
 
     if (!hasStores) {
       if (!hasAutoPrompted) {
@@ -129,7 +139,7 @@ function Page() {
     } else if (hasAutoPrompted) {
       setHasAutoPrompted(false);
     }
-  }, [isLoadingList, isFilterActive, hasStores, hasAutoPrompted, handleStoreCreateEdit]);
+  }, [isLoadingList, isFilterActive, hasStores, hasAutoPrompted, handleStoreCreateEdit, token, getToken]);
 
   const handleSelectStore = (store: StoreInterface) => {
     setCurrentStore(store);

@@ -482,6 +482,7 @@ export class SublymusApi {
         requestHeaders.set('Accept', 'application/json');
         requestHeaders.set('Access-Control-Allow-Credentials','true');
         requestHeaders.set('Access-Control-Allow-Origin','*');
+        requestHeaders.set('X-Client-Type', 'dashboard');
         if (params) {
             const searchParams = new URLSearchParams();
             Object.entries(params).forEach(([key, value]) => {

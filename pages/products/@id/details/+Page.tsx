@@ -136,7 +136,7 @@ function Page() {
     <div className="pb-[200px] w-full flex flex-col min-h-screen">
       <Topbar back={true} title={t('detail.pageTitle', { name: product.name })} />
       <main className="w-full max-w-4xl mx-auto p-4 md:p-6 lg:p-8 flex flex-col gap-6">
-        <ProductPreview product={product} />
+        <ProductPreview isLoading={isLoadingProduct} product={product} />
 
         <div className={`${sectionStyle} flex items-center gap-3 flex-wrap justify-between p-4`}>
           <h2 className="text-base sm:text-lg font-bold text-gray-800 dark:text-gray-100">{t('detail.sectionTitle')}</h2>

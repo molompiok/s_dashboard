@@ -87,12 +87,29 @@ function Page() {
     const { openChild } = useChildViewer();
     const { currentStore } = useGlobalStore()
     const { params, replaceLocation } = useMyLocation();
+    const { urlPathname } = usePageContext();
     const productId = params[1];
     const isNewProduct = productId === 'new';
 
     const [step, setStep] = useState<WizardStep>('info');
     const [product, setProduct] = useState<Partial<ProductInterface>>(initialEmptyProduct);
     const [originalProduct, setOriginalProduct] = useState<ProductInterface | null | undefined>(null);
+
+    // Gérer la navigation vers "publish" si "publish-required" existe dans localStorage
+    // Le Layout gère déjà le localStorage, on lit juste le flag ici pour naviguer
+    useEffect(() => {
+        if (!isNewProduct && productId) {
+            const publishRequired = localStorage.getItem('publish-required');
+            if (publishRequired === 'true') {
+                // Vérifier qu'on est bien sur la page principale (pas une sous-page)
+                const isMainPage = urlPathname === `/products/${productId}` || urlPathname === `/products/${productId}/`;
+                
+                if (isMainPage) {
+                    setStep('publish');
+                }
+            }
+        }
+    }, [productId, isNewProduct, urlPathname]);
 
     const [s] = useState({
         init: false,
