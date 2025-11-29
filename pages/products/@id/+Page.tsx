@@ -142,15 +142,15 @@ function Page() {
         s.product = undefined
         
         // Nettoyer les données avant l'envoi : retirer barred_price si null/NaN/undefined
+        let cleanedData = d;
         if (d) {
-            const cleanedData = { ...d };
+            cleanedData = { ...d };
             if (cleanedData.barred_price === null || cleanedData.barred_price === undefined || isNaN(cleanedData.barred_price as number)) {
                 delete cleanedData.barred_price;
             }
-            d = cleanedData;
         }
         
-        d && updateProductMutation.mutate({ product_id: productId, data: d }, {
+        cleanedData && updateProductMutation.mutate({ product_id: productId, data: cleanedData }, {
             onSuccess: (data) => {
                 showToast(t('common.saveChanges'), "SUCCESS");
                 if (s.product) {
