@@ -33,6 +33,7 @@ export function StatCarousel({ statContent, tutoContent, pubContent }: StatCarou
     const [activeTab, setActiveTab] = useState<TabType>('stat');
     const [progress, setProgress] = useState(0); // Progression de 0 à 100
     const [startTime, setStartTime] = useState(Date.now());
+    const [opacity, setOpacity] = useState(1); // Opacité pour la transition
     const progressIntervalRef = useRef<NodeJS.Timeout | null>(null);
     const [selectedTab, setSelectedTab] = useState<TabType | null>(() => {
         // Charger la sélection depuis localStorage au montage
@@ -84,13 +85,6 @@ export function StatCarousel({ statContent, tutoContent, pubContent }: StatCarou
                         <div>
                             <p className="text-sm font-medium text-slate-800 dark:text-gray-200">Organisez vos catégories</p>
                             <p className="text-xs text-slate-500 dark:text-gray-400 mt-1">Structurez votre boutique pour faciliter la navigation de vos clients.</p>
-                        </div>
-                    </div>
-                    <div className="flex items-start gap-3">
-                        <span className="flex-shrink-0 w-6 h-6 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 flex items-center justify-center text-xs font-bold">3</span>
-                        <div>
-                            <p className="text-sm font-medium text-slate-800 dark:text-gray-200">Personnalisez votre thème</p>
-                            <p className="text-xs text-slate-500 dark:text-gray-400 mt-1">Adaptez les couleurs et le style à votre marque.</p>
                         </div>
                     </div>
                 </div>
@@ -205,13 +199,21 @@ export function StatCarousel({ statContent, tutoContent, pubContent }: StatCarou
         pub: pubContent || defaultPubContent,
     };
 
-    // Fonction pour passer à l'onglet suivant
+    // Fonction pour passer à l'onglet suivant avec transition d'opacité
     const goToNextTab = useCallback(() => {
-        setActiveTab((current) => {
-            const currentIndex = TABS.findIndex(t => t.id === current);
-            const nextIndex = (currentIndex + 1) % TABS.length;
-            return TABS[nextIndex].id;
-        });
+        // Fade out
+        setOpacity(0);
+        setTimeout(() => {
+            setActiveTab((current) => {
+                const currentIndex = TABS.findIndex(t => t.id === current);
+                const nextIndex = (currentIndex + 1) % TABS.length;
+                return TABS[nextIndex].id;
+            });
+            // Fade in
+            setTimeout(() => {
+                setOpacity(1);
+            }, 10);
+        }, 150); // Durée du fade out
     }, []);
 
     // Fonction pour démarrer le défilement automatique avec la durée spécifique de l'onglet actif
@@ -317,7 +319,7 @@ export function StatCarousel({ statContent, tutoContent, pubContent }: StatCarou
         startAutoScroll(activeTab);
     }, [activeTab, startAutoScroll]);
 
-    // Gestion du clic sur un onglet
+    // Gestion du clic sur un onglet avec transition d'opacité
     const handleTabClick = useCallback((tabId: TabType) => {
         // Nettoyer l'intervalle de progression
         if (progressIntervalRef.current) {
@@ -331,11 +333,18 @@ export function StatCarousel({ statContent, tutoContent, pubContent }: StatCarou
             return;
         }
 
-        // Sinon, sélectionner cet onglet et arrêter le défilement
-        setActiveTab(tabId);
-        setSelectedTab(tabId);
-        setProgress(0); // Réinitialiser la progression
-        pauseAutoScroll(tabId);
+        // Fade out puis changement d'onglet
+        setOpacity(0);
+        setTimeout(() => {
+            setActiveTab(tabId);
+            setSelectedTab(tabId);
+            setProgress(0); // Réinitialiser la progression
+            pauseAutoScroll(tabId);
+            // Fade in
+            setTimeout(() => {
+                setOpacity(1);
+            }, 10);
+        }, 150); // Durée du fade out
     }, [selectedTab, pauseAutoScroll, resumeAutoScroll]);
 
     // Initialiser le défilement automatique quand l'onglet change ou quand la pause se termine
@@ -405,8 +414,16 @@ export function StatCarousel({ statContent, tutoContent, pubContent }: StatCarou
         <div className="relative w-full flex gap-4">
             {/* Container de la card complète (à gauche) - Hauteur fixe pour éviter les sursauts */}
             <div className="flex-1 min-w-0">
-                <div className="transition-all duration-300 ease-in-out min-h-[400px]">
-                    {tabContent[activeTab]}
+                <div className="relative min-h-[440px]">
+                    <div 
+                        key={activeTab}
+                        className="transition-opacity duration-300 ease-in-out"
+                        style={{ 
+                            opacity: opacity
+                        }}
+                    >
+                        {tabContent[activeTab]}
+                    </div>
                 </div>
             </div>
 

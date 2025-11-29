@@ -62,7 +62,7 @@ export function MarkdownEditor({ value, setValue }: { value: any, setValue: (val
       placeholder="Ajoutez la description du produit"
       value={value.description}
       onChange={(e) => {
-        setValue(e.target.value.substring(0, 1024));
+        setValue(e.target.value.substring(0, 1500));
       }}
     />
   );
@@ -78,7 +78,7 @@ export function MarkdownEditor2({ value, setValue, error, onBlur }: { onBlur?: (
   const handleChange = () => {
 
     const instance = editorRef.current?.getInstance();
-    const a = instance?.getMarkdown().substring(0, 1000) || " ";
+    const a = instance?.getMarkdown().substring(0, 1500) || " ";
     const v = a.trim();
     v && setValue(v);
 
@@ -99,7 +99,7 @@ export function MarkdownEditor2({ value, setValue, error, onBlur }: { onBlur?: (
             i.setMarkdown(value || "");
             adjustHeight();
           }}
-          onBlur={()=>onBlur?.(editorRef.current.getInstance().getMarkdown().substring(0, 1000) || " ")}
+          onBlur={()=>onBlur?.(editorRef.current.getInstance().getMarkdown().substring(0, 1500) || " ")}
           onKeyup={(e:any) => {
             handleChange()
           }}

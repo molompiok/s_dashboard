@@ -140,6 +140,16 @@ function Page() {
 
         const d = s.product
         s.product = undefined
+        
+        // Nettoyer les données avant l'envoi : retirer barred_price si null/NaN/undefined
+        if (d) {
+            const cleanedData = { ...d };
+            if (cleanedData.barred_price === null || cleanedData.barred_price === undefined || isNaN(cleanedData.barred_price as number)) {
+                delete cleanedData.barred_price;
+            }
+            d = cleanedData;
+        }
+        
         d && updateProductMutation.mutate({ product_id: productId, data: d }, {
             onSuccess: (data) => {
                 showToast(t('common.saveChanges'), "SUCCESS");
@@ -199,6 +209,14 @@ function Page() {
             return
         }
 
+        // Nettoyer les valeurs invalides pour barred_price (NaN, undefined, null, empty string)
+        if (field === 'barred_price') {
+            const numValue = typeof value === 'number' ? value : parseFloat(value);
+            if (isNaN(numValue) || numValue === null || numValue === undefined || value === '') {
+                value = null; // Utiliser null pour indiquer "pas de prix barré"
+            }
+        }
+
         setProduct((prev) => ({ ...prev, [field]: value }));
         s.product = { ...(s.product || {}), [field]: value }
         !isNewProduct && debounce(() => {
@@ -213,7 +231,13 @@ function Page() {
             return;
         }
 
-        createProductMutation.mutate({ product, views: product.features?.[0]?.values?.[0]?.views || [] }, {
+        // Nettoyer les données avant l'envoi : retirer barred_price si null/NaN/undefined
+        const cleanedProduct = { ...product };
+        if (cleanedProduct.barred_price === null || cleanedProduct.barred_price === undefined || isNaN(cleanedProduct.barred_price as number)) {
+            delete cleanedProduct.barred_price;
+        }
+
+        createProductMutation.mutate({ product: cleanedProduct, views: product.features?.[0]?.values?.[0]?.views || [] }, {
             onSuccess: (data) => {
                 showToast(t('product.createSuccess'));
                 replaceLocation(`/products/${data.product.id}`);
@@ -351,7 +375,10 @@ const ProductInfoStep = ({ product, onUpdate }: { product: Partial<ProductInterf
                 </div>
                 <div>
                     <label htmlFor="productBarredPrice" className={labelStyle}>{t('product.barredPriceLabel')}</label>
-                    <input type="number" id="productBarredPrice" value={product.barred_price ?? ''} onChange={e => onUpdate('barred_price', parseFloat(e.target.value))} className={inputStyle} />
+                    <input type="number" id="productBarredPrice" value={product.barred_price ?? ''} onChange={e => {
+                        const val = e.target.value;
+                        onUpdate('barred_price', val === '' ? null : parseFloat(val));
+                    }} className={inputStyle} />
                 </div>
             </div>
             <div>
